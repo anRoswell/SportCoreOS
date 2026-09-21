@@ -613,4 +613,45 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
       expect(Array.isArray(list)).toBe(true);
     });
   });
+
+  // --------------------------------------------------------------------------
+  // 14. GESTOR DOCUMENTAL & STORAGE CENTRALIZADO
+  // --------------------------------------------------------------------------
+  describe('Gestor Centralizado de Almacenamiento & Archivos (core.archivos_adjuntos)', () => {
+    let uploadedPath: string;
+
+    it('POST /api/v1/storage/upload -> sube archivo, guarda en disco y persiste metadatos en BD', async () => {
+      const buffer = Buffer.from('Fake photo content for player profile test');
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/storage/upload?folder=jugadores&entidadTipo=JUGADOR&entidadId=40000000-0000-0000-0000-000000000001&tipoDocumento=FOTO_PERFIL')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('file', buffer, 'perfil_test.png');
+
+      expect(res.status).toBe(201);
+      const data = res.body.data || res.body;
+      expect(data).toHaveProperty('url');
+      expect(data).toHaveProperty('filename');
+      uploadedPath = data.url;
+
+      // Verificación en BD en la tabla core.archivos_adjuntos
+      const dbCheck = await dbService.query(
+        `SELECT * FROM core.archivos_adjuntos WHERE url = $1`,
+        [data.url],
+      );
+      expect(dbCheck.rows.length).toBe(1);
+      expect(dbCheck.rows[0].entidad_tipo).toBe('JUGADOR');
+      expect(dbCheck.rows[0].tipo_documento).toBe('FOTO_PERFIL');
+    });
+
+    it('DELETE /api/v1/storage/file -> elimina el archivo físico guardado', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/v1/storage/file?path=${encodeURIComponent(uploadedPath)}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      const data = res.body.data || res.body;
+      expect(data.success).toBe(true);
+    });
+  });
 });
+

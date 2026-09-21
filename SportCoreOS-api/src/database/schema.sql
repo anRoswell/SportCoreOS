@@ -60,6 +60,30 @@ CREATE TABLE IF NOT EXISTS core.membresias_club (
     UNIQUE(usuario_id, club_id)
 );
 
+-- 1.4 ARCHIVOS ADJUNTOS Y GESTOR DOCUMENTAL CENTRALIZADO
+CREATE TABLE IF NOT EXISTS core.archivos_adjuntos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    entidad_tipo VARCHAR(50), -- 'JUGADOR', 'PROSPECTO', 'PRODUCTO', 'CLUB', 'SESION_GPS', 'PAGO', 'BOLETIN'
+    entidad_id UUID,          -- ID de la entidad relacionada
+    tipo_documento VARCHAR(50) NOT NULL DEFAULT 'GENERAL', -- 'FOTO_PERFIL', 'DOCUMENTO_IDENTIDAD', 'CERTIFICADO_MEDICO', 'SOPORTE_PAGO', 'FOTO_PRODUCTO', 'VIDEO_HIGHLIGHT', 'TRACKING_GPS_RAW'
+    nombre_original VARCHAR(255) NOT NULL,
+    nombre_almacenamiento VARCHAR(255) NOT NULL,
+    url TEXT NOT NULL,
+    mime_type VARCHAR(100),
+    tamano_bytes BIGINT NOT NULL DEFAULT 0,
+    path_almacenamiento TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}',
+    subido_por UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_archivos_club ON core.archivos_adjuntos(club_id);
+CREATE INDEX IF NOT EXISTS idx_archivos_entidad ON core.archivos_adjuntos(entidad_tipo, entidad_id);
+CREATE INDEX IF NOT EXISTS idx_archivos_tipo ON core.archivos_adjuntos(tipo_documento);
+
 -- ============================================================================
 -- SCHEMA: deportivo (Categorías, Fichas de Jugadores y Familias)
 -- ============================================================================
