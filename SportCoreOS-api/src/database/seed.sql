@@ -130,3 +130,40 @@ VALUES
   ('d0000000-0000-0000-0000-000000000007', 'f0000000-0000-0000-0000-000000000004', 'ÚNICA', 9, 3)
 ON CONFLICT (id) DO NOTHING;
 
+-- 17. SCHEMA DEPORTIVO: PLANTILLAS PROMPT IA (MÓDULO 10)
+INSERT INTO deportivo.ia_prompts_templates (id, codigo_template, nombre, system_prompt, modelo_recomendado)
+VALUES
+  ('a0000000-0000-0000-0000-000000000001', 'BOLETIN_PADRES_MENSUAL', 'Boletín Formativo Mensual a Padres', 'Eres el Director de Metodología de una academia de fútbol élite. Genera un informe formativo empático, motivador y profesional estructurado en: 1. Resumen de evolución, 2. Fortalezas técnico-tácticas, 3. Recomendaciones físicas y de descanso.', 'gemini-2.5-flash'),
+  ('a0000000-0000-0000-0000-000000000002', 'ALERTA_FATIGA_PF', 'Evaluación de Carga & Prevención de Lesiones', 'Eres un Preparador Físico y Fisiólogo del Deporte especializado en fútbol juvenil. Analiza los minutos disputados, distancia recorrida y ratio de carga para emitir alertas de sobreentrenamiento.', 'gemini-2.5-flash'),
+  ('a0000000-0000-0000-0000-000000000003', 'PLAN_TACTICO_DT', 'Asistente Táctico de Partido', 'Eres un Analista Táctico UEFA Pro. Asesora al DT con recomendaciones estratégicas basadas en el sistema de juego y fortalezas de la nómina.', 'gemini-2.5-flash')
+ON CONFLICT (id) DO NOTHING;
+
+-- 18. SCHEMA DEPORTIVO: PROSPECTOS SCOUTING (MÓDULO 11)
+INSERT INTO deportivo.prospectos_scouting (id, club_id, nombres_apellidos, fecha_nacimiento, posicion_principal, posicion_secundaria, pie_habil, club_origen, telefono_contacto, email_contacto, ciudad, altura_cm, peso_kg, estado_scouting, valoracion_general, notas_scout)
+VALUES
+  ('b0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Mateo Henao Quintana', '2010-04-18', 'extremo_derecho', 'delantero_centro', 'izquierdo', 'Club Deportivo Semillero Paisa', '+57 301 444 5555', 'familia.henao@email.com', 'Medellín', 168.0, 58.5, 'interes_fichaje', 8.8, 'Excelente 1 vs 1, cambio de ritmo vertical y buena toma de decisiones en el último tercio.'),
+  ('b0000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'Samuel Restrepo Silva', '2009-08-11', 'volante_marca', 'defensa_central', 'derecho', 'Academia Atlética Caldas', '+57 312 888 2222', 'restrepo.padre@email.com', 'Manizales', 176.0, 67.0, 'en_observacion', 8.1, 'Gran posicionamiento táctico, recuperador de balones y liderazgo vocal en el medio campo.')
+ON CONFLICT (id) DO NOTHING;
+
+-- 19. SCHEMA DEPORTIVO: EVALUACIONES SCOUTING (MÓDULO 11)
+INSERT INTO deportivo.evaluaciones_scouting (id, prospecto_id, fecha_observacion, partido_evento, score_tecnico, score_tactico, score_fisico, score_mental, promedio_global, comentarios_cualitativos, recomendacion)
+VALUES
+  ('b0000000-0000-0000-0000-000000000011', 'b0000000-0000-0000-0000-000000000001', CURRENT_DATE - INTERVAL '3 days', 'Torneo Nacional Sub-15 - Semifinal', 9.0, 8.5, 8.8, 9.0, 8.8, 'Destacó desbordando por la banda izquierda y marcó un gol de tiro libre. Gran potencial para equipo juvenil A.', 'FICHAR_YA'),
+  ('b0000000-0000-0000-0000-000000000012', 'b0000000-0000-0000-0000-000000000002', CURRENT_DATE - INTERVAL '10 days', 'Veeduría Departamental Manizales', 8.0, 8.5, 8.2, 7.8, 8.1, 'Buen despliegue físico y coberturas inteligentes. Requiere pulir primer toque con pierna inhábil.', 'SEGUIMIENTO')
+ON CONFLICT (id) DO NOTHING;
+
+-- 20. SCHEMA DEPORTIVO: TELEMETRÍA GPS & SESIONES (MÓDULO 12)
+INSERT INTO deportivo.sesiones_gps (id, club_id, fecha_sesion, tipo_sesion, dispositivo_marca, duracion_minutos, clima_temperatura)
+VALUES
+  ('70000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', CURRENT_DATE - INTERVAL '1 day', 'PARTIDO_OFICIAL', 'CATAPULT_10HZ', 90, '22°C Soleado'),
+  ('70000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', CURRENT_DATE - INTERVAL '4 days', 'ENTRENAMIENTO_TACTICO', 'POLAR_TEAM_PRO', 75, '19°C Nublado')
+ON CONFLICT (id) DO NOTHING;
+
+-- 21. SCHEMA DEPORTIVO: MÉTRICAS GPS (MÓDULO 12)
+INSERT INTO deportivo.metricas_rendimiento_gps (id, sesion_id, jugador_id, distancia_total_m, velocidad_max_kmh, distancia_sprint_m, sprints_conteo, aceleraciones_intensas, desaceleraciones_intensas, player_load_au, frecuencia_cardiaca_prom, frecuencia_cardiaca_max, coordenadas_heatmap_json)
+VALUES
+  ('70000000-0000-0000-0000-000000000011', '70000000-0000-0000-0000-000000000001', 'e1e0691e-691e-4c92-9046-871955524534', 9850.50, 31.80, 680.00, 24, 18, 14, 580.40, 168, 194, '[{"x": 25, "y": 60, "intensity": 0.8}, {"x": 35, "y": 75, "intensity": 0.95}, {"x": 50, "y": 80, "intensity": 0.7}]'::jsonb),
+  ('70000000-0000-0000-0000-000000000012', '70000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002', 10420.00, 29.50, 420.00, 16, 22, 19, 610.20, 172, 190, '[{"x": 48, "y": 45, "intensity": 0.9}, {"x": 52, "y": 55, "intensity": 0.85}, {"x": 50, "y": 30, "intensity": 0.75}]'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+

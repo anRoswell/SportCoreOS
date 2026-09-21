@@ -23,6 +23,9 @@ const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const storage_module_1 = require("./modules/storage/storage.module");
 const canchas_module_1 = require("./modules/canchas/canchas.module");
 const tienda_module_1 = require("./modules/tienda/tienda.module");
+const ia_module_1 = require("./modules/ia/ia.module");
+const scouting_module_1 = require("./modules/scouting/scouting.module");
+const telemetria_module_1 = require("./modules/telemetria/telemetria.module");
 const tenant_middleware_1 = require("./common/middleware/tenant.middleware");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
@@ -53,6 +56,9 @@ exports.AppModule = AppModule = __decorate([
             dashboard_module_1.DashboardModule,
             canchas_module_1.CanchasModule,
             tienda_module_1.TiendaModule,
+            ia_module_1.IaModule,
+            scouting_module_1.ScoutingModule,
+            telemetria_module_1.TelemetriaModule,
         ],
         providers: [
             {

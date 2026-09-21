@@ -14,6 +14,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { CanchasModule } from './modules/canchas/canchas.module';
 import { TiendaModule } from './modules/tienda/tienda.module';
+import { IaModule } from './modules/ia/ia.module';
+import { ScoutingModule } from './modules/scouting/scouting.module';
+import { TelemetriaModule } from './modules/telemetria/telemetria.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -38,6 +41,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     DashboardModule,
     CanchasModule,
     TiendaModule,
+    IaModule,
+    ScoutingModule,
+    TelemetriaModule,
   ],
   providers: [
     {

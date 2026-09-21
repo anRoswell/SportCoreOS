@@ -324,3 +324,105 @@ CREATE TABLE IF NOT EXISTS deportivo.pedidos_tienda (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================================================
+-- SCHEMA: deportivo (MÓDULO 10: SPORTCORE AI - ASISTENTE INTELIGENTE GEMINI)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS deportivo.ia_prompts_templates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    codigo_template VARCHAR(50) NOT NULL UNIQUE,
+    nombre VARCHAR(100) NOT NULL,
+    system_prompt TEXT NOT NULL,
+    modelo_recomendado VARCHAR(50) NOT NULL DEFAULT 'gemini-2.5-flash',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS deportivo.ia_logs_generacion (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    jugador_id UUID REFERENCES deportivo.jugadores(id) ON DELETE SET NULL,
+    codigo_template VARCHAR(50) NOT NULL,
+    prompt_tokens INT NOT NULL DEFAULT 0,
+    completion_tokens INT NOT NULL DEFAULT 0,
+    contenido_generado TEXT NOT NULL,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================================
+-- SCHEMA: deportivo (MÓDULO 11: SCOUTING, VISORÍA & FICHAJE DE TALENTOS)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS deportivo.prospectos_scouting (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    nombres_apellidos VARCHAR(150) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    posicion_principal VARCHAR(50) NOT NULL,
+    posicion_secundaria VARCHAR(50),
+    pie_habil VARCHAR(20) NOT NULL DEFAULT 'derecho',
+    club_origen VARCHAR(120),
+    telefono_contacto VARCHAR(30),
+    email_contacto VARCHAR(120),
+    ciudad VARCHAR(80),
+    altura_cm NUMERIC(5,2),
+    peso_kg NUMERIC(5,2),
+    video_highlight_url TEXT,
+    estado_scouting VARCHAR(30) NOT NULL DEFAULT 'en_observacion', -- en_observacion, interes_fichaje, fichado, descartado
+    valoracion_general NUMERIC(3,1) DEFAULT 0.0,
+    notas_scout TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS deportivo.evaluaciones_scouting (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    prospecto_id UUID NOT NULL REFERENCES deportivo.prospectos_scouting(id) ON DELETE CASCADE,
+    scout_usuario_id UUID REFERENCES auth.usuarios(id) ON DELETE SET NULL,
+    fecha_observacion DATE NOT NULL DEFAULT CURRENT_DATE,
+    partido_evento VARCHAR(120),
+    score_tecnico NUMERIC(3,1) NOT NULL CHECK(score_tecnico >= 1.0 AND score_tecnico <= 10.0),
+    score_tactico NUMERIC(3,1) NOT NULL CHECK(score_tactico >= 1.0 AND score_tactico <= 10.0),
+    score_fisico NUMERIC(3,1) NOT NULL CHECK(score_fisico >= 1.0 AND score_fisico <= 10.0),
+    score_mental NUMERIC(3,1) NOT NULL CHECK(score_mental >= 1.0 AND score_mental <= 10.0),
+    promedio_global NUMERIC(3,1) NOT NULL,
+    comentarios_cualitativos TEXT,
+    recomendacion VARCHAR(30) NOT NULL DEFAULT 'SEGUIMIENTO', -- FICHAR_YA, SEGUIMIENTO, DESCARTAR
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================================
+-- SCHEMA: deportivo (MÓDULO 12: TELEMETRÍA GPS, HEATMAPS & WEARABLES)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS deportivo.sesiones_gps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    partido_id UUID REFERENCES deportivo.partidos(id) ON DELETE SET NULL,
+    fecha_sesion DATE NOT NULL,
+    tipo_sesion VARCHAR(30) NOT NULL DEFAULT 'PARTIDO_OFICIAL', -- PARTIDO_OFICIAL, ENTRENAMIENTO_TACTICO, FISICO_INTENSIVO
+    dispositivo_marca VARCHAR(50) NOT NULL DEFAULT 'CATAPULT_10HZ',
+    duracion_minutos INT NOT NULL DEFAULT 90,
+    clima_temperatura VARCHAR(30),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS deportivo.metricas_rendimiento_gps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    sesion_id UUID NOT NULL REFERENCES deportivo.sesiones_gps(id) ON DELETE CASCADE,
+    jugador_id UUID NOT NULL REFERENCES deportivo.jugadores(id) ON DELETE CASCADE,
+    distancia_total_m NUMERIC(8,2) NOT NULL CHECK(distancia_total_m >= 0),
+    velocidad_max_kmh NUMERIC(4,2) NOT NULL CHECK(velocidad_max_kmh >= 0),
+    distancia_sprint_m NUMERIC(8,2) NOT NULL DEFAULT 0,
+    sprints_conteo INT NOT NULL DEFAULT 0,
+    aceleraciones_intensas INT NOT NULL DEFAULT 0,
+    desaceleraciones_intensas INT NOT NULL DEFAULT 0,
+    player_load_au NUMERIC(6,2) NOT NULL DEFAULT 0,
+    frecuencia_cardiaca_prom INT,
+    frecuencia_cardiaca_max INT,
+    coordenadas_heatmap_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
