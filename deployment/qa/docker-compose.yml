@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  postgres-qa:
+    image: postgres:16-alpine
+    container_name: sportcoreos_qa_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-sportcore_user_qa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-SportCoreQA2026*}
+      POSTGRES_DB: ${DB_NAME:-sportcoreos_db_qa}
+    ports:
+      - "55132:5432"
+    volumes:
+      - sportcoreos_qa_postgres_data:/var/lib/postgresql/data
+      - ../../SportCoreOS-api/src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../../SportCoreOS-api/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    networks:
+      - sportcoreos_qa_net
+
+  backend:
+    build:
+      context: ../../SportCoreOS-api
+      dockerfile: Dockerfile
+    container_name: sportcoreos_api_qa
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres-qa
+    networks:
+      - sportcoreos_qa_net
+
+  frontend:
+    build:
+      context: ../../SportCoreOS-web
+      dockerfile: Dockerfile
+    container_name: sportcoreos_web_qa
+    restart: always
+    ports:
+      - "4202:80"
+    depends_on:
+      - backend
+    networks:
+      - sportcoreos_qa_net
+
+volumes:
+  sportcoreos_qa_postgres_data:
+
+networks:
+  sportcoreos_qa_net:
+    driver: bridge

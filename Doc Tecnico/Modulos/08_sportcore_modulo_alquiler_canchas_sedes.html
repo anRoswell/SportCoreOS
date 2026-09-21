@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 08: Alquiler de Canchas & Escenarios Deportivos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(16,185,129,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(59,130,246,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--emerald);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--emerald);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--emerald);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--emerald);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--emerald);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--emerald);font-size:10px;}
+
+.schema-table{width:100%;border-collapse:collapse;margin:16px 0;font-family:var(--mono);font-size:12px;}
+.schema-table th{background:var(--s2);color:var(--emerald);text-align:left;padding:10px 14px;border:1px solid var(--bd);}
+.schema-table td{padding:10px 14px;border:1px solid var(--bd);color:var(--t2);}
+.schema-table tr:nth-child(even){background:rgba(255,255,255,0.01);}
+.type-badge{background:var(--s3);color:var(--cyan);padding:2px 6px;border-radius:4px;font-size:11px;}
+.pk-badge{background:rgba(251,191,36,0.15);color:var(--amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+.fk-badge{background:rgba(167,139,250,0.15);color:var(--violet);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(251,191,36,0.15);color:var(--amber);}
+.DELETE{background:rgba(251,113,133,0.15);color:var(--rose);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12.5px;color:var(--t2);margin-top:4px;}
+
+pre.code-block{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;font-family:var(--mono);font-size:12px;color:var(--text);overflow-x:auto;margin-top:12px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 08 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Alquiler de Canchas & <em>Escenarios Deportivos</em></h1>
+      <p class="subtitle">Motor de reservas y cuadrícula horaria interactiva para monetización de canchas sintéticas y naturales, con gestión de iluminación nocturna, tarifas dinámicas, abonos corporativos y recepción de cobro en sitio.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>CORE / MONETIZACIÓN</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-calendar-days"></i> Vista: <strong>Grid Horario Interactivo</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-money-bill-wave"></i> Pasarela: <strong>Wompi / PSE / Caja Física</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-lightbulb"></i> Iluminación: <strong>Tarificación Diurna vs Nocturna</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Reglas de Negocio</a>
+    <a href="#modelo-datos" class="toc-a"><span class="toc-n">02</span> Modelo de Datos PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs REST</a>
+    <a href="#matriz-ux" class="toc-a"><span class="toc-n">04</span> Matriz de Disponibilidad & Slots</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componente Angular con Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Exhaustivas (Playwright)</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Reglas de Negocio</h2></div>
+    <p class="sd">El módulo permite a la administración del club o complejo deportivo maximizar la ocupación de sus canchas sin solapamientos con los entrenamientos formativos.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Prioridad Formativa vs Alquiler</div>
+        <ul class="card-list">
+          <li><strong>Bloqueo Automático:</strong> Los horarios de entrenamiento y partidos federados de las categorías del club se reservan de forma automática con prioridad absoluta.</li>
+          <li><strong>Disponibilidad Abierta:</strong> Los espacios restantes se ofertan al público particular o empresas con reserva previa y pago de seña (mínimo 50% vía PSE).</li>
+          <li><strong>Tiempos de Gracia:</strong> Liberación automática de reservas no pagadas tras 20 minutos de espera en checkout.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-tags"></i> Tarificación Inteligente</div>
+        <ul class="card-list">
+          <li><strong>Diferenciación Horaria:</strong> Tarifa estándar diurna (06:00 a 18:00) y tarifa nocturna con recargo de iluminación LED (18:00 a 23:00).</li>
+          <li><strong>Recargo de Fin de Semana:</strong> Tarifa diferencial para sábados, domingos y festivos.</li>
+          <li><strong>Convenios Empresariales:</strong> Planes de abonos mensuales con descuento para torneos corporativos.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 MODELO DE DATOS -->
+  <section id="modelo-datos">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo de Datos PostgreSQL (DDL)</h2></div>
+    <p class="sd">Diseño relacional optimizado con bloqueo a nivel de fila (SELECT ... FOR UPDATE) para evitar doble reserva concurrente.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-database"></i> Tabla: `canchas` & `reservas_cancha`</div>
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador único del escenario.</td>
+          </tr>
+          <tr>
+            <td><code>club_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Club propietario o administrador del predio.</td>
+          </tr>
+          <tr>
+            <td><code>nombre</code></td>
+            <td><span class="type-badge">VARCHAR(100)</span></td>
+            <td>NOT NULL</td>
+            <td>Ej. "Cancha Sintética 8 - El Campín", "Cancha 5 A".</td>
+          </tr>
+          <tr>
+            <td><code>tipo_superficie</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL</td>
+            <td>`sintetica_f5`, `sintetica_f8`, `natural_f11`, `futsal_madera`.</td>
+          </tr>
+          <tr>
+            <td><code>precio_hora_diurna</code></td>
+            <td><span class="type-badge">NUMERIC(12,2)</span></td>
+            <td>NOT NULL CHECK(>0)</td>
+            <td>Valor de la hora sin iluminación artificial.</td>
+          </tr>
+          <tr>
+            <td><code>precio_hora_nocturna</code></td>
+            <td><span class="type-badge">NUMERIC(12,2)</span></td>
+            <td>NOT NULL CHECK(>0)</td>
+            <td>Valor de la hora a partir de las 18:00 (luz incluida).</td>
+          </tr>
+          <tr>
+            <td><code>hora_apertura</code></td>
+            <td><span class="type-badge">TIME</span></td>
+            <td>NOT NULL DEFAULT '06:00'</td>
+            <td>Inicio de jornada operativa.</td>
+          </tr>
+          <tr>
+            <td><code>hora_cierre</code></td>
+            <td><span class="type-badge">TIME</span></td>
+            <td>NOT NULL DEFAULT '23:00'</td>
+            <td>Fin de jornada operativa.</td>
+          </tr>
+          <tr>
+            <td><code>activa</code></td>
+            <td><span class="type-badge">BOOLEAN</span></td>
+            <td>DEFAULT TRUE</td>
+            <td>Habilitación para reservas públicas y privadas.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="schema-table" style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador de la reserva.</td>
+          </tr>
+          <tr>
+            <td><code>cancha_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Cancha asignada.</td>
+          </tr>
+          <tr>
+            <td><code>fecha_reserva</code></td>
+            <td><span class="type-badge">DATE</span></td>
+            <td>NOT NULL</td>
+            <td>Fecha del turno.</td>
+          </tr>
+          <tr>
+            <td><code>hora_inicio</code></td>
+            <td><span class="type-badge">TIME</span></td>
+            <td>NOT NULL</td>
+            <td>Hora de inicio (ej. 19:00).</td>
+          </tr>
+          <tr>
+            <td><code>hora_fin</code></td>
+            <td><span class="type-badge">TIME</span></td>
+            <td>NOT NULL</td>
+            <td>Hora de finalización (ej. 20:00).</td>
+          </tr>
+          <tr>
+            <td><code>tipo_reserva</code></td>
+            <td><span class="type-badge">VARCHAR(30)</span></td>
+            <td>NOT NULL</td>
+            <td>`entrenamiento_club`, `partido_oficial`, `alquiler_particular`, `mantenimiento`.</td>
+          </tr>
+          <tr>
+            <td><code>cliente_nombre</code></td>
+            <td><span class="type-badge">VARCHAR(120)</span></td>
+            <td>NULLABLE</td>
+            <td>Nombre del particular o empresa que alquila.</td>
+          </tr>
+          <tr>
+            <td><code>cliente_telefono</code></td>
+            <td><span class="type-badge">VARCHAR(30)</span></td>
+            <td>NULLABLE</td>
+            <td>Contacto WhatsApp para confirmación de turno.</td>
+          </tr>
+          <tr>
+            <td><code>monto_total</code></td>
+            <td><span class="type-badge">NUMERIC(12,2)</span></td>
+            <td>NOT NULL DEFAULT 0</td>
+            <td>Valor acordado del turno.</td>
+          </tr>
+          <tr>
+            <td><code>monto_anticipo</code></td>
+            <td><span class="type-badge">NUMERIC(12,2)</span></td>
+            <td>NOT NULL DEFAULT 0</td>
+            <td>Seña abonada previa al turno.</td>
+          </tr>
+          <tr>
+            <td><code>estado_pago</code></td>
+            <td><span class="type-badge">VARCHAR(30)</span></td>
+            <td>NOT NULL</td>
+            <td>`pendiente`, `parcial`, `completado`, `exonerado`.</td>
+          </tr>
+          <tr>
+            <td><code>estado_turno</code></td>
+            <td><span class="type-badge">VARCHAR(30)</span></td>
+            <td>NOT NULL</td>
+            <td>`confirmado`, `en_curso`, `finalizado`, `cancelado`, `no_asistio`.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST (Alquileres)</h2></div>
+    <p class="sd">Endpoints de alta concurrencia con validación de traslape horario y cobro electrónico.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/canchas/disponibilidad</span></div>
+      <div class="ep-desc">Retorna la grilla de slots de 60 minutos con estado (`disponible`, `bloqueado_club`, `ocupado_particular`) para una fecha y sede específicas.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/canchas/reservas</span></div>
+      <div class="ep-desc">Crea una reserva temporal asegurando bloqueo transaccional. Retorna URL de checkout Wompi para abono de seña.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method PATCH">PATCH</span><span class="ep-path">/api/v1/canchas/reservas/:id/pago-caja</span></div>
+      <div class="ep-desc">Registra el saldo pendiente en efectivo o datáfono en la recepción del complejo antes del inicio del juego.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method PATCH">PATCH</span><span class="ep-path">/api/v1/canchas/reservas/:id/cancelar</span></div>
+      <div class="ep-desc">Cancela el turno aplicando políticas de reembolso o penalización por cancelación tardía.</div>
+    </div>
+  </section>
+
+  <!-- 04 MATRIZ UX -->
+  <section id="matriz-ux">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Matriz Visual de Disponibilidad & Slots</h2></div>
+    <p class="sd">Visualización en cuadrícula interactiva tipo Calendario Deportivo.</p>
+
+    <pre class="code-block">
++--------------------+---------------------+---------------------+---------------------+
+| HORA               | CANCHA 1 (FUTBOL 8) | CANCHA 2 (FUTBOL 5) | CANCHA 3 (NATURAL)  |
++--------------------+---------------------+---------------------+---------------------+
+| 16:00 - 17:00      | 🟢 DISPONIBLE ($80k)| 🔵 SUB-11 ENTRENAM. | 🔵 SUB-15 ENTRENAM. |
+| 17:00 - 18:00      | 🔵 SUB-13 ENTRENAM. | 🔵 SUB-11 ENTRENAM. | 🔵 SUB-17 ENTRENAM. |
+| 18:00 - 19:00 (LUZ)| 🟡 ALQUILER (Pérez) | 🟢 DISPONIBLE($110k)| 🔴 MANTENIMIENTO    |
+| 19:00 - 20:00 (LUZ)| 🔴 ALQUILER (Torneo)| 🟡 ALQUILER (Gómez) | 🟢 DISPONIBLE($160k)|
+| 20:00 - 21:00 (LUZ)| 🔴 ALQUILER (Torneo)| 🟢 DISPONIBLE($110k)| 🟢 DISPONIBLE($160k)|
++--------------------+---------------------+---------------------+---------------------+
+    </pre>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componente Angular 18 con Signals</h2></div>
+    <p class="sd">Controlador reactivo para gestión de turnos y liquidación en recepción.</p>
+
+    <pre class="code-block">
+import { Component, signal, computed, inject } from '@angular/core';
+import { CanchasService } from './canchas.service';
+
+@Component({
+  selector: 'app-canchas-matriz',
+  standalone: true,
+  template: `
+    &lt;div class="canchas-dashboard"&gt;
+      &lt;div class="header-controls"&gt;
+        &lt;input type="date" [value]="fechaSeleccionada()" (change)="onFechaChange($event)" class="sport-input" /&gt;
+        &lt;div class="kpi-tag"&gt;Ocupación Hoy: &lt;strong&gt;{{ porcentajeOcupacion() }}%&lt;/strong&gt;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class="matriz-grid"&gt;
+        @for (cancha of canchasDisponibles(); track cancha.id) {
+          &lt;div class="cancha-col"&gt;
+            &lt;div class="cancha-hdr"&gt;{{ cancha.nombre }} ({{ cancha.tipo_superficie }})&lt;/div&gt;
+            @for (slot of cancha.slots; track slot.hora_inicio) {
+              &lt;button 
+                class="slot-btn" 
+                [class.disponible]="slot.estado === 'disponible'"
+                [class.ocupado]="slot.estado === 'ocupado_particular'"
+                [class.club]="slot.estado === 'bloqueado_club'"
+                (click)="reservarSlot(cancha, slot)"&gt;
+                &lt;span class="hora"&gt;{{ slot.hora_inicio }} - {{ slot.hora_fin }}&lt;/span&gt;
+                &lt;span class="estado"&gt;{{ slot.estado_label }}&lt;/span&gt;
+              &lt;/button&gt;
+            }
+          &lt;/div&gt;
+        }
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `
+})
+export class CanchasMatrizComponent {
+  private canchasService = inject(CanchasService);
+
+  readonly fechaSeleccionada = signal<string>(new Date().toISOString().split('T')[0]);
+  readonly canchasDisponibles = signal<any[]>([]);
+
+  readonly porcentajeOcupacion = computed(() => {
+    const totalSlots = this.canchasDisponibles().flatMap(c => c.slots).length;
+    if (!totalSlots) return 0;
+    const ocupados = this.canchasDisponibles().flatMap(c => c.slots).filter(s => s.estado !== 'disponible').length;
+    return Math.round((ocupados / totalSlots) * 100);
+  });
+
+  onFechaChange(e: Event) {
+    const val = (e.target as HTMLInputElement).value;
+    this.fechaSeleccionada.set(val);
+    this.cargarMatriz();
+  }
+
+  reservarSlot(cancha: any, slot: any) {
+    if (slot.estado !== 'disponible') return;
+    // Abre modal de cobro y registro de cliente
+  }
+
+  cargarMatriz() {
+    this.canchasService.getMatriz(this.fechaSeleccionada()).subscribe(res => {
+      this.canchasDisponibles.set(res.canchas);
+    });
+  }
+}
+    </pre>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Pruebas E2E Exhaustivas (Playwright)</h2></div>
+    <p class="sd">Garantía estricta contra errores de frontend, double-booking y persistencia en PostgreSQL.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Suite de Prueba: `e2e/canchas-reservas.spec.ts`</div>
+      <ul class="card-list">
+        <li><strong>Strict Error Sniffer:</strong> `attachStrictErrorSniffer(page)` activo para detectar cualquier fallo 500 o advertencia de consola.</li>
+        <li><strong>Anti-Double Booking:</strong> Ejecución de 2 reservas concurrentes sobre el mismo slot horario; la segunda DEBE responder con error 409 Conflict manejado en UI.</li>
+        <li><strong>Cálculo de Tarifas Nocturnas:</strong> Verificar que reservas después de las 18:00 incluyan el recargo de iluminación en el desglose monetario.</li>
+        <li><strong>Direct DB Verification:</strong> Comprobación en tabla `reservas_cancha` del cambio de estado a `confirmado` con `monto_anticipo` exacto.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>SPORTCOREOS // ESPECIFICACIÓN TÉCNICA MÓDULO 08</div>
+    <div>ALQUILER DE CANCHAS &bull; FEBRERO 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

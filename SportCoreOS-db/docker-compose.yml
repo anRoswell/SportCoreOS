@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  sportcoreos_qa_db:
+    image: postgres:16-alpine
+    container_name: sportcoreos_qa_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sportcore_user_qa
+      POSTGRES_PASSWORD: SportCoreQA2026*
+      POSTGRES_DB: sportcoreos_db_qa
+    ports:
+      - "55132:5432"
+    volumes:
+      - sportcore_qa_pgdata:/var/lib/postgresql/data
+      - ./init-schema.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./seed-demo.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sportcore_user_qa -d sportcoreos_db_qa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sportcoreos_qa_pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sportcoreos_qa_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sportcore.co
+      PGADMIN_DEFAULT_PASSWORD: SportCoreAdminQA2026*
+    ports:
+      - "5055:80"
+    depends_on:
+      sportcoreos_qa_db:
+        condition: service_healthy
+
+volumes:
+  sportcore_qa_pgdata:
+    driver: local

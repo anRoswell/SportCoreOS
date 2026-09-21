@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 02: Jugadores, Fichas 360° & Dorsales</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(59,130,246,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(16,185,129,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--blue);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,60px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--blue);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--blue);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--blue);font-size:10px;}
+
+.stbl{width:100%;border-collapse:collapse;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+.stbl th{background:var(--s2);color:var(--text);padding:10px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--bd);text-align:left;}
+.stbl td{padding:10px 14px;font-size:12.5px;border-bottom:1px solid var(--s2);border-right:1px solid var(--bd);vertical-align:top;}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:var(--s2);}
+.fpk{color:var(--amber);font-family:var(--mono);font-weight:700;}
+.ffk{color:var(--violet);font-family:var(--mono);font-weight:700;}
+.fnm{font-family:var(--mono);color:var(--cyan);}
+.ftp{font-family:var(--mono);color:var(--rose);font-size:11px;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:10px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(167,139,250,0.15);color:var(--violet);}
+.DELETE{background:rgba(251,113,133,0.15);color:var(--rose);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12px;color:var(--t2);margin-top:4px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 02 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Jugadores, <em>Fichas 360°</em> & Dorsales</h1>
+      <p class="subtitle">Directorio centralizado de atletas, expedientes deportivos, pólizas de seguro médico, control visual de camisetas (1 al 99), importador masivo Excel y vinculación con acudientes.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>CORE</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-shirt"></i> Dorsales: <strong>Matriz 1 a 99 Única por Categoría</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-code"></i> Endpoints: <strong>6 REST + Importador Excel</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-mobile-screen"></i> Plataformas: <strong>Web Admin + App Jugador</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Reglas de Negocio</a>
+    <a href="#ddl" class="toc-a"><span class="toc-n">02</span> Modelo DDL PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs & Endpoints</a>
+    <a href="#dorsales" class="toc-a"><span class="toc-n">04</span> Matriz de Dorsales & Unicidad</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componentes Frontend Angular/Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Playwright & DB</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Reglas de Negocio</h2></div>
+    <p class="sd">El módulo de Jugadores y Fichas 360° es el núcleo de datos del atleta, consolidando su trayectoria deportiva, salud y relación familiar.</p>
+    
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-id-card"></i> Expediente Deportivo 360°</div>
+        <ul class="card-list">
+          <li><strong>Datos Biográficos & Documentales:</strong> Registro de Registro Civil / Tarjeta de Identidad, fecha y lugar de nacimiento, EPS y póliza de seguro de accidentes deportivos.</li>
+          <li><strong>Perfil Táctico:</strong> Posición principal (ej: Extremo Izquierdo), posición secundaria (ej: Lateral), pierna hábil (Diestro, Zurdo, Ambidiestro).</li>
+          <li><strong>Estados de Matrícula:</strong> `ACTIVO` (al día), `EN_MORA` (restringe emisión de paz y salvo), `LESIONADO` (pausa cargas físicas), `BECADO`, `RETIRADO`.</li>
+          <li><strong>Importación Masiva Excel:</strong> Mapeo inteligente de columnas con preview y validación de duplicados por número de documento.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-shirt"></i> Matriz de Dorsales e Indumentaria</div>
+        <ul class="card-list">
+          <li><strong>Regla de Unicidad:</strong> No pueden existir dos jugadores con el mismo número de dorsal activo en la misma categoría deportiva.</li>
+          <li><strong>Visualizador Interactivo:</strong> Grilla gráfica de camisetas del 1 al 99 con código de color (Verde: Disponible, Rojo: Ocupado, Ámbar: Reservado).</li>
+          <li><strong>Historial de Camisetas:</strong> Registro de entregas de uniformes oficiales con fecha y talla del deportista.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 DDL -->
+  <section id="ddl">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo DDL PostgreSQL (Esquema Atletas)</h2></div>
+    <p class="sd">Estructura relacional de la tabla `deportistas` y su vinculación con usuarios, acudientes y categorías.</p>
+
+    <table class="stbl">
+      <thead>
+        <tr><th>Campo</th><th>Tipo</th><th>Modificadores</th><th>Descripción & Restricción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="background:var(--s3);color:var(--blue);font-weight:700;">TABLA: deportistas (Expediente Único)</td></tr>
+        <tr><td><span class="fpk">id</span></td><td><span class="ftp">UUID</span></td><td>PRIMARY KEY</td><td>Identificador único del atleta</td></tr>
+        <tr><td><span class="ffk">club_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES clubes(id)</td><td>Tenant del club deportivo</td></tr>
+        <tr><td><span class="ffk">categoria_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES categorias(id)</td><td>Categoría por edad actual</td></tr>
+        <tr><td><span class="ffk">acudiente_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES usuarios(id)</td><td>Usuario padre / tutor legal</td></tr>
+        <tr><td><span class="fnm">nombres</span></td><td><span class="ftp">VARCHAR(80)</span></td><td>NOT NULL</td><td>Nombres del jugador</td></tr>
+        <tr><td><span class="fnm">apellidos</span></td><td><span class="ftp">VARCHAR(80)</span></td><td>NOT NULL</td><td>Apellidos del jugador</td></tr>
+        <tr><td><span class="fnm">tipo_documento</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'TI' | 'RC' | 'CC' | 'PASAPORTE'</td></tr>
+        <tr><td><span class="fnm">numero_documento</span></td><td><span class="ftp">VARCHAR(25)</span></td><td>NOT NULL</td><td>Número de identificación</td></tr>
+        <tr><td><span class="fnm">fecha_nacimiento</span></td><td><span class="ftp">DATE</span></td><td>NOT NULL</td><td>Fecha para cálculo de categoría</td></tr>
+        <tr><td><span class="fnm">numero_dorsal</span></td><td><span class="ftp">INT</span></td><td>NULL</td><td>Dorsal asignado (1 a 99)</td></tr>
+        <tr><td><span class="fnm">posicion_principal</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'ARQUERO' | 'DEF_CENTRAL' | 'LATERAL' | 'VOL_MARCA' | 'VOL_CREACION' | 'EXTREMO' | 'DELANTERO'</td></tr>
+        <tr><td><span class="fnm">pierna_habil</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'DIESTRO' | 'ZURDO' | 'AMBIDIESTRO'</td></tr>
+        <tr><td><span class="fnm">poliza_seguro_medico</span></td><td><span class="ftp">VARCHAR(100)</span></td><td>NULL</td><td>Compañía y número de póliza deportiva</td></tr>
+        <tr><td><span class="fnm">foto_url</span></td><td><span class="ftp">TEXT</span></td><td>NULL</td><td>Almacenamiento S3 / R2</td></tr>
+        <tr><td><span class="fnm">estado_matricula</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'ACTIVO' | 'EN_MORA' | 'LESIONADO' | 'BECADO' | 'RETIRADO'</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST</h2></div>
+    <p class="sd">Servicios expuestos en NestJS bajo el controlador `JugadoresController`.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/jugadores</span></div>
+      <div class="ep-desc">Lista paginada de jugadores con filtros por categoría, posición, estado de matrícula y término de búsqueda.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/jugadores</span></div>
+      <div class="ep-desc">Crea un nuevo jugador, validando que el dorsal seleccionado no esté duplicado en la categoría.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/jugadores/:id/ficha-completa</span></div>
+      <div class="ep-desc">Retorna la ficha 360° con datos médicos, historial antropométrico, goles anotados y estado de cuenta financiero.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/jugadores/importar-excel</span></div>
+      <div class="ep-desc">Recibe archivo multipart .xlsx, parsea registros, crea acudientes automáticamente y vincula categorías.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method PATCH">PATCH</span><span class="ep-path">/api/v1/jugadores/:id/estado</span></div>
+      <div class="ep-desc">Actualiza el estado de matrícula del alumno (ej: cambio a BECADO o LESIONADO).</div>
+    </div>
+  </section>
+
+  <!-- 04 DORSALES -->
+  <section id="dorsales">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Matriz de Dorsales & Control de Unicidad</h2></div>
+    <p class="sd">Mecanismo de validación en base de datos para evitar conflictos en torneos oficiales.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Constraint SQL de Unicidad por Categoría</div>
+      <pre style="background:var(--s2);padding:16px;border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--cyan);overflow-x:auto;">
+ALTER TABLE deportistas 
+ADD CONSTRAINT uq_categoria_dorsal_activo 
+UNIQUE (categoria_id, numero_dorsal) 
+WHERE (estado_matricula != 'RETIRADO' AND numero_dorsal IS NOT NULL);
+      </pre>
+    </div>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componentes Frontend Angular & Signals</h2></div>
+    <p class="sd">Arquitectura frontend en `FutCoreOS-web` para la gestión ágil del directorio.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-brands fa-angular"></i> Vista Directorio Jugadores</div>
+        <ul class="card-list">
+          <li><strong>Ruta:</strong> <code>src/app/pages/jugadores/jugadores.component.ts</code></li>
+          <li><strong>Signals:</strong> <code>jugadoresList = signal&lt;Jugador[]&gt;([])</code>, <code>filtroCategoria = signal&lt;string&gt;('ALL')</code>.</li>
+          <li><strong>Template:</strong> Tabla responsive con badges por posición, IMC y acciones directas para ver ficha o estado de cuenta.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-file-excel"></i> Modal Importador Excel</div>
+        <ul class="card-list">
+          <li><strong>Arrastrar & Soltar:</strong> Dropzone con feedback visual de progreso.</li>
+          <li><strong>Mapeo Dinámico:</strong> Asociación visual de columnas Excel con campos del DDL.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Estrategia de Pruebas E2E (Playwright)</h2></div>
+    <p class="sd">Verificación con Error Sniffer Estricto.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Escenarios Críticos E2E</div>
+      <ul class="card-list">
+        <li><strong>Creación de Jugador:</strong> Abrir modal, diligenciar formulario completo y validar inserción en PostgreSQL.</li>
+        <li><strong>Validación de Dorsal Ocupado:</strong> Intentar asignar un dorsal existente en la misma categoría y verificar mensaje de error amigable en UI sin crash JS.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>SportCoreOS — Módulo Técnico 02: Jugadores & Dorsales v1.0 • SECTIC S.A.S.</span>
+    <span>Arquitectura de Alto Rendimiento · 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>

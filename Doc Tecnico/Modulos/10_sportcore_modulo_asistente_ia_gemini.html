@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 10: SportCore AI (Asistente Inteligente Gemini)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(167,139,250,0.22) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(34,211,238,0.18) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--violet);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--violet);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--violet);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--violet);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--violet);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--violet);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--violet);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'✦';position:absolute;left:0;color:var(--violet);font-size:10px;}
+
+.schema-table{width:100%;border-collapse:collapse;margin:16px 0;font-family:var(--mono);font-size:12px;}
+.schema-table th{background:var(--s2);color:var(--violet);text-align:left;padding:10px 14px;border:1px solid var(--bd);}
+.schema-table td{padding:10px 14px;border:1px solid var(--bd);color:var(--t2);}
+.schema-table tr:nth-child(even){background:rgba(255,255,255,0.01);}
+.type-badge{background:var(--s3);color:var(--cyan);padding:2px 6px;border-radius:4px;font-size:11px;}
+.pk-badge{background:rgba(251,191,36,0.15);color:var(--amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+.fk-badge{background:rgba(167,139,250,0.15);color:var(--violet);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(251,191,36,0.15);color:var(--amber);}
+.DELETE{background:rgba(251,113,133,0.15);color:var(--rose);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12.5px;color:var(--t2);margin-top:4px;}
+
+pre.code-block{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;font-family:var(--mono);font-size:12px;color:var(--text);overflow-x:auto;margin-top:12px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 10 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>SportCore AI — <em>Asistente Inteligente con Gemini</em></h1>
+      <p class="subtitle">Copiloto deportivo basado en Google Gemini para generación automática de boletines técnicos a padres, detección predictiva de sobrecarga muscular y asistencia táctica a directores técnicos.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>ADVANCED / INNOVACIÓN</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-brain"></i> Motor IA: <strong>Google Gemini 2.5 Flash / Pro</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-file-lines"></i> Salida: <strong>Boletín PDF Automatizado</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-heart-pulse"></i> Alertas: <strong>Detección de Fatiga & Lesiones</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Capacidades de IA</a>
+    <a href="#modelo-datos" class="toc-a"><span class="toc-n">02</span> Modelo de Datos PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs REST</a>
+    <a href="#prompt-eng" class="toc-a"><span class="toc-n">04</span> Arquitectura de Prompt Engineering</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componente Angular con Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Exhaustivas (Playwright)</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Capacidades de IA Deportiva</h2></div>
+    <p class="sd">Transformación de datos biométricos, actas de juego y telemetría en insights humanos y recomendaciones tácticas accionables.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Boletines Técnicos en 1 Clic</div>
+        <ul class="card-list">
+          <li><strong>Generación Personalizada:</strong> Redacta un reporte mensual para cada padre de familia con tono pedagógico y motivacional basado en el progreso real del alumno.</li>
+          <li><strong>Consistencia de Rúbricas:</strong> Sintetiza notas de técnica individual, disciplina, asistencia a entrenamientos y minutos en cancha.</li>
+          <li><strong>Ahorro Operativo:</strong> Reduce de 15 minutos a 3 segundos el tiempo que un Director Técnico tarda en elaborar el informe de un jugador.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-shield-heart"></i> Alerta Predictiva de Sobrecarga</div>
+        <ul class="card-list">
+          <li><strong>Detección ACWR (Acute:Chronic Workload Ratio):</strong> Cruza minutos jugados en los últimos 7 días vs promedio de 28 días.</li>
+          <li><strong>Bandera Roja Preventiva:</strong> Notifica al preparador físico si un juvenil está en zona de riesgo de desgarro muscular antes del partido del fin de semana.</li>
+          <li><strong>Asistente de Ejercicios DT:</strong> Sugiere dinámicas tácticas de rondos o finalización según los errores recurrentes en los últimos 3 partidos.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 MODELO DE DATOS -->
+  <section id="modelo-datos">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo de Datos PostgreSQL (DDL)</h2></div>
+    <p class="sd">Registro de prompts, logs de inferencia y sugerencias preventivas emitidas por el modelo.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-database"></i> Tablas: `ia_prompts_templates` & `ia_logs_generacion`</div>
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador único de la plantilla de prompt.</td>
+          </tr>
+          <tr>
+            <td><code>codigo_template</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL UNIQUE</td>
+            <td>`BOLETIN_PADRES_MENSUAL`, `ALERTA_FATIGA_PF`, `PLAN_ENTRENAMIENTO_DT`.</td>
+          </tr>
+          <tr>
+            <td><code>system_prompt</code></td>
+            <td><span class="type-badge">TEXT</span></td>
+            <td>NOT NULL</td>
+            <td>Directiva de personalidad (e.g. Director de Metodología de Fútbol Juvenil).</td>
+          </tr>
+          <tr>
+            <td><code>modelo_recomendado</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL DEFAULT 'gemini-2.5-flash'</td>
+            <td>Motor LLM configurado.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="schema-table" style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador del log de inferencia.</td>
+          </tr>
+          <tr>
+            <td><code>jugador_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NULLABLE FK</span></td>
+            <td>Jugador objeto del análisis.</td>
+          </tr>
+          <tr>
+            <td><code>prompt_tokens</code></td>
+            <td><span class="type-badge">INTEGER</span></td>
+            <td>NOT NULL</td>
+            <td>Tokens de entrada consumidos.</td>
+          </tr>
+          <tr>
+            <td><code>completion_tokens</code></td>
+            <td><span class="type-badge">INTEGER</span></td>
+            <td>NOT NULL</td>
+            <td>Tokens generados en la respuesta.</td>
+          </tr>
+          <tr>
+            <td><code>contenido_generado</code></td>
+            <td><span class="type-badge">TEXT</span></td>
+            <td>NOT NULL</td>
+            <td>Texto final generado y aprobado por el cuerpo técnico.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST (SportCore AI)</h2></div>
+    <p class="sd">Integración server-side con el SDK oficial `@google/genai`.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/ia/generar-boletin-alumno</span></div>
+      <div class="ep-desc">Compila el historial del jugador del mes y devuelve un análisis cualitativo estructurado en JSON con fortalezas y aspectos a mejorar.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/ia/analisis-fatiga/:jugadorId</span></div>
+      <div class="ep-desc">Calcula el ratio ACWR y devuelve recomendación de minutos máximos sugeridos para la próxima fecha.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/ia/chat-tactico-dt</span></div>
+      <div class="ep-desc">Endpoint con streaming Server-Sent Events (SSE) para asesorar al DT sobre variantes tácticas frente a un rival.</div>
+    </div>
+  </section>
+
+  <!-- 04 PROMPT ENG -->
+  <section id="prompt-eng">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Arquitectura de Prompt Engineering</h2></div>
+    <p class="sd">Construcción dinámica del contexto enriquecido enviado a Gemini.</p>
+
+    <pre class="code-block">
+SYSTEM: Eres el Director Metodológico de la Academia SportCoreOS. Tu objetivo es generar un feedback constructivo y pedagógico para el padre de familia.
+CONTEXTO DEL JUGADOR:
+- Nombre: Mateo Silva (13 años) | Categoría: Sub-13 Elite | Posición: Mediocampista Ofensivo
+- Asistencia a entrenamientos: 95% (19/20 sesiones)
+- Minutos de juego este mes: 240 minutos | Goles: 2 | Asistencias: 4 | Amarillas: 0
+- Test de Cooper: 2,450 metros (+150m vs mes anterior) | Talla: 1.58m | Peso: 48kg
+- Observación del DT: "Excelente visión de pase entre líneas, debe mejorar el repliegue defensivo en transiciones."
+
+INSTRUCCIONES:
+1. Redacta 3 párrafos: (A) Felicitación y actitud general, (B) Progreso físico y técnico, (C) Reto futbolístico para el próximo mes.
+2. Mantén un tono cálido, profesional y motivador sin usar jerga excesivamente técnica para el padre.
+    </pre>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componente Angular 18 con Signals</h2></div>
+    <p class="sd">Editor interactivo donde el DT revisa, edita o aprueba la redacción generada por la IA.</p>
+
+    <pre class="code-block">
+import { Component, signal, inject } from '@angular/core';
+import { SportAiService } from './sport-ai.service';
+
+@Component({
+  selector: 'app-boletin-ia-editor',
+  standalone: true,
+  template: `
+    &lt;div class="ia-panel"&gt;
+      &lt;div class="ia-header"&gt;
+        &lt;h3&gt;&lt;i class="fa-solid fa-wand-magic-sparkles"&gt;&lt;/i&gt; Asistente Gemini AI&lt;/h3&gt;
+        &lt;button class="btn-ia" [disabled]="generando()" (click)="generarBoletin()"&gt;
+          @if (generando()) { &lt;i class="fa-solid fa-spinner fa-spin"&gt;&lt;/i&gt; Redactando... }
+          @else { &lt;i class="fa-solid fa-bolt"&gt;&lt;/i&gt; Generar Feedback Automático }
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;textarea 
+        class="feedback-editor" 
+        [value]="textoGenerado()" 
+        (input)="onTextoChange($event)"
+        rows="8"&gt;
+      &lt;/textarea&gt;
+
+      &lt;div class="actions"&gt;
+        &lt;button class="btn-approve" (click)="guardarYAprobar()"&gt;
+          &lt;i class="fa-solid fa-check"&gt;&lt;/i&gt; Aprobar e Imprimir en PDF
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `
+})
+export class BoletinIaEditorComponent {
+  private aiService = inject(SportAiService);
+
+  readonly generando = signal<boolean>(false);
+  readonly textoGenerado = signal<string>('');
+
+  generarBoletin() {
+    this.generando.set(true);
+    this.aiService.generarBoletin(123).subscribe({
+      next: (res) => {
+        this.textoGenerado.set(res.feedback);
+        this.generando.set(false);
+      },
+      error: () => this.generando.set(false)
+    });
+  }
+
+  onTextoChange(e: Event) {
+    const val = (e.target as HTMLTextAreaElement).value;
+    this.textoGenerado.set(val);
+  }
+
+  guardarYAprobar() {
+    // Guarda en BD y compila el boletín PDF final para el portal de padres
+  }
+}
+    </pre>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Pruebas E2E Exhaustivas (Playwright)</h2></div>
+    <p class="sd">Garantía de respuesta rápida, manejo de fallbacks ante saturación del API de Gemini y persistencia segura.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Suite de Prueba: `e2e/ia-asistente.spec.ts`</div>
+      <ul class="card-list">
+        <li><strong>Strict Error Sniffer:</strong> `attachStrictErrorSniffer(page)` activo para detectar excepciones de parsing o timeouts.</li>
+        <li><strong>Fallback de Resiliencia:</strong> Mock de error 429 Rate Limit de OpenAI/Gemini; la UI debe mostrar mensaje amigable sin romper la aplicación.</li>
+        <li><strong>Edición del DT:</strong> Probar que el texto propuesto por la IA pueda ser modificado manualmente por el DT antes de presionar "Aprobar".</li>
+        <li><strong>Auditoría de Tokens:</strong> Comprobar que en la base de datos `ia_logs_generacion` se registren los `prompt_tokens` y `completion_tokens`.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>SPORTCOREOS // ESPECIFICACIÓN TÉCNICA MÓDULO 10</div>
+    <div>SPORTCORE AI &bull; FEBRERO 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

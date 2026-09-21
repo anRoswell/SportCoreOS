@@ -1,0 +1,16 @@
+/* ==========================================================================
+   FutCoreOS — Cards System
+   ========================================================================== */
+
+.fut-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease;
+
+  &:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+}

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 09: Tienda de Indumentaria, Kits & Stock</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(16,185,129,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(59,130,246,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--emerald);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--emerald);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--emerald);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--emerald);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--emerald);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--emerald);font-size:10px;}
+
+.schema-table{width:100%;border-collapse:collapse;margin:16px 0;font-family:var(--mono);font-size:12px;}
+.schema-table th{background:var(--s2);color:var(--emerald);text-align:left;padding:10px 14px;border:1px solid var(--bd);}
+.schema-table td{padding:10px 14px;border:1px solid var(--bd);color:var(--t2);}
+.schema-table tr:nth-child(even){background:rgba(255,255,255,0.01);}
+.type-badge{background:var(--s3);color:var(--cyan);padding:2px 6px;border-radius:4px;font-size:11px;}
+.pk-badge{background:rgba(251,191,36,0.15);color:var(--amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+.fk-badge{background:rgba(167,139,250,0.15);color:var(--violet);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(251,191,36,0.15);color:var(--amber);}
+.DELETE{background:rgba(251,113,133,0.15);color:var(--rose);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12.5px;color:var(--t2);margin-top:4px;}
+
+pre.code-block{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;font-family:var(--mono);font-size:12px;color:var(--text);overflow-x:auto;margin-top:12px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 09 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Tienda de Indumentaria, <em>Kits Oficiales & Stock</em></h1>
+      <p class="subtitle">Ecosistema de inventario deportivo y venta de uniformes: control de tallaje vinculado al expediente de cada jugador, trazabilidad multi-bodega y despacho ágil mediante código QR en utilería o secretaría.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>ECOSISTEMA / COMERCIO</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-shirt"></i> Gestión: <strong>Kits, Balones & Merchandising</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-boxes-stacked"></i> Stock: <strong>Multi-Sede con Alerta Mínima</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-qrcode"></i> Entrega: <strong>Despacho Validado por QR</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Reglas de Negocio</a>
+    <a href="#modelo-datos" class="toc-a"><span class="toc-n">02</span> Modelo de Datos PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs REST</a>
+    <a href="#flujo-qr" class="toc-a"><span class="toc-n">04</span> Flujo de Pedidos & Despacho QR</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componente Angular con Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Exhaustivas (Playwright)</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Reglas de Negocio</h2></div>
+    <p class="sd">Gestión integral de equipamiento deportivo para jugadores, staff técnico y aficionados.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-person-running"></i> Vinculación con Ficha del Jugador</div>
+        <ul class="card-list">
+          <li><strong>Talla Registrada:</strong> La talla de uniforme (camisilla, pantaloneta, medias) se sincroniza con los datos antropométricos del alumno.</li>
+          <li><strong>Personalización de Dorsal:</strong> Inclusión automática del apellido y número oficial asignado al registrar el pedido del Kit Titular/Alternativo.</li>
+          <li><strong>Kit de Matrícula:</strong> Generación automática de orden de entrega al completarse el pago de inscripción de temporada.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-warehouse"></i> Inventario & Control de Existencias</div>
+        <ul class="card-list">
+          <li><strong>Variantes por Talla:</strong> Control estricto por SKU y talla (4, 6, 8, 10, 12, 14, 16, S, M, L, XL).</li>
+          <li><strong>Alerta de Quiebre de Stock:</strong> Notificación automática al administrador cuando un ítem cae por debajo del umbral mínimo de seguridad.</li>
+          <li><strong>Implementos de Entrenamiento:</strong> Registro y préstamo de balones FIFA Quality, conos, vallas, petos y escaleras de agilidad.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 MODELO DE DATOS -->
+  <section id="modelo-datos">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo de Datos PostgreSQL (DDL)</h2></div>
+    <p class="sd">Estructura normalizada para control de productos, variantes por talla y órdenes de despacho.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-database"></i> Tablas: `productos_tienda`, `variantes_producto` & `pedidos_tienda`</div>
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador único del producto.</td>
+          </tr>
+          <tr>
+            <td><code>club_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Club propietario del catálogo.</td>
+          </tr>
+          <tr>
+            <td><code>codigo_sku</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL UNIQUE</td>
+            <td>Ej. "KIT-TITULAR-2026", "BALON-F5-PRO".</td>
+          </tr>
+          <tr>
+            <td><code>nombre</code></td>
+            <td><span class="type-badge">VARCHAR(120)</span></td>
+            <td>NOT NULL</td>
+            <td>Nombre comercial del producto.</td>
+          </tr>
+          <tr>
+            <td><code>categoria</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL</td>
+            <td>`uniforme_oficial`, `entrenamiento`, `accesorios`, `balones`.</td>
+          </tr>
+          <tr>
+            <td><code>precio_venta</code></td>
+            <td><span class="type-badge">NUMERIC(12,2)</span></td>
+            <td>NOT NULL CHECK(>0)</td>
+            <td>Precio unitario de venta al público/padres.</td>
+          </tr>
+          <tr>
+            <td><code>personalizable</code></td>
+            <td><span class="type-badge">BOOLEAN</span></td>
+            <td>DEFAULT FALSE</td>
+            <td>Indica si admite estampado de dorsal y nombre.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="schema-table" style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador de la variante de talla.</td>
+          </tr>
+          <tr>
+            <td><code>producto_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Producto padre.</td>
+          </tr>
+          <tr>
+            <td><code>talla</code></td>
+            <td><span class="type-badge">VARCHAR(10)</span></td>
+            <td>NOT NULL</td>
+            <td>Ej. "8", "10", "12", "M", "L".</td>
+          </tr>
+          <tr>
+            <td><code>stock_actual</code></td>
+            <td><span class="type-badge">INTEGER</span></td>
+            <td>NOT NULL DEFAULT 0 CHECK(>=0)</td>
+            <td>Cantidad física disponible en bodega.</td>
+          </tr>
+          <tr>
+            <td><code>stock_minimo_alerta</code></td>
+            <td><span class="type-badge">INTEGER</span></td>
+            <td>NOT NULL DEFAULT 5</td>
+            <td>Umbral para disparo de reabastecimiento.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST (Tienda)</h2></div>
+    <p class="sd">Servicios de catálogo, compra electrónica e inventario.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/tienda/catalogo</span></div>
+      <div class="ep-desc">Lista todos los productos activos con sus variantes de tallas y disponibilidad en tiempo real.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/tienda/pedidos</span></div>
+      <div class="ep-desc">Genera una orden de compra vinculada a un jugador o acudiente con link de pago PSE y código QR de retiro.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method PATCH">PATCH</span><span class="ep-path">/api/v1/tienda/stock/ajustar</span></div>
+      <div class="ep-desc">Registra entradas por proveedor o bajas por merma/daño en bodega con auditoría de usuario.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method PATCH">PATCH</span><span class="ep-path">/api/v1/tienda/pedidos/:id/entregar-qr</span></div>
+      <div class="ep-desc">Valida el código QR escaneado por el utilero en secretaría y descuenta definitivamente las unidades del stock.</div>
+    </div>
+  </section>
+
+  <!-- 04 FLUJO QR -->
+  <section id="flujo-qr">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Flujo de Pedidos & Despacho QR</h2></div>
+    <p class="sd">Ciclo de vida desde la compra online hasta la entrega física en el predio deportivo.</p>
+
+    <pre class="code-block">
+[PADRE COMPRA UNIFORME EN APP / PORTAL]
+                 │
+                 ▼
+[PAGO COMPLETADO VÍA PSE/WOMPI] ──► [GENERA QR ÚNICO CON TOKEN SHA-256]
+                 │
+                 ▼
+[PADRE ASISTE A SECRETARÍA / SEDE]
+                 │
+                 ▼
+[UTILERO ESCANEA QR CON CÁMARA SPORTCOREOS]
+                 │
+                 ▼
+[SISTEMA VALIDA: PEDIDO PAGADO + VERIFICA TALLA Y DORSAL ESTAMPADO]
+                 │
+                 ▼
+[CAMBIO DE ESTADO A: "ENTREGADO" + DESCUENTO DE STOCK EN POSTGRESQL]
+    </pre>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componente Angular 18 con Signals</h2></div>
+    <p class="sd">Catálogo interactivo con selector de tallas reactivo y carrito de compras.</p>
+
+    <pre class="code-block">
+import { Component, signal, computed, inject } from '@angular/core';
+import { TiendaService } from './tienda.service';
+
+@Component({
+  selector: 'app-tienda-catalogo',
+  standalone: true,
+  template: `
+    &lt;div class="tienda-grid"&gt;
+      @for (prod of productos(); track prod.id) {
+        &lt;div class="product-card"&gt;
+          &lt;div class="badge"&gt;{{ prod.categoria }}&lt;/div&gt;
+          &lt;h3&gt;{{ prod.nombre }}&lt;/h3&gt;
+          &lt;p class="precio"&gt;\${{ prod.precio_venta | number:'1.0-0' }} COP&lt;/p&gt;
+
+          &lt;div class="tallas-selector"&gt;
+            @for (v of prod.variantes; track v.talla) {
+              &lt;button 
+                class="talla-btn" 
+                [class.selected]="prod.tallaSeleccionada === v.talla"
+                [disabled]="v.stock_actual <= 0"
+                (click)="seleccionarTalla(prod, v.talla)"&gt;
+                {{ v.talla }} ({{ v.stock_actual }})
+              &lt;/button&gt;
+            }
+          &lt;/div&gt;
+
+          &lt;button class="btn-comprar" [disabled]="!prod.tallaSeleccionada" (click)="agregarAlCarrito(prod)"&gt;
+            &lt;i class="fa-solid fa-cart-shopping"&gt;&lt;/i&gt; Agregar al Carrito
+          &lt;/button&gt;
+        &lt;/div&gt;
+      }
+    &lt;/div&gt;
+  `
+})
+export class TiendaCatalogoComponent {
+  private tiendaService = inject(TiendaService);
+
+  readonly productos = signal<any[]>([]);
+  readonly carrito = signal<any[]>([]);
+
+  readonly totalCarrito = computed(() => {
+    return this.carrito().reduce((acc, item) => acc + (item.precio_venta * item.cantidad), 0);
+  });
+
+  seleccionarTalla(producto: any, talla: string) {
+    producto.tallaSeleccionada = talla;
+  }
+
+  agregarAlCarrito(producto: any) {
+    this.carrito.update(items => [...items, { ...producto, cantidad: 1 }]);
+  }
+}
+    </pre>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Pruebas E2E Exhaustivas (Playwright)</h2></div>
+    <p class="sd">Verificación de stock seguro, validación de QR y tolerancia cero a fallos JS.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Suite de Prueba: `e2e/tienda-stock.spec.ts`</div>
+      <ul class="card-list">
+        <li><strong>Strict Error Sniffer:</strong> `attachStrictErrorSniffer(page)` activo durante todo el checkout y escaneo.</li>
+        <li><strong>Bloqueo de Stock Cero:</strong> Comprobación de que no se puedan agregar al carrito tallas con `stock_actual === 0`.</li>
+        <li><strong>Validación Transaccional de Despacho:</strong> Probar que al despachar con QR, el stock en PostgreSQL se reduzca en exactamente 1 unidad.</li>
+        <li><strong>Prevención de Doble Despacho:</strong> Intentar escanear el mismo QR dos veces debe arrojar alerta "Pedido ya entregado previamente".</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>SPORTCOREOS // ESPECIFICACIÓN TÉCNICA MÓDULO 09</div>
+    <div>TIENDA DE INDUMENTARIA & STOCK &bull; FEBRERO 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

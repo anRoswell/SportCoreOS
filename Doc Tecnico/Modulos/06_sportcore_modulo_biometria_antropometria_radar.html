@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 06: Biometría, Antropometría & Radar Físico</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(251,113,133,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(16,185,129,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--rose);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--rose);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,60px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--rose);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--rose);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--rose);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:768px){.g2{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--rose);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--rose);font-size:10px;}
+
+.stbl{width:100%;border-collapse:collapse;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+.stbl th{background:var(--s2);color:var(--text);padding:10px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--bd);text-align:left;}
+.stbl td{padding:10px 14px;font-size:12.5px;border-bottom:1px solid var(--s2);border-right:1px solid var(--bd);vertical-align:top;}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:var(--s2);}
+.fpk{color:var(--amber);font-family:var(--mono);font-weight:700;}
+.ffk{color:var(--violet);font-family:var(--mono);font-weight:700;}
+.fnm{font-family:var(--mono);color:var(--cyan);}
+.ftp{font-family:var(--mono);color:var(--rose);font-size:11px;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:10px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12px;color:var(--t2);margin-top:4px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 06 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Biometría, Antropometría & <em>Radar Físico</em></h1>
+      <p class="subtitle">Evaluación física estandarizada, test de Cooper, velocidad 30m, salto vertical, curvas temporales de crecimiento (talla/peso), control de sobrecarga y prevención de lesiones deportivas.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>CORE</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-heart-pulse"></i> Batería: <strong>Cooper + Sprint 30m + Salto Sargent</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-code"></i> Endpoints: <strong>5 REST Biometría</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-mobile-screen"></i> Plataformas: <strong>Web Admin + App PF</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Batería de Tests</a>
+    <a href="#ddl" class="toc-a"><span class="toc-n">02</span> Modelo DDL PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs REST</a>
+    <a href="#radar" class="toc-a"><span class="toc-n">04</span> Radar Físico & Percentiles</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componentes Frontend Angular/Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Playwright & DB</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Batería de Tests Físicos</h2></div>
+    <p class="sd">Monitoreo fisiológico y antropométrico del desarrollo del deportista en formación con rigor científico.</p>
+    
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-weight-scale"></i> Control Antropométrico</div>
+        <ul class="card-list">
+          <li><strong>Métricas Clave:</strong> Estatura en bipedestación (cm), peso corporal (kg), envergadura de brazos (cm) e Índice de Masa Corporal (IMC).</li>
+          <li><strong>Percentiles OMS & Deportivos:</strong> Alertas si el deportista presenta bajo peso, sobrepeso o desbalances en su curva de crecimiento.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Batería de Aptitud Física</div>
+        <ul class="card-list">
+          <li><strong>Test de Resistencia (Cooper / Yo-Yo):</strong> Distancia recorrida en 12 minutos para estimar VO2 máx.</li>
+          <li><strong>Test de Velocidad Pura (30m Sprint):</strong> Cronometraje de aceleración y velocidad punta.</li>
+          <li><strong>Test de Potencia Muscular (Salto Vertical Sargent):</strong> Medición de fuerza explosiva en tren inferior.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 DDL -->
+  <section id="ddl">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo DDL PostgreSQL (Esquema Biometría)</h2></div>
+    <p class="sd">Almacenamiento temporal de evaluaciones físicas periódicas.</p>
+
+    <table class="stbl">
+      <thead>
+        <tr><th>Campo</th><th>Tipo</th><th>Modificadores</th><th>Descripción & Restricción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="background:var(--s3);color:var(--rose);font-weight:700;">TABLA: evaluaciones_biometricas</td></tr>
+        <tr><td><span class="fpk">id</span></td><td><span class="ftp">UUID</span></td><td>PRIMARY KEY</td><td>ID único de evaluación</td></tr>
+        <tr><td><span class="ffk">deportista_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES deportistas(id)</td><td>Atleta evaluado</td></tr>
+        <tr><td><span class="ffk">evaluador_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES usuarios(id)</td><td>Preparador Físico</td></tr>
+        <tr><td><span class="fnm">fecha_toma</span></td><td><span class="ftp">DATE</span></td><td>NOT NULL</td><td>Fecha de aplicación del test</td></tr>
+        <tr><td><span class="fnm">estatura_cm</span></td><td><span class="ftp">DECIMAL(5,2)</span></td><td>NOT NULL</td><td>Estatura en centímetros</td></tr>
+        <tr><td><span class="fnm">peso_kg</span></td><td><span class="ftp">DECIMAL(5,2)</span></td><td>NOT NULL</td><td>Peso en kilogramos</td></tr>
+        <tr><td><span class="fnm">imc_calculado</span></td><td><span class="ftp">DECIMAL(4,2)</span></td><td>NOT NULL</td><td>Generado: peso / (estatura/100)^2</td></tr>
+        <tr><td><span class="fnm">cooper_metros</span></td><td><span class="ftp">INT</span></td><td>NULL</td><td>Distancia test de Cooper</td></tr>
+        <tr><td><span class="fnm">velocidad_30m_seg</span></td><td><span class="ftp">DECIMAL(4,2)</span></td><td>NULL</td><td>Segundos en 30 metros</td></tr>
+        <tr><td><span class="fnm">salto_vertical_cm</span></td><td><span class="ftp">DECIMAL(4,1)</span></td><td>NULL</td><td>Salto vertical Sargent</td></tr>
+        <tr><td><span class="fnm">diagnostico_pf</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'SOBRESALIENTE' | 'OPTIMO' | 'EN_DESARROLLO' | 'REVISAR'</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST</h2></div>
+    <p class="sd">Servicios bajo `/api/v1/biometria`.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/biometria/jugador/:id/historial</span></div>
+      <div class="ep-desc">Retorna la serie temporal de evaluaciones para graficar curvas de evolución física.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/biometria/tomas</span></div>
+      <div class="ep-desc">Registra una nueva medición antropométrica o test de campo con cálculo de IMC automático.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/biometria/radar-categoria/:catId</span></div>
+      <div class="ep-desc">Retorna las medias de velocidad, resistencia y fuerza del plantel para análisis comparativo.</div>
+    </div>
+  </section>
+
+  <!-- 04 RADAR -->
+  <section id="radar">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Algoritmo de Radar de Aptitud Física</h2></div>
+    <p class="sd">Normalización de 0 a 100 de las 5 capacidades condicionales del atleta.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-chart-line"></i> Capacidad Condicional & Puntuación Normalizada</div>
+      <ul class="card-list">
+        <li><strong>Resistencia Aeróbica:</strong> Normalizada según baremo de Cooper para la edad (ej: 2800m = 95 pts).</li>
+        <li><strong>Velocidad de Reacción y Sprint:</strong> Normalizada según tiempo de 30m (ej: 4.10s = 98 pts).</li>
+        <li><strong>Potencia de Salto:</strong> Normalizada según test Sargent (ej: 48cm = 92 pts).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componentes Frontend Angular & Signals</h2></div>
+    <p class="sd">Implementación en `FutCoreOS-web`.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-brands fa-angular"></i> Vista Biometría</div>
+      <ul class="card-list">
+        <li><strong>Ruta:</strong> <code>src/app/pages/biometria/biometria.component.ts</code></li>
+        <li><strong>Signals:</strong> <code>mediciones = signal&lt;Medicion[]&gt;([])</code>.</li>
+        <li><strong>UI Table:</strong> Tabla con badges de diagnóstico (Sobresaliente, Óptimo, En Desarrollo).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Estrategia de Pruebas E2E (Playwright)</h2></div>
+    <p class="sd">Verificación con Error Sniffer Estricto.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Escenario E2E</div>
+      <ul class="card-list">
+        <li>Registrar una medición de 168.5 cm y 56.4 kg, validar que el IMC calculado sea 19.9 y que se guarde en la tabla `evaluaciones_biometricas`.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>SportCoreOS — Módulo Técnico 06: Biometría & Radar Físico v1.0 • SECTIC S.A.S.</span>
+    <span>Arquitectura de Alto Rendimiento · 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,290 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.JugadoresRepository = void 0;
+const common_1 = require("@nestjs/common");
+const database_service_1 = require("../../database/database.service");
+let JugadoresRepository = class JugadoresRepository {
+    db;
+    constructor(db) {
+        this.db = db;
+    }
+    async findJugadoresByClub(clubId, search, categoriaId, estado) {
+        let query = `
+      SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento, j.numero_documento,
+             j.fecha_nacimiento, j.genero, j.foto_url, j.posicion_principal,
+             j.posicion_secundaria, j.pierna_habil, j.numero_dorsal, j.eps, j.estado_matricula,
+             j.created_at, j.updated_at,
+             c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
+             b.peso_kg, b.talla_cm, b.imc, b.fecha_evaluacion as ultima_evaluacion
+      FROM deportivo.jugadores j
+      JOIN deportivo.categorias c ON c.id = j.categoria_id
+      LEFT JOIN LATERAL (
+        SELECT peso_kg, talla_cm, imc, fecha_evaluacion
+        FROM rendimiento.evaluaciones_biometricas eb
+        WHERE eb.jugador_id = j.id
+        ORDER BY eb.fecha_evaluacion DESC
+        LIMIT 1
+      ) b ON true
+      WHERE j.club_id = $1
+    `;
+        const params = [clubId];
+        if (categoriaId && categoriaId !== 'TODAS') {
+            params.push(categoriaId);
+            query += ` AND j.categoria_id = $${params.length}`;
+        }
+        if (estado && estado !== 'TODOS') {
+            params.push(estado);
+            query += ` AND j.estado_matricula = $${params.length}`;
+        }
+        if (search && search.trim()) {
+            params.push(`%${search.trim()}%`);
+            query += ` AND (j.nombres ILIKE $${params.length} OR j.apellidos ILIKE $${params.length} OR j.numero_documento ILIKE $${params.length})`;
+        }
+        query += ` ORDER BY j.apellidos ASC, j.nombres ASC`;
+        const res = await this.db.query(query, params);
+        return res.rows;
+    }
+    async findById(id, clubId) {
+        const query = `
+      SELECT j.*, c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo
+      FROM deportivo.jugadores j
+      JOIN deportivo.categorias c ON c.id = j.categoria_id
+      WHERE j.id = $1 AND j.club_id = $2
+    `;
+        const res = await this.db.query(query, [id, clubId]);
+        return res.rows[0] || null;
+    }
+    async findByDorsal(clubId, categoriaId, dorsal, excludeId) {
+        let query = `
+      SELECT id, nombres, apellidos, numero_dorsal
+      FROM deportivo.jugadores
+      WHERE club_id = $1 AND categoria_id = $2 AND numero_dorsal = $3
+    `;
+        const params = [clubId, categoriaId, dorsal];
+        if (excludeId) {
+            params.push(excludeId);
+            query += ` AND id != $${params.length}`;
+        }
+        const res = await this.db.query(query, params);
+        return res.rows[0] || null;
+    }
+    async findByDocumento(clubId, numeroDocumento, excludeId) {
+        let query = `
+      SELECT id, nombres, apellidos, numero_documento
+      FROM deportivo.jugadores
+      WHERE club_id = $1 AND numero_documento = $2
+    `;
+        const params = [clubId, numeroDocumento.trim()];
+        if (excludeId) {
+            params.push(excludeId);
+            query += ` AND id != $${params.length}`;
+        }
+        const res = await this.db.query(query, params);
+        return res.rows[0] || null;
+    }
+    async createJugador(data) {
+        const query = `
+      INSERT INTO deportivo.jugadores (
+        club_id, categoria_id, nombres, apellidos, tipo_documento, numero_documento,
+        fecha_nacimiento, genero, foto_url, posicion_principal, posicion_secundaria,
+        pierna_habil, numero_dorsal, eps, estado_matricula
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      RETURNING *
+    `;
+        const res = await this.db.query(query, [
+            data.clubId,
+            data.categoriaId,
+            data.nombres.trim(),
+            data.apellidos.trim(),
+            data.tipoDocumento || 'TI',
+            data.numeroDocumento.trim(),
+            data.fechaNacimiento,
+            data.genero || 'MASCULINO',
+            data.fotoUrl || null,
+            data.posicionPrincipal.trim(),
+            data.posicionSecundaria?.trim() || null,
+            data.piernaHabil || 'DIESTRO',
+            data.numeroDorsal || null,
+            data.eps?.trim() || 'EPS Sanitas',
+            data.estadoMatricula || 'ACTIVO',
+        ]);
+        return res.rows[0];
+    }
+    async updateJugador(id, clubId, data) {
+        const existing = await this.findById(id, clubId);
+        if (!existing)
+            return null;
+        const categoriaId = data.categoriaId ?? existing.categoria_id;
+        const nombres = data.nombres ?? existing.nombres;
+        const apellidos = data.apellidos ?? existing.apellidos;
+        const tipoDocumento = data.tipoDocumento ?? existing.tipo_documento;
+        const numeroDocumento = data.numeroDocumento ?? existing.numero_documento;
+        const fechaNacimiento = data.fechaNacimiento ?? existing.fecha_nacimiento;
+        const genero = data.genero ?? existing.genero;
+        const fotoUrl = data.fotoUrl !== undefined ? data.fotoUrl : existing.foto_url;
+        const posicionPrincipal = data.posicionPrincipal ?? existing.posicion_principal;
+        const posicionSecundaria = data.posicionSecundaria !== undefined ? data.posicionSecundaria : existing.posicion_secundaria;
+        const piernaHabil = data.piernaHabil ?? existing.pierna_habil;
+        const numeroDorsal = data.numeroDorsal !== undefined ? data.numeroDorsal : existing.numero_dorsal;
+        const eps = data.eps ?? existing.eps;
+        const estadoMatricula = data.estadoMatricula ?? existing.estado_matricula;
+        const query = `
+      UPDATE deportivo.jugadores
+      SET categoria_id = $1, nombres = $2, apellidos = $3, tipo_documento = $4,
+          numero_documento = $5, fecha_nacimiento = $6, genero = $7, foto_url = $8,
+          posicion_principal = $9, posicion_secundaria = $10, pierna_habil = $11,
+          numero_dorsal = $12, eps = $13, estado_matricula = $14, updated_at = NOW()
+      WHERE id = $15 AND club_id = $16
+      RETURNING *
+    `;
+        const res = await this.db.query(query, [
+            categoriaId,
+            nombres,
+            apellidos,
+            tipoDocumento,
+            numeroDocumento,
+            fechaNacimiento,
+            genero,
+            fotoUrl,
+            posicionPrincipal,
+            posicionSecundaria,
+            piernaHabil,
+            numeroDorsal,
+            eps,
+            estadoMatricula,
+            id,
+            clubId,
+        ]);
+        return res.rows[0] || null;
+    }
+    async deleteJugador(id, clubId) {
+        const query = `
+      UPDATE deportivo.jugadores
+      SET estado_matricula = 'RETIRADO', updated_at = NOW()
+      WHERE id = $1 AND club_id = $2
+      RETURNING id
+    `;
+        const res = await this.db.query(query, [id, clubId]);
+        return (res.rowCount ?? 0) > 0;
+    }
+    async findExpediente(id, clubId) {
+        const jugRes = await this.db.query(`SELECT j.*, c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
+              CONCAT(u.nombre, ' ', u.apellido) as dt_nombre
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       LEFT JOIN core.usuarios u ON u.id = c.director_tecnico_id
+       WHERE j.id = $1 AND j.club_id = $2`, [id, clubId]);
+        if (jugRes.rows.length === 0) {
+            return null;
+        }
+        const jugador = jugRes.rows[0];
+        const acudientesRes = await this.db.query(`SELECT a.*, ja.es_contacto_principal, ja.autorizado_recoger
+       FROM deportivo.acudientes a
+       JOIN deportivo.jugador_acudientes ja ON ja.acudiente_id = a.id
+       WHERE ja.jugador_id = $1
+       ORDER BY ja.es_contacto_principal DESC, a.nombres ASC`, [id]);
+        const bioRes = await this.db.query(`SELECT eb.*, CONCAT(u.nombre, ' ', u.apellido) as evaluador_nombre
+       FROM rendimiento.evaluaciones_biometricas eb
+       LEFT JOIN core.usuarios u ON u.id = eb.evaluador_id
+       WHERE eb.jugador_id = $1
+       ORDER BY eb.fecha_evaluacion DESC`, [id]);
+        const finRes = await this.db.query(`SELECT cj.*, fc.nombre as concepto_nombre, fc.tipo as concepto_tipo
+       FROM finanzas.cargos_jugador cj
+       JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
+       WHERE cj.jugador_id = $1
+       ORDER BY cj.periodo_anio DESC, cj.periodo_mes DESC`, [id]);
+        const cargos = finRes.rows;
+        const totalFacturado = cargos.reduce((acc, c) => acc + (parseFloat(c.monto_total) - parseFloat(c.monto_descuento_beca || 0)), 0);
+        const totalPagado = cargos.reduce((acc, c) => acc + parseFloat(c.monto_pagado || 0), 0);
+        const saldoPendiente = cargos.reduce((acc, c) => acc + parseFloat(c.saldo_pendiente || 0), 0);
+        return {
+            jugador,
+            acudientes: acudientesRes.rows,
+            historialBiometrico: bioRes.rows,
+            historialFinanciero: cargos,
+            resumenFinanciero: {
+                totalFacturado,
+                totalPagado,
+                saldoPendiente,
+                estadoCuenta: saldoPendiente > 0 ? 'EN_MORA' : 'AL_DIA',
+            },
+        };
+    }
+    async createAcudiente(data) {
+        const query = `
+      INSERT INTO deportivo.acudientes (
+        nombres, apellidos, tipo_documento, numero_documento,
+        telefono_movil, email, parentesco, direccion_residencia
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `;
+        const res = await this.db.query(query, [
+            data.nombres.trim(),
+            data.apellidos.trim(),
+            data.tipoDocumento || 'CC',
+            data.numeroDocumento.trim(),
+            data.telefonoMovil.trim(),
+            data.email?.toLowerCase().trim() || null,
+            data.parentesco || 'PADRE',
+            data.direccionResidencia || null,
+        ]);
+        return res.rows[0];
+    }
+    async linkJugadorAcudiente(jugadorId, acudienteId, esPrincipal = true, autorizadoRecoger = true) {
+        const query = `
+      INSERT INTO deportivo.jugador_acudientes (
+        jugador_id, acudiente_id, es_contacto_principal, autorizado_recoger
+      ) VALUES ($1, $2, $3, $4)
+      ON CONFLICT (jugador_id, acudiente_id)
+      DO UPDATE SET es_contacto_principal = $3, autorizado_recoger = $4
+      RETURNING *
+    `;
+        const res = await this.db.query(query, [jugadorId, acudienteId, esPrincipal, autorizadoRecoger]);
+        return res.rows[0];
+    }
+    async removeJugadorAcudiente(jugadorId, acudienteId) {
+        const query = `
+      DELETE FROM deportivo.jugador_acudientes
+      WHERE jugador_id = $1 AND acudiente_id = $2
+    `;
+        const res = await this.db.query(query, [jugadorId, acudienteId]);
+        return (res.rowCount ?? 0) > 0;
+    }
+    async createEvaluacionBiometrica(data) {
+        const query = `
+      INSERT INTO rendimiento.evaluaciones_biometricas (
+        jugador_id, evaluador_id, fecha_evaluacion, peso_kg, talla_cm, imc,
+        test_cooper_metros, velocidad_30m_seg, salto_vertical_cm, observaciones
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `;
+        const res = await this.db.query(query, [
+            data.jugadorId,
+            data.evaluadorId || null,
+            data.fechaEvaluacion,
+            data.pesoKg,
+            data.tallaCm,
+            data.imc,
+            data.testCooperMetros || null,
+            data.velocidad30mSeg || null,
+            data.saltoVerticalCm || null,
+            data.observaciones || null,
+        ]);
+        return res.rows[0];
+    }
+};
+exports.JugadoresRepository = JugadoresRepository;
+exports.JugadoresRepository = JugadoresRepository = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [database_service_1.DatabaseService])
+], JugadoresRepository);
+//# sourceMappingURL=jugadores.repository.js.map

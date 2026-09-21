@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 07: Portal Móvil de Padres & Acudientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(16,185,129,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(59,130,246,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--emerald);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--emerald);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,60px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--emerald);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--emerald);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--emerald);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:768px){.g2{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--emerald);font-size:10px;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:10px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12px;color:var(--t2);margin-top:4px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 07 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Portal Móvil de <em>Padres & Acudientes</em></h1>
+      <p class="subtitle">Experiencia móvil Mobile-First (PWA / App) diseñada para acudientes: confirmación de convocatorias en 1 tap, pago de pensiones PSE/Wompi express y consulta del boletín de notas deportivas.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>CORE</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-mobile-screen"></i> Modo: <strong>Mobile PWA / Ionic Capacitor</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-code"></i> Endpoints: <strong>4 REST Móvil</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-bell"></i> Notificaciones: <strong>Push FCM + WhatsApp Link</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Experiencia Mobile</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">02</span> Contrato de APIs Móviles</a>
+    <a href="#ux" class="toc-a"><span class="toc-n">03</span> Flujo UX de Pago & Confirmación</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">04</span> Componente Angular Portal Padres</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">05</span> Pruebas E2E Playwright Mobile</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Experiencia Mobile-First</h2></div>
+    <p class="sd">Diseñado para que los padres de familia interactúen sin fricciones técnicas desde cualquier teléfono inteligente.</p>
+    
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-bolt"></i> Confirmación de Partidos en 1 Toque</div>
+        <ul class="card-list">
+          <li><strong>Hero Card Dinámico:</strong> Muestra el partido más próximo con rival, hora de citación para calentamiento e indumentaria requerida.</li>
+          <li><strong>Acción Inmediata:</strong> Botón verde "Confirmar Asistencia" o botón gris "Excusar Inasistencia".</li>
+          <li><strong>Ruta GPS en 1 Clic:</strong> Abre directamente Waze o Google Maps sin necesidad de copiar y pegar direcciones.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-credit-card"></i> Pagos PSE en 1 Clic</div>
+        <ul class="card-list">
+          <li><strong>Estado de Cuenta Simple:</strong> Muestra el saldo pendiente del mes y botón directo para pagar vía Wompi.</li>
+          <li><strong>Descarga de Recibos:</strong> Visualización y descarga inmediata de los recibos de pago en PDF.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Contrato de APIs REST (Portal Padres)</h2></div>
+    <p class="sd">Servicios optimizados con respuestas JSON livianas bajo `/api/v1/portal-padres`.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/portal-padres/hijos-activos</span></div>
+      <div class="ep-desc">Retorna los hijos vinculados al usuario padre con su categoría, dorsal y estado de matrícula.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/portal-padres/proximo-partido/:jugadorId</span></div>
+      <div class="ep-desc">Retorna los detalles de la convocatoria oficial vigente para el jugador.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/portal-padres/confirmar-asistencia</span></div>
+      <div class="ep-desc">Registra la confirmación o excusa del padre para la citación del fin de semana.</div>
+    </div>
+  </section>
+
+  <!-- 03 UX -->
+  <section id="ux">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Flujo UX de Pago & Convocatoria</h2></div>
+    <p class="sd">Embudo de retención y cobranza simplificado para acudientes.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-mobile-screen-button"></i> Secuencia del Usuario Padre</div>
+      <pre style="background:var(--s2);padding:14px;border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--cyan);overflow-x:auto;">
+[PADRE ABRE LINK DE CITACIÓN EN WHATSAPP]
+                   │
+                   ▼
+  [PORTAL MÓVIL SPORTCORE (SIN PASSWORD SI USA TOKEN SEGURO)]
+                   │
+    ┌──────────────┴──────────────┐
+    ▼                             ▼
+[CONFIRMA ASISTENCIA PARTIDO]  [CLIC EN 'PAGAR MENSUALIDAD PSE']
+    │                             │
+    ▼                             ▼
+[GPS ACTIVA WAZE/MAPS]         [CHECKOUT EXPRESS WOMPI]
+      </pre>
+    </div>
+  </section>
+
+  <!-- 04 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Componente Frontend Angular & Signals</h2></div>
+    <p class="sd">Implementación en `FutCoreOS-web`.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-brands fa-angular"></i> Vista Portal Padres</div>
+      <ul class="card-list">
+        <li><strong>Ruta:</strong> <code>src/app/pages/portal-padres/portal-padres.component.ts</code></li>
+        <li><strong>Estilos:</strong> Layout vertical con tarjetas redondeadas (16px), badges de estado y botones táctiles de 48px de altura mínima.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 05 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Estrategia de Pruebas E2E Playwright Mobile</h2></div>
+    <p class="sd">Emulación viewport iPhone 14 / Pixel 7.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Escenario Mobile E2E</div>
+      <ul class="card-list">
+        <li>Emular dispositivo móvil, confirmar asistencia a un partido y verificar que la UI cambie inmediatamente a badge verde "¡CONVOCADO TITULAR!".</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>SportCoreOS — Módulo Técnico 07: Portal Padres v1.0 • SECTIC S.A.S.</span>
+    <span>Arquitectura de Alto Rendimiento · 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>

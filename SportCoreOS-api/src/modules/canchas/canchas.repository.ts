@@ -1,0 +1,165 @@
+import { Injectable } from '@nestjs/common';
+import { DatabaseService } from '../../database/database.service';
+
+@Injectable()
+export class CanchasRepository {
+  constructor(private readonly db: DatabaseService) {}
+
+  async findCanchasByClub(clubId: string) {
+    const res = await this.db.query(
+      `SELECT c.*, 
+              (SELECT COUNT(*) FROM deportivo.reservas_cancha r WHERE r.cancha_id = c.id AND r.fecha_reserva = CURRENT_DATE AND r.estado_turno != 'cancelado') as reservas_hoy
+       FROM deportivo.canchas c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async findCanchaById(id: string, clubId: string) {
+    const res = await this.db.query(
+      `SELECT * FROM deportivo.canchas WHERE id = $1 AND club_id = $2`,
+      [id, clubId],
+    );
+    return res.rows[0] || null;
+  }
+
+  async createCancha(clubId: string, data: any) {
+    const res = await this.db.query(
+      `INSERT INTO deportivo.canchas (
+        club_id, nombre, tipo_superficie, precio_hora_diurna, precio_hora_nocturna,
+        hora_apertura, hora_cierre, activa
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+      RETURNING *`,
+      [
+        clubId,
+        data.nombre,
+        data.tipo_superficie,
+        data.precio_hora_diurna,
+        data.precio_hora_nocturna,
+        data.hora_apertura || '06:00',
+        data.hora_cierre || '23:00',
+      ],
+    );
+    return res.rows[0];
+  }
+
+  async updateCancha(id: string, clubId: string, data: any) {
+    const fields: string[] = [];
+    const params: any[] = [id, clubId];
+
+    if (data.nombre !== undefined) {
+      params.push(data.nombre);
+      fields.push(`nombre = $${params.length}`);
+    }
+    if (data.tipo_superficie !== undefined) {
+      params.push(data.tipo_superficie);
+      fields.push(`tipo_superficie = $${params.length}`);
+    }
+    if (data.precio_hora_diurna !== undefined) {
+      params.push(data.precio_hora_diurna);
+      fields.push(`precio_hora_diurna = $${params.length}`);
+    }
+    if (data.precio_hora_nocturna !== undefined) {
+      params.push(data.precio_hora_nocturna);
+      fields.push(`precio_hora_nocturna = $${params.length}`);
+    }
+    if (data.activa !== undefined) {
+      params.push(data.activa);
+      fields.push(`activa = $${params.length}`);
+    }
+
+    if (fields.length === 0) return null;
+
+    fields.push(`updated_at = NOW()`);
+
+    const res = await this.db.query(
+      `UPDATE deportivo.canchas SET ${fields.join(', ')} WHERE id = $1 AND club_id = $2 RETURNING *`,
+      params,
+    );
+    return res.rows[0] || null;
+  }
+
+  async findReservasByFecha(clubId: string, fecha: string) {
+    const res = await this.db.query(
+      `SELECT r.*, c.nombre as cancha_nombre, c.tipo_superficie
+       FROM deportivo.reservas_cancha r
+       JOIN deportivo.canchas c ON c.id = r.cancha_id
+       WHERE c.club_id = $1 AND r.fecha_reserva = $2 AND r.estado_turno != 'cancelado'
+       ORDER BY r.hora_inicio ASC`,
+      [clubId, fecha],
+    );
+    return res.rows;
+  }
+
+  async findConflictoReserva(canchaId: string, fecha: string, horaInicio: string, horaFin: string, excludeReservaId?: string) {
+    let query = `
+      SELECT * FROM deportivo.reservas_cancha
+      WHERE cancha_id = $1 
+        AND fecha_reserva = $2 
+        AND estado_turno != 'cancelado'
+        AND (
+          (hora_inicio < $4 AND hora_fin > $3)
+        )
+    `;
+    const params = [canchaId, fecha, horaInicio, horaFin];
+
+    if (excludeReservaId) {
+      params.push(excludeReservaId);
+      query += ` AND id != $${params.length}`;
+    }
+
+    const res = await this.db.query(query, params);
+    return res.rows[0] || null;
+  }
+
+  async createReserva(data: any) {
+    const res = await this.db.query(
+      `INSERT INTO deportivo.reservas_cancha (
+        cancha_id, fecha_reserva, hora_inicio, hora_fin, tipo_reserva,
+        cliente_nombre, cliente_telefono, monto_total, monto_anticipo,
+        estado_pago, estado_turno
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *`,
+      [
+        data.cancha_id,
+        data.fecha_reserva,
+        data.hora_inicio,
+        data.hora_fin,
+        data.tipo_reserva,
+        data.cliente_nombre || null,
+        data.cliente_telefono || null,
+        data.monto_total || 0,
+        data.monto_anticipo || 0,
+        data.estado_pago || 'pendiente',
+        data.estado_turno || 'confirmado',
+      ],
+    );
+    return res.rows[0];
+  }
+
+  async registrarPagoCaja(reservaId: string, monto: number) {
+    const res = await this.db.query(
+      `UPDATE deportivo.reservas_cancha
+       SET monto_anticipo = monto_anticipo + $1,
+           estado_pago = CASE WHEN (monto_anticipo + $1) >= monto_total THEN 'completado' ELSE 'parcial' END,
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING *`,
+      [monto, reservaId],
+    );
+    return res.rows[0] || null;
+  }
+
+  async cancelarReserva(reservaId: string) {
+    const res = await this.db.query(
+      `UPDATE deportivo.reservas_cancha
+       SET estado_turno = 'cancelado', updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [reservaId],
+    );
+    return res.rows[0] || null;
+  }
+}

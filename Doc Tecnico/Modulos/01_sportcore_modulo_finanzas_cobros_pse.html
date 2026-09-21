@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 01: Cobros PSE & Motor Financiero</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(16,185,129,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(59,130,246,0.15) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--emerald);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--emerald);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,60px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--emerald);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--emerald);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--emerald);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'⚡';position:absolute;left:0;color:var(--emerald);font-size:10px;}
+
+.stbl{width:100%;border-collapse:collapse;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+.stbl th{background:var(--s2);color:var(--text);padding:10px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--bd);text-align:left;}
+.stbl td{padding:10px 14px;font-size:12.5px;border-bottom:1px solid var(--s2);border-right:1px solid var(--bd);vertical-align:top;}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:var(--s2);}
+.fpk{color:var(--amber);font-family:var(--mono);font-weight:700;}
+.ffk{color:var(--violet);font-family:var(--mono);font-weight:700;}
+.fnm{font-family:var(--mono);color:var(--cyan);}
+.ftp{font-family:var(--mono);color:var(--rose);font-size:11px;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:10px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(167,139,250,0.15);color:var(--violet);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12px;color:var(--t2);margin-top:4px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 01 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Cobros PSE & <em>Motor Financiero</em></h1>
+      <p class="subtitle">Facturación masiva automática de mensualidades, integración Checkout Wompi / PSE, conciliación bancaria idempotente, control de cartera morosa y recibos digitales en PDF.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>CORE</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-shield-halved"></i> Pasarela: <strong>Wompi Colombia (PSE/Nequi/TC)</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-code"></i> Endpoints: <strong>8 REST + 1 Webhook</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-mobile-screen"></i> Plataformas: <strong>Web Admin + Portal Padres</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Reglas de Negocio</a>
+    <a href="#ddl" class="toc-a"><span class="toc-n">02</span> Modelo DDL PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs & Webhooks</a>
+    <a href="#estados" class="toc-a"><span class="toc-n">04</span> Máquina de Estados & Flujo Wompi</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componentes Frontend Angular/Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Playwright & DB</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Reglas de Negocio</h2></div>
+    <p class="sd">El motor financiero de SportCoreOS automatiza el recaudo escolar deportivo eliminando el cobro en efectivo y reduciendo la cartera morosa hasta en un 70%.</p>
+    
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-calculator"></i> Facturación & Liquidación Masiva</div>
+        <ul class="card-list">
+          <li><strong>Generación Cron Automática:</strong> El día 1 de cada mes a las 00:00 se generan los cargos para todos los atletas con <code>estado_matricula = 'ACTIVO'</code>.</li>
+          <li><strong>Conceptos Parametrizables:</strong> Pensión Mensual, Matrícula Anual, Inscripción a Torneo, Kit de Uniformes y Arbitraje.</li>
+          <li><strong>Descuentos & Becas:</strong> Descuento automático por hermanos (ej: 15% segundo hijo) y becas deportivas del 25%, 50% o 100%.</li>
+          <li><strong>Recargos por Mora:</strong> Tasa configurable de interés por mora tras vencer la fecha límite (ej: día 10 de cada mes).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-credit-card"></i> Pasarela Wompi & Recaudo Online</div>
+        <ul class="card-list">
+          <li><strong>Botón de Pago en 1 Clic:</strong> Enlace dinámico Wompi enviado por WhatsApp y disponible en el Portal Móvil de Padres.</li>
+          <li><strong>Medios de Pago Habilitados:</strong> PSE (Débito cuentas corrientes/ahorros), Nequi, Daviplata, Tarjetas Débito y Crédito (Visa, Mastercard, AMEX).</li>
+          <li><strong>Conciliación Idempotente:</strong> Webhook de Wompi firmado con SHA-256 que actualiza el estado de la factura en menos de 2 segundos.</li>
+          <li><strong>Generación de Recibo PDF:</strong> Recibo oficial con numeración consecutiva, código QR de verificación y datos fiscales de la academia.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 DDL -->
+  <section id="ddl">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo DDL PostgreSQL (Esquema Financiero)</h2></div>
+    <p class="sd">Estructura de tablas para el control de cuentas por cobrar, transacciones electrónicas y registro contable de pagos.</p>
+
+    <table class="stbl">
+      <thead>
+        <tr><th>Campo</th><th>Tipo</th><th>Modificadores</th><th>Descripción & Restricción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="background:var(--s3);color:var(--emerald);font-weight:700;">TABLA: cargos_financieros (Facturas / Pensiones)</td></tr>
+        <tr><td><span class="fpk">id</span></td><td><span class="ftp">UUID</span></td><td>PRIMARY KEY</td><td>Identificador único del cargo</td></tr>
+        <tr><td><span class="ffk">club_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES clubes(id)</td><td>Tenant al que pertenece el cargo</td></tr>
+        <tr><td><span class="ffk">deportista_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES deportistas(id)</td><td>Atleta titular del cargo</td></tr>
+        <tr><td><span class="fnm">concepto_cobro</span></td><td><span class="ftp">VARCHAR(100)</span></td><td>NOT NULL</td><td>Ej: Pensión Septiembre 2026</td></tr>
+        <tr><td><span class="fnm">periodo_mes_anio</span></td><td><span class="ftp">VARCHAR(7)</span></td><td>NOT NULL</td><td>Formato '2026-09'</td></tr>
+        <tr><td><span class="fnm">monto_total</span></td><td><span class="ftp">DECIMAL(12,2)</span></td><td>NOT NULL</td><td>Valor facturado en pesos COP</td></tr>
+        <tr><td><span class="fnm">monto_descuento</span></td><td><span class="ftp">DECIMAL(12,2)</span></td><td>DEFAULT 0.00</td><td>Descuento hermano o beca</td></tr>
+        <tr><td><span class="fnm">monto_pagado</span></td><td><span class="ftp">DECIMAL(12,2)</span></td><td>DEFAULT 0.00</td><td>Valor acumulado recaudado</td></tr>
+        <tr><td><span class="fnm">fecha_vencimiento</span></td><td><span class="ftp">DATE</span></td><td>NOT NULL</td><td>Fecha límite de pago sin recargo</td></tr>
+        <tr><td><span class="fnm">estado_cargo</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'PENDIENTE' | 'PAGADO_TOTAL' | 'PAGADO_PARCIAL' | 'ANULADO'</td></tr>
+        
+        <tr><td colspan="4" style="background:var(--s3);color:var(--emerald);font-weight:700;">TABLA: transacciones_wompi (Logs de Pasarela)</td></tr>
+        <tr><td><span class="fpk">id</span></td><td><span class="ftp">UUID</span></td><td>PRIMARY KEY</td><td>Identificador interno de la transacción</td></tr>
+        <tr><td><span class="ffk">cargo_id</span></td><td><span class="ftp">UUID</span></td><td>REFERENCES cargos_financieros(id)</td><td>Factura pagada</td></tr>
+        <tr><td><span class="fnm">wompi_tx_id</span></td><td><span class="ftp">VARCHAR(80)</span></td><td>UNIQUE NOT NULL</td><td>ID oficial retornado por Wompi</td></tr>
+        <tr><td><span class="fnm">wompi_reference</span></td><td><span class="ftp">VARCHAR(100)</span></td><td>UNIQUE NOT NULL</td><td>Referencia única generada por SportCore</td></tr>
+        <tr><td><span class="fnm">metodo_pago</span></td><td><span class="ftp">VARCHAR(30)</span></td><td>NOT NULL</td><td>PSE, BANCOLOMBIA, NEQUI, CARD</td></tr>
+        <tr><td><span class="fnm">monto_en_centavos</span></td><td><span class="ftp">BIGINT</span></td><td>NOT NULL</td><td>Valor en centavos (ej: 18000000)</td></tr>
+        <tr><td><span class="fnm">estado_transaccion</span></td><td><span class="ftp">ENUM</span></td><td>NOT NULL</td><td>'APPROVED' | 'DECLINED' | 'VOIDED' | 'ERROR'</td></tr>
+        <tr><td><span class="fnm">raw_webhook_payload</span></td><td><span class="ftp">JSONB</span></td><td>NULL</td><td>Auditoría completa del payload de Wompi</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST & Webhook</h2></div>
+    <p class="sd">Servicios de backend en NestJS expuestos bajo prefijo `/api/v1/finanzas` con validación DTO y Guards JWT.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/finanzas/dashboard-kpis</span></div>
+      <div class="ep-desc">Retorna métricas consolidadas del mes: total facturado, total recaudado, cartera en mora y porcentaje de efectividad.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/finanzas/cargos/generacion-masiva</span></div>
+      <div class="ep-desc">Dispara el proceso de facturación mensual para una categoría o todo el club aplicando reglas de descuento.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/finanzas/wompi/init-checkout</span></div>
+      <div class="ep-desc">Genera la firma criptográfica SHA-256 de integridad y los parámetros para abrir el widget de Wompi.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/finanzas/wompi/webhook</span></div>
+      <div class="ep-desc">Endpoint público receptor del evento `transaction.updated` de Wompi. Valida checksum y actualiza estado.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/finanzas/recibos/:id/pdf</span></div>
+      <div class="ep-desc">Genera en streaming el comprobante oficial de pago en formato PDF para descarga o impresión.</div>
+    </div>
+  </section>
+
+  <!-- 04 ESTADOS -->
+  <section id="estados">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Máquina de Estados & Flujo Transaccional</h2></div>
+    <p class="sd">Ciclo de vida de una obligación financiera desde su emisión hasta su conciliación automática en banco.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-arrows-spin"></i> Ciclo de Vida del Cargo y Pago Wompi</div>
+      <pre style="background:var(--s2);padding:16px;border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--cyan);overflow-x:auto;">
+[GENERACIÓN CARGO] ──> ESTADO: PENDIENTE
+                             │
+                             ▼
+                    [PADRE ABRE LINK PSE]
+                             │
+                             ▼
+                    [WIDGET WOMPI CHECKOUT]
+                             │
+            ┌────────────────┴────────────────┐
+            ▼                                 ▼
+    [TRANSACCIÓN APPROVED]          [TRANSACCIÓN DECLINED]
+            │                                 │
+            ▼                                 ▼
+   [WEBHOOK SPORTCOREOS]            [NOTIFICA REINTENTO]
+   - Actualiza monto_pagado         - Mantiene estado PENDIENTE
+   - ESTADO: PAGADO_TOTAL
+   - Emite Recibo PDF
+   - Notifica por WhatsApp
+      </pre>
+    </div>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componentes Frontend Angular & Signals</h2></div>
+    <p class="sd">Implementación en Angular 19 con arquitectura OnPush y diseño modular SCSS.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-brands fa-angular"></i> Componente Finanzas (Admin)</div>
+        <ul class="card-list">
+          <li><strong>Ruta:</strong> <code>src/app/pages/finanzas/finanzas.component.ts</code></li>
+          <li><strong>Signals Clave:</strong> <code>resumenMes = signal&lt;FinanceSummary&gt;()</code>, <code>cargosList = signal&lt;Cargo[]&gt;()</code>.</li>
+          <li><strong>Filtros Reactivos:</strong> Filtro por categoría, estado ('PAGADO' / 'EN MORA') y búsqueda por documento.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-mobile-screen"></i> Checkout PSE (Portal Padres)</div>
+        <ul class="card-list">
+          <li><strong>Ruta:</strong> <code>src/app/pages/portal-padres/portal-padres.component.ts</code></li>
+          <li><strong>Acción Directa:</strong> Botón "Pagar Pensión con PSE" que invoca el script oficial de Wompi sin redirecciones engorrosas.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Estrategia de Pruebas E2E (Playwright)</h2></div>
+    <p class="sd">Pruebas automatizadas bajo el estándar de Error Sniffer Estricto y verificación directa en PostgreSQL.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Escenarios de Prueba Obligatorios</div>
+      <ul class="card-list">
+        <li><strong>Sniffer Estricto:</strong> La prueba falla si ocurre `pageerror`, `console.error` o respuestas HTTP &gt;= 400.</li>
+        <li><strong>Generación Masiva:</strong> Probar la emisión de 100 cargos y validar en PostgreSQL que no queden registros huérfanos.</li>
+        <li><strong>Simulación Webhook:</strong> Inyectar un payload simulado de Wompi con checksum válido y comprobar que la factura cambia a `PAGADO_TOTAL`.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>SportCoreOS — Módulo Técnico 01: Finanzas & PSE v1.0 • SECTIC S.A.S.</span>
+    <span>Arquitectura de Alto Rendimiento · 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>

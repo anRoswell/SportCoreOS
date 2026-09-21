@@ -1,0 +1,23 @@
+import { Injectable, signal, computed } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class LoadingService {
+  private activeRequests = signal<number>(0);
+
+  // Computado reactivo para saber si hay peticiones en curso
+  readonly isLoading = computed(() => this.activeRequests() > 0);
+
+  show(): void {
+    this.activeRequests.update((count) => count + 1);
+  }
+
+  hide(): void {
+    this.activeRequests.update((count) => Math.max(0, count - 1));
+  }
+
+  reset(): void {
+    this.activeRequests.set(0);
+  }
+}

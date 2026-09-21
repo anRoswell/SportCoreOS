@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SportCoreOS — Módulo 11: Scouting, Visoría & Fichaje de Talentos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#090d16; --s1:#0f1626; --s2:#162035; --s3:#1e2b48;
+  --bd:#223352; --bd2:#2e446e;
+  --emerald:#10b981; --green:#34d399; --blue:#3b82f6; --cyan:#22d3ee;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --text:#f8fafc; --t2:#94a3b8; --t3:#64748b;
+  --mono:'JetBrains Mono',monospace; --sans:'Syne',sans-serif; --serif:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:0.25;}
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:50px 28px 120px;}
+
+.cover{background:var(--s1);border:1px solid var(--bd);border-radius:16px;margin-bottom:50px;padding:48px 52px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 85% 15%,rgba(251,191,36,0.2) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 85%,rgba(16,185,129,0.18) 0%,transparent 55%);}
+.cov{position:relative;z-index:2;}
+.cov-eye{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.cov-eye::before{content:'';width:32px;height:2px;background:var(--amber);}
+.cover h1{font-family:var(--sans);font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:14px;letter-spacing:-.02em;}
+.cover h1 em{color:var(--amber);font-style:normal;}
+.cover p.subtitle{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--t2);max-width:760px;line-height:1.6;}
+.cov-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cov-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:5px 14px;border-radius:4px;background:var(--s2);color:var(--t2);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;}
+
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px 28px;margin-bottom:60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 20px;}
+.toc-hd{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:12px;grid-column:1/-1;font-weight:700;}
+.toc-a{display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dotted var(--bd);text-decoration:none;transition:color .15s;}
+.toc-a:hover{color:var(--amber);}
+.toc-n{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;}
+
+section{margin-bottom:70px;}
+.sh{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:24px;}
+.sn{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;}
+.st{font-family:var(--sans);font-size:clamp(22px,2.5vw,30px);font-weight:800;letter-spacing:-.01em;}
+.sd{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--t2);margin-bottom:22px;line-height:1.7;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;}
+.card-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--amber);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.card-list li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;}
+.card-list li::before{content:'★';position:absolute;left:0;color:var(--amber);font-size:10px;}
+
+.schema-table{width:100%;border-collapse:collapse;margin:16px 0;font-family:var(--mono);font-size:12px;}
+.schema-table th{background:var(--s2);color:var(--amber);text-align:left;padding:10px 14px;border:1px solid var(--bd);}
+.schema-table td{padding:10px 14px;border:1px solid var(--bd);color:var(--t2);}
+.schema-table tr:nth-child(even){background:rgba(255,255,255,0.01);}
+.type-badge{background:var(--s3);color:var(--cyan);padding:2px 6px;border-radius:4px;font-size:11px;}
+.pk-badge{background:rgba(251,191,36,0.15);color:var(--amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+.fk-badge{background:rgba(167,139,250,0.15);color:var(--violet);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+
+.endpoint-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px;}
+.ep-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:6px;}
+.method{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.GET{background:rgba(52,211,153,0.15);color:var(--green);}
+.POST{background:rgba(59,130,246,0.15);color:var(--blue);}
+.PATCH{background:rgba(251,191,36,0.15);color:var(--amber);}
+.DELETE{background:rgba(251,113,133,0.15);color:var(--rose);}
+.ep-path{color:var(--cyan);font-weight:600;}
+.ep-desc{font-size:12.5px;color:var(--t2);margin-top:4px;}
+
+pre.code-block{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;font-family:var(--mono);font-size:12px;color:var(--text);overflow-x:auto;margin-top:12px;}
+
+footer{border-top:1px solid var(--bd);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--t3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cov">
+      <div class="cov-eye">MÓDULO TÉCNICO 11 // ESPECIFICACIÓN DETALLADA</div>
+      <h1>Scouting, Visoría & <em>Fichaje de Talentos</em></h1>
+      <p class="subtitle">Herramienta profesional de captación y evaluación de futbolistas con rúbricas técnicas estandarizadas, dossier de exportación PDF con clips de vídeo para clubes profesionales y trazabilidad de derechos formativos FIFA.</p>
+      <div class="cov-pills">
+        <div class="cov-pill"><i class="fa-solid fa-layer-group"></i> Nivel: <strong>PRO / CAPTACIÓN</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-binoculars"></i> Evaluación: <strong>Rúbricas 1-10 + Radar Pro</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-file-pdf"></i> Salida: <strong>Dossier PDF de Exportación</strong></div>
+        <div class="cov-pill"><i class="fa-solid fa-handshake"></i> Transferencias: <strong>Derechos de Formación FIFA</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-hd">// Contenido de la Especificación</div>
+    <a href="#alcance" class="toc-a"><span class="toc-n">01</span> Alcance & Metodología de Scouting</a>
+    <a href="#modelo-datos" class="toc-a"><span class="toc-n">02</span> Modelo de Datos PostgreSQL</a>
+    <a href="#apis" class="toc-a"><span class="toc-n">03</span> Contrato de APIs REST</a>
+    <a href="#rubrica" class="toc-a"><span class="toc-n">04</span> Rúbrica & Matriz de Ponderación</a>
+    <a href="#angular" class="toc-a"><span class="toc-n">05</span> Componente Angular con Signals</a>
+    <a href="#qa" class="toc-a"><span class="toc-n">06</span> Pruebas E2E Exhaustivas (Playwright)</a>
+  </nav>
+
+  <!-- 01 ALCANCE -->
+  <section id="alcance">
+    <div class="sh"><span class="sn">01</span><h2 class="st">Alcance & Metodología de Scouting</h2></div>
+    <p class="sd">Diseñado para captadores de talento, directores deportivos y agentes que monitorean prospectos dentro y fuera de la academia.</p>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Evaluación Multidimensional</div>
+        <ul class="card-list">
+          <li><strong>4 Pilares de Observación:</strong> Técnica (control, pase, regate), Táctica (visión, posicionamiento), Fisiológica (velocidad, biotipo, resistencia) y Psicosocial (carácter, resiliencia, entorno familiar).</li>
+          <li><strong>Etiquetas de Potencial:</strong> Categorización automática: `Fichaje Inmediato`, `En Seguimiento`, `Poco Proyectable`.</li>
+          <li><strong>Promoción Rápida:</strong> Conversión de un prospecto scouted en jugador activo de la academia en 1 clic.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-passport"></i> Dossier de Exportación & FIFA Solidarity</div>
+        <ul class="card-list">
+          <li><strong>PDF Pro Ejecutivo:</strong> Genera un informe estéticamente impecable con gráficos radar, historial de partidos observados y enlaces QR a video clips en YouTube/Vimeo.</li>
+          <li><strong>Historial Formativo:</strong> Registro de años y meses de permanencia en el club para reclamo de mecanismo de solidaridad FIFA en futuras ventas profesionales.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 MODELO DE DATOS -->
+  <section id="modelo-datos">
+    <div class="sh"><span class="sn">02</span><h2 class="st">Modelo de Datos PostgreSQL (DDL)</h2></div>
+    <p class="sd">Estructura para seguimiento de prospectos externos, reportes de visoría y notas ponderadas.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-database"></i> Tablas: `prospectos_scouting` & `evaluaciones_scouting`</div>
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador único del prospecto.</td>
+          </tr>
+          <tr>
+            <td><code>club_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Club que realiza el scouting.</td>
+          </tr>
+          <tr>
+            <td><code>nombres_apellidos</code></td>
+            <td><span class="type-badge">VARCHAR(150)</span></td>
+            <td>NOT NULL</td>
+            <td>Nombre del talento observado.</td>
+          </tr>
+          <tr>
+            <td><code>fecha_nacimiento</code></td>
+            <td><span class="type-badge">DATE</span></td>
+            <td>NOT NULL</td>
+            <td>Fecha de nacimiento para cálculo de categoría.</td>
+          </tr>
+          <tr>
+            <td><code>posicion_principal</code></td>
+            <td><span class="type-badge">VARCHAR(50)</span></td>
+            <td>NOT NULL</td>
+            <td>`delantero_centro`, `extremo_derecho`, `volante_marca`, etc.</td>
+          </tr>
+          <tr>
+            <td><code>pie_habil</code></td>
+            <td><span class="type-badge">VARCHAR(20)</span></td>
+            <td>NOT NULL</td>
+            <td>`derecho`, `izquierdo`, `ambidiestro`.</td>
+          </tr>
+          <tr>
+            <td><code>club_origen</code></td>
+            <td><span class="type-badge">VARCHAR(120)</span></td>
+            <td>NULLABLE</td>
+            <td>Club de barrio, colegio o equipo rival actual.</td>
+          </tr>
+          <tr>
+            <td><code>estado_scouting</code></td>
+            <td><span class="type-badge">VARCHAR(30)</span></td>
+            <td>NOT NULL</td>
+            <td>`en_observacion`, `interes_fichaje`, `fichado`, `descartado`.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="schema-table" style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Restricción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="pk-badge">PRIMARY KEY</span></td>
+            <td>Identificador del informe de partido/entrenamiento.</td>
+          </tr>
+          <tr>
+            <td><code>prospecto_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Prospecto evaluado.</td>
+          </tr>
+          <tr>
+            <td><code>scout_usuario_id</code></td>
+            <td><span class="type-badge">UUID</span></td>
+            <td><span class="fk-badge">NOT NULL FK</span></td>
+            <td>Ojeador responsable.</td>
+          </tr>
+          <tr>
+            <td><code>score_tecnico</code></td>
+            <td><span class="type-badge">NUMERIC(3,1)</span></td>
+            <td>CHECK(>=1 AND <=10)</td>
+            <td>Puntaje técnico (1.0 a 10.0).</td>
+          </tr>
+          <tr>
+            <td><code>score_tactico</code></td>
+            <td><span class="type-badge">NUMERIC(3,1)</span></td>
+            <td>CHECK(>=1 AND <=10)</td>
+            <td>Puntaje táctico (1.0 a 10.0).</td>
+          </tr>
+          <tr>
+            <td><code>score_fisico</code></td>
+            <td><span class="type-badge">NUMERIC(3,1)</span></td>
+            <td>CHECK(>=1 AND <=10)</td>
+            <td>Puntaje físico (1.0 a 10.0).</td>
+          </tr>
+          <tr>
+            <td><code>score_mental</code></td>
+            <td><span class="type-badge">NUMERIC(3,1)</span></td>
+            <td>CHECK(>=1 AND <=10)</td>
+            <td>Puntaje actitudinal (1.0 a 10.0).</td>
+          </tr>
+          <tr>
+            <td><code>score_global</code></td>
+            <td><span class="type-badge">NUMERIC(3,1)</span></td>
+            <td>NOT NULL</td>
+            <td>Promedio ponderado global.</td>
+          </tr>
+          <tr>
+            <td><code>dictamen_scout</code></td>
+            <td><span class="type-badge">TEXT</span></td>
+            <td>NOT NULL</td>
+            <td>Conclusiones cualitativas del visor.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 APIS -->
+  <section id="apis">
+    <div class="sh"><span class="sn">03</span><h2 class="st">Contrato de APIs REST (Scouting)</h2></div>
+    <p class="sd">Servicios de captación y exportación de fichas técnicas de alto rendimiento.</p>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/scouting/prospectos</span></div>
+      <div class="ep-desc">Lista los prospectos con filtros por posición, rango de edad, pie hábil y puntuación global.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/scouting/evaluaciones</span></div>
+      <div class="ep-desc">Registra una nueva visoría de campo con cálculo de puntuación ponderada y observaciones.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method GET">GET</span><span class="ep-path">/api/v1/scouting/:id/dossier-pdf</span></div>
+      <div class="ep-desc">Genera el archivo PDF ejecutivo listo para presentar a clubes profesionales o intermediarios.</div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="ep-row"><span class="method POST">POST</span><span class="ep-path">/api/v1/scouting/:id/promover-a-plantel</span></div>
+      <div class="ep-desc">Convierte el prospecto en jugador activo, asignándole categoría y abriendo su expediente 360°.</div>
+    </div>
+  </section>
+
+  <!-- 04 RUBRICA -->
+  <section id="rubrica">
+    <div class="sh"><span class="sn">04</span><h2 class="st">Rúbrica & Matriz de Ponderación</h2></div>
+    <p class="sd">Criterios de puntuación estandarizados.</p>
+
+    <pre class="code-block">
+PONDERACIÓN GLOBAL = (Técnica x 0.35) + (Táctica x 0.25) + (Física x 0.20) + (Mental x 0.20)
+
+CALIFICACIONES:
+- 9.0 a 10.0: Talento Excepcional (Fichaje Inmediato / Proyección Primera División)
+- 7.5 a 8.9 : Alto Potencial (Incorporación a Plantel Competitivo A)
+- 6.0 a 7.4 : En Desarrollo (Plantel Formativo B / Seguimiento de 6 meses)
+- < 6.0     : No recomendado para plantilla competitiva
+    </pre>
+  </section>
+
+  <!-- 05 ANGULAR -->
+  <section id="angular">
+    <div class="sh"><span class="sn">05</span><h2 class="st">Componente Angular 18 con Signals</h2></div>
+    <p class="sd">Ficha de evaluación rápida con sliders táctiles para ojeadores en cancha.</p>
+
+    <pre class="code-block">
+import { Component, signal, computed, inject } from '@angular/core';
+import { ScoutingService } from './scouting.service';
+
+@Component({
+  selector: 'app-scouting-evaluador',
+  standalone: true,
+  template: `
+    &lt;div class="scouting-card"&gt;
+      &lt;h3&gt;Visoría: {{ prospectoNombre() }}&lt;/h3&gt;
+      
+      &lt;div class="slider-row"&gt;
+        &lt;label&gt;Técnica (35%): &lt;strong&gt;{{ scoreTec() }}&lt;/strong&gt;&lt;/label&gt;
+        &lt;input type="range" min="1" max="10" step="0.5" [value]="scoreTec()" (input)="scoreTec.set(+$any($event.target).value)" /&gt;
+      &lt;/div&gt;
+
+      &lt;div class="slider-row"&gt;
+        &lt;label&gt;Táctica (25%): &lt;strong&gt;{{ scoreTac() }}&lt;/strong&gt;&lt;/label&gt;
+        &lt;input type="range" min="1" max="10" step="0.5" [value]="scoreTac()" (input)="scoreTac.set(+$any($event.target).value)" /&gt;
+      &lt;/div&gt;
+
+      &lt;div class="slider-row"&gt;
+        &lt;label&gt;Física (20%): &lt;strong&gt;{{ scoreFis() }}&lt;/strong&gt;&lt;/label&gt;
+        &lt;input type="range" min="1" max="10" step="0.5" [value]="scoreFis()" (input)="scoreFis.set(+$any($event.target).value)" /&gt;
+      &lt;/div&gt;
+
+      &lt;div class="slider-row"&gt;
+        &lt;label&gt;Mental (20%): &lt;strong&gt;{{ scoreMen() }}&lt;/strong&gt;&lt;/label&gt;
+        &lt;input type="range" min="1" max="10" step="0.5" [value]="scoreMen()" (input)="scoreMen.set(+$any($event.target).value)" /&gt;
+      &lt;/div&gt;
+
+      &lt;div class="kpi-final"&gt;
+        Puntuación Ponderada: &lt;span class="badge-gold"&gt;{{ scoreGlobal() }} / 10.0&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `
+})
+export class ScoutingEvaluadorComponent {
+  readonly prospectoNombre = signal<string>('Carlos Andrés Mina (Delantero)');
+  readonly scoreTec = signal<number>(8.0);
+  readonly scoreTac = signal<number>(7.5);
+  readonly scoreFis = signal<number>(9.0);
+  readonly scoreMen = signal<number>(8.5);
+
+  readonly scoreGlobal = computed(() => {
+    const val = (this.scoreTec() * 0.35) + (this.scoreTac() * 0.25) + (this.scoreFis() * 0.20) + (this.scoreMen() * 0.20);
+    return val.toFixed(1);
+  });
+}
+    </pre>
+  </section>
+
+  <!-- 06 QA -->
+  <section id="qa">
+    <div class="sh"><span class="sn">06</span><h2 class="st">Pruebas E2E Exhaustivas (Playwright)</h2></div>
+    <p class="sd">Verificación de fidelidad matemática de la rúbrica y generación de dossiers sin errores.</p>
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-vial-circle-check"></i> Suite de Prueba: `e2e/scouting-visorias.spec.ts`</div>
+      <ul class="card-list">
+        <li><strong>Strict Error Sniffer:</strong> `attachStrictErrorSniffer(page)` activo en todo el ciclo de captación.</li>
+        <li><strong>Cálculo Reactivo de Rúbrica:</strong> Validar que al deslizar los sliders el score global coincida exactamente con la fórmula matemática.</li>
+        <li><strong>Descarga de Dossier PDF:</strong> Verificar que la llamada al endpoint retorne un payload de tipo `application/pdf` con código 200 y tamaño > 100KB.</li>
+        <li><strong>Promoción a Jugador:</strong> Comprobar que tras promover a un prospecto se cree el registro en la tabla `jugadores` y se inactive en `prospectos_scouting`.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>SPORTCOREOS // ESPECIFICACIÓN TÉCNICA MÓDULO 11</div>
+    <div>SCOUTING & VISORÍA &bull; FEBRERO 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

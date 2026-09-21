@@ -1,0 +1,60 @@
+/* ==========================================================================
+   FutCoreOS — Badges & Utility Classes
+   ========================================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.badge-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.badge-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  &.badge-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &.badge-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+}
+
+[data-theme="dark"], body.dark-theme {
+  .badge {
+    &.badge-success {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.18);
+    }
+    &.badge-warning {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.18);
+    }
+    &.badge-danger {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.18);
+    }
+    &.badge-blue {
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.18);
+    }
+  }
+}
