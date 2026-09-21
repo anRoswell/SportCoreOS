@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GenerarBoletinAlumnoDto {
   @ApiProperty({ description: 'ID único del jugador', example: 'e1e0691e-691e-4c92-9046-871955524534' })
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   jugador_id: string;
 

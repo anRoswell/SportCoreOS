@@ -49,7 +49,7 @@ export class ScoutingRepository {
     const evaluacionesRes = await this.db.query(
       `SELECT e.*, u.nombre as scout_nombre, u.email as scout_email
        FROM deportivo.evaluaciones_scouting e
-       LEFT JOIN auth.usuarios u ON e.scout_usuario_id = u.id
+       LEFT JOIN core.usuarios u ON e.scout_usuario_id = u.id
        WHERE e.prospecto_id = $1
        ORDER BY e.fecha_observacion DESC`,
       [id]

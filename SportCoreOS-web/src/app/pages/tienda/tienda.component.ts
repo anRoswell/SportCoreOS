@@ -278,7 +278,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge">
                   <i class="fa-solid fa-cart-plus"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>Registrar Pedido de Indumentaria</h2>
                   <p class="modal-subtitle">{{ selectedProduct()?.nombre }}</p>
                 </div>
@@ -292,13 +292,16 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g2">
                   <div class="input-group">
                     <label>Seleccionar Talla <span class="required-star">*</span></label>
-                    <select [(ngModel)]="pedidoForm.variante_id" name="variante_id" class="sport-input" required>
-                      @for (v of selectedProduct()!.variantes; track v.id) {
-                        <option [value]="v.id" [disabled]="v.stock_actual === 0">
-                          Talla {{ v.talla }} ({{ v.stock_actual > 0 ? v.stock_actual + ' disp.' : 'AGOTADO' }})
-                        </option>
-                      }
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="pedidoForm.variante_id" name="variante_id" class="sport-input" required>
+                        @for (v of selectedProduct()!.variantes; track v.id) {
+                          <option [value]="v.id" [disabled]="v.stock_actual === 0">
+                            Talla {{ v.talla }} ({{ v.stock_actual > 0 ? v.stock_actual + ' disp.' : 'AGOTADO' }})
+                          </option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Cantidad de Unidades <span class="required-star">*</span></label>
@@ -337,11 +340,14 @@ import { ApiService } from '../../core/services/api.service';
                 </div>
                 <div class="input-group">
                   <label>Método de Pago</label>
-                  <select [(ngModel)]="pedidoForm.metodo_pago" name="metodo_pago" class="sport-input">
-                    <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
-                    <option value="EFECTIVO_CAJA">Efectivo en Caja</option>
-                    <option value="TRANSFERENCIA">Transferencia / Nequi</option>
-                  </select>
+                  <div class="sport-select-wrapper">
+                    <select [(ngModel)]="pedidoForm.metodo_pago" name="metodo_pago" class="sport-input">
+                      <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
+                      <option value="EFECTIVO_CAJA">Efectivo en Caja</option>
+                      <option value="TRANSFERENCIA">Transferencia / Nequi</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
                 </div>
               </div>
 
@@ -365,7 +371,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge badge-emerald">
                   <i class="fa-solid fa-truck-ramp-box"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>Validar Despacho</h2>
                   <p class="modal-subtitle">Entrega de indumentaria en secretaría o utilería</p>
                 </div>
@@ -408,7 +414,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge badge-blue">
                   <i class="fa-solid" [class.fa-shirt]="!isEditingProduct" [class.fa-pen-to-square]="isEditingProduct"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>{{ isEditingProduct ? 'Editar Artículo de Indumentaria' : 'Nuevo Artículo de Indumentaria' }}</h2>
                   <p class="modal-subtitle">Registra o actualiza los datos y catálogo de productos</p>
                 </div>
@@ -418,6 +424,7 @@ import { ApiService } from '../../core/services/api.service';
 
             <form (ngSubmit)="submitProductForm()" class="modal-form">
               <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-tag"></i> Datos del Producto</span>
                 <div class="form-row g2">
                   <div class="input-group">
                     <label>Código SKU <span class="required-star">*</span></label>
@@ -432,12 +439,15 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g3">
                   <div class="input-group">
                     <label>Categoría <span class="required-star">*</span></label>
-                    <select [(ngModel)]="productForm.categoria" name="pCategoria" class="sport-input">
-                      <option value="uniforme_oficial">Uniforme Oficial</option>
-                      <option value="entrenamiento">Ropa Entrenamiento</option>
-                      <option value="balones">Balones</option>
-                      <option value="accesorios">Accesorios</option>
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="productForm.categoria" name="pCategoria" class="sport-input">
+                        <option value="uniforme_oficial">Uniforme Oficial</option>
+                        <option value="entrenamiento">Ropa Entrenamiento</option>
+                        <option value="balones">Balones</option>
+                        <option value="accesorios">Accesorios</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Precio Venta ($ COP) <span class="required-star">*</span></label>
@@ -445,11 +455,43 @@ import { ApiService } from '../../core/services/api.service';
                   </div>
                   <div class="input-group">
                     <label>Personalizable</label>
-                    <select [(ngModel)]="productForm.personalizable" name="pCustom" class="sport-input">
-                      <option [ngValue]="false">No</option>
-                      <option [ngValue]="true">Sí (Dorsal/Nombre)</option>
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="productForm.personalizable" name="pCustom" class="sport-input">
+                        <option [ngValue]="false">No</option>
+                        <option [ngValue]="true">Sí (Dorsal/Nombre)</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
+                </div>
+              </div>
+
+              <!-- SECCIÓN DE VARIANTES & TALLAS -->
+              <div class="modal-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                  <span class="modal-section-title" style="margin:0;"><i class="fa-solid fa-ruler-combined"></i> Tallas & Existencias</span>
+                  <button type="button" class="btn-secondary btn-sm" (click)="addVariantRow()">
+                    <i class="fa-solid fa-plus"></i> Añadir Talla
+                  </button>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.65rem;">
+                  @for (v of productForm.variantes; track $index) {
+                    <div class="form-row g3" style="align-items:flex-end;margin-bottom:0;">
+                      <div class="input-group">
+                        <label>Talla / Medida</label>
+                        <input type="text" [(ngModel)]="v.talla" [name]="'talla_' + $index" placeholder="ej. M, 10, Única" class="sport-input" required />
+                      </div>
+                      <div class="input-group">
+                        <label>Stock Disponible</label>
+                        <input type="number" [(ngModel)]="v.stock_actual" [name]="'stock_' + $index" min="0" class="sport-input" required />
+                      </div>
+                      <div class="input-group" style="padding-bottom:0.25rem;">
+                        <button type="button" class="btn-secondary btn-sm" (click)="removeVariantRow($index)" [disabled]="productForm.variantes.length <= 1" title="Eliminar Talla" style="height:42px;width:100%;color:#ef4444;border-color:rgba(239,68,68,0.3);">
+                          <i class="fa-solid fa-trash-can"></i> Quitar
+                        </button>
+                      </div>
+                    </div>
+                  }
                 </div>
               </div>
 
@@ -458,6 +500,67 @@ import { ApiService } from '../../core/services/api.service';
                 <button type="submit" class="btn-primary">{{ isEditingProduct ? 'Actualizar Producto' : 'Guardar Producto' }}</button>
               </div>
             </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR ELIMINACIÓN/DESACTIVACIÓN DE PRODUCTO -->
+      @if (showDeleteProductModal() && productToDelete()) {
+        <div class="modal-overlay" (click)="closeDeleteProductModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header header-danger">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-danger-glow">
+                  <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Desactivar Producto del Catálogo</h2>
+                  <p class="modal-subtitle">Ocultará el artículo de la tienda y de los pedidos de utilería</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeDeleteProductModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-card">
+                <div class="retire-avatar-wrap">
+                  <img [src]="productToDelete()?.foto_url || 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=300'" alt="{{ productToDelete()?.nombre }}" />
+                </div>
+                <div class="retire-player-details">
+                  <div class="retire-name-row">
+                    <span class="retire-player-name">{{ productToDelete()?.nombre }}</span>
+                  </div>
+                  <div class="retire-meta-row">
+                    <span class="meta-tag"><i class="fa-solid fa-barcode"></i> SKU: {{ productToDelete()?.codigo_sku }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-tag"></i> \${{ productToDelete()?.precio_venta | number }} COP</span>
+                    <span class="meta-tag"><i class="fa-solid fa-shapes"></i> {{ formatCategoria(productToDelete()?.categoria) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Desactivación:</h4>
+                  <ul>
+                    <li>El producto ya no estará disponible para nuevos pedidos en el catálogo.</li>
+                    <li>Las órdenes previamente generadas <strong>se conservarán intactas</strong> para su entrega.</li>
+                    <li>El inventario actual quedará pausado hasta su reactivación.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeDeleteProductModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar en Catálogo
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmarEliminarProducto()">
+                <i class="fa-solid fa-trash-can"></i> Sí, Desactivar Artículo
+              </button>
+            </div>
           </div>
         </div>
       }
@@ -812,6 +915,8 @@ export class TiendaComponent implements OnInit {
   readonly showDespachoModal = signal<boolean>(false);
   readonly showCreateProductModal = signal<boolean>(false);
   readonly showEditProductModal = signal<boolean>(false);
+  readonly showDeleteProductModal = signal<boolean>(false);
+  readonly productToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
 
   isEditingProduct: boolean = false;
@@ -839,7 +944,7 @@ export class TiendaComponent implements OnInit {
       { talla: '10', stock_actual: 15 },
       { talla: '12', stock_actual: 15 },
       { talla: 'M', stock_actual: 10 },
-    ],
+    ] as any[],
   };
 
   readonly filteredProductos = computed(() => {
@@ -953,6 +1058,16 @@ export class TiendaComponent implements OnInit {
     });
   }
 
+  addVariantRow(): void {
+    this.productForm.variantes.push({ talla: '', stock_actual: 10 });
+  }
+
+  removeVariantRow(index: number): void {
+    if (this.productForm.variantes.length > 1) {
+      this.productForm.variantes.splice(index, 1);
+    }
+  }
+
   openCreateProductModal(): void {
     this.isEditingProduct = false;
     this.editingProductId = null;
@@ -982,7 +1097,9 @@ export class TiendaComponent implements OnInit {
       categoria: producto.categoria || 'uniforme_oficial',
       precio_venta: Number(producto.precio_venta) || 0,
       personalizable: !!producto.personalizable,
-      variantes: producto.variantes || [],
+      variantes: producto.variantes && producto.variantes.length > 0 
+        ? producto.variantes.map((v: any) => ({ talla: v.talla, stock_actual: v.stock_actual }))
+        : [{ talla: 'Única', stock_actual: 10 }],
     };
     this.showEditProductModal.set(true);
     this.showCreateProductModal.set(false);
@@ -1027,17 +1144,29 @@ export class TiendaComponent implements OnInit {
   }
 
   eliminarProducto(producto: any): void {
-    if (confirm(`¿Estás seguro de desactivar el producto "${producto.nombre}"?`)) {
-      this.api.deleteProductoTienda(producto.id).subscribe({
-        next: () => {
-          this.showToast('Producto desactivado del catálogo.');
-          this.loadCatalogo();
-        },
-        error: () => {
-          this.showToast('Error al eliminar producto.');
-        }
-      });
-    }
+    this.productToDelete.set(producto);
+    this.showDeleteProductModal.set(true);
+  }
+
+  closeDeleteProductModal(): void {
+    this.showDeleteProductModal.set(false);
+    this.productToDelete.set(null);
+  }
+
+  confirmarEliminarProducto(): void {
+    const prod = this.productToDelete();
+    if (!prod) return;
+
+    this.api.deleteProductoTienda(prod.id).subscribe({
+      next: () => {
+        this.showToast('Producto desactivado del catálogo.');
+        this.closeDeleteProductModal();
+        this.loadCatalogo();
+      },
+      error: () => {
+        this.showToast('Error al eliminar producto.');
+      }
+    });
   }
 
   private showToast(msg: string): void {

@@ -184,7 +184,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge">
                   <i class="fa-solid fa-calendar-plus"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>Nueva Reserva de Escenario</h2>
                   <p class="modal-subtitle">Aparta un turno para alquiler particular, entrenamiento o mantenimiento</p>
                 </div>
@@ -198,11 +198,14 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g2">
                   <div class="input-group">
                     <label>Cancha / Escenario <span class="required-star">*</span></label>
-                    <select [(ngModel)]="reservaForm.cancha_id" name="cancha_id" class="sport-input" required>
-                      @for (c of canchasList(); track c.id) {
-                        <option [value]="c.id">{{ c.nombre }} ({{ formatSuperficie(c.tipo_superficie) }})</option>
-                      }
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.cancha_id" name="cancha_id" class="sport-input" required>
+                        @for (c of canchasList(); track c.id) {
+                          <option [value]="c.id">{{ c.nombre }} ({{ formatSuperficie(c.tipo_superficie) }})</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Fecha de Turno <span class="required-star">*</span></label>
@@ -213,28 +216,37 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g3">
                   <div class="input-group">
                     <label>Hora Inicio <span class="required-star">*</span></label>
-                    <select [(ngModel)]="reservaForm.hora_inicio" name="hora_inicio" class="sport-input" required>
-                      @for (h of horasSlots; track h.inicio) {
-                        <option [value]="h.inicio">{{ h.inicio }}</option>
-                      }
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.hora_inicio" name="hora_inicio" class="sport-input" required>
+                        @for (h of horasSlots; track h.inicio) {
+                          <option [value]="h.inicio">{{ h.inicio }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Hora Fin <span class="required-star">*</span></label>
-                    <select [(ngModel)]="reservaForm.hora_fin" name="hora_fin" class="sport-input" required>
-                      @for (h of horasSlots; track h.fin) {
-                        <option [value]="h.fin">{{ h.fin }}</option>
-                      }
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.hora_fin" name="hora_fin" class="sport-input" required>
+                        @for (h of horasSlots; track h.fin) {
+                          <option [value]="h.fin">{{ h.fin }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Tipo de Reserva <span class="required-star">*</span></label>
-                    <select [(ngModel)]="reservaForm.tipo_reserva" name="tipo_reserva" class="sport-input" required>
-                      <option value="alquiler_particular">Alquiler Particular</option>
-                      <option value="entrenamiento_club">Entrenamiento Club (Exonerado)</option>
-                      <option value="partido_oficial">Partido Oficial Liga</option>
-                      <option value="mantenimiento">Mantenimiento de Césped/Luz</option>
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.tipo_reserva" name="tipo_reserva" class="sport-input" required>
+                        <option value="alquiler_particular">Alquiler Particular</option>
+                        <option value="entrenamiento_club">Entrenamiento Club (Exonerado)</option>
+                        <option value="partido_oficial">Partido Oficial Liga</option>
+                        <option value="mantenimiento">Mantenimiento de Césped/Luz</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -259,11 +271,14 @@ import { ApiService } from '../../core/services/api.service';
                   </div>
                   <div class="input-group">
                     <label>Medio de Pago</label>
-                    <select [(ngModel)]="reservaForm.metodo_pago" name="metodo_pago" class="sport-input">
-                      <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
-                      <option value="EFECTIVO">Efectivo en Caja</option>
-                      <option value="TRANSFERENCIA">Transferencia Bancolombia/Nequi</option>
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.metodo_pago" name="metodo_pago" class="sport-input">
+                        <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
+                        <option value="EFECTIVO">Efectivo en Caja</option>
+                        <option value="TRANSFERENCIA">Transferencia Bancolombia/Nequi</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -288,7 +303,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge badge-emerald">
                   <i class="fa-solid fa-cash-register"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>Cobro en Recepción</h2>
                   <p class="modal-subtitle">{{ selectedSlotForPay()?.estado_label }}</p>
                 </div>
@@ -318,11 +333,14 @@ import { ApiService } from '../../core/services/api.service';
               </div>
               <div class="input-group">
                 <label>Método de Pago <span class="required-star">*</span></label>
-                <select [(ngModel)]="pagoCajaMetodo" name="pagoMetodo" class="sport-input">
-                  <option value="EFECTIVO">Efectivo</option>
-                  <option value="DATAFONO">Datáfono / Tarjeta</option>
-                  <option value="TRANSFERENCIA">Nequi / Daviplata</option>
-                </select>
+                <div class="sport-select-wrapper">
+                  <select [(ngModel)]="pagoCajaMetodo" name="pagoMetodo" class="sport-input">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="DATAFONO">Datáfono / Tarjeta</option>
+                    <option value="TRANSFERENCIA">Nequi / Daviplata</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
               </div>
 
               <div class="modal-actions">
@@ -345,7 +363,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge badge-blue">
                   <i class="fa-solid fa-gear"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>Configuración de Escenarios Deportivos</h2>
                   <p class="modal-subtitle">Administra los predios, tipos de superficie y tarifas horarias</p>
                 </div>
@@ -405,7 +423,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="modal-icon-badge badge-emerald">
                   <i class="fa-solid" [class.fa-plus]="!isEditingCancha" [class.fa-pen-to-square]="isEditingCancha"></i>
                 </div>
-                <div>
+                <div class="modal-title-text">
                   <h2>{{ isEditingCancha ? 'Editar Cancha / Escenario' : 'Nueva Cancha / Escenario' }}</h2>
                   <p class="modal-subtitle">Parametriza los valores por hora y características de la superficie</p>
                 </div>
@@ -422,12 +440,15 @@ import { ApiService } from '../../core/services/api.service';
                   </div>
                   <div class="input-group">
                     <label>Tipo de Superficie <span class="required-star">*</span></label>
-                    <select [(ngModel)]="canchaForm.tipo_superficie" name="cSuperficie" class="sport-input" required>
-                      <option value="sintetica_f5">Sintética Fútbol 5</option>
-                      <option value="sintetica_f8">Sintética Fútbol 8</option>
-                      <option value="natural_f11">Grama Natural Fútbol 11</option>
-                      <option value="futsal_madera">Coliseo Madera Futsal</option>
-                    </select>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="canchaForm.tipo_superficie" name="cSuperficie" class="sport-input" required>
+                        <option value="sintetica_f5">Sintética Fútbol 5</option>
+                        <option value="sintetica_f8">Sintética Fútbol 8</option>
+                        <option value="natural_f11">Grama Natural Fútbol 11</option>
+                        <option value="futsal_madera">Coliseo Madera Futsal</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                 </div>
 
@@ -448,6 +469,69 @@ import { ApiService } from '../../core/services/api.service';
                 <button type="submit" class="btn-primary">{{ isEditingCancha ? 'Actualizar Cancha' : 'Guardar Cancha' }}</button>
               </div>
             </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR CANCELACIÓN DE RESERVA -->
+      @if (showCancelConfirmModal() && slotToCancel()) {
+        <div class="modal-overlay" (click)="closeCancelConfirmModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header header-danger">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-danger-glow">
+                  <i class="fa-solid fa-ban"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Cancelar Reserva de Turno</h2>
+                  <p class="modal-subtitle">Liberación de franja horaria y anulación del turno</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCancelConfirmModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-card">
+                <div class="retire-avatar-wrap" style="display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,0.1);">
+                  <i class="fa-solid fa-futbol" style="font-size:1.5rem;color:#ef4444;"></i>
+                </div>
+                <div class="retire-player-details">
+                  <div class="retire-name-row">
+                    <span class="retire-player-name">{{ slotToCancel()?.estado_label || 'Turno Reservado' }}</span>
+                  </div>
+                  <div class="retire-meta-row">
+                    <span class="meta-tag"><i class="fa-solid fa-clock"></i> {{ slotToCancel()?.hora_inicio }} - {{ slotToCancel()?.hora_fin }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-dollar-sign"></i> Total: \${{ slotToCancel()?.monto_total | number }}</span>
+                    @if (slotToCancel()?.monto_anticipo > 0) {
+                      <span class="meta-tag"><i class="fa-solid fa-receipt"></i> Abono: \${{ slotToCancel()?.monto_anticipo | number }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Cancelación:</h4>
+                  <ul>
+                    <li>El turno pasará de inmediato a estado <strong>Disponible</strong> en la cuadrícula.</li>
+                    <li>Cualquier abono o seña registrada deberá ser gestionada o transferida en caja.</li>
+                    <li>Esta acción se registrará en la auditoría del sistema de reservas.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeCancelConfirmModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Turno
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmarCancelarReserva()">
+                <i class="fa-solid fa-ban"></i> Sí, Cancelar Turno
+              </button>
+            </div>
           </div>
         </div>
       }
@@ -847,7 +931,9 @@ export class CanchasComponent implements OnInit {
   readonly showCanchasListModal = signal<boolean>(false);
   readonly showCreateCanchaModal = signal<boolean>(false);
   readonly showEditCanchaModal = signal<boolean>(false);
+  readonly showCancelConfirmModal = signal<boolean>(false);
   readonly selectedSlotForPay = signal<any | null>(null);
+  readonly slotToCancel = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
 
   isEditingCancha: boolean = false;
@@ -988,17 +1074,29 @@ export class CanchasComponent implements OnInit {
   cancelarReserva(slot: any, event: Event): void {
     event.stopPropagation();
     if (!slot || !slot.reserva_id) return;
-    if (confirm('¿Estás seguro de cancelar esta reserva de turno?')) {
-      this.api.cancelarReservaCancha(slot.reserva_id).subscribe({
-        next: () => {
-          this.showToast('Reserva cancelada y turno liberado exitosamente.');
-          this.loadDisponibilidad();
-        },
-        error: () => {
-          this.showToast('Error al cancelar reserva.');
-        }
-      });
-    }
+    this.slotToCancel.set(slot);
+    this.showCancelConfirmModal.set(true);
+  }
+
+  closeCancelConfirmModal(): void {
+    this.showCancelConfirmModal.set(false);
+    this.slotToCancel.set(null);
+  }
+
+  confirmarCancelarReserva(): void {
+    const slot = this.slotToCancel();
+    if (!slot || !slot.reserva_id) return;
+
+    this.api.cancelarReservaCancha(slot.reserva_id).subscribe({
+      next: () => {
+        this.showToast('Reserva cancelada y turno liberado exitosamente.');
+        this.closeCancelConfirmModal();
+        this.loadDisponibilidad();
+      },
+      error: () => {
+        this.showToast('Error al cancelar reserva.');
+      }
+    });
   }
 
   openPagoCajaModal(slot: any, event: Event): void {

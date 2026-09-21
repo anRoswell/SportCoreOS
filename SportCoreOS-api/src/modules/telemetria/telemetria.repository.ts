@@ -14,7 +14,7 @@ export class TelemetriaRepository {
               COALESCE(AVG(m.distancia_total_m), 0) as distancia_promedio_m,
               COALESCE(MAX(m.velocidad_max_kmh), 0) as pico_velocidad_kmh
        FROM deportivo.sesiones_gps s
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        LEFT JOIN deportivo.metricas_rendimiento_gps m ON s.id = m.sesion_id
        WHERE s.club_id = $1
        GROUP BY s.id, p.id
@@ -28,7 +28,7 @@ export class TelemetriaRepository {
     const sesionRes = await this.db.query(
       `SELECT s.*, p.rival_nombre, p.fecha_partido 
        FROM deportivo.sesiones_gps s
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        WHERE s.id = $1 AND s.club_id = $2`,
       [id, clubId]
     );
@@ -36,7 +36,7 @@ export class TelemetriaRepository {
     if (!sesionRes.rows[0]) return null;
 
     const metricasRes = await this.db.query(
-      `SELECT m.*, j.nombres, j.apellidos, j.dorsal, j.posicion_principal, j.foto_url
+      `SELECT m.*, j.nombres, j.apellidos, j.numero_dorsal, j.posicion_principal, j.foto_url
        FROM deportivo.metricas_rendimiento_gps m
        JOIN deportivo.jugadores j ON m.jugador_id = j.id
        WHERE m.sesion_id = $1
@@ -100,7 +100,7 @@ export class TelemetriaRepository {
       `SELECT m.*, s.fecha_sesion, s.tipo_sesion, s.dispositivo_marca, p.rival_nombre
        FROM deportivo.metricas_rendimiento_gps m
        JOIN deportivo.sesiones_gps s ON m.sesion_id = s.id
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        WHERE m.jugador_id = $1 AND s.club_id = $2
        ORDER BY s.fecha_sesion DESC LIMIT 15`,
       [jugadorId, clubId]

@@ -379,7 +379,7 @@ CREATE TABLE IF NOT EXISTS deportivo.prospectos_scouting (
 CREATE TABLE IF NOT EXISTS deportivo.evaluaciones_scouting (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     prospecto_id UUID NOT NULL REFERENCES deportivo.prospectos_scouting(id) ON DELETE CASCADE,
-    scout_usuario_id UUID REFERENCES auth.usuarios(id) ON DELETE SET NULL,
+    scout_usuario_id UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
     fecha_observacion DATE NOT NULL DEFAULT CURRENT_DATE,
     partido_evento VARCHAR(120),
     score_tecnico NUMERIC(3,1) NOT NULL CHECK(score_tecnico >= 1.0 AND score_tecnico <= 10.0),
@@ -399,7 +399,7 @@ CREATE TABLE IF NOT EXISTS deportivo.evaluaciones_scouting (
 CREATE TABLE IF NOT EXISTS deportivo.sesiones_gps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
-    partido_id UUID REFERENCES deportivo.partidos(id) ON DELETE SET NULL,
+    partido_id UUID REFERENCES competicion.partidos(id) ON DELETE SET NULL,
     fecha_sesion DATE NOT NULL,
     tipo_sesion VARCHAR(30) NOT NULL DEFAULT 'PARTIDO_OFICIAL', -- PARTIDO_OFICIAL, ENTRENAMIENTO_TACTICO, FISICO_INTENSIVO
     dispositivo_marca VARCHAR(50) NOT NULL DEFAULT 'CATAPULT_10HZ',

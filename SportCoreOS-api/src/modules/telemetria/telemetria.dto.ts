@@ -8,7 +8,7 @@ export class CreateSesionGpsDto {
   fecha_sesion: string;
 
   @ApiPropertyOptional({ description: 'ID del partido asociado', example: '5d61a1ec-aa7c-457c-8d79-6433475217bc' })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   partido_id?: string;
 
@@ -35,7 +35,7 @@ export class CreateSesionGpsDto {
 
 export class CreateMetricaGpsDto {
   @ApiProperty({ description: 'ID del jugador monitoreado', example: 'e1e0691e-691e-4c92-9046-871955524534' })
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   jugador_id: string;
 

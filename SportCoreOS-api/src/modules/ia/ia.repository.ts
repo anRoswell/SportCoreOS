@@ -23,18 +23,18 @@ export class IaRepository {
     );
 
     const biometriaRes = await this.db.query(
-      `SELECT * FROM deportivo.evaluaciones_biometricas 
+      `SELECT * FROM rendimiento.evaluaciones_biometricas 
        WHERE jugador_id = $1 
        ORDER BY fecha_evaluacion DESC LIMIT 2`,
       [jugadorId]
     );
 
     const partidosRes = await this.db.query(
-      `SELECT a.minutos_jugados, a.goles, a.asistencias, a.tarjetas_amarillas, a.calificacion_rendimiento,
+      `SELECT c.rol_convocatoria, c.posicion_designada,
               p.rival_nombre, p.goles_club, p.goles_rival, p.fecha_partido
-       FROM deportivo.alineaciones a
-       JOIN deportivo.partidos p ON a.partido_id = p.id
-       WHERE a.jugador_id = $1 AND p.club_id = $2
+       FROM competicion.convocatorias c
+       JOIN competicion.partidos p ON c.partido_id = p.id
+       WHERE c.jugador_id = $1 AND p.club_id = $2
        ORDER BY p.fecha_partido DESC LIMIT 5`,
       [jugadorId, clubId]
     );
