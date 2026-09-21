@@ -11,6 +11,7 @@ export interface UploadedFileResponse {
   originalName: string;
   mimetype: string;
   size: number;
+  sha256?: string;
   url: string;
   path: string;
 }
@@ -87,8 +88,11 @@ export class StorageService {
     const safeFilename = `${cleanBaseName}_${hash}_${timestamp}${ext}`;
     const destinationPath = path.join(targetDir, safeFilename);
 
+    // Calcular hash SHA-256 para integridad criptográfica y desduplicación (Estándar EduCoreOS / ConjuntOS)
+    const sha256 = crypto.createHash('sha256').update(file.buffer).digest('hex');
+
     await fs.promises.writeFile(destinationPath, file.buffer);
-    this.logger.log(`Archivo físico guardado en: ${destinationPath}`);
+    this.logger.log(`Archivo físico guardado en: ${destinationPath} (SHA-256: ${sha256.slice(0, 16)}...)`);
 
     const publicUrl = `/uploads/${relativeSubPath}/${safeFilename}`;
 
@@ -107,6 +111,7 @@ export class StorageService {
           mime_type: file.mimetype,
           tamano_bytes: file.size,
           path_almacenamiento: destinationPath,
+          metadata: { sha256, extension: ext, subfolder },
           subido_por: userId || null,
         });
       } catch (err: any) {
@@ -120,6 +125,7 @@ export class StorageService {
       originalName: file.originalname,
       mimetype: file.mimetype,
       size: file.size,
+      sha256,
       url: publicUrl,
       path: destinationPath,
     };
