@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="SportCoreOS Telemetry Engine">
+  <trk>
+    <name>Sesion_GPS_Sub15_TiempoReal</name>
+    <trkseg>
+      <trkpt lat="4.7110" lon="-74.0721"><ele>2600</ele><time>2026-03-21T10:00:00Z</time></trkpt>
+      <trkpt lat="4.7115" lon="-74.0725"><ele>2600</ele><time>2026-03-21T10:00:05Z</time></trkpt>
+    </trkseg>
+  </trk>
+</gpx>
