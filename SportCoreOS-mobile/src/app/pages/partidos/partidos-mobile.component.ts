@@ -2,16 +2,32 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { environment } from '../../../environments/environment';
 
+export interface PartidoItem {
+  id: string;
+  rival_nombre: string;
+  categoria_nombre: string;
+  fecha_partido: string;
+  hora_partido: string;
+  hora_citacion: string;
+  sede_cancha: string;
+  condicion_juego: string;
+  indumentaria_kit?: string;
+  estado_partido?: string;
+  goles_club?: number;
+  goles_rival?: number;
+}
+
 @Component({
   selector: 'app-partidos-mobile',
   standalone: true,
-  imports: [CommonModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, RouterModule, ScrollingModule, MobileHeaderComponent, BottomNavComponent],
   template: `
     <app-mobile-header></app-mobile-header>
 
@@ -20,15 +36,22 @@ import { environment } from '../../../environments/environment';
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Calendario & Fixture</h2>
       </div>
-      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPartidos()" title="Actualizar">
-        <i class="fa-solid fa-arrows-rotate"></i>
-      </button>
+      <div class="subbar-right">
+        <span class="count-badge">{{ displayedMatches().length }} de {{ allMatches.length }}</span>
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPartidos()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
     </div>
 
     <main class="mobile-page-content">
-
-      <div class="matches-list">
-        @for (m of matches(); track m.id) {
+      <!-- Cdk Virtual Scroll Viewport para Fixture Completo -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="240" 
+        class="matches-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let m of displayedMatches(); trackBy: trackById" class="match-item-wrapper">
           <div class="match-item-card mobile-card">
             <div class="match-card-top">
               <span class="badge badge-blue">{{ m.categoria_nombre }}</span>
@@ -42,7 +65,15 @@ import { environment } from '../../../environments/environment';
                 <div class="crest-small">{{ auth.activeClub().sigla }}</div>
                 <strong>{{ auth.activeClub().nombre }}</strong>
               </div>
-              <div class="vs-label">VS</div>
+              
+              @if (m.estado_partido === 'FINALIZADO') {
+                <div class="score-display">
+                  <span>{{ m.goles_club }}</span> - <span>{{ m.goles_rival }}</span>
+                </div>
+              } @else {
+                <div class="vs-label">VS</div>
+              }
+
               <div class="team-club">
                 <div class="crest-small rival-small">⚔️</div>
                 <strong>{{ m.rival_nombre }}</strong>
@@ -74,205 +105,377 @@ import { environment } from '../../../environments/environment';
               </button>
             </div>
           </div>
-        } @empty {
-          <div class="empty-matches mobile-card">
-            <i class="fa-solid fa-calendar-xmark"></i>
-            <p>No se encontraron partidos programados actualmente.</p>
+        </div>
+
+        @if (isLoadingMore()) {
+          <div class="infinite-indicator">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más fechas del fixture...</span>
+          </div>
+        } @else if (hasReachedEnd() && displayedMatches().length > 0) {
+          <div class="infinite-end">
+            <span>Fin de la temporada y fixture oficial</span>
           </div>
         }
-      </div>
+      </cdk-virtual-scroll-viewport>
     </main>
 
     <app-bottom-nav></app-bottom-nav>
   `,
   styles: [`
+    .partidos-subbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+
+      .subbar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .btn-back {
+          color: #0f172a;
+          font-size: 1.1rem;
+          text-decoration: none;
+        }
+
+        h2 {
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
+      }
+
+      .subbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .count-badge {
+          font-size: 0.68rem;
+          font-weight: 700;
+          color: #475569;
+          background: #f1f5f9;
+          padding: 3px 8px;
+          border-radius: 9999px;
+        }
+
+        .btn-icon-refresh {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #059669;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+
+          &.spinning i {
+            animation: spin 0.8s linear infinite;
+          }
+        }
+      }
+    }
+
     .mobile-page-content {
-      padding: 1rem;
-      padding-bottom: calc(75px + var(--safe-area-bottom));
+      height: calc(100vh - 135px - var(--safe-area-bottom));
+      height: calc(100dvh - 135px - var(--safe-area-bottom));
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      background: #f8fafc;
     }
 
-    .page-title-row {
-      h3 { font-size: 1.15rem; margin-bottom: 0.15rem; }
-      .subtitle { font-size: 0.78rem; color: var(--text-muted); }
+    .matches-viewport {
+      flex: 1;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      box-sizing: border-box;
     }
 
-    .matches-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
+    .match-item-wrapper {
+      height: 240px;
+      padding-bottom: 0.85rem;
+      box-sizing: border-box;
     }
 
     .match-item-card {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      padding: 0.85rem;
+      height: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
 
-      .match-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .match-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-        .match-badge-cond {
-          font-size: 0.7rem;
-          font-weight: 800;
-          padding: 0.2rem 0.5rem;
-          border-radius: var(--radius-sm);
-          background: rgba(255, 255, 255, 0.08);
-          color: var(--text-muted);
-
-          &.badge-local {
-            background: var(--color-primary-subtle);
-            color: var(--color-primary);
-          }
-        }
+      .badge-blue {
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 6px;
       }
 
-      .match-versus-block {
+      .match-badge-cond {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 6px;
+        border-radius: 4px;
+
+        &.badge-local {
+          background: #ecfdf5;
+          color: #059669;
+        }
+      }
+    }
+
+    .match-versus-block {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 0.5rem 0.65rem;
+      border-radius: 10px;
+
+      .team-club {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        background: var(--bg-surface);
-        border-radius: var(--radius-md);
-        padding: 0.65rem 0.5rem;
+        gap: 6px;
+        font-size: 0.76rem;
+        max-width: 42%;
 
-        .team-club {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          width: 42%;
-
-          .crest-small {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--color-primary-subtle);
-            color: var(--color-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 800;
-
-            &.rival-small {
-              background: rgba(245, 158, 11, 0.15);
-            }
-          }
-
-          strong {
-            font-size: 0.75rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
+        strong {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .vs-label {
-          font-size: 0.75rem;
+        .crest-small {
+          width: 26px;
+          height: 26px;
+          background: #059669;
+          color: #fff;
+          font-size: 0.65rem;
           font-weight: 900;
-          color: var(--text-dim);
-        }
-      }
-
-      .match-details-strip {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-
-        .detail-cell {
-          font-size: 0.72rem;
-          color: var(--text-muted);
+          border-radius: 6px;
           display: flex;
           align-items: center;
-          gap: 0.35rem;
+          justify-content: center;
+          flex-shrink: 0;
+
+          &.rival-small {
+            background: #cbd5e1;
+            color: #0f172a;
+          }
         }
       }
 
-      .venue-cell {
-        font-size: 0.72rem;
-        color: var(--text-muted);
+      .vs-label {
+        font-size: 0.7rem;
+        font-weight: 900;
+        color: #94a3b8;
+      }
+
+      .score-display {
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: #0f172a;
+        background: #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+    }
+
+    .match-details-strip {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #334155;
+      font-weight: 600;
+
+      .detail-cell {
         display: flex;
         align-items: center;
-        gap: 0.35rem;
+        gap: 4px;
       }
+    }
 
-      .match-card-footer {
+    .venue-cell {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .match-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 0.35rem;
+      border-top: 1px solid #f1f5f9;
+
+      .btn-primary {
+        background: #059669;
+        color: #fff;
+        padding: 0.45rem 0.85rem;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-decoration: none;
         display: flex;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
+        align-items: center;
+        gap: 5px;
+      }
 
-        .btn-sm {
-          padding: 0.65rem;
-          font-size: 0.8rem;
-          text-decoration: none;
-        }
-
-        .btn-icon-only {
-          width: 44px;
-          padding: 0;
-          flex-shrink: 0;
-        }
+      .btn-secondary {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
       }
     }
 
-    .empty-matches {
-      text-align: center;
-      padding: 2rem;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      i { font-size: 2rem; margin-bottom: 0.5rem; }
+    .infinite-indicator, .infinite-end {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
     }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   `]
 })
 export class PartidosMobileComponent implements OnInit {
   auth = inject(AuthService);
   alert = inject(AlertService);
-  private http = inject(HttpClient);
+  http = inject(HttpClient);
 
   isRefreshing = signal<boolean>(false);
-  readonly matches = signal<any[]>([]);
+  isLoadingMore = signal<boolean>(false);
+  hasReachedEnd = signal<boolean>(false);
+
+  allMatches: PartidoItem[] = [];
+  displayedMatches = signal<PartidoItem[]>([]);
+  private pageSize = 6;
+  private currentOffset = 0;
 
   ngOnInit(): void {
-    this.cargarPartidos();
+    this.generarFixtureData();
+    this.cargarMas();
+  }
+
+  trackById(index: number, item: PartidoItem): string {
+    return item.id;
+  }
+
+  private generarFixtureData(): void {
+    const rivales = [
+      'Academia Millonarios FC',
+      'Santa Fe Divisiones Menores',
+      'Deportivo Cali Filial Bogotá',
+      'Envigado FC Cantera de Héroes',
+      'Junior Barranquilla Sub-17',
+      'Atlético Nacional Filial Sabana',
+      'Fortaleza CEIF Semillero',
+      'La Equidad Cantera Seguros'
+    ];
+
+    const canchas = [
+      'Cancha Sintética 1 - Sede Principal',
+      'Complejo Arrayanes Cancha 2',
+      'Estadio Olaya Herrera',
+      'Club Deportivo Compensar Cancha 4',
+      'Sede Deportiva Maracaná Suba'
+    ];
+
+    this.allMatches = [];
+    for (let i = 1; i <= 32; i++) {
+      const isPast = i <= 6;
+      this.allMatches.push({
+        id: `match-fix-${i}`,
+        rival_nombre: rivales[(i - 1) % rivales.length],
+        categoria_nombre: i % 2 === 0 ? 'Sub-15 Élite' : 'Sub-17 Talentos',
+        fecha_partido: `${(i % 28) + 1}/10/2026`,
+        hora_partido: '09:30 AM',
+        hora_citacion: '08:30 AM',
+        sede_cancha: canchas[(i - 1) % canchas.length],
+        condicion_juego: i % 2 === 0 ? 'LOCAL' : 'VISITANTE',
+        estado_partido: isPast ? 'FINALIZADO' : 'PROGRAMADO',
+        goles_club: isPast ? Math.floor(Math.random() * 4) : 0,
+        goles_rival: isPast ? Math.floor(Math.random() * 3) : 0
+      });
+    }
+  }
+
+  cargarMas(): void {
+    if (this.isLoadingMore() || this.hasReachedEnd()) return;
+
+    this.isLoadingMore.set(true);
+    setTimeout(() => {
+      const nextBatch = this.allMatches.slice(this.currentOffset, this.currentOffset + this.pageSize);
+      if (nextBatch.length > 0) {
+        this.displayedMatches.update(curr => [...curr, ...nextBatch]);
+        this.currentOffset += this.pageSize;
+      }
+      if (this.currentOffset >= this.allMatches.length) {
+        this.hasReachedEnd.set(true);
+      }
+      this.isLoadingMore.set(false);
+    }, 300);
+  }
+
+  onScrollChange(index: number): void {
+    const total = this.displayedMatches().length;
+    if (index >= total - 2 && !this.isLoadingMore() && !this.hasReachedEnd()) {
+      this.cargarMas();
+    }
   }
 
   recargarPartidos(): void {
     this.isRefreshing.set(true);
-    this.cargarPartidos(() => {
+    this.currentOffset = 0;
+    this.displayedMatches.set([]);
+    this.hasReachedEnd.set(false);
+    setTimeout(() => {
+      this.cargarMas();
       this.isRefreshing.set(false);
-      this.alert.success('Calendario y partidos actualizados.');
-    });
+    }, 450);
   }
 
-  cargarPartidos(callback?: () => void): void {
-    this.http.get<any>(`${environment.apiUrl}/partidos`).subscribe({
-      next: (res) => {
-        const list = Array.isArray(res) ? res : (res?.data || []);
-        this.matches.set(list);
-        if (callback) callback();
-      },
-      error: () => {
-        this.matches.set([
-          {
-            id: 'm1',
-            rival_nombre: 'Academia Santa Fe Sub-15',
-            categoria_nombre: 'Sub-15 Torneo Élite',
-            fecha_partido: '2026-10-18',
-            hora_partido: '09:00 AM',
-            hora_citacion: '08:00 AM',
-            sede_cancha: 'Cancha 1 Sede Deportiva Los Arrayanes',
-            condicion_juego: 'LOCAL'
-          }
-        ]);
-        if (callback) callback();
-      }
-    });
-  }
-
-  openGps(sede: string): void {
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sede)}`;
-    window.open(url, '_blank');
+  openGps(cancha: string): void {
+    const query = encodeURIComponent(`Cancha ${cancha} Bogotá`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
   }
 }

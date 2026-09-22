@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -24,7 +25,7 @@ interface ReciboMensualidad {
 @Component({
   selector: 'app-pagos-mobile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ScrollingModule, MobileHeaderComponent, BottomNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-mobile-header></app-mobile-header>
@@ -59,21 +60,25 @@ interface ReciboMensualidad {
         </div>
 
         <div class="wallet-meta">
-          <span>Deportista: <strong>Santiago Restrepo</strong></span>
-          <span>Cat: <strong>Sub-17 Élite</strong></span>
+          <span>Deportista: <strong>Samuel Díaz</strong></span>
+          <span>Cat: <strong>Sub-15 Élite</strong></span>
         </div>
       </div>
 
       <!-- Filtros de Recibos -->
       <div class="filter-tabs">
-        <button class="tab-btn" [class.active]="filter() === 'TODOS'" (click)="setFilter('TODOS')">Todos</button>
+        <button class="tab-btn" [class.active]="filter() === 'TODOS'" (click)="setFilter('TODOS')">Todos ({{ displayedRecibos().length }})</button>
         <button class="tab-btn" [class.active]="filter() === 'PENDIENTES'" (click)="setFilter('PENDIENTES')">Pendientes</button>
-        <button class="tab-btn" [class.active]="filter() === 'HISTORIAL'" (click)="setFilter('HISTORIAL')">Historial Pagos</button>
+        <button class="tab-btn" [class.active]="filter() === 'HISTORIAL'" (click)="setFilter('HISTORIAL')">Historial</button>
       </div>
 
-      <!-- Lista de Recibos de Mensualidad -->
-      <div class="recibos-list">
-        @for (r of filteredRecibos(); track r.id) {
+      <!-- Virtual Scrolling Viewport para Historial Masivo de Pagos -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="210" 
+        class="recibos-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let r of displayedRecibos(); trackBy: trackById" class="recibo-item-wrapper">
           <div class="recibo-card" [class]="'border-' + r.estado.toLowerCase()">
             <div class="recibo-header">
               <div class="recibo-title-wrap">
@@ -98,82 +103,85 @@ interface ReciboMensualidad {
 
             <!-- Acciones de Pago -->
             <div class="recibo-actions">
-              @if (r.estado !== 'PAGADO') {
-                <button class="btn-pay-pse" (click)="iniciarPago(r)">
-                  <i class="fa-solid fa-lock"></i>
-                  <span>Pagar con PSE / Wompi</span>
+              @if (r.estado === 'PENDIENTE' || r.estado === 'VENCIDO') {
+                <button class="btn-pay-now" (click)="iniciarPago(r)">
+                  <i class="fa-solid fa-bolt"></i> Pagar con PSE / Wompi
                 </button>
               } @else {
-                <button class="btn-receipt-download" (click)="descargarComprobante(r)">
-                  <i class="fa-solid fa-file-pdf text-emerald"></i>
-                  <span>Descargar Comprobante PDF</span>
-                </button>
+                <div class="paid-details">
+                  <span><i class="fa-solid fa-circle-check text-emerald"></i> Ref: {{ r.referenciaPago }}</span>
+                  <button class="btn-download-pdf" (click)="descargarComprobante(r)">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                  </button>
+                </div>
               }
             </div>
           </div>
-        } @empty {
-          <div class="empty-state">
-            <i class="fa-solid fa-receipt empty-icon"></i>
-            <p class="empty-title">No hay recibos en este filtro</p>
-            <p class="empty-desc">Todos los pagos y cuotas emitidas por administración aparecerán aquí.</p>
+        </div>
+
+        @if (isLoadingMore()) {
+          <div class="loading-more-box">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más extractos...</span>
+          </div>
+        } @else if (hasReachedEnd() && displayedRecibos().length > 0) {
+          <div class="end-history-box">
+            <span>Fin del historial financiero</span>
           </div>
         }
-      </div>
+      </cdk-virtual-scroll-viewport>
     </main>
 
-    <!-- MODAL DE CHECKOUT PSE / WOMPI -->
-    @if (selectedRecibo()) {
-      <div class="checkout-modal-backdrop" (click)="cerrarModalCheckout()">
-        <div class="checkout-modal-content" (click)="$event.stopPropagation()">
-          <div class="checkout-header">
-            <div>
-              <h3 class="checkout-title"><i class="fa-solid fa-shield-halved text-emerald"></i> Pasarela de Pago Segura</h3>
-              <p class="checkout-subtitle">SportCore Club • PSE & Tarjetas (Wompi)</p>
+    <!-- Modal Pasarela PSE / Wompi -->
+    @if (modalPagoActivo()) {
+      <div class="modal-backdrop" (click)="cerrarModalPago()">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="wompi-brand">
+              <span class="secure-icon"><i class="fa-solid fa-shield-halved"></i></span>
+              <div>
+                <h4>Pasarela de Pagos Segura</h4>
+                <small>Wompi • PSE • Tarjeta Bancaria</small>
+              </div>
             </div>
-            <button class="btn-close-modal" (click)="cerrarModalCheckout()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+            <button class="btn-close" (click)="cerrarModalPago()"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
-          <div class="checkout-summary-box">
-            <div class="summary-line">
-              <span>Concepto:</span>
-              <strong>{{ selectedRecibo()?.concepto }}</strong>
+          <div class="sheet-body">
+            <div class="summary-box">
+              <span class="concept-lbl">{{ reciboSeleccionado()?.concepto }} ({{ reciboSeleccionado()?.mes }})</span>
+              <span class="total-topay">$ {{ reciboSeleccionado()?.valor | number:'1.0-0' }} COP</span>
             </div>
-            <div class="summary-line">
-              <span>Periodo:</span>
-              <strong>{{ selectedRecibo()?.mes }} {{ selectedRecibo()?.ano }}</strong>
-            </div>
-            <div class="summary-line total">
-              <span>Total a Pagar:</span>
-              <strong class="total-price">$ {{ selectedRecibo()?.valor | number:'1.0-0' }} COP</strong>
-            </div>
-          </div>
 
-          <!-- Selector de Método de Pago Móvil -->
-          <div class="payment-methods-grid">
-            <button type="button" class="btn-method" [class.active]="selectedMethod() === 'PSE'" (click)="selectedMethod.set('PSE')">
-              <i class="fa-solid fa-building-columns"></i>
-              <span>PSE / Débito</span>
-            </button>
-            <button type="button" class="btn-method" [class.active]="selectedMethod() === 'TARJETA'" (click)="selectedMethod.set('TARJETA')">
-              <i class="fa-solid fa-credit-card"></i>
-              <span>Tarjeta Débito/Crédito</span>
-            </button>
-            <button type="button" class="btn-method" [class.active]="selectedMethod() === 'NEQUI'" (click)="selectedMethod.set('NEQUI')">
-              <i class="fa-solid fa-mobile-screen"></i>
-              <span>Nequi / Bancolombia</span>
-            </button>
-          </div>
+            <div class="payment-methods-grid">
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'PSE'" 
+                (click)="metodoSeleccionado.set('PSE')">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>PSE Débito</span>
+              </button>
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'CARD'" 
+                (click)="metodoSeleccionado.set('CARD')">
+                <i class="fa-regular fa-credit-card"></i>
+                <span>Tarjeta Crédito</span>
+              </button>
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'NEQUI'" 
+                (click)="metodoSeleccionado.set('NEQUI')">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <span>Nequi / Daviplata</span>
+              </button>
+            </div>
 
-          <div class="checkout-actions">
-            <button class="btn-primary btn-confirm-pay" [disabled]="isProcessingPay()" (click)="procesarPagoFinal()">
-              @if (isProcessingPay()) {
-                <i class="fa-solid fa-circle-notch fa-spin"></i>
-                <span>Conectando con Banco...</span>
+            <button class="btn-confirm-gateway" [disabled]="procesandoPago()" (click)="procesarTransaccion()">
+              @if (procesandoPago()) {
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Conectando con banco...
               } @else {
-                <i class="fa-solid fa-lock"></i>
-                <span>Confirmar Pago Seguro de $ {{ selectedRecibo()?.valor | number:'1.0-0' }}</span>
+                <i class="fa-solid fa-lock"></i> Confirmar Pago Seguro
               }
             </button>
           </div>
@@ -184,534 +192,535 @@ interface ReciboMensualidad {
     <app-bottom-nav></app-bottom-nav>
   `,
   styles: [`
-    .page-content {
-      padding: 1rem;
-      padding-bottom: calc(85px + var(--safe-area-bottom));
-      max-width: 600px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .wallet-balance-card {
-      background: linear-gradient(135deg, #064e3b 0%, #022c22 60%, #0f172a 100%);
-      color: #ffffff;
-      border-radius: 20px;
-      padding: 1.25rem;
-      box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .wallet-top {
+    .pagos-subbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
 
-      .wallet-label {
+      .subbar-left {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #a7f3d0;
+        gap: 0.75rem;
+
+        .btn-back {
+          color: #0f172a;
+          font-size: 1.1rem;
+          text-decoration: none;
+        }
+
+        h2 {
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
       }
 
-      .wallet-status {
-        font-size: 0.68rem;
-        font-weight: 900;
-        padding: 3px 8px;
-        border-radius: 9999px;
-        background: rgba(245, 158, 11, 0.2);
-        color: #fbbf24;
-        border: 1px solid rgba(245, 158, 11, 0.4);
+      .btn-icon-refresh {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #059669;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
 
-        &.al-dia {
-          background: rgba(16, 185, 129, 0.2);
-          color: #34d399;
-          border-color: rgba(52, 211, 153, 0.4);
+        &.spinning i {
+          animation: spin 0.8s linear infinite;
         }
       }
     }
 
-    .balance-amount {
+    .page-content {
+      height: calc(100vh - 135px - var(--safe-area-bottom));
+      height: calc(100dvh - 135px - var(--safe-area-bottom));
       display: flex;
-      align-items: baseline;
-      gap: 4px;
-      margin-bottom: 0.75rem;
-
-      .currency {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #34d399;
-      }
-
-      .value {
-        font-size: 2.2rem;
-        font-weight: 900;
-        line-height: 1;
-        letter-spacing: -0.02em;
-      }
-
-      .cop {
-        font-size: 0.8rem;
-        font-weight: 800;
-        color: #a7f3d0;
-      }
+      flex-direction: column;
+      background: #f8fafc;
     }
 
-    .wallet-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.76rem;
-      color: #94a3b8;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 0.65rem;
+    .wallet-balance-card {
+      background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #0f172a 100%);
+      color: #fff;
+      margin: 0.75rem 1rem 0.5rem;
+      padding: 1.15rem;
+      border-radius: 1.25rem;
+      box-shadow: 0 10px 20px -5px rgba(6, 78, 59, 0.4);
+      flex-shrink: 0;
 
-      strong {
-        color: #ffffff;
+      .wallet-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.4rem;
+
+        .wallet-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          color: #a7f3d0;
+        }
+
+        .wallet-status {
+          font-size: 0.62rem;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          background: rgba(245, 158, 11, 0.25);
+          color: #fde68a;
+          border: 1px solid rgba(245, 158, 11, 0.4);
+
+          &.al-dia {
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.4);
+          }
+        }
+      }
+
+      .balance-amount {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        margin: 0.25rem 0 0.5rem;
+
+        .currency { font-size: 1.2rem; font-weight: 800; color: #34d399; }
+        .value { font-size: 1.85rem; font-weight: 900; letter-spacing: -0.02em; }
+        .cop { font-size: 0.72rem; font-weight: 800; color: #a7f3d0; }
+      }
+
+      .wallet-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: #d1fae5;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 0.4rem;
       }
     }
 
     .filter-tabs {
       display: flex;
-      gap: 4px;
-      background: #ffffff;
-      padding: 4px;
-      border-radius: 12px;
-      border: 1.5px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
+      gap: 0.5rem;
+      padding: 0 1rem 0.5rem;
+      flex-shrink: 0;
 
-    .tab-btn {
-      flex: 1;
-      padding: 7px 8px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 0.76rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      .tab-btn {
+        flex: 1;
+        padding: 0.45rem;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
 
-      &.active {
-        background: #10b981;
-        color: #ffffff;
-        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+        &.active {
+          background: #0f172a;
+          color: #fff;
+          border-color: #0f172a;
+        }
       }
     }
 
-    .recibos-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .recibos-viewport {
+      flex: 1;
+      width: 100%;
+      padding: 0 1rem 0.5rem;
+      box-sizing: border-box;
+    }
+
+    .recibo-item-wrapper {
+      height: 210px;
+      padding-bottom: 0.75rem;
+      box-sizing: border-box;
     }
 
     .recibo-card {
-      background: #ffffff;
+      background: #fff;
       border: 1.5px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1rem;
+      border-radius: 14px;
+      padding: 0.85rem;
+      height: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-
-      &.border-pendiente { border-left: 4px solid #f59e0b; }
-      &.border-vencido { border-left: 4px solid #ef4444; }
-      &.border-pagado { border-left: 4px solid #10b981; }
-    }
-
-    .recibo-header {
-      display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 
-      .recibo-title-wrap {
+      &.border-pendiente { border-left: 5px solid #f59e0b; }
+      &.border-vencido { border-left: 5px solid #e11d48; }
+      &.border-pagado { border-left: 5px solid #059669; }
+
+      .recibo-header {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        justify-content: space-between;
+        align-items: flex-start;
 
-        .mes-badge {
-          font-size: 0.7rem;
-          font-weight: 900;
-          color: #047857;
-          text-transform: uppercase;
+        .recibo-title-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .mes-badge {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #059669;
+          }
+
+          .concepto-title {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #0f172a;
+          }
         }
 
-        .concepto-title {
-          font-size: 0.95rem;
+        .estado-pill {
+          font-size: 0.62rem;
           font-weight: 800;
-          color: #0f172a;
+          padding: 2px 6px;
+          border-radius: 6px;
+
+          &.pendiente { background: #fef3c7; color: #b45309; }
+          &.vencido { background: #ffe4e6; color: #be123c; }
+          &.pagado { background: #d1fae5; color: #047857; }
+        }
+      }
+
+      .recibo-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+        padding: 0.5rem 0.65rem;
+        border-radius: 8px;
+
+        .price-val { font-size: 0.95rem; color: #0f172a; }
+        .date-row { font-size: 0.72rem; color: #64748b; display: flex; align-items: center; gap: 4px; }
+      }
+
+      .recibo-actions {
+        .btn-pay-now {
+          width: 100%;
+          padding: 0.55rem;
+          background: #059669;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.78rem;
+          font-weight: 800;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .paid-details {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.72rem;
+          color: #065f46;
+          font-weight: 700;
+
+          .btn-download-pdf {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #0f172a;
+            cursor: pointer;
+          }
         }
       }
     }
 
-    .estado-pill {
-      font-size: 0.68rem;
-      font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      text-transform: uppercase;
-
-      &.pendiente { background: rgba(245, 158, 11, 0.15); color: #b45309; }
-      &.vencido { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
-      &.pagado { background: rgba(16, 185, 129, 0.15); color: #047857; }
+    .loading-more-box, .end-history-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
     }
 
-    .recibo-body {
+    /* Modal Sheet */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8fafc;
-      padding: 8px 12px;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      align-items: flex-end;
+    }
 
-      .price-row {
+    .modal-sheet {
+      background: #fff;
+      width: 100%;
+      border-radius: 1.5rem 1.5rem 0 0;
+      padding: 1.25rem;
+      box-sizing: border-box;
+
+      .sheet-header {
         display: flex;
-        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
 
-        .price-lbl {
+        .wompi-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          .secure-icon { color: #059669; font-size: 1.4rem; }
+          h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a; }
+          small { color: #64748b; font-size: 0.68rem; }
+        }
+
+        .btn-close {
+          background: #f1f5f9;
+          border: none;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          cursor: pointer;
+        }
+      }
+
+      .summary-box {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .concept-lbl { font-size: 0.78rem; font-weight: 700; color: #065f46; }
+        .total-topay { font-size: 1.1rem; font-weight: 900; color: #047857; }
+      }
+
+      .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+
+        .method-btn {
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 0.65rem 0.25rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
           font-size: 0.68rem;
           font-weight: 700;
-          color: #64748b;
-        }
+          color: #334155;
+          cursor: pointer;
 
-        .price-val {
-          font-size: 1rem;
-          font-weight: 900;
-          color: #0f172a;
+          i { font-size: 1.1rem; color: #059669; }
+
+          &.selected {
+            background: #ecfdf5;
+            border-color: #059669;
+            color: #065f46;
+          }
         }
       }
 
-      .date-row {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.76rem;
-        color: #475569;
-      }
-    }
-
-    .recibo-actions {
-      margin-top: 2px;
-
-      .btn-pay-pse {
+      .btn-confirm-gateway {
         width: 100%;
-        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-        color: #ffffff;
+        height: 44px;
+        background: #059669;
+        color: #fff;
         border: none;
-        padding: 10px;
-        border-radius: 12px;
-        font-size: 0.88rem;
-        font-weight: 900;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 800;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-
-        &:active {
-          transform: scale(0.98);
-        }
-      }
-
-      .btn-receipt-download {
-        width: 100%;
-        background: #f1f5f9;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-        padding: 9px;
-        border-radius: 12px;
-        font-size: 0.82rem;
-        font-weight: 800;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
       }
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1.5px solid #e2e8f0;
-
-      .empty-icon {
-        font-size: 2.5rem;
-        color: #cbd5e1;
-        margin-bottom: 10px;
-      }
-
-      .empty-title {
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 4px;
-      }
-
-      .empty-desc {
-        font-size: 0.8rem;
-        color: #64748b;
-        margin: 0;
-      }
-    }
-
-    /* MODAL CHECKOUT */
-    .checkout-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(8px);
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    .checkout-modal-content {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 1.25rem;
-      max-width: 460px;
-      width: 100%;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .checkout-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-
-      .checkout-title {
-        font-size: 1.1rem;
-        font-weight: 900;
-        color: #0f172a;
-        margin: 0;
-      }
-
-      .checkout-subtitle {
-        font-size: 0.74rem;
-        color: #64748b;
-        margin: 2px 0 0;
-      }
-
-      .btn-close-modal {
-        background: transparent;
-        border: none;
-        font-size: 1.2rem;
-        color: #94a3b8;
-        cursor: pointer;
-      }
-    }
-
-    .checkout-summary-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-
-      .summary-line {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.82rem;
-        color: #475569;
-
-        strong {
-          color: #0f172a;
-        }
-
-        &.total {
-          border-top: 1px solid #e2e8f0;
-          padding-top: 6px;
-          margin-top: 2px;
-          font-size: 0.92rem;
-          font-weight: 800;
-
-          .total-price {
-            color: #047857;
-            font-size: 1.15rem;
-            font-weight: 900;
-          }
-        }
-      }
-    }
-
-    .payment-methods-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-
-      .btn-method {
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 10px 4px;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #475569;
-        transition: all 0.2s ease;
-
-        i {
-          font-size: 1.2rem;
-          color: #64748b;
-        }
-
-        &.active {
-          border-color: #10b981;
-          background: rgba(16, 185, 129, 0.08);
-          color: #047857;
-          font-weight: 900;
-
-          i {
-            color: #10b981;
-          }
-        }
-      }
-    }
-
-    .btn-confirm-pay {
-      width: 100%;
-      padding: 0.95rem;
-      font-size: 0.95rem;
-      font-weight: 900;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   `]
 })
 export class PagosMobileComponent implements OnInit {
-  private alertService = inject(AlertService);
+  auth = inject(AuthService);
+  alert = inject(AlertService);
 
   isRefreshing = signal<boolean>(false);
+  isLoadingMore = signal<boolean>(false);
+  hasReachedEnd = signal<boolean>(false);
   filter = signal<'TODOS' | 'PENDIENTES' | 'HISTORIAL'>('TODOS');
-  selectedRecibo = signal<ReciboMensualidad | null>(null);
-  selectedMethod = signal<'PSE' | 'TARJETA' | 'NEQUI'>('PSE');
-  isProcessingPay = signal<boolean>(false);
+
+  modalPagoActivo = signal<boolean>(false);
+  reciboSeleccionado = signal<ReciboMensualidad | null>(null);
+  metodoSeleccionado = signal<'PSE' | 'CARD' | 'NEQUI'>('PSE');
+  procesandoPago = signal<boolean>(false);
+
+  private allRecibos: ReciboMensualidad[] = [];
+  displayedRecibos = signal<ReciboMensualidad[]>([]);
+  totalPendiente = signal<number>(220000);
+  private pageSize = 6;
+  private currentOffset = 0;
+
+  ngOnInit(): void {
+    this.generarCatalogoRecibos();
+    this.cargarMas();
+  }
+
+  trackById(index: number, item: ReciboMensualidad): string {
+    return item.id;
+  }
+
+  private generarCatalogoRecibos(): void {
+    const meses = ['Septiembre', 'Agosto', 'Julio', 'Junio', 'Mayo', 'Abril', 'Marzo', 'Febrero', 'Enero'];
+    const conceptos = ['Pensión Deportiva Mensual', 'Cuota de Arbitraje Oficial', 'Kit Indumentaria Alterna', 'Seguro Médico Póliza Deportiva'];
+    
+    this.allRecibos = [
+      {
+        id: 'rec-1',
+        mes: 'Septiembre',
+        ano: 2026,
+        concepto: 'Pensión Deportiva Mensual',
+        valor: 180000,
+        fechaVencimiento: '30/09/2026',
+        estado: 'PENDIENTE'
+      },
+      {
+        id: 'rec-2',
+        mes: 'Septiembre',
+        ano: 2026,
+        concepto: 'Cuota de Arbitraje Oficial',
+        valor: 40000,
+        fechaVencimiento: '25/09/2026',
+        estado: 'PENDIENTE'
+      }
+    ];
+
+    // Histórico de 36 mensualidades y conceptos
+    for (let y = 2026; y >= 2024; y--) {
+      meses.forEach((m, idx) => {
+        if (y === 2026 && (m === 'Septiembre')) return; // Ya agregados arriba
+        this.allRecibos.push({
+          id: `rec-${y}-${idx}`,
+          mes: m,
+          ano: y,
+          concepto: conceptos[idx % conceptos.length],
+          valor: 180000,
+          fechaVencimiento: `05/${idx + 1}/${y}`,
+          estado: 'PAGADO',
+          referenciaPago: `WMP-PSE-${y}${idx}-8923`,
+          fechaPago: `03/${idx + 1}/${y}`
+        });
+      });
+    }
+  }
+
+  cargarMas(): void {
+    if (this.isLoadingMore() || this.hasReachedEnd()) return;
+
+    this.isLoadingMore.set(true);
+    setTimeout(() => {
+      let filtered = this.allRecibos;
+      if (this.filter() === 'PENDIENTES') {
+        filtered = this.allRecibos.filter(r => r.estado !== 'PAGADO');
+      } else if (this.filter() === 'HISTORIAL') {
+        filtered = this.allRecibos.filter(r => r.estado === 'PAGADO');
+      }
+
+      const nextBatch = filtered.slice(this.currentOffset, this.currentOffset + this.pageSize);
+      if (nextBatch.length > 0) {
+        this.displayedRecibos.update(curr => [...curr, ...nextBatch]);
+        this.currentOffset += this.pageSize;
+      }
+      if (this.currentOffset >= filtered.length) {
+        this.hasReachedEnd.set(true);
+      }
+      this.isLoadingMore.set(false);
+    }, 300);
+  }
+
+  onScrollChange(index: number): void {
+    const total = this.displayedRecibos().length;
+    if (index >= total - 2 && !this.isLoadingMore() && !this.hasReachedEnd()) {
+      this.cargarMas();
+    }
+  }
+
+  setFilter(filtro: 'TODOS' | 'PENDIENTES' | 'HISTORIAL'): void {
+    this.filter.set(filtro);
+    this.currentOffset = 0;
+    this.displayedRecibos.set([]);
+    this.hasReachedEnd.set(false);
+    this.cargarMas();
+  }
 
   recargarPagos(): void {
     this.isRefreshing.set(true);
+    this.currentOffset = 0;
+    this.displayedRecibos.set([]);
+    this.hasReachedEnd.set(false);
     setTimeout(() => {
+      this.cargarMas();
       this.isRefreshing.set(false);
-      this.alertService.success('Estado de cartera y pagos actualizado desde la base de datos.');
-    }, 600);
+    }, 450);
   }
 
-  recibos = signal<ReciboMensualidad[]>([
-    {
-      id: 'rec-09-2026',
-      mes: 'Septiembre',
-      ano: 2026,
-      concepto: 'Mensualidad Formación Deportiva',
-      valor: 180000,
-      fechaVencimiento: '05 Oct 2026',
-      estado: 'PENDIENTE'
-    },
-    {
-      id: 'rec-08-2026',
-      mes: 'Agosto',
-      ano: 2026,
-      concepto: 'Mensualidad Formación Deportiva',
-      valor: 180000,
-      fechaVencimiento: '05 Sep 2026',
-      estado: 'PAGADO',
-      referenciaPago: 'WOMPI-7890214',
-      fechaPago: '02 Sep 2026'
-    },
-    {
-      id: 'rec-07-2026',
-      mes: 'Julio',
-      ano: 2026,
-      concepto: 'Mensualidad Formación Deportiva',
-      valor: 180000,
-      fechaVencimiento: '05 Ago 2026',
-      estado: 'PAGADO',
-      referenciaPago: 'WOMPI-6541098',
-      fechaPago: '03 Ago 2026'
-    }
-  ]);
-
-  filteredRecibos = signal<ReciboMensualidad[]>([]);
-
-  ngOnInit(): void {
-    this.updateFilter();
+  iniciarPago(recibo: ReciboMensualidad): void {
+    this.reciboSeleccionado.set(recibo);
+    this.modalPagoActivo.set(true);
   }
 
-  setFilter(f: 'TODOS' | 'PENDIENTES' | 'HISTORIAL'): void {
-    this.filter.set(f);
-    this.updateFilter();
+  cerrarModalPago(): void {
+    this.modalPagoActivo.set(false);
+    this.reciboSeleccionado.set(null);
   }
 
-  totalPendiente(): number {
-    return this.recibos()
-      .filter(r => r.estado !== 'PAGADO')
-      .reduce((acc, curr) => acc + curr.valor, 0);
-  }
+  procesarTransaccion(): void {
+    const r = this.reciboSeleccionado();
+    if (!r) return;
 
-  updateFilter(): void {
-    const f = this.filter();
-    const all = this.recibos();
-    if (f === 'PENDIENTES') {
-      this.filteredRecibos.set(all.filter(r => r.estado !== 'PAGADO'));
-    } else if (f === 'HISTORIAL') {
-      this.filteredRecibos.set(all.filter(r => r.estado === 'PAGADO'));
-    } else {
-      this.filteredRecibos.set(all);
-    }
-  }
-
-  iniciarPago(r: ReciboMensualidad): void {
-    this.selectedRecibo.set(r);
-  }
-
-  cerrarModalCheckout(): void {
-    this.selectedRecibo.set(null);
-  }
-
-  procesarPagoFinal(): void {
-    this.isProcessingPay.set(true);
-
+    this.procesandoPago.set(true);
     setTimeout(() => {
-      this.isProcessingPay.set(false);
-      const targetId = this.selectedRecibo()?.id;
+      this.procesandoPago.set(false);
+      this.modalPagoActivo.set(false);
+      
+      // Actualizar estado a pagado
+      this.allRecibos = this.allRecibos.map(item => item.id === r.id ? {
+        ...item,
+        estado: 'PAGADO',
+        referenciaPago: `WMP-PSE-2026-ONLINE-${Math.floor(Math.random() * 9000 + 1000)}`,
+        fechaPago: 'Hoy'
+      } : item);
 
-      this.recibos.update(list => list.map(r => {
-        if (r.id === targetId) {
-          return {
-            ...r,
-            estado: 'PAGADO',
-            referenciaPago: `PSE-${Math.floor(1000000 + Math.random() * 9000000)}`,
-            fechaPago: 'Hoy'
-          };
-        }
-        return r;
-      }));
-
-      this.cerrarModalCheckout();
-      this.updateFilter();
-      this.alertService.success('¡Pago procesado exitosamente a través de PSE / Wompi!');
+      this.totalPendiente.update(val => Math.max(0, val - r.valor));
+      this.setFilter(this.filter());
+      this.alert.success('¡Transacción aprobada! Recibo emitido correctamente.');
     }, 1200);
   }
 
   descargarComprobante(r: ReciboMensualidad): void {
-    this.alertService.info(`Descargando comprobante fiscal de pago (${r.referenciaPago || 'REC-PDF'})...`);
+    this.alert.info(`Descargando comprobante fiscal PDF para ${r.concepto} (${r.mes} ${r.ano})...`);
   }
 }

@@ -44,6 +44,26 @@ export class CanchasController {
     return this.canchasService.getMatrizDisponibilidad(user.clubId, targetFecha);
   }
 
+  @Get('cartagena')
+  @ApiOperation({ summary: 'Obtener catálogo geolocalizado de todas las canchas y escenarios deportivos de Cartagena con GPS' })
+  @ApiQuery({ name: 'localidad', required: false, type: String })
+  @ApiQuery({ name: 'barrio', required: false, type: String })
+  @ApiQuery({ name: 'tipoSuperficie', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  async getCanchasCartagena(
+    @Query('localidad') localidad?: string,
+    @Query('barrio') barrio?: string,
+    @Query('tipoSuperficie') tipoSuperficie?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.canchasService.getCanchasCartagena({
+      localidad,
+      barrio,
+      tipoSuperficie,
+      search,
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalle de una cancha específica' })
   async getCanchaById(@Param('id') id: string, @CurrentUser() user: any) {

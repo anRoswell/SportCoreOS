@@ -1,6 +1,7 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,14 +21,14 @@ export interface NotificacionItem {
 @Component({
   selector: 'app-notificaciones-mobile',
   standalone: true,
-  imports: [CommonModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, RouterModule, ScrollingModule, MobileHeaderComponent, BottomNavComponent],
   template: `
     <app-mobile-header></app-mobile-header>
 
     <div class="notif-subbar">
       <div class="subbar-left">
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-        <h2>Centro de Notificaciones</h2>
+        <h2>Notificaciones</h2>
       </div>
       <div class="subbar-right">
         <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarNotificaciones()" title="Actualizar">
@@ -35,7 +36,7 @@ export interface NotificacionItem {
         </button>
         @if (sinLeerCount() > 0) {
           <button class="btn-mark-read" (click)="marcarTodasLeidas()">
-            <i class="fa-solid fa-check-double"></i> Leer todas
+            <i class="fa-solid fa-check-double"></i>
           </button>
         }
       </div>
@@ -47,25 +48,29 @@ export interface NotificacionItem {
         <button 
           class="tab-btn" 
           [class.active]="filtro() === 'todas'"
-          (click)="filtro.set('todas')">
-          Todas ({{ notificaciones().length }})
+          (click)="cambiarFiltro('todas')">
+          Todas ({{ displayedItems().length }})
         </button>
         <button 
           class="tab-btn" 
           [class.active]="filtro() === 'sin_leer'"
-          (click)="filtro.set('sin_leer')">
+          (click)="cambiarFiltro('sin_leer')">
           Sin Leer ({{ sinLeerCount() }})
         </button>
       </div>
 
-      <!-- Lista de Notificaciones -->
-      <div class="notif-list">
-        @for (item of notificacionesFiltradas(); track item.id) {
+      <!-- Virtual Scrolling Viewport para rendimiento fluido -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="88" 
+        class="notif-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let item of displayedItems(); trackBy: trackById" class="notif-item-wrapper">
           <div 
             class="notif-card" 
             [class.unread]="!item.leida"
             (click)="abrirNotificacion(item)">
-            <div class="icon-wrap" [style.background]="item.color + '15'" [style.color]="item.color">
+            <div class="icon-wrap" [style.background]="item.color + '18'" [style.color]="item.color">
               <i [class]="item.icono"></i>
             </div>
 
@@ -80,13 +85,24 @@ export interface NotificacionItem {
               }
             </div>
           </div>
-        } @empty {
+        </div>
+
+        @if (isLoadingMore()) {
+          <div class="infinite-indicator">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más alertas...</span>
+          </div>
+        } @else if (hasReachedEnd() && displayedItems().length > 0) {
+          <div class="infinite-end">
+            <span>Fin del historial de notificaciones</span>
+          </div>
+        } @else if (displayedItems().length === 0) {
           <div class="empty-notif">
             <i class="fa-regular fa-bell-slash"></i>
-            <p>No tienes notificaciones pendientes.</p>
+            <p>No tienes notificaciones en esta categoría.</p>
           </div>
         }
-      </div>
+      </cdk-virtual-scroll-viewport>
     </main>
 
     <app-bottom-nav></app-bottom-nav>
@@ -112,225 +128,348 @@ export interface NotificacionItem {
         }
 
         h2 {
-          font-size: 1.1rem;
+          font-size: 1.05rem;
           font-weight: 800;
           color: #0f172a;
           margin: 0;
         }
       }
 
-      .btn-mark-read {
-        background: #f1f5f9;
-        border: none;
-        padding: 0.4rem 0.75rem;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #047857;
-        cursor: pointer;
+      .subbar-right {
         display: flex;
         align-items: center;
-        gap: 0.35rem;
-      }
-    }
+        gap: 0.5rem;
 
-    .notif-container {
-      padding: 1rem;
-      padding-bottom: calc(75px + var(--safe-area-bottom));
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+        .btn-icon-refresh {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #059669;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
 
-    .filter-tabs {
-      display: flex;
-      background: #e2e8f0;
-      padding: 0.25rem;
-      border-radius: 10px;
-      gap: 0.25rem;
+          &.spinning i {
+            animation: spin 0.8s linear infinite;
+          }
+        }
 
-      .tab-btn {
-        flex: 1;
-        background: none;
-        border: none;
-        padding: 0.55rem;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #64748b;
-        cursor: pointer;
-
-        &.active {
-          background: #fff;
-          color: #0f172a;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        .btn-mark-read {
+          background: #ecfdf5;
+          color: #059669;
+          border: 1px solid #a7f3d0;
+          padding: 0.35rem 0.65rem;
+          border-radius: 8px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          cursor: pointer;
         }
       }
     }
 
-    .notif-list {
+    .notif-container {
+      height: calc(100vh - 135px - var(--safe-area-bottom));
+      height: calc(100dvh - 135px - var(--safe-area-bottom));
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      background: #f8fafc;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem 0.4rem;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+
+      .tab-btn {
+        flex: 1;
+        padding: 0.5rem;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.active {
+          background: #0f172a;
+          color: #fff;
+        }
+      }
+    }
+
+    .notif-viewport {
+      flex: 1;
+      width: 100%;
+      padding: 0.65rem 1rem;
+      box-sizing: border-box;
+    }
+
+    .notif-item-wrapper {
+      height: 88px;
+      padding-bottom: 0.5rem;
+      box-sizing: border-box;
     }
 
     .notif-card {
       background: #fff;
       border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 0.95rem;
+      border-radius: 12px;
+      padding: 0.75rem;
       display: flex;
-      align-items: flex-start;
-      gap: 0.85rem;
-      cursor: pointer;
+      gap: 0.75rem;
+      align-items: center;
+      height: 100%;
+      box-sizing: border-box;
       position: relative;
-      transition: transform 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
 
       &.unread {
-        border-color: #10b981;
-        background: #f0fdf4;
+        border-color: #a7f3d0;
+        background: #fafdfb;
       }
 
       .icon-wrap {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         flex-shrink: 0;
       }
 
       .notif-content {
         flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
+        min-width: 0;
 
         .notif-header-row {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
+          margin-bottom: 0.2rem;
 
           h4 {
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             font-weight: 800;
             color: #0f172a;
             margin: 0;
-            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           .time-text {
-            font-size: 0.68rem;
+            font-size: 0.66rem;
             color: #94a3b8;
-            white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: 0.4rem;
           }
         }
 
         .notif-msg {
-          font-size: 0.78rem;
+          font-size: 0.74rem;
           color: #475569;
           margin: 0;
-          line-height: 1.4;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .unread-dot {
           position: absolute;
-          top: 12px;
-          right: 12px;
-          width: 8px;
-          height: 8px;
-          background: #10b981;
+          top: 10px;
+          right: 10px;
+          width: 7px;
+          height: 7px;
+          background: #059669;
           border-radius: 50%;
         }
       }
+    }
+
+    .infinite-indicator, .infinite-end {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
     }
 
     .empty-notif {
       text-align: center;
       padding: 3rem 1rem;
       color: #94a3b8;
-      i { font-size: 3rem; margin-bottom: 0.75rem; }
-      p { font-size: 0.9rem; font-weight: 600; }
+
+      i { font-size: 2.2rem; margin-bottom: 0.75rem; }
+      p { font-size: 0.85rem; font-weight: 600; margin: 0; }
     }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   `]
 })
-export class NotificacionesMobileComponent {
+export class NotificacionesMobileComponent implements OnInit {
   auth = inject(AuthService);
   filtro = signal<'todas' | 'sin_leer'>('todas');
   isRefreshing = signal<boolean>(false);
+  isLoadingMore = signal<boolean>(false);
+  hasReachedEnd = signal<boolean>(false);
+
+  private allNotifications: NotificacionItem[] = [];
+  displayedItems = signal<NotificacionItem[]>([]);
+  private pageSize = 8;
+  private currentOffset = 0;
+
+  sinLeerCount = computed(() => this.allNotifications.filter(n => !n.leida).length);
+
+  ngOnInit(): void {
+    this.generarCatalogoNotificaciones();
+    this.cargarMas();
+  }
+
+  trackById(index: number, item: NotificacionItem): string {
+    return item.id;
+  }
+
+  private generarCatalogoNotificaciones(): void {
+    const baseItems: NotificacionItem[] = [
+      {
+        id: 'notif-1',
+        tipo: 'convocatoria',
+        titulo: 'Convocatoria Oficial: vs Millonarios FC',
+        mensaje: 'Has sido citado como Titular en la Cancha Sintética 1. Hora de citación: 08:30 AM.',
+        tiempo: 'Hace 10 min',
+        leida: false,
+        icono: 'fa-solid fa-clipboard-user',
+        color: '#059669',
+        ruta: '/convocatorias'
+      },
+      {
+        id: 'notif-2',
+        tipo: 'pago',
+        titulo: 'Recibo Generado: Pensión Septiembre 2026',
+        mensaje: 'La mensualidad formativa de Septiembre se encuentra disponible para pago PSE/Wompi.',
+        tiempo: 'Hace 1 hora',
+        leida: false,
+        icono: 'fa-solid fa-credit-card',
+        color: '#d97706',
+        ruta: '/pagos'
+      },
+      {
+        id: 'notif-3',
+        tipo: 'partido',
+        titulo: 'Cambio de Sede: Fecha 4 Liga Departamental',
+        mensaje: 'El partido de este sábado se jugará en el Complejo Deportivo Arrayanes Cancha 2.',
+        tiempo: 'Hace 3 horas',
+        leida: true,
+        icono: 'fa-solid fa-futbol',
+        color: '#2563eb',
+        ruta: '/partidos'
+      },
+      {
+        id: 'notif-4',
+        tipo: 'medico',
+        titulo: 'Actualización de Ficha Antropométrica',
+        mensaje: 'El preparador físico registró nuevos valores de IMC y Test de Cooper.',
+        tiempo: 'Ayer',
+        leida: true,
+        icono: 'fa-solid fa-heart-pulse',
+        color: '#e11d48',
+        ruta: '/rendimiento'
+      },
+      {
+        id: 'notif-5',
+        tipo: 'general',
+        titulo: 'Boletín Táctico con Inteligencia Artificial',
+        mensaje: 'Tu informe trimestral de progresión táctica ha sido generado exitosamente.',
+        tiempo: 'Hace 2 días',
+        leida: true,
+        icono: 'fa-solid fa-wand-magic-sparkles',
+        color: '#7c3aed',
+        ruta: '/perfil/boletin-ia'
+      }
+    ];
+
+    // Buffer de 40 notificaciones para scroll fluido
+    this.allNotifications = [];
+    for (let i = 0; i < 8; i++) {
+      baseItems.forEach(item => {
+        this.allNotifications.push({
+          ...item,
+          id: `${item.id}-${i}`,
+          titulo: i === 0 ? item.titulo : `${item.titulo} (Historial ${i})`,
+          leida: i > 0 || item.leida,
+          tiempo: i === 0 ? item.tiempo : `Hace ${i + 2} días`
+        });
+      });
+    }
+  }
+
+  cargarMas(): void {
+    if (this.isLoadingMore() || this.hasReachedEnd()) return;
+
+    this.isLoadingMore.set(true);
+    setTimeout(() => {
+      const filteredSource = this.filtro() === 'sin_leer' 
+        ? this.allNotifications.filter(n => !n.leida) 
+        : this.allNotifications;
+
+      const nextBatch = filteredSource.slice(this.currentOffset, this.currentOffset + this.pageSize);
+      if (nextBatch.length > 0) {
+        this.displayedItems.update(curr => [...curr, ...nextBatch]);
+        this.currentOffset += this.pageSize;
+      }
+      if (this.currentOffset >= filteredSource.length) {
+        this.hasReachedEnd.set(true);
+      }
+      this.isLoadingMore.set(false);
+    }, 300);
+  }
+
+  onScrollChange(index: number): void {
+    const total = this.displayedItems().length;
+    if (index >= total - 3 && !this.isLoadingMore() && !this.hasReachedEnd()) {
+      this.cargarMas();
+    }
+  }
+
+  cambiarFiltro(nuevoFiltro: 'todas' | 'sin_leer'): void {
+    this.filtro.set(nuevoFiltro);
+    this.currentOffset = 0;
+    this.displayedItems.set([]);
+    this.hasReachedEnd.set(false);
+    this.cargarMas();
+  }
 
   recargarNotificaciones(): void {
     this.isRefreshing.set(true);
+    this.currentOffset = 0;
+    this.displayedItems.set([]);
+    this.hasReachedEnd.set(false);
     setTimeout(() => {
+      this.cargarMas();
       this.isRefreshing.set(false);
-    }, 600);
+    }, 450);
   }
 
-  notificaciones = signal<NotificacionItem[]>([
-    {
-      id: 'n1',
-      tipo: 'convocatoria',
-      titulo: '¡Has sido convocado al partido!',
-      mensaje: 'El DT te ha citado para el clásico Sub-15 vs Millonarios FC este Sábado 09:00 AM.',
-      tiempo: 'Hace 10 min',
-      leida: false,
-      icono: 'fa-solid fa-clipboard-user',
-      color: '#10b981',
-      ruta: '/convocatorias'
-    },
-    {
-      id: 'n2',
-      tipo: 'pago',
-      titulo: 'Mensualidad Septiembre Lista para Pago',
-      mensaje: 'Tu recibo de pensión y entrenamiento ya está disponible para pago en línea por PSE o Wompi.',
-      tiempo: 'Hace 2 horas',
-      leida: false,
-      icono: 'fa-solid fa-credit-card',
-      color: '#2563eb',
-      ruta: '/pagos'
-    },
-    {
-      id: 'n3',
-      tipo: 'medico',
-      titulo: 'Boletín IA y Certificado Médico',
-      mensaje: 'El equipo de rendimiento deportivo y Gemini IA han generado el nuevo reporte físico.',
-      tiempo: 'Ayer',
-      leida: true,
-      icono: 'fa-solid fa-heart-pulse',
-      color: '#ec4899',
-      ruta: '/perfil/boletin-ia'
-    },
-    {
-      id: 'n4',
-      tipo: 'partido',
-      titulo: 'Cambio de Sede de Entrenamiento',
-      mensaje: 'El entrenamiento de mañana se traslada al Campo Sintético Sede Norte debido al mantenimiento de grama.',
-      tiempo: 'Hace 2 días',
-      leida: true,
-      icono: 'fa-solid fa-futbol',
-      color: '#f59e0b',
-      ruta: '/entrenamientos'
-    }
-  ]);
-
-  sinLeerCount = computed(() => this.notificaciones().filter(n => !n.leida).length);
-
-  notificacionesFiltradas = computed(() => {
-    if (this.filtro() === 'sin_leer') {
-      return this.notificaciones().filter(n => !n.leida);
-    }
-    return this.notificaciones();
-  });
-
-  abrirNotificacion(item: NotificacionItem) {
-    const list = this.notificaciones().map(n => n.id === item.id ? { ...n, leida: true } : n);
-    this.notificaciones.set(list);
+  marcarTodasLeidas(): void {
+    this.allNotifications = this.allNotifications.map(n => ({ ...n, leida: true }));
+    this.displayedItems.update(items => items.map(n => ({ ...n, leida: true })));
   }
 
-  marcarTodasLeidas() {
-    const list = this.notificaciones().map(n => ({ ...n, leida: true }));
-    this.notificaciones.set(list);
+  abrirNotificacion(item: NotificacionItem): void {
+    item.leida = true;
+    this.displayedItems.update(items => items.map(n => n.id === item.id ? { ...n, leida: true } : n));
   }
 }
