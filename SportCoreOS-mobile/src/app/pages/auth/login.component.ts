@@ -11,12 +11,9 @@ import { AlertService } from '../../core/services/alert.service';
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="mobile-login-page">
-      <!-- Fondo dinámico con líneas de cancha de fútbol sutiles -->
-      <div class="pitch-lines">
-        <div class="pitch-center-circle"></div>
-        <div class="pitch-halfway-line"></div>
-        <div class="pitch-penalty-arc"></div>
-      </div>
+      <!-- Imagen de fondo de Estadio de Fútbol -->
+      <div class="stadium-bg-layer"></div>
+      <div class="stadium-overlay"></div>
 
       <!-- Header de Impacto Deportivo -->
       <div class="login-brand-header">
@@ -121,48 +118,34 @@ import { AlertService } from '../../core/services/alert.service';
       display: flex;
       flex-direction: column;
       justify-content: center;
-      background: radial-gradient(circle at 50% 0%, #ecfdf5 0%, #f8fafc 45%, #f1f5f9 100%);
       position: relative;
       overflow: hidden;
+      background-color: #0b1510;
     }
 
-    /* Líneas decorativas de cancha de fútbol */
-    .pitch-lines {
+    /* Fondo de Estadio de Fútbol */
+    .stadium-bg-layer {
       position: absolute;
       inset: 0;
+      background: url('/assets/images/stadium_login_bg.jpg') center center / cover no-repeat;
+      opacity: 0.35;
+      filter: saturate(1.1) brightness(0.9);
+      transform: scale(1.02);
+      z-index: 0;
+    }
+
+    .stadium-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(241, 245, 249, 0.4) 0%,
+        rgba(248, 250, 252, 0.72) 40%,
+        rgba(236, 253, 245, 0.88) 100%
+      );
+      backdrop-filter: blur(2px);
       pointer-events: none;
-      opacity: 0.45;
-
-      .pitch-halfway-line {
-        position: absolute;
-        top: 28%;
-        left: 0;
-        right: 0;
-        height: 1.5px;
-        background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.3) 25%, rgba(16, 185, 129, 0.3) 75%, transparent 100%);
-      }
-
-      .pitch-center-circle {
-        position: absolute;
-        top: 28%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 170px;
-        height: 170px;
-        border: 1.5px solid rgba(16, 185, 129, 0.25);
-        border-radius: 50%;
-      }
-
-      .pitch-penalty-arc {
-        position: absolute;
-        bottom: -40px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 220px;
-        height: 100px;
-        border: 1.5px solid rgba(16, 185, 129, 0.2);
-        border-radius: 120px 120px 0 0;
-      }
+      z-index: 1;
     }
 
     .login-brand-header {
