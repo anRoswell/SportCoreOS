@@ -132,8 +132,9 @@ export class AuthService {
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
       tap((res) => {
-        const token = res.token || res.access_token || res.accessToken;
-        const user = res.user || res.usuario;
+        const payload = res?.data || res;
+        const token = payload?.accessToken || payload?.token || payload?.access_token;
+        const user = payload?.user || payload?.usuario;
         if (token) {
           this.setSession(token, user);
         }
