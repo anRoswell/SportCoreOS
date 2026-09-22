@@ -37,11 +37,16 @@ export interface ItemCarrito {
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Tienda Oficial</h2>
       </div>
-      <div class="cart-trigger" (click)="abrirCarrito()">
-        <i class="fa-solid fa-bag-shopping"></i>
-        @if (totalItemsCarrito() > 0) {
-          <span class="cart-badge">{{ totalItemsCarrito() }}</span>
-        }
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarTienda()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <div class="cart-trigger" (click)="abrirCarrito()">
+          <i class="fa-solid fa-bag-shopping"></i>
+          @if (totalItemsCarrito() > 0) {
+            <span class="cart-badge">{{ totalItemsCarrito() }}</span>
+          }
+        </div>
       </div>
     </div>
 
@@ -870,12 +875,20 @@ export interface ItemCarrito {
 export class TiendaMobileComponent {
   auth = inject(AuthService);
 
+  isRefreshing = signal<boolean>(false);
   categoriaActiva = signal<string>('todos');
   productoSeleccionado = signal<ProductoTienda | null>(null);
   tallaElegida = signal<string>('');
   mostrarCarrito = signal<boolean>(false);
   pagoExitoso = signal<boolean>(false);
   orderNumber = Math.floor(100000 + Math.random() * 900000);
+
+  recargarTienda(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   carrito = signal<ItemCarrito[]>([]);
 

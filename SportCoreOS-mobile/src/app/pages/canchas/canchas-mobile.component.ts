@@ -42,12 +42,17 @@ export interface ReservaActiva {
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Alquiler de Canchas</h2>
       </div>
-      <button class="btn-mis-reservas" (click)="abrirMisReservas()">
-        <i class="fa-solid fa-calendar-check"></i>
-        @if (misReservas().length > 0) {
-          <span class="badge-count">{{ misReservas().length }}</span>
-        }
-      </button>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarCanchas()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-mis-reservas" (click)="abrirMisReservas()">
+          <i class="fa-solid fa-calendar-check"></i>
+          @if (misReservas().length > 0) {
+            <span class="badge-count">{{ misReservas().length }}</span>
+          }
+        </button>
+      </div>
     </div>
 
     <main class="canchas-container">
@@ -902,10 +907,18 @@ export class CanchasMobileComponent {
   fechaSeleccionada = signal<string>('2026-09-23');
   metodoPago = signal<string>('PSE');
 
+  isRefreshing = signal<boolean>(false);
   reservaModal = signal<{ cancha: CanchaSede; hora: string } | null>(null);
   mostrarMisReservas = signal<boolean>(false);
   reservaExitosa = signal<boolean>(false);
   codigoGenerado = '';
+
+  recargarCanchas(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   proximosDias = [
     { fechaStr: '2026-09-23', nombreDia: 'MIE', numDia: '23', mes: 'SEP' },

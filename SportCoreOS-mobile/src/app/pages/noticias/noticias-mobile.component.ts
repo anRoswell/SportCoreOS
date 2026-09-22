@@ -29,6 +29,9 @@ export interface NoticiaClub {
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Muro de Noticias & Circulares</h2>
       </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarNoticias()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
     </div>
 
     <main class="news-container">
@@ -362,6 +365,14 @@ export interface NoticiaClub {
 export class NoticiasMobileComponent {
   auth = inject(AuthService);
   noticiaSeleccionada = signal<NoticiaClub | null>(null);
+  isRefreshing = signal<boolean>(false);
+
+  recargarNoticias(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   noticias = signal<NoticiaClub[]>([
     {

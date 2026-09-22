@@ -15,13 +15,17 @@ import { environment } from '../../../environments/environment';
   template: `
     <app-mobile-header></app-mobile-header>
 
-    <main class="mobile-page-content">
-      <div class="page-title-row">
-        <div>
-          <h3>Calendario & Fixture</h3>
-          <p class="subtitle">Programación de partidos y torneos oficiales</p>
-        </div>
+    <div class="partidos-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Calendario & Fixture</h2>
       </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPartidos()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
+
+    <main class="mobile-page-content">
 
       <div class="matches-list">
         @for (m of matches(); track m.id) {
@@ -227,13 +231,27 @@ export class PartidosMobileComponent implements OnInit {
   alert = inject(AlertService);
   private http = inject(HttpClient);
 
+  isRefreshing = signal<boolean>(false);
   readonly matches = signal<any[]>([]);
 
   ngOnInit(): void {
+    this.cargarPartidos();
+  }
+
+  recargarPartidos(): void {
+    this.isRefreshing.set(true);
+    this.cargarPartidos(() => {
+      this.isRefreshing.set(false);
+      this.alert.success('Calendario y partidos actualizados.');
+    });
+  }
+
+  cargarPartidos(callback?: () => void): void {
     this.http.get<any>(`${environment.apiUrl}/partidos`).subscribe({
       next: (res) => {
         const list = Array.isArray(res) ? res : (res?.data || []);
         this.matches.set(list);
+        if (callback) callback();
       },
       error: () => {
         this.matches.set([
@@ -248,6 +266,7 @@ export class PartidosMobileComponent implements OnInit {
             condicion_juego: 'LOCAL'
           }
         ]);
+        if (callback) callback();
       }
     });
   }

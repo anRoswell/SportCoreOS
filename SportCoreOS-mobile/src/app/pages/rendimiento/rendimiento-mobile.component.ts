@@ -28,9 +28,14 @@ export interface TestBiometrico {
         <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Biometría & Radar Físico</h2>
       </div>
-      <a routerLink="/perfil/boletin-ia" class="btn-ia-report">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Boletín IA
-      </a>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarBiometria()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <a routerLink="/perfil/boletin-ia" class="btn-ia-report">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Boletín IA
+        </a>
+      </div>
     </div>
 
     <main class="rend-container">
@@ -352,6 +357,14 @@ export interface TestBiometrico {
 })
 export class RendimientoMobileComponent {
   auth = inject(AuthService);
+  isRefreshing = signal<boolean>(false);
+
+  recargarBiometria(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   testActual: TestBiometrico = {
     fecha: '15 de Septiembre 2026',

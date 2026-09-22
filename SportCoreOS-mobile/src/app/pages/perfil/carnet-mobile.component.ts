@@ -29,8 +29,13 @@ export interface DeportistaCarnet {
     <app-mobile-header></app-mobile-header>
 
     <div class="carnet-subbar">
-      <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <h2>Socio Pass Digital</h2>
+      <div class="subbar-left">
+        <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Socio Pass Digital</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarCarnet()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
     </div>
 
     <main class="carnet-container">
@@ -545,6 +550,14 @@ export interface DeportistaCarnet {
 export class CarnetMobileComponent {
   auth = inject(AuthService);
   vistaActiva = signal<'carnet' | 'medica'>('carnet');
+  isRefreshing = signal<boolean>(false);
+
+  recargarCarnet(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   deportista: DeportistaCarnet = {
     nombre: 'Mateo Morales Silva',

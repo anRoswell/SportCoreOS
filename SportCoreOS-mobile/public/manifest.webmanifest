@@ -1,0 +1,31 @@
+{
+  "name": "SportCoreOS — Athletic Performance Cloud",
+  "short_name": "SportCoreOS",
+  "description": "La Suite Integral para Academias y Clubes Deportivos de Alto Rendimiento. Telemetría GPS, Recaudo PSE/Wompi, Convocatorias y Expedientes 360°.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/branding/sportcore_mobile_icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/branding/sportcore_icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["sports", "productivity", "utilities"]
+}

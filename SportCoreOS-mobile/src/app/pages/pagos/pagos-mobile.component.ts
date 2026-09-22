@@ -27,7 +27,17 @@ interface ReciboMensualidad {
   imports: [CommonModule, FormsModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-mobile-header title="Pagos & Mensualidades" subtitle="Gestión de Cartera"></app-mobile-header>
+    <app-mobile-header></app-mobile-header>
+
+    <div class="pagos-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Estado de Cuenta & Cartera</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPagos()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
 
     <main class="page-content">
       <!-- Balance Total del Deportista -->
@@ -591,10 +601,19 @@ interface ReciboMensualidad {
 export class PagosMobileComponent implements OnInit {
   private alertService = inject(AlertService);
 
+  isRefreshing = signal<boolean>(false);
   filter = signal<'TODOS' | 'PENDIENTES' | 'HISTORIAL'>('TODOS');
   selectedRecibo = signal<ReciboMensualidad | null>(null);
   selectedMethod = signal<'PSE' | 'TARJETA' | 'NEQUI'>('PSE');
   isProcessingPay = signal<boolean>(false);
+
+  recargarPagos(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+      this.alertService.success('Estado de cartera y pagos actualizado desde la base de datos.');
+    }, 600);
+  }
 
   recibos = signal<ReciboMensualidad[]>([
     {

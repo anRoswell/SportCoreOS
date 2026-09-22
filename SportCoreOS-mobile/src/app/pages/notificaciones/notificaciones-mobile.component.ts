@@ -29,11 +29,16 @@ export interface NotificacionItem {
         <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
         <h2>Centro de Notificaciones</h2>
       </div>
-      @if (sinLeerCount() > 0) {
-        <button class="btn-mark-read" (click)="marcarTodasLeidas()">
-          <i class="fa-solid fa-check-double"></i> Leer todas
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarNotificaciones()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
         </button>
-      }
+        @if (sinLeerCount() > 0) {
+          <button class="btn-mark-read" (click)="marcarTodasLeidas()">
+            <i class="fa-solid fa-check-double"></i> Leer todas
+          </button>
+        }
+      </div>
     </div>
 
     <main class="notif-container">
@@ -254,6 +259,14 @@ export interface NotificacionItem {
 export class NotificacionesMobileComponent {
   auth = inject(AuthService);
   filtro = signal<'todas' | 'sin_leer'>('todas');
+  isRefreshing = signal<boolean>(false);
+
+  recargarNotificaciones(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   notificaciones = signal<NotificacionItem[]>([
     {

@@ -16,7 +16,7 @@ import { ThemeService } from '../../core/services/theme.service';
       <button 
         class="theme-toggle-floating" 
         (click)="themeService.toggleTheme()" 
-        [title]="themeService.isDark() ? 'Cambiar a Modo Claro (Limpio)' : 'Cambiar a Modo Oscuro (Dark Sport)'">
+        [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
         @if (themeService.isDark()) {
           <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
           <span>Modo Claro</span>
@@ -90,27 +90,38 @@ import { ThemeService } from '../../core/services/theme.service';
 
         <!-- COLUMNA DERECHA: FORMULARIO DE ACCESO & PERSONAS DEMO -->
         <div class="login-form-panel">
+          <!-- Ambient Glow Shapes & Grid Texture -->
+          <div class="ambient-glow glow-top-right"></div>
+          <div class="ambient-glow glow-bottom-left"></div>
+          <div class="tactical-grid-pattern"></div>
+
           <div class="form-wrapper">
-            <!-- Header del Formulario -->
+            <!-- Header del Formulario con Logotipo Oficial -->
             <div class="form-header">
               <div class="brand-header-row">
                 <div class="brand-logo">
-                  <div class="logo-icon">⚽</div>
+                  <div class="logo-image-wrap">
+                    <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS Logo" class="brand-logo-img" />
+                    <span class="logo-pulse-ring"></span>
+                  </div>
                   <div class="logo-text">
-                    <h2>SportCore<span class="badge-text">OS</span></h2>
-                    <span class="tagline">Sport Management Cloud</span>
+                    <div class="logo-title-wrap">
+                      <h2>SportCore<span class="badge-text">OS</span></h2>
+                      <span class="version-tag">v1.0</span>
+                    </div>
+                    <span class="tagline">Athletic Performance Cloud</span>
                   </div>
                 </div>
 
                 <div class="saas-secure-badge">
-                  <i class="fa-solid fa-shield-halved"></i>
-                  <span>Acceso Corporativo SaaS</span>
+                  <span class="live-dot"></span>
+                  <span>Sistema Operativo Seguro</span>
                 </div>
               </div>
 
               <div class="welcome-row">
-                <h3 class="welcome-heading">Bienvenido de nuevo</h3>
-                <p class="welcome-desc">Ingresa tus credenciales o selecciona un rol demo para explorar.</p>
+                <h3 class="welcome-heading">Panel de Acceso Institucional</h3>
+                <p class="welcome-desc">Ingresa tus credenciales autorizadas o selecciona una credencial demo para explorar.</p>
               </div>
             </div>
 
@@ -119,14 +130,17 @@ import { ThemeService } from '../../core/services/theme.service';
               <div class="form-row-2col">
                 <!-- Campo Email -->
                 <div class="input-group">
-                  <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+                  <label for="email">
+                    <span class="label-icon-badge"><i class="fa-solid fa-envelope"></i></span>
+                    <span>Correo Institucional</span>
+                  </label>
                   <div class="input-wrapper">
                     <input 
                       type="email" 
                       id="email" 
                       [(ngModel)]="email" 
                       name="email" 
-                      placeholder="ej. carlos.valderrama@sportcore.com" 
+                      placeholder="carlos.valderrama@sportcore.com" 
                       required 
                       class="sport-input" />
                   </div>
@@ -135,7 +149,10 @@ import { ThemeService } from '../../core/services/theme.service';
                 <!-- Campo Contraseña -->
                 <div class="input-group">
                   <div class="label-row">
-                    <label for="password"><i class="fa-solid fa-lock"></i> Contraseña</label>
+                    <label for="password">
+                      <span class="label-icon-badge"><i class="fa-solid fa-lock"></i></span>
+                      <span>Contraseña de Acceso</span>
+                    </label>
                     <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">¿Olvidaste clave?</a>
                   </div>
                   <div class="input-wrapper">
@@ -147,7 +164,7 @@ import { ThemeService } from '../../core/services/theme.service';
                       placeholder="••••••••••••" 
                       required 
                       class="sport-input" />
-                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()">
+                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Mostrar/Ocultar contraseña">
                       <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
                     </button>
                   </div>
@@ -158,8 +175,8 @@ import { ThemeService } from '../../core/services/theme.service';
               <div class="form-actions-bar">
                 <label class="checkbox-label">
                   <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
-                  <span class="custom-checkbox"></span>
-                  <span class="label-text">Mantener sesión iniciada</span>
+                  <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  <span class="label-text">Mantener sesión activa en este dispositivo</span>
                 </label>
 
                 <button type="submit" class="btn-login" [disabled]="loading()">
@@ -168,23 +185,27 @@ import { ThemeService } from '../../core/services/theme.service';
                     <span>Autenticando...</span>
                   } @else {
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    <span>Iniciar Sesión</span>
+                    <span>Ingresar al Sistema</span>
                   }
                 </button>
               </div>
             </form>
 
-            <!-- Separador -->
+            <!-- Separador Estilizado -->
             <div class="divider">
-              <span>O ACCEDE EN 1 CLIC CON UN PERFIL DEMO</span>
+              <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> O SELECCIONA UNA CREDENCIAL DEMO</span>
             </div>
 
-            <!-- Indicador de Colegio / Academia Demo -->
+            <!-- Indicador de Club Activo -->
             <div class="demo-school-badge">
-              <i class="fa-solid fa-school-flag"></i>
-              <span class="badge-label">Colegio / Academia Demo:</span>
-              <strong class="school-title">Club Deportivo Futuros Cracks FC</strong>
-              <span class="badge-city">• Cartagena</span>
+              <div class="school-shield-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="school-text-wrap">
+                <span class="badge-label">Club / Escuela Activa:</span>
+                <strong class="school-title">Club Deportivo Futuros Cracks FC</strong>
+                <span class="badge-city">• Cartagena (Cantera Oficial)</span>
+              </div>
             </div>
 
             <!-- Personas Demo de Prueba -->
@@ -213,11 +234,14 @@ import { ThemeService } from '../../core/services/theme.service';
             <!-- Callout Informativo de Seguridad SaaS -->
             <div class="saas-info-callout">
               <div class="callout-icon">
-                <i class="fa-solid fa-shield-halved"></i>
+                <i class="fa-solid fa-shield-check"></i>
               </div>
               <div class="callout-content">
                 <strong class="callout-title">Acceso Institucional Centralizado</strong>
-                <span class="callout-desc">El registro de nuevas academias y la habilitación de licencias es administrado exclusivamente por el Super Administrador Global.</span>
+                <span class="callout-desc">El registro de nuevas academias y la habilitación de módulos es administrado exclusivamente por el Super Administrador.</span>
+              </div>
+              <div class="callout-cert">
+                <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>
               </div>
             </div>
 
@@ -231,7 +255,7 @@ import { ThemeService } from '../../core/services/theme.service';
 
             <!-- Footer de la Empresa -->
             <div class="form-footer">
-              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Todos los derechos reservados</p>
+              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Infraestructura Cloud Deportiva • Todos los derechos reservados</p>
             </div>
           </div>
         </div>
@@ -249,7 +273,7 @@ import { ThemeService } from '../../core/services/theme.service';
       position: relative;
       overflow-x: hidden;
       overflow-y: auto;
-      padding: 1rem 1.5rem;
+      padding: 0.5rem 1rem;
       box-sizing: border-box;
       transition: background-color 0.25s ease;
     }
@@ -257,8 +281,8 @@ import { ThemeService } from '../../core/services/theme.service';
     /* Botón Flotante para cambiar Tema */
     .theme-toggle-floating {
       position: fixed;
-      top: 1.25rem;
-      right: 1.5rem;
+      top: 1rem;
+      right: 1.25rem;
       z-index: 100;
       display: flex;
       align-items: center;
@@ -287,16 +311,16 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .login-container {
       width: 100%;
-      max-width: 1480px;
-      height: calc(100vh - 2rem);
-      max-height: 860px;
+      max-width: 1540px;
+      height: calc(100vh - 1rem);
+      max-height: 900px;
       min-height: 580px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-card);
       display: grid;
-      grid-template-columns: 1.05fr 1.25fr;
+      grid-template-columns: 1fr 1.2fr;
       overflow: hidden;
       position: relative;
       transition: background-color 0.25s ease, border-color 0.25s ease;
@@ -309,7 +333,7 @@ import { ThemeService } from '../../core/services/theme.service';
       background: linear-gradient(160deg, rgba(9, 15, 29, 0.88) 0%, rgba(13, 23, 46, 0.80) 50%, rgba(6, 78, 59, 0.82) 100%), 
                   url('/assets/images/login-sport-bg.jpg') center center / cover no-repeat;
       color: #ffffff;
-      padding: 2.25rem 2.75rem;
+      padding: 2.25rem 2.5rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -330,7 +354,7 @@ import { ThemeService } from '../../core/services/theme.service';
       z-index: 2;
       display: flex;
       flex-direction: column;
-      gap: 1.15rem;
+      gap: 1.4rem;
     }
 
     .brand-badge-pill {
@@ -339,9 +363,9 @@ import { ThemeService } from '../../core/services/theme.service';
       gap: 0.45rem;
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 0.25rem 0.75rem;
+      padding: 0.3rem 0.85rem;
       border-radius: var(--radius-full);
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       color: #34d399;
@@ -363,9 +387,9 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .hero-title {
-      font-size: clamp(1.6rem, 2.1vw, 2.25rem);
+      font-size: clamp(1.75rem, 2.3vw, 2.4rem);
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1.18;
       letter-spacing: -0.02em;
       color: #ffffff;
       margin: 0;
@@ -378,8 +402,8 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .hero-subtitle {
-      font-size: 0.875rem;
-      line-height: 1.45;
+      font-size: 0.92rem;
+      line-height: 1.5;
       color: #cbd5e1;
       max-width: 540px;
       margin: 0;
@@ -388,28 +412,28 @@ import { ThemeService } from '../../core/services/theme.service';
     .hero-stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
+      gap: 0.85rem;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.85rem 1rem;
+      padding: 1rem 1.15rem;
       border-radius: var(--radius-lg);
     }
 
     .stat-card {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.2rem;
 
       .stat-number {
-        font-size: 1.45rem;
+        font-size: 1.55rem;
         font-weight: 800;
         color: #34d399;
         line-height: 1;
       }
 
       .stat-label {
-        font-size: 0.725rem;
+        font-size: 0.75rem;
         color: #94a3b8;
         font-weight: 600;
       }
@@ -418,18 +442,18 @@ import { ThemeService } from '../../core/services/theme.service';
     .features-list {
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
+      gap: 0.7rem;
 
       .feature-item {
         display: flex;
         align-items: center;
-        gap: 0.65rem;
-        font-size: 0.825rem;
+        gap: 0.75rem;
+        font-size: 0.875rem;
         color: #e2e8f0;
 
         i {
           color: #34d399;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
         }
       }
     }
@@ -466,31 +490,124 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     /* =========================================================================
-       FORM PANEL (COLUMNA DERECHA)
+       FORM PANEL (COLUMNA DERECHA MEJORADA: GLASSMORPHISM & SPORTS AMBIENCE)
        ========================================================================= */
     .login-form-panel {
-      background: var(--bg-card);
-      padding: 1.75rem 2.5rem;
+      position: relative;
+      background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+                  radial-gradient(circle at 0% 100%, rgba(6, 182, 212, 0.07) 0%, transparent 45%),
+                  linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(241, 245, 249, 0.98) 100%);
+      padding: 0.65rem 1.25rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      position: relative;
-      overflow-y: auto;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      transition: background 0.3s ease;
+    }
+
+    /* Ambient Glow Effects in Background */
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    .glow-top-right {
+      top: -10%;
+      right: -10%;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, transparent 70%);
+    }
+
+    .glow-bottom-left {
+      bottom: -10%;
+      left: -5%;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, transparent 70%);
+    }
+
+    /* Subtle Tactical Pitch Grid Pattern Overlay */
+    .tactical-grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+        linear-gradient(to right, rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px, 48px 48px, 48px 48px;
+      pointer-events: none;
+      opacity: 0.75;
+      z-index: 0;
     }
 
     .form-wrapper {
-      max-width: 620px;
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
       width: 100%;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.85rem;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: var(--radius-xl);
+      padding: 1.6rem 2rem;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 
+                  0 0 0 1px rgba(255, 255, 255, 0.8) inset,
+                  0 0 25px rgba(16, 185, 129, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    /* Dark Theme Support for Form Wrapper & Panel */
+    :host-context(.dark-theme) {
+      .login-form-panel {
+        background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+                    radial-gradient(circle at 0% 100%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
+                    linear-gradient(180deg, #0f172a 0%, #0b0f19 100%);
+      }
+
+      .form-wrapper {
+        background: rgba(30, 41, 59, 0.7);
+        border-color: rgba(16, 185, 129, 0.25);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.35),
+                    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+                    0 0 25px rgba(16, 185, 129, 0.1);
+      }
+
+      .sport-input {
+        background: rgba(15, 23, 42, 0.85);
+        border-color: rgba(55, 65, 81, 0.8);
+        color: #f8fafc;
+
+        &:focus {
+          border-color: #10b981;
+          background: rgba(15, 23, 42, 0.95);
+        }
+      }
+
+      .persona-btn {
+        background: rgba(15, 23, 42, 0.65);
+        border-color: rgba(55, 65, 81, 0.6);
+
+        &:hover {
+          background: rgba(30, 41, 59, 0.9);
+        }
+      }
     }
 
     .form-header {
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
+      gap: 0.5rem;
 
       .brand-header-row {
         display: flex;
@@ -502,22 +619,71 @@ import { ThemeService } from '../../core/services/theme.service';
       .brand-logo {
         display: flex;
         align-items: center;
-        gap: 0.65rem;
+        gap: 0.75rem;
 
-        .logo-icon {
-          font-size: 1.75rem;
+        .logo-image-wrap {
+          position: relative;
+          width: 44px;
+          height: 44px;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          background: #0b0f19;
+          border: 1.5px solid rgba(16, 185, 129, 0.4);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .brand-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .logo-pulse-ring {
+            position: absolute;
+            inset: -2px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid #10b981;
+            opacity: 0;
+            animation: ringPulse 3s infinite ease-out;
+          }
         }
 
         .logo-text {
-          h2 {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.02em;
-            margin: 0;
+          display: flex;
+          flex-direction: column;
 
-            .badge-text {
+          .logo-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+
+            h2 {
+              font-size: 1.35rem;
+              font-weight: 900;
+              color: var(--text-main);
+              letter-spacing: -0.03em;
+              margin: 0;
+              line-height: 1.1;
+
+              .badge-text {
+                color: var(--color-primary);
+                background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+              }
+            }
+
+            .version-tag {
+              font-size: 0.65rem;
+              font-weight: 800;
+              background: rgba(16, 185, 129, 0.15);
               color: var(--color-primary);
+              border: 1px solid rgba(16, 185, 129, 0.3);
+              padding: 0.08rem 0.4rem;
+              border-radius: var(--radius-full);
+              letter-spacing: 0.05em;
             }
           }
 
@@ -525,64 +691,73 @@ import { ThemeService } from '../../core/services/theme.service';
             font-size: 0.68rem;
             font-weight: 700;
             color: var(--text-muted);
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
           }
+        }
+      }
+
+      .saas-secure-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.28);
+        padding: 0.3rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--color-primary);
+
+        .live-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          animation: pulse 2s infinite;
         }
       }
 
       .welcome-row {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.2rem;
+        margin-top: 0.15rem;
 
         .welcome-heading {
-          font-size: 1.2rem;
+          font-size: 1.25rem;
           font-weight: 800;
           color: var(--text-heading);
-          letter-spacing: -0.01em;
+          letter-spacing: -0.015em;
           margin: 0;
         }
 
         .welcome-desc {
-          font-size: 0.775rem;
+          font-size: 0.8rem;
           color: var(--text-muted);
           margin: 0;
+          line-height: 1.35;
         }
       }
+    }
 
-      .btn-onboarding-link {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: var(--color-primary);
-        padding: 0.35rem 0.75rem;
-        border-radius: var(--radius-full);
-        font-size: 0.75rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: var(--color-primary);
-          color: #ffffff;
-          transform: translateY(-1px);
-        }
-      }
+    @keyframes ringPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.25); opacity: 0; }
     }
 
     .login-form {
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 0.85rem;
+      margin-top: 0.15rem;
     }
 
     .form-row-2col {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.85rem;
+      gap: 0.95rem;
     }
 
     .form-actions-bar {
@@ -590,25 +765,32 @@ import { ThemeService } from '../../core/services/theme.service';
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      margin-top: 0.1rem;
+      margin-top: 0.15rem;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.35rem;
 
       label {
-        font-size: 0.75rem;
+        font-size: 0.76rem;
         font-weight: 700;
         color: var(--text-body);
         display: flex;
         align-items: center;
-        gap: 0.35rem;
+        gap: 0.4rem;
 
-        i {
+        .label-icon-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 18px;
+          height: 18px;
+          border-radius: 4px;
+          background: rgba(16, 185, 129, 0.12);
           color: var(--color-primary);
-          font-size: 0.8rem;
+          font-size: 0.68rem;
         }
       }
 
@@ -618,7 +800,7 @@ import { ThemeService } from '../../core/services/theme.service';
         align-items: center;
 
         .forgot-link {
-          font-size: 0.725rem;
+          font-size: 0.74rem;
           color: var(--color-primary);
           font-weight: 600;
           text-decoration: none;
@@ -636,18 +818,20 @@ import { ThemeService } from '../../core/services/theme.service';
 
         .sport-input {
           width: 100%;
-          padding: 0.6rem 0.8rem;
-          background: var(--bg-input);
-          border: 1px solid var(--border-color);
+          padding: 0.62rem 0.85rem;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid rgba(203, 213, 225, 0.8);
           border-radius: var(--radius-md);
           color: var(--text-main);
-          font-size: 0.85rem;
+          font-size: 0.875rem;
+          font-weight: 500;
           outline: none;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          transition: all 0.2s ease;
 
           &:focus {
             border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px var(--color-primary-glow);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            background: #ffffff;
           }
         }
 
@@ -659,9 +843,10 @@ import { ThemeService } from '../../core/services/theme.service';
           color: var(--text-muted);
           cursor: pointer;
           font-size: 0.9rem;
+          padding: 0.25rem;
 
           &:hover {
-            color: var(--text-main);
+            color: var(--color-primary);
           }
         }
       }
@@ -669,57 +854,111 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .sport-input {
       width: 100%;
-      padding: 0.6rem 0.8rem;
-      background: var(--bg-input);
-      border: 1px solid var(--border-color);
+      padding: 0.62rem 0.85rem;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(203, 213, 225, 0.8);
       border-radius: var(--radius-md);
       color: var(--text-main);
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.2s ease;
 
       &:focus {
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px var(--color-primary-glow);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
       }
     }
 
     .checkbox-label {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
       cursor: pointer;
-      font-size: 0.775rem;
+      font-size: 0.78rem;
+      font-weight: 500;
       color: var(--text-body);
+      user-select: none;
 
       input {
-        accent-color: var(--color-primary);
-        width: 15px;
-        height: 15px;
+        display: none;
+
+        &:checked + .custom-checkbox {
+          background: var(--color-primary);
+          border-color: var(--color-primary);
+
+          i {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      }
+
+      .custom-checkbox {
+        width: 17px;
+        height: 17px;
+        border-radius: 4px;
+        border: 1.5px solid rgba(16, 185, 129, 0.5);
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        i {
+          font-size: 0.6rem;
+          color: #ffffff;
+          opacity: 0;
+          transform: scale(0.5);
+          transition: all 0.15s ease;
+        }
       }
     }
 
     .btn-login {
       flex: 0 0 auto;
-      min-width: 170px;
-      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      min-width: 175px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #06b6d4 100%);
       color: #ffffff;
       font-size: 0.875rem;
-      font-weight: 700;
-      padding: 0.625rem 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 0.68rem 1.35rem;
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.55rem;
-      box-shadow: var(--shadow-glow);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
       cursor: pointer;
       border: none;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.6s ease;
+      }
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5);
+
+        &::after {
+          left: 140%;
+        }
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
       }
 
       &:disabled {
@@ -733,41 +972,58 @@ import { ThemeService } from '../../core/services/theme.service';
       align-items: center;
       text-align: center;
       color: var(--text-dim);
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 800;
       letter-spacing: 0.06em;
-      margin: 0.1rem 0;
+      margin: 0.25rem 0;
 
       &::before, &::after {
         content: '';
         flex: 1;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.18);
       }
 
-      span {
+      .divider-text {
         padding: 0 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-muted);
       }
     }
 
     .demo-school-badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      border-radius: var(--radius-full);
-      padding: 0.25rem 0.85rem;
-      margin: 0 auto;
-      font-size: 0.72rem;
-      width: fit-content;
-      max-width: 100%;
-      text-align: center;
+      gap: 0.65rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      border-radius: var(--radius-md);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.76rem;
+      width: 100%;
+      box-sizing: border-box;
       transition: all 0.2s ease;
 
-      i {
+      .school-shield-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 5px;
+        background: rgba(16, 185, 129, 0.2);
         color: var(--color-primary);
-        font-size: 0.75rem;
+        font-size: 0.76rem;
+        flex-shrink: 0;
+      }
+
+      .school-text-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        min-width: 0;
       }
 
       .badge-label {
@@ -777,7 +1033,7 @@ import { ThemeService } from '../../core/services/theme.service';
 
       .school-title {
         color: var(--color-primary);
-        font-weight: 700;
+        font-weight: 800;
       }
 
       .badge-city {
@@ -790,34 +1046,42 @@ import { ThemeService } from '../../core/services/theme.service';
     .demo-personas-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.45rem;
+      gap: 0.5rem;
     }
 
     .persona-btn {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(203, 213, 225, 0.75);
       border-radius: var(--radius-md);
-      padding: 0.45rem 0.55rem;
+      padding: 0.5rem 0.65rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.55rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
 
       &:hover {
-        background: var(--bg-card-hover);
+        background: #ffffff;
         border-color: var(--color-primary);
         transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+
+        .persona-arrow {
+          transform: translateX(2px);
+          color: var(--color-primary);
+        }
       }
 
       .persona-avatar {
         position: relative;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         flex-shrink: 0;
+        border: 1.5px solid rgba(16, 185, 129, 0.3);
 
         img {
           width: 100%;
@@ -828,30 +1092,31 @@ import { ThemeService } from '../../core/services/theme.service';
 
         .role-indicator {
           position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 8px;
-          height: 8px;
+          bottom: -1px;
+          right: -1px;
+          width: 9px;
+          height: 9px;
           border-radius: 50%;
-          border: 1.5px solid var(--bg-card);
+          border: 1.5px solid #ffffff;
         }
       }
 
-      &.persona-rose .role-indicator { background: #f43f5e; }
-      &.persona-emerald .role-indicator { background: #10b981; }
-      &.persona-blue .role-indicator { background: #3b82f6; }
-      &.persona-purple .role-indicator { background: #a855f7; }
-      &.persona-amber .role-indicator { background: #f59e0b; }
+      &.persona-rose .role-indicator { background: #f43f5e; box-shadow: 0 0 4px #f43f5e; }
+      &.persona-emerald .role-indicator { background: #10b981; box-shadow: 0 0 4px #10b981; }
+      &.persona-blue .role-indicator { background: #3b82f6; box-shadow: 0 0 4px #3b82f6; }
+      &.persona-purple .role-indicator { background: #a855f7; box-shadow: 0 0 4px #a855f7; }
+      &.persona-amber .role-indicator { background: #f59e0b; box-shadow: 0 0 4px #f59e0b; }
 
       .persona-info {
         flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
+        gap: 0.05rem;
 
         .persona-label {
-          font-size: 0.68rem;
-          font-weight: 700;
+          font-size: 0.74rem;
+          font-weight: 800;
           color: var(--text-main);
           white-space: nowrap;
           overflow: hidden;
@@ -859,11 +1124,12 @@ import { ThemeService } from '../../core/services/theme.service';
         }
 
         .persona-name {
-          font-size: 0.625rem;
+          font-size: 0.67rem;
           color: var(--text-muted);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          font-weight: 500;
         }
 
         .persona-desc {
@@ -872,37 +1138,33 @@ import { ThemeService } from '../../core/services/theme.service';
       }
 
       .persona-arrow {
-        font-size: 0.6rem;
+        font-size: 0.65rem;
         color: var(--text-dim);
+        transition: transform 0.2s ease, color 0.2s ease;
       }
     }
 
     /* Callout Informativo de Seguridad SaaS */
     .saas-info-callout {
-      background: rgba(16, 185, 129, 0.06);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.06) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.22);
       border-radius: var(--radius-md);
-      padding: 0.6rem 0.9rem;
+      padding: 0.52rem 0.85rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       transition: all 0.2s ease;
-
-      &:hover {
-        background: rgba(16, 185, 129, 0.1);
-        border-color: rgba(16, 185, 129, 0.35);
-      }
 
       .callout-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: var(--radius-sm);
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(16, 185, 129, 0.18);
         color: var(--color-primary);
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
       }
 
@@ -910,30 +1172,47 @@ import { ThemeService } from '../../core/services/theme.service';
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.08rem;
 
         .callout-title {
-          font-size: 0.78rem;
+          font-size: 0.76rem;
           font-weight: 700;
           color: var(--text-heading);
           letter-spacing: -0.01em;
         }
 
         .callout-desc {
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           color: var(--text-muted);
-          line-height: 1.35;
+          line-height: 1.3;
+        }
+      }
+
+      .callout-cert {
+        flex-shrink: 0;
+
+        .cert-pill {
+          font-size: 0.66rem;
+          font-weight: 700;
+          background: rgba(16, 185, 129, 0.15);
+          color: var(--color-primary);
+          padding: 0.18rem 0.45rem;
+          border-radius: var(--radius-full);
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          border: 1px solid rgba(16, 185, 129, 0.3);
         }
       }
     }
 
     .toast-alert {
-      padding: 0.65rem 0.85rem;
+      padding: 0.55rem 0.75rem;
       border-radius: var(--radius-md);
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.3);
       color: #059669;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -948,9 +1227,9 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .form-footer {
       text-align: center;
-      font-size: 0.68rem;
+      font-size: 0.64rem;
       color: var(--text-dim);
-      margin-top: 0.1rem;
+      margin-top: 0;
     }
 
     /* =========================================================================

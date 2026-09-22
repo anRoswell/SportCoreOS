@@ -22,8 +22,13 @@ export interface MetricaRendimiento {
     <app-mobile-header></app-mobile-header>
 
     <div class="boletin-subbar">
-      <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-      <h2>Boletín de Rendimiento IA</h2>
+      <div class="subbar-left">
+        <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Boletín de Rendimiento IA</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarBoletin()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
     </div>
 
     <main class="boletin-container">
@@ -337,6 +342,14 @@ export interface MetricaRendimiento {
 })
 export class BoletinIaMobileComponent {
   auth = inject(AuthService);
+  isRefreshing = signal<boolean>(false);
+
+  recargarBoletin(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
 
   metricas: MetricaRendimiento[] = [
     { label: 'Velocidad Punta', valor: 28.4, max: 35, unidad: 'km/h', icono: 'fa-solid fa-gauge-high', color: '#0284c7' },

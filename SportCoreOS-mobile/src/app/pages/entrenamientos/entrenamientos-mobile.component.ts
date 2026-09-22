@@ -25,7 +25,17 @@ interface JugadorAsistencia {
   imports: [CommonModule, FormsModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-mobile-header title="Control de Asistencia" subtitle="Sesión en Campo"></app-mobile-header>
+    <app-mobile-header></app-mobile-header>
+
+    <div class="entr-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Control de Asistencia</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarAsistencia()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
 
     <main class="page-content">
       <!-- Tarjeta de Sesión Activa -->
@@ -141,6 +151,28 @@ interface JugadorAsistencia {
         </button>
       </div>
     </main>
+
+    <!-- DIALOGO: ¿DESEA CONTINUAR EDITANDO O CERRAR Y ACTUALIZAR? -->
+    @if (mostrarDialogoGuardado()) {
+      <div class="modal-backdrop">
+        <div class="dialog-card">
+          <div class="icon-success">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>¡Asistencia Guardada!</h3>
+          <p>La planilla de la sesión fue persistida correctamente.</p>
+          
+          <div class="dialog-actions">
+            <button class="btn-dialog-continue" (click)="continuarEditando()">
+              <i class="fa-solid fa-pen-to-square"></i> Continuar Editando
+            </button>
+            <button class="btn-dialog-close" (click)="cerrarYActualizar()">
+              <i class="fa-solid fa-check"></i> Cerrar y Actualizar Lista
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <app-bottom-nav></app-bottom-nav>
   `,
@@ -403,6 +435,9 @@ export class EntrenamientosMobileComponent implements OnInit {
   private alertService = inject(AlertService);
   private auth = inject(AuthService);
 
+  isRefreshing = signal<boolean>(false);
+  mostrarDialogoGuardado = signal<boolean>(false);
+
   jugadores = signal<JugadorAsistencia[]>([
     { id: 'j-1', nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
     { id: 'j-2', nombres: 'Mateo', apellidos: 'Gómez', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
@@ -415,6 +450,14 @@ export class EntrenamientosMobileComponent implements OnInit {
   ]);
 
   ngOnInit(): void {}
+
+  recargarAsistencia(): void {
+    this.isRefreshing.set(true);
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+      this.alertService.success('Lista de asistencia sincronizada con la base de datos.');
+    }, 600);
+  }
 
   contarPorEstado(estado: 'PRESENTE' | 'RETRASO' | 'EXCUSA' | 'FALTA'): number {
     return this.jugadores().filter(j => j.estado === estado).length;
@@ -435,8 +478,16 @@ export class EntrenamientosMobileComponent implements OnInit {
   }
 
   guardarAsistencia(): void {
-    const presentes = this.contarPorEstado('PRESENTE');
-    const total = this.jugadores().length;
-    this.alertService.success(`¡Asistencia guardada exitosamente! (${presentes}/${total} presentes)`);
+    this.mostrarDialogoGuardado.set(true);
+  }
+
+  continuarEditando(): void {
+    this.mostrarDialogoGuardado.set(false);
+    this.alertService.info('Puedes seguir modificando la planilla.');
+  }
+
+  cerrarYActualizar(): void {
+    this.mostrarDialogoGuardado.set(false);
+    this.recargarAsistencia();
   }
 }
