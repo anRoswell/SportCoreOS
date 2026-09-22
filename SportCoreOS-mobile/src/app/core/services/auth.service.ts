@@ -158,7 +158,18 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
-  setSession(token: string, user: AuthUser): void {
+  setSession(token: string, rawUser: any): void {
+    const user: AuthUser = {
+      id: rawUser?.id,
+      email: rawUser?.email,
+      nombres: rawUser?.nombres || rawUser?.nombre || 'Usuario',
+      apellidos: rawUser?.apellidos || rawUser?.apellido || '',
+      rol: rawUser?.rol || 'DIRECTOR_DEPORTIVO',
+      clubId: rawUser?.clubId || rawUser?.club_id,
+      clubNombre: rawUser?.clubNombre || rawUser?.club_nombre,
+      fotoUrl: rawUser?.fotoUrl || rawUser?.avatar_url || rawUser?.avatar
+    };
+
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     this.token.set(token);

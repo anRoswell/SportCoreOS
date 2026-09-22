@@ -26,13 +26,13 @@ import { AuthService } from '../../core/services/auth.service';
 
       <div class="header-right">
         @if (auth.currentUser(); as user) {
-          <a routerLink="/perfil" class="user-pill-link" [title]="user.nombres + ' (' + user.rol + ')'">
+          <a routerLink="/perfil" class="user-pill-link" [title]="(user.nombres || 'Usuario') + ' (' + user.rol + ')'">
             <div class="user-avatar-mini">
               <img [src]="user.fotoUrl || auth.demoPersonas[1].avatar" alt="Avatar" />
               <div class="role-badge-dot" [class]="'dot-' + user.rol"></div>
             </div>
             <div class="user-text-meta">
-              <span class="user-name-short">{{ user.nombres.split(' ')[0] }}</span>
+              <span class="user-name-short">{{ getPrimerNombre(user.nombres) }}</span>
               <span class="user-role-label">{{ formatRole(user.rol) }}</span>
             </div>
           </a>
@@ -200,5 +200,10 @@ export class MobileHeaderComponent {
       case 'ADMIN_FINANCIERO': return 'Finanzas';
       default: return 'Mi Perfil';
     }
+  }
+
+  getPrimerNombre(nombres?: string): string {
+    if (!nombres) return 'Usuario';
+    return nombres.split(' ')[0] || 'Usuario';
   }
 }
