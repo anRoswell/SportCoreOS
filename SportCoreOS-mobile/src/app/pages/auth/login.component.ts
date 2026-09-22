@@ -253,11 +253,12 @@ import { AlertService } from '../../core/services/alert.service';
     }
 
     .login-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(226, 232, 240, 0.9);
       border-radius: 24px;
-      padding: 1.35rem;
-      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(16, 185, 129, 0.05);
+      padding: 1.4rem;
+      box-shadow: 0 12px 35px -5px rgba(15, 23, 42, 0.15), 0 4px 14px -2px rgba(16, 185, 129, 0.1);
     }
 
     .role-selector-header {
@@ -265,31 +266,31 @@ import { AlertService } from '../../core/services/alert.service';
 
       .role-header-title {
         display: block;
-        font-size: 0.72rem;
-        font-weight: 800;
+        font-size: 0.78rem;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #64748b;
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.06em;
+        color: #0f172a;
+        margin-bottom: 0.6rem;
       }
 
       .role-pill-tabs {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 0.35rem;
-        background: #f1f5f9;
+        background: #e2e8f0;
         padding: 4px;
         border-radius: 14px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
 
         .role-tab {
           background: transparent;
           border: none;
-          padding: 7px 4px;
+          padding: 8px 4px;
           border-radius: 10px;
-          font-size: 0.72rem;
-          font-weight: 700;
-          color: #64748b;
+          font-size: 0.76rem;
+          font-weight: 800;
+          color: #334155;
           cursor: pointer;
           display: flex;
           flex-direction: column;
@@ -298,33 +299,33 @@ import { AlertService } from '../../core/services/alert.service';
           transition: all 0.2s ease;
 
           i {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
           }
 
           &.active {
             background: #ffffff;
-            color: #047857;
-            font-weight: 800;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #064e3b;
+            font-weight: 900;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+            border: 1.5px solid #10b981;
           }
         }
       }
     }
 
     .form-floating-group {
-      margin-bottom: 1rem;
+      margin-bottom: 1.1rem;
 
       label {
         display: block;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #334155;
-        margin-bottom: 0.35rem;
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.4rem;
 
         i {
-          color: #10b981;
-          margin-right: 3px;
+          color: #059669;
+          margin-right: 4px;
         }
       }
 
@@ -332,12 +333,12 @@ import { AlertService } from '../../core/services/alert.service';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.4rem;
 
         .link-forgot {
-          font-size: 0.72rem;
-          font-weight: 700;
-          color: #059669;
+          font-size: 0.76rem;
+          font-weight: 800;
+          color: #047857;
           text-decoration: none;
 
           &:hover {
@@ -350,22 +351,24 @@ import { AlertService } from '../../core/services/alert.service';
     .stadium-input {
       width: 100%;
       background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid #cbd5e1;
       border-radius: 12px;
-      padding: 0.8rem 1rem;
-      font-size: 0.92rem;
-      color: #0f172a;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #020617;
       outline: none;
       transition: all 0.2s ease;
 
       &:focus {
         background: #ffffff;
         border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
       }
 
       &::placeholder {
         color: #94a3b8;
+        font-weight: 500;
       }
     }
 
@@ -379,8 +382,8 @@ import { AlertService } from '../../core/services/alert.service';
         transform: translateY(-50%);
         background: transparent;
         border: none;
-        color: #94a3b8;
-        font-size: 0.95rem;
+        color: #64748b;
+        font-size: 1rem;
         cursor: pointer;
 
         &:hover {
@@ -395,22 +398,22 @@ import { AlertService } from '../../core/services/alert.service';
       color: #ffffff;
       border: none;
       border-radius: 14px;
-      padding: 0.9rem 1.25rem;
-      font-size: 0.95rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
+      padding: 0.95rem 1.25rem;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      margin-top: 1.25rem;
-      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+      gap: 0.6rem;
+      margin-top: 1.35rem;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.4);
       transition: all 0.2s ease;
 
       &:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
       }
 
       &:active:not(:disabled) {
@@ -424,17 +427,22 @@ import { AlertService } from '../../core/services/alert.service';
     }
 
     .demo-auto-hint {
-      margin-top: 1rem;
-      padding: 0.5rem 0.75rem;
-      background: rgba(16, 185, 129, 0.08);
+      margin-top: 1.1rem;
+      padding: 0.55rem 0.85rem;
+      background: rgba(16, 185, 129, 0.12);
       border-radius: 10px;
-      border: 1px dashed rgba(16, 185, 129, 0.3);
-      font-size: 0.72rem;
-      color: #047857;
+      border: 1.5px dashed rgba(16, 185, 129, 0.45);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #064e3b;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+
+      strong {
+        font-weight: 900;
+      }
     }
 
     .stadium-footer {
@@ -442,15 +450,18 @@ import { AlertService } from '../../core/services/alert.service';
       margin-top: 1.25rem;
 
       p {
-        font-size: 0.7rem;
-        color: #94a3b8;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #1e293b;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 5px;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 
         strong {
-          color: #334155;
+          color: #020617;
+          font-weight: 900;
         }
       }
     }
