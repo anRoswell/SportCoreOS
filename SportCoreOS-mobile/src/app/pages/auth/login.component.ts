@@ -1,0 +1,532 @@
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { AlertService } from '../../core/services/alert.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  template: `
+    <div class="mobile-login-page">
+      <!-- Fondo dinámico con líneas de cancha de fútbol sutiles -->
+      <div class="pitch-lines">
+        <div class="pitch-center-circle"></div>
+        <div class="pitch-halfway-line"></div>
+        <div class="pitch-penalty-arc"></div>
+      </div>
+
+      <!-- Header de Impacto Deportivo -->
+      <div class="login-brand-header">
+        <div class="brand-crest-wrapper">
+          <div class="crest-glow"></div>
+          <div class="brand-crest">
+            <i class="fa-solid fa-shield-halved crest-icon"></i>
+            <i class="fa-solid fa-futbol ball-badge"></i>
+          </div>
+        </div>
+        <div class="brand-badge-tag">SISTEMA OFICIAL DE CANTERAS</div>
+        <h1 class="brand-title">Sport<span class="text-primary">Core</span> <span class="badge-os">OS</span></h1>
+        <p class="brand-subtitle">Gestión Integral de Clubes, Academias y Deportistas</p>
+      </div>
+
+      <!-- Tarjeta Principal de Login -->
+      <div class="login-card-container">
+        <div class="login-card">
+          <!-- Selector rápido de rol activo -->
+          <div class="role-selector-header">
+            <span class="role-header-title">¿Cuál es tu rol en el club?</span>
+            <div class="role-pill-tabs">
+              <button type="button" class="role-tab" [class.active]="selectedRole() === 'DIRECTOR'" (click)="selectPersona('DIRECTOR')">
+                <i class="fa-solid fa-user-tie"></i> DT / Dir
+              </button>
+              <button type="button" class="role-tab" [class.active]="selectedRole() === 'ENTRENADOR'" (click)="selectPersona('ENTRENADOR')">
+                <i class="fa-solid fa-stopwatch"></i> Profe
+              </button>
+              <button type="button" class="role-tab" [class.active]="selectedRole() === 'JUGADOR'" (click)="selectPersona('JUGADOR')">
+                <i class="fa-solid fa-shirt"></i> Jugador
+              </button>
+              <button type="button" class="role-tab" [class.active]="selectedRole() === 'PADRE'" (click)="selectPersona('PADRE')">
+                <i class="fa-solid fa-people-roof"></i> Acudiente
+              </button>
+            </div>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" class="login-form">
+            <div class="form-floating-group">
+              <label><i class="fa-regular fa-envelope"></i> Correo Electrónico</label>
+              <div class="input-with-icon">
+                <input
+                  type="email"
+                  [(ngModel)]="email"
+                  name="email"
+                  required
+                  placeholder="ej. director@futuroscracks.com"
+                  class="stadium-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-floating-group">
+              <div class="label-row">
+                <label><i class="fa-solid fa-lock"></i> Contraseña de Acceso</label>
+                <a routerLink="/auth/forgot-password" class="link-forgot">¿Olvidaste tu clave?</a>
+              </div>
+              <div class="input-with-icon password-wrap">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  [(ngModel)]="password"
+                  name="password"
+                  required
+                  placeholder="••••••••"
+                  class="stadium-input"
+                />
+                <button type="button" class="btn-eye" (click)="toggleShowPassword()">
+                  <i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-stadium-login" [disabled]="isSubmitting() || !email || !password">
+              @if (isSubmitting()) {
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span>Ingresando al Campo...</span>
+              } @else {
+                <i class="fa-solid fa-bolt"></i>
+                <span>Entrar a la Cancha</span>
+              }
+            </button>
+          </form>
+
+          <!-- Acceso Biométrico / Demo Rápido -->
+          <div class="demo-auto-hint">
+            <i class="fa-solid fa-circle-check text-primary"></i>
+            <span>Credenciales cargadas para perfil <strong>{{ selectedRole() }}</strong></span>
+          </div>
+        </div>
+
+        <div class="stadium-footer">
+          <p><i class="fa-solid fa-shield"></i> Conexión Cifrada • SportCore Club ID: <strong>FUT-CRACKS</strong></p>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .mobile-login-page {
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(var(--safe-area-top) + 1.5rem) 1.25rem calc(var(--safe-area-bottom) + 1.5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 0%, #ecfdf5 0%, #f8fafc 45%, #f1f5f9 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Líneas decorativas de cancha de fútbol */
+    .pitch-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+
+      .pitch-halfway-line {
+        position: absolute;
+        top: 28%;
+        left: 0;
+        right: 0;
+        height: 1.5px;
+        background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.3) 25%, rgba(16, 185, 129, 0.3) 75%, transparent 100%);
+      }
+
+      .pitch-center-circle {
+        position: absolute;
+        top: 28%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 170px;
+        height: 170px;
+        border: 1.5px solid rgba(16, 185, 129, 0.25);
+        border-radius: 50%;
+      }
+
+      .pitch-penalty-arc {
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 220px;
+        height: 100px;
+        border: 1.5px solid rgba(16, 185, 129, 0.2);
+        border-radius: 120px 120px 0 0;
+      }
+    }
+
+    .login-brand-header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+      position: relative;
+      z-index: 2;
+
+      .brand-crest-wrapper {
+        position: relative;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 0.85rem;
+
+        .crest-glow {
+          position: absolute;
+          inset: -6px;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        .brand-crest {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(145deg, #10b981 0%, #047857 100%);
+          color: #ffffff;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+          box-shadow: 0 10px 25px -4px rgba(16, 185, 129, 0.45);
+          border: 2px solid rgba(255, 255, 255, 0.8);
+
+          .crest-icon {
+            font-size: 2.1rem;
+            color: #ffffff;
+          }
+
+          .ball-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: #064e3b;
+            border-radius: 50%;
+            padding: 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          }
+        }
+      }
+
+      .brand-badge-tag {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #047857;
+        background: rgba(16, 185, 129, 0.12);
+        padding: 3px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        margin-bottom: 0.35rem;
+      }
+
+      .brand-title {
+        font-size: 1.65rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+        margin: 0;
+
+        .text-primary {
+          color: #10b981;
+        }
+
+        .badge-os {
+          font-size: 0.8rem;
+          font-weight: 900;
+          background: #0f172a;
+          color: #ffffff;
+          padding: 2px 6px;
+          border-radius: 6px;
+          vertical-align: middle;
+        }
+      }
+
+      .brand-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 0.2rem;
+      }
+    }
+
+    .login-card-container {
+      position: relative;
+      z-index: 2;
+      max-width: 440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .login-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 1.35rem;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(16, 185, 129, 0.05);
+    }
+
+    .role-selector-header {
+      margin-bottom: 1.25rem;
+
+      .role-header-title {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+      }
+
+      .role-pill-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.35rem;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+
+        .role-tab {
+          background: transparent;
+          border: none;
+          padding: 7px 4px;
+          border-radius: 10px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #64748b;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          transition: all 0.2s ease;
+
+          i {
+            font-size: 0.85rem;
+          }
+
+          &.active {
+            background: #ffffff;
+            color: #047857;
+            font-weight: 800;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+          }
+        }
+      }
+    }
+
+    .form-floating-group {
+      margin-bottom: 1rem;
+
+      label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.35rem;
+
+        i {
+          color: #10b981;
+          margin-right: 3px;
+        }
+      }
+
+      .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.35rem;
+
+        .link-forgot {
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #059669;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+
+    .stadium-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      font-size: 0.92rem;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.2s ease;
+
+      &:focus {
+        background: #ffffff;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+      }
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+    }
+
+    .password-wrap {
+      position: relative;
+
+      .btn-eye {
+        position: absolute;
+        right: 0.85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 0.95rem;
+        cursor: pointer;
+
+        &:hover {
+          color: #0f172a;
+        }
+      }
+    }
+
+    .btn-stadium-login {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 0.9rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .demo-auto-hint {
+      margin-top: 1rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(16, 185, 129, 0.08);
+      border-radius: 10px;
+      border: 1px dashed rgba(16, 185, 129, 0.3);
+      font-size: 0.72rem;
+      color: #047857;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .stadium-footer {
+      text-align: center;
+      margin-top: 1.25rem;
+
+      p {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+
+        strong {
+          color: #334155;
+        }
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+    }
+  `]
+})
+export class LoginComponent {
+  auth = inject(AuthService);
+  alert = inject(AlertService);
+  router = inject(Router);
+
+  email = 'director@futuroscracks.com';
+  password = 'Admin123*';
+  selectedRole = signal<'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'>('DIRECTOR');
+  isSubmitting = signal<boolean>(false);
+  showPassword = signal<boolean>(false);
+
+  private roleCredentials: Record<string, { email: string; pass: string }> = {
+    DIRECTOR: { email: 'director@futuroscracks.com', pass: 'Admin123*' },
+    ENTRENADOR: { email: 'entrenador@futuroscracks.com', pass: 'Admin123*' },
+    PADRE: { email: 'padre@futuroscracks.com', pass: 'Admin123*' },
+    JUGADOR: { email: 'jugador@futuroscracks.com', pass: 'Admin123*' },
+  };
+
+  selectPersona(role: 'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'): void {
+    this.selectedRole.set(role);
+    const cred = this.roleCredentials[role];
+    if (cred) {
+      this.email = cred.email;
+      this.password = cred.pass;
+    }
+  }
+
+  toggleShowPassword(): void {
+    this.showPassword.update((v) => !v);
+  }
+
+  onSubmit(): void {
+    if (!this.email || !this.password) return;
+    this.isSubmitting.set(true);
+
+    this.auth.login(this.email, this.password).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.alert.success(`¡Bienvenido al campo, perfil ${this.selectedRole()}!`);
+        this.router.navigate(['/home']);
+      },
+      error: () => {
+        this.isSubmitting.set(false);
+      }
+    });
+  }
+
+  loginAs(persona: 'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'): void {
+    this.selectPersona(persona);
+    this.onSubmit();
+  }
+}
