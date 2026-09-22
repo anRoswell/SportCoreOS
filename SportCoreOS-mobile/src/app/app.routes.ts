@@ -43,8 +43,28 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'pagos',
+    loadComponent: () => import('./pages/pagos/pagos-mobile.component').then(m => m.PagosMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'tienda',
+    loadComponent: () => import('./pages/tienda/tienda-mobile.component').then(m => m.TiendaMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'perfil',
     loadComponent: () => import('./pages/perfil/perfil-mobile.component').then(m => m.PerfilMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'perfil/carnet',
+    loadComponent: () => import('./pages/perfil/carnet-mobile.component').then(m => m.CarnetMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'perfil/boletin-ia',
+    loadComponent: () => import('./pages/perfil/boletin-ia-mobile.component').then(m => m.BoletinIaMobileComponent),
     canActivate: [authGuard]
   },
   {

@@ -1,5 +1,6 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -8,7 +9,7 @@ import { AlertService } from '../../core/services/alert.service';
 @Component({
   selector: 'app-perfil-mobile',
   standalone: true,
-  imports: [CommonModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-mobile-header title="Mi Perfil" subtitle="Información de cuenta y carnet"></app-mobile-header>
@@ -48,6 +49,41 @@ import { AlertService } from '../../core/services/alert.service';
               <span class="val-date">Temporada 2026-2027</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Accesos Rápidos Pro Deportista -->
+      <div class="menu-section">
+        <h4 class="section-title">Módulos del Deportista & Club</h4>
+        <div class="info-list">
+          <a routerLink="/perfil/carnet" class="action-row">
+            <div class="info-left">
+              <i class="fas fa-id-badge"></i>
+              <span>Carnet Digital & Ficha Médica SOS</span>
+            </div>
+            <i class="fas fa-chevron-right arrow"></i>
+          </a>
+          <a routerLink="/perfil/boletin-ia" class="action-row">
+            <div class="info-left">
+              <i class="fas fa-wand-magic-sparkles"></i>
+              <span>Boletín de Rendimiento IA (Gemini)</span>
+            </div>
+            <span class="status-toggle">NUEVO</span>
+          </a>
+          <a routerLink="/pagos" class="action-row">
+            <div class="info-left">
+              <i class="fas fa-credit-card"></i>
+              <span>Estado de Pagos & Mensualidades</span>
+            </div>
+            <i class="fas fa-chevron-right arrow"></i>
+          </a>
+          <a routerLink="/tienda" class="action-row">
+            <div class="info-left">
+              <i class="fas fa-bag-shopping"></i>
+              <span>Tienda Oficial de Indumentaria</span>
+            </div>
+            <i class="fas fa-chevron-right arrow"></i>
+          </a>
         </div>
       </div>
 
