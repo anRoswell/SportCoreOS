@@ -190,4 +190,13 @@ export class CanchasService {
     }
     return cancelada;
   }
+
+  async getCanchasCartagena(options?: {
+    localidad?: string;
+    barrio?: string;
+    tipoSuperficie?: string;
+    search?: string;
+  }) {
+    return this.canchasRepo.findCanchasCartagena(options);
+  }
 }

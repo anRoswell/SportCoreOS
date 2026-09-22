@@ -214,4 +214,44 @@ export class CanchasRepository {
     );
     return res.rows[0] || null;
   }
+
+  async findCanchasCartagena(options?: {
+    localidad?: string;
+    barrio?: string;
+    tipoSuperficie?: string;
+    search?: string;
+  }) {
+    const whereParts = ['activa = true'];
+    const params: any[] = [];
+
+    if (options?.localidad && options.localidad !== 'TODAS') {
+      params.push(`%${options.localidad}%`);
+      whereParts.push(`localidad ILIKE $${params.length}`);
+    }
+
+    if (options?.barrio && options.barrio !== 'TODOS') {
+      params.push(`%${options.barrio}%`);
+      whereParts.push(`barrio ILIKE $${params.length}`);
+    }
+
+    if (options?.tipoSuperficie && options.tipoSuperficie !== 'TODAS') {
+      params.push(options.tipoSuperficie);
+      whereParts.push(`tipo_superficie = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(nombre ILIKE $${pIdx} OR nombre_comun ILIKE $${pIdx} OR barrio ILIKE $${pIdx} OR direccion ILIKE $${pIdx})`);
+    }
+
+    const res = await this.db.query(
+      `SELECT * FROM public.canchas_cartagena
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY localidad ASC, nombre ASC`,
+      params,
+    );
+
+    return res.rows;
+  }
 }

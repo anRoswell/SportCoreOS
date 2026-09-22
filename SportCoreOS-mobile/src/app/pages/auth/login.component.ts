@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, DemoPersona } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 
 @Component({
@@ -15,13 +15,12 @@ import { AlertService } from '../../core/services/alert.service';
       <div class="stadium-bg-layer"></div>
       <div class="stadium-overlay"></div>
 
-      <!-- Header de Impacto Deportivo -->
+      <!-- Header de Impacto Deportivo con Brand Oficial -->
       <div class="login-brand-header">
         <div class="brand-crest-wrapper">
           <div class="crest-glow"></div>
           <div class="brand-crest">
-            <i class="fa-solid fa-shield-halved crest-icon"></i>
-            <i class="fa-solid fa-futbol ball-badge"></i>
+            <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS" class="brand-crest-img" />
           </div>
         </div>
         <div class="brand-badge-tag">SISTEMA OFICIAL DE CANTERAS</div>
@@ -32,22 +31,32 @@ import { AlertService } from '../../core/services/alert.service';
       <!-- Tarjeta Principal de Login -->
       <div class="login-card-container">
         <div class="login-card">
-          <!-- Selector rápido de rol activo -->
-          <div class="role-selector-header">
-            <span class="role-header-title">¿Cuál es tu rol en el club?</span>
-            <div class="role-pill-tabs">
-              <button type="button" class="role-tab" [class.active]="selectedRole() === 'DIRECTOR'" (click)="selectPersona('DIRECTOR')">
-                <i class="fa-solid fa-user-tie"></i> DT / Dir
-              </button>
-              <button type="button" class="role-tab" [class.active]="selectedRole() === 'ENTRENADOR'" (click)="selectPersona('ENTRENADOR')">
-                <i class="fa-solid fa-stopwatch"></i> Profe
-              </button>
-              <button type="button" class="role-tab" [class.active]="selectedRole() === 'JUGADOR'" (click)="selectPersona('JUGADOR')">
-                <i class="fa-solid fa-shirt"></i> Jugador
-              </button>
-              <button type="button" class="role-tab" [class.active]="selectedRole() === 'PADRE'" (click)="selectPersona('PADRE')">
-                <i class="fa-solid fa-people-roof"></i> Acudiente
-              </button>
+          <!-- Selector de Personas Demo (Mismos Usuarios de la Web) -->
+          <div class="demo-personas-section">
+            <div class="demo-header-row">
+              <span class="demo-section-title"><i class="fa-solid fa-users-gear text-primary"></i> Perfiles Demo Disponibles</span>
+              <span class="demo-hint-badge">Click para autocompletar</span>
+            </div>
+
+            <div class="demo-personas-scroll">
+              @for (persona of auth.demoPersonas; track persona.id) {
+                <button 
+                  type="button" 
+                  class="demo-card-btn" 
+                  [class.active]="selectedPersonaId() === persona.id"
+                  (click)="selectPersona(persona)">
+                  <div class="avatar-wrap">
+                    <img [src]="persona.avatar" [alt]="persona.nombres" class="demo-avatar-img" />
+                    <span class="role-mini-dot" [style.background-color]="persona.badgeColor"></span>
+                  </div>
+                  <div class="demo-info">
+                    <span class="demo-name">{{ persona.nombres }} {{ persona.apellidos.split(' ')[0] }}</span>
+                    <span class="demo-role-badge" [style.color]="persona.badgeColor">
+                      <i [class]="persona.icon"></i> {{ persona.label }}
+                    </span>
+                  </div>
+                </button>
+              }
             </div>
           </div>
 
@@ -60,7 +69,7 @@ import { AlertService } from '../../core/services/alert.service';
                   [(ngModel)]="email"
                   name="email"
                   required
-                  placeholder="ej. director@futuroscracks.com"
+                  placeholder="ej. carlos.valderrama@sportcore.com"
                   class="stadium-input"
                 />
               </div>
@@ -92,20 +101,20 @@ import { AlertService } from '../../core/services/alert.service';
                 <span>Ingresando al Campo...</span>
               } @else {
                 <i class="fa-solid fa-bolt"></i>
-                <span>Entrar a la Cancha</span>
+                <span>Entrar a la Cancha ({{ activePersonaLabel() }})</span>
               }
             </button>
           </form>
 
-          <!-- Acceso Biométrico / Demo Rápido -->
+          <!-- Acceso Rápido / Hint Informativo -->
           <div class="demo-auto-hint">
             <i class="fa-solid fa-circle-check text-primary"></i>
-            <span>Credenciales cargadas para perfil <strong>{{ selectedRole() }}</strong></span>
+            <span>Perfil seleccionado: <strong>{{ activePersonaLabel() }}</strong> ({{ email }})</span>
           </div>
         </div>
 
         <div class="stadium-footer">
-          <p><i class="fa-solid fa-shield"></i> Conexión Cifrada • SportCore Club ID: <strong>FUT-CRACKS</strong></p>
+          <p><i class="fa-solid fa-shield"></i> Conexión Cifrada SSL • SportCore Multi-Tenant</p>
         </div>
       </div>
     </div>
@@ -114,16 +123,16 @@ import { AlertService } from '../../core/services/alert.service';
     .mobile-login-page {
       min-height: 100vh;
       min-height: 100dvh;
-      padding: calc(var(--safe-area-top) + 1.5rem) 1.25rem calc(var(--safe-area-bottom) + 1.5rem);
+      padding: calc(var(--safe-area-top) + 1rem) 1rem calc(var(--safe-area-bottom) + 1.25rem);
       display: flex;
       flex-direction: column;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
       background-color: #0b1510;
     }
 
-    /* Fondo de Estadio de Fútbol más visible y nítido */
+    /* Fondo de Estadio de Fútbol nítido */
     .stadium-bg-layer {
       position: absolute;
       inset: 0;
@@ -150,15 +159,15 @@ import { AlertService } from '../../core/services/alert.service';
 
     .login-brand-header {
       text-align: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.85rem;
       position: relative;
       z-index: 2;
 
       .brand-crest-wrapper {
         position: relative;
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 0.85rem;
+        width: 68px;
+        height: 68px;
+        margin: 0 auto 0.5rem;
 
         .crest-glow {
           position: absolute;
@@ -172,160 +181,221 @@ import { AlertService } from '../../core/services/alert.service';
           position: relative;
           width: 100%;
           height: 100%;
-          background: linear-gradient(145deg, #10b981 0%, #047857 100%);
-          color: #ffffff;
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
+          border-radius: 18px;
+          overflow: hidden;
           box-shadow: 0 10px 25px -4px rgba(16, 185, 129, 0.45);
-          border: 2px solid rgba(255, 255, 255, 0.8);
+          border: 2px solid rgba(255, 255, 255, 0.85);
 
-          .crest-icon {
-            font-size: 2.1rem;
-            color: #ffffff;
-          }
-
-          .ball-badge {
-            position: absolute;
-            bottom: 4px;
-            right: 4px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: #064e3b;
-            border-radius: 50%;
-            padding: 2px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          .brand-crest-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
         }
       }
 
       .brand-badge-tag {
         display: inline-block;
-        font-size: 0.65rem;
+        font-size: 0.62rem;
         font-weight: 800;
         letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #047857;
-        background: rgba(16, 185, 129, 0.12);
-        padding: 3px 10px;
+        color: #065f46;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 2px 10px;
         border-radius: 9999px;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.25rem;
       }
 
       .brand-title {
         font-size: 1.65rem;
         font-weight: 900;
-        letter-spacing: -0.03em;
         color: #0f172a;
         margin: 0;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
 
         .text-primary {
-          color: #10b981;
+          color: #059669;
         }
 
         .badge-os {
-          font-size: 0.8rem;
-          font-weight: 900;
+          font-size: 0.75rem;
           background: #0f172a;
-          color: #ffffff;
+          color: #10b981;
           padding: 2px 6px;
           border-radius: 6px;
           vertical-align: middle;
+          margin-left: 2px;
+          border: 1px solid #334155;
         }
       }
 
       .brand-subtitle {
-        font-size: 0.8rem;
-        color: #64748b;
-        margin-top: 0.2rem;
+        font-size: 0.74rem;
+        color: #475569;
+        margin: 0.2rem 0 0;
+        font-weight: 600;
       }
     }
 
     .login-card-container {
       position: relative;
       z-index: 2;
+      width: 100%;
       max-width: 440px;
       margin: 0 auto;
-      width: 100%;
     }
 
     .login-card {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(12px);
-      border: 1.5px solid rgba(226, 232, 240, 0.9);
-      border-radius: 24px;
-      padding: 1.4rem;
-      box-shadow: 0 12px 35px -5px rgba(15, 23, 42, 0.15), 0 4px 14px -2px rgba(16, 185, 129, 0.1);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 1.15rem;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.7);
     }
 
-    .role-selector-header {
-      margin-bottom: 1.25rem;
+    /* Personas Demo Selector */
+    .demo-personas-section {
+      margin-bottom: 1rem;
 
-      .role-header-title {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #0f172a;
-        margin-bottom: 0.6rem;
-      }
+      .demo-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
 
-      .role-pill-tabs {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.35rem;
-        background: #e2e8f0;
-        padding: 4px;
-        border-radius: 14px;
-        border: 1px solid #cbd5e1;
-
-        .role-tab {
-          background: transparent;
-          border: none;
-          padding: 8px 4px;
-          border-radius: 10px;
+        .demo-section-title {
           font-size: 0.76rem;
           font-weight: 800;
-          color: #334155;
-          cursor: pointer;
+          color: #0f172a;
           display: flex;
-          flex-direction: column;
           align-items: center;
-          gap: 3px;
-          transition: all 0.2s ease;
+          gap: 5px;
+        }
 
-          i {
-            font-size: 0.9rem;
+        .demo-hint-badge {
+          font-size: 0.62rem;
+          font-weight: 700;
+          color: #059669;
+          background: #d1fae5;
+          padding: 2px 6px;
+          border-radius: 6px;
+        }
+      }
+
+      .demo-personas-scroll {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+        }
+      }
+
+      .demo-card-btn {
+        flex: 0 0 auto;
+        min-width: 125px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
+        }
+
+        &.active {
+          background: #ecfdf5;
+          border-color: #10b981;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .avatar-wrap {
+          position: relative;
+          width: 32px;
+          height: 32px;
+          flex-shrink: 0;
+
+          .demo-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
           }
 
-          &.active {
-            background: #ffffff;
-            color: #064e3b;
-            font-weight: 900;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-            border: 1.5px solid #10b981;
+          .role-mini-dot {
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            border: 1.5px solid #ffffff;
+          }
+        }
+
+        .demo-info {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+
+          .demo-name {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .demo-role-badge {
+            font-size: 0.62rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
           }
         }
       }
     }
 
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
     .form-floating-group {
-      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
 
       label {
-        display: block;
-        font-size: 0.78rem;
+        font-size: 0.72rem;
         font-weight: 700;
         color: #334155;
-        margin-bottom: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
 
         i {
-          color: #10b981;
-          margin-right: 3px;
+          color: #059669;
         }
       }
 
@@ -333,10 +403,9 @@ import { AlertService } from '../../core/services/alert.service';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.35rem;
 
         .link-forgot {
-          font-size: 0.72rem;
+          font-size: 0.7rem;
           font-weight: 700;
           color: #059669;
           text-decoration: none;
@@ -346,111 +415,119 @@ import { AlertService } from '../../core/services/alert.service';
           }
         }
       }
-    }
 
-    .stadium-input {
-      width: 100%;
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0.8rem 1rem;
-      font-size: 0.92rem;
-      font-weight: 500;
-      color: #0f172a;
-      outline: none;
-      transition: all 0.2s ease;
+      .input-with-icon {
+        position: relative;
 
-      &:focus {
-        background: #ffffff;
-        border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
-      }
-
-      &::placeholder {
-        color: #94a3b8;
-        font-weight: 400;
-      }
-    }
-
-    .password-wrap {
-      position: relative;
-
-      .btn-eye {
-        position: absolute;
-        right: 0.85rem;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        color: #64748b;
-        font-size: 1rem;
-        cursor: pointer;
-
-        &:hover {
+        .stadium-input {
+          width: 100%;
+          height: 42px;
+          padding: 0 0.85rem;
+          font-size: 0.82rem;
+          font-weight: 600;
           color: #0f172a;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          outline: none;
+          transition: all 0.2s ease;
+
+          &:focus {
+            background: #ffffff;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+          }
+
+          &::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+          }
+        }
+
+        &.password-wrap {
+          .stadium-input {
+            padding-right: 2.5rem;
+          }
+
+          .btn-eye {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              color: #0f172a;
+            }
+          }
         }
       }
     }
 
     .btn-stadium-login {
       width: 100%;
-      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      height: 44px;
+      margin-top: 0.25rem;
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
       color: #ffffff;
       border: none;
-      border-radius: 14px;
-      padding: 0.95rem 1.25rem;
-      font-size: 1rem;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      cursor: pointer;
+      border-radius: 12px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      margin-top: 1.35rem;
-      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.4);
-      transition: all 0.2s ease;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 14px 24px -5px rgba(5, 150, 105, 0.5);
       }
 
       &:active:not(:disabled) {
-        transform: scale(0.98);
+        transform: translateY(0);
       }
 
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.65;
         cursor: not-allowed;
       }
     }
 
     .demo-auto-hint {
-      margin-top: 1.1rem;
-      padding: 0.55rem 0.85rem;
-      background: rgba(16, 185, 129, 0.12);
-      border-radius: 10px;
-      border: 1.5px dashed rgba(16, 185, 129, 0.45);
-      font-size: 0.76rem;
-      font-weight: 700;
-      color: #064e3b;
+      margin-top: 0.85rem;
+      padding: 6px 10px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #475569;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 6px;
 
       strong {
-        font-weight: 900;
+        color: #0f172a;
       }
     }
 
     .stadium-footer {
       text-align: center;
-      margin-top: 1.25rem;
+      margin-top: 1rem;
 
       p {
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         font-weight: 700;
         color: #1e293b;
         display: flex;
@@ -459,9 +536,8 @@ import { AlertService } from '../../core/services/alert.service';
         gap: 5px;
         text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 
-        strong {
-          color: #020617;
-          font-weight: 900;
+        i {
+          color: #059669;
         }
       }
     }
@@ -477,26 +553,18 @@ export class LoginComponent {
   alert = inject(AlertService);
   router = inject(Router);
 
-  email = 'director@futuroscracks.com';
-  password = 'Admin123*';
-  selectedRole = signal<'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'>('DIRECTOR');
+  email = 'carlos.valderrama@sportcore.com';
+  password = 'sportcore2026';
+  selectedPersonaId = signal<string>('demo-dir');
+  activePersonaLabel = signal<string>('Director Deportivo');
   isSubmitting = signal<boolean>(false);
   showPassword = signal<boolean>(false);
 
-  private roleCredentials: Record<string, { email: string; pass: string }> = {
-    DIRECTOR: { email: 'director@futuroscracks.com', pass: 'Admin123*' },
-    ENTRENADOR: { email: 'entrenador@futuroscracks.com', pass: 'Admin123*' },
-    PADRE: { email: 'padre@futuroscracks.com', pass: 'Admin123*' },
-    JUGADOR: { email: 'jugador@futuroscracks.com', pass: 'Admin123*' },
-  };
-
-  selectPersona(role: 'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'): void {
-    this.selectedRole.set(role);
-    const cred = this.roleCredentials[role];
-    if (cred) {
-      this.email = cred.email;
-      this.password = cred.pass;
-    }
+  selectPersona(persona: DemoPersona): void {
+    this.selectedPersonaId.set(persona.id);
+    this.activePersonaLabel.set(persona.label);
+    this.email = persona.email;
+    this.password = persona.password;
   }
 
   toggleShowPassword(): void {
@@ -510,17 +578,12 @@ export class LoginComponent {
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.alert.success(`¡Bienvenido al campo, perfil ${this.selectedRole()}!`);
+        this.alert.success(`¡Bienvenido al campo, ${this.activePersonaLabel()}!`);
         this.router.navigate(['/home']);
       },
       error: () => {
         this.isSubmitting.set(false);
       }
     });
-  }
-
-  loginAs(persona: 'DIRECTOR' | 'ENTRENADOR' | 'PADRE' | 'JUGADOR'): void {
-    this.selectPersona(persona);
-    this.onSubmit();
   }
 }
