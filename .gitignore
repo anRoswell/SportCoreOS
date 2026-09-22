@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Builds & Outputs
+dist/
+*/dist/
+.angular/
+*/.angular/
+playwright-report/
+*/playwright-report/
+test-results/
+*/test-results/
+
+# OS & IDE
+.DS_Store
+*/.DS_Store
+.idea/
+.vscode/
+*.log
+npm-debug.log*
+
+# Android / iOS build artifacts in mobile
+SportCoreOS-mobile/android/.gradle/
+SportCoreOS-mobile/android/app/build/
+SportCoreOS-mobile/android/build/
+SportCoreOS-mobile/android/captures/
+SportCoreOS-mobile/android/.idea/
+SportCoreOS-mobile/android/*.iml
+SportCoreOS-mobile/android/local.properties
+SportCoreOS-mobile/ios/DerivedData/
+SportCoreOS-mobile/ios/App/build/
+SportCoreOS-mobile/ios/App/Pods/
+SportCoreOS-mobile/ios/App/Podfile.lock
