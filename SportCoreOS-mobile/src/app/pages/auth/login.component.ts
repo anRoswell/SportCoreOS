@@ -123,13 +123,13 @@ import { AlertService } from '../../core/services/alert.service';
       background-color: #0b1510;
     }
 
-    /* Fondo de Estadio de Fútbol */
+    /* Fondo de Estadio de Fútbol más visible y nítido */
     .stadium-bg-layer {
       position: absolute;
       inset: 0;
       background: url('/assets/images/stadium_login_bg.jpg') center center / cover no-repeat;
-      opacity: 0.35;
-      filter: saturate(1.1) brightness(0.9);
+      opacity: 0.75;
+      filter: saturate(1.15) brightness(0.98);
       transform: scale(1.02);
       z-index: 0;
     }
@@ -139,11 +139,11 @@ import { AlertService } from '../../core/services/alert.service';
       inset: 0;
       background: linear-gradient(
         180deg,
-        rgba(241, 245, 249, 0.4) 0%,
-        rgba(248, 250, 252, 0.72) 40%,
-        rgba(236, 253, 245, 0.88) 100%
+        rgba(241, 245, 249, 0.25) 0%,
+        rgba(248, 250, 252, 0.55) 45%,
+        rgba(236, 253, 245, 0.78) 100%
       );
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(1.5px);
       pointer-events: none;
       z-index: 1;
     }
