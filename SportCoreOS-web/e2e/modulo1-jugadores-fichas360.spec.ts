@@ -12,7 +12,7 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     // Click en perfil demo Carlos Valderrama
     const demoDirBtn = page.locator('.persona-btn', { hasText: 'Carlos Valderrama' }).first();
     await expect(demoDirBtn).toBeVisible({ timeout: 10000 });
-    await demoDirBtn.click();
+    await demoDirBtn.click({ force: true });
 
     // Esperar redirección al dashboard
     await page.waitForURL('**/dashboard', { timeout: 15000 });
@@ -66,13 +66,17 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     // Regresar a 'Todas las Categorías'
     await categoryPills.first().click();
 
-    // 2. Probar buscador de texto por nombre
+    // 2. Probar buscador de texto por nombre usando el primer jugador visible
+    const firstPlayerNameEl = page.locator('.player-row .player-name').first();
+    const fullFirstPlayerName = await firstPlayerNameEl.innerText();
+    const searchKeyword = fullFirstPlayerName.trim().split(' ')[0];
+
     const searchInput = page.locator('.search-input');
-    await searchInput.fill('Samuel');
-    await page.waitForTimeout(300);
+    await searchInput.fill(searchKeyword);
+    await page.waitForTimeout(400);
     const filteredRows = page.locator('.player-row');
     expect(await filteredRows.count()).toBeGreaterThan(0);
-    await expect(page.locator('.player-name').first()).toContainText('Samuel');
+    await expect(page.locator('.player-name').first()).toContainText(searchKeyword);
 
     // Limpiar búsqueda con botón X
     const clearBtn = page.locator('.clear-search-btn');

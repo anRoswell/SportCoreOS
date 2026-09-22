@@ -48,7 +48,7 @@ import { AuthService } from '../../core/services/auth.service';
           <span *ngIf="!api.sidebarCollapsed()">Categorías (Sub-7..20)</span>
         </a>
 
-        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">COMPETICIÓN & CANCHA</div>
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">COMPETICIÓN & FIXTURE</div>
 
         <a routerLink="/partidos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Partidos & Fixture' : ''">
           <i class="fa-solid fa-futbol"></i>
@@ -61,12 +61,32 @@ import { AuthService } from '../../core/services/auth.service';
           <span *ngIf="!api.sidebarCollapsed()">Convocatorias</span>
         </a>
 
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">CIENCIAS DEL DEPORTE & RENDIMIENTO</div>
+
         <a routerLink="/biometria" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Biometría & Tests' : ''">
           <i class="fa-solid fa-heart-pulse"></i>
           <span *ngIf="!api.sidebarCollapsed()">Biometría & Tests</span>
         </a>
 
-        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">ADMINISTRACIÓN & DINERO</div>
+        <a routerLink="/telemetria" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Telemetría GPS & Heatmaps' : ''">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Telemetría GPS & Carga</span>
+        </a>
+
+        <a routerLink="/scouting" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Scouting & Visorías' : ''">
+          <i class="fa-solid fa-binoculars"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Scouting & Captación</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">INTELIGENCIA ARTIFICIAL</div>
+
+        <a routerLink="/ia" routerLinkActive="active" class="nav-item ai-nav-item" [title]="api.sidebarCollapsed() ? 'SportCore AI (Gemini)' : ''">
+          <i class="fa-solid fa-wand-magic-sparkles text-emerald"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Copiloto Táctico AI</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#10b981,#059669);" *ngIf="!api.sidebarCollapsed()">Gemini</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">FINANZAS & COMERCIO</div>
 
         <a routerLink="/finanzas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Cobros PSE / Cartera' : ''">
           <i class="fa-solid fa-credit-card"></i>
@@ -83,10 +103,34 @@ import { AuthService } from '../../core/services/auth.service';
           <span *ngIf="!api.sidebarCollapsed()">Tienda & Kits Oficiales</span>
         </a>
 
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">PORTAL FAMILIAR</div>
+
         <a routerLink="/portal-padres" routerLinkActive="active" class="nav-item parent-portal-link" [title]="api.sidebarCollapsed() ? 'Portal Móvil Padres' : ''">
           <i class="fa-solid fa-mobile-screen-button"></i>
           <span *ngIf="!api.sidebarCollapsed()">Portal Móvil Padres</span>
           <span class="badge-app" *ngIf="!api.sidebarCollapsed()">App</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">CONFIGURACIÓN & SAAS</div>
+
+        <a routerLink="/modulos-escuela" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Módulos Escuela' : ''">
+          <i class="fa-solid fa-cubes"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Módulos Escuela</span>
+        </a>
+
+        <a routerLink="/parametros" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Parámetros Sistema' : ''">
+          <i class="fa-solid fa-sliders"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Parámetros Sistema</span>
+        </a>
+
+        <a routerLink="/roles-permisos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Roles & Permisos' : ''">
+          <i class="fa-solid fa-user-shield"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Roles & Permisos</span>
+        </a>
+
+        <a routerLink="/idiomas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Idiomas & i18n' : ''">
+          <i class="fa-solid fa-globe"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Idiomas & i18n</span>
         </a>
       </nav>
 

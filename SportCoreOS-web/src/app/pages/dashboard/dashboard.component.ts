@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, KPIStats } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
 
 interface MatchItem {
   id: string;
@@ -50,7 +51,7 @@ interface TopPlayer {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlatpickrDirective],
   template: `
     <div class="dashboard-page">
       <!-- HEADER DE BIENVENIDA CON BRANDING DEPORTIVO -->
@@ -517,7 +518,7 @@ interface TopPlayer {
                 <div class="form-row g3">
                   <div class="input-group">
                     <label><i class="fa-regular fa-calendar"></i> Fecha de Juego <span class="required-star">*</span></label>
-                    <input type="date" [(ngModel)]="newMatch.fecha" name="fecha" class="sport-input" required />
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newMatch.fecha" name="fecha" class="sport-input" required />
                   </div>
 
                   <div class="input-group">
@@ -1376,8 +1377,9 @@ export class DashboardComponent implements OnInit {
 
     // 3. Cargar Partidos
     this.api.getPartidos().subscribe((partidos) => {
-      if (partidos) {
-        const mapped: MatchItem[] = partidos.map((p: any) => ({
+      const list = Array.isArray(partidos) ? partidos : (partidos?.data || []);
+      if (list && list.length > 0) {
+        const mapped: MatchItem[] = list.map((p: any) => ({
           id: p.id,
           rival_nombre: p.rival_nombre,
           categoria_nombre: p.categoria_nombre || 'Sub-15 Élite',
@@ -1400,8 +1402,9 @@ export class DashboardComponent implements OnInit {
 
     // 4. Cargar Jugadores para Pizarra Táctica
     this.api.getJugadores().subscribe((jugs) => {
-      if (jugs) {
-        const mappedRoster = jugs.slice(0, 12).map((j: any, idx: number) => ({
+      const list = Array.isArray(jugs) ? jugs : (jugs?.data || []);
+      if (list && list.length > 0) {
+        const mappedRoster = list.slice(0, 12).map((j: any, idx: number) => ({
           id: j.id,
           dorsal: j.numero_dorsal || (idx + 1),
           nombre: `${j.nombres} ${j.apellidos}`,
@@ -1419,8 +1422,9 @@ export class DashboardComponent implements OnInit {
 
     // 5. Cargar Cargos para Monitor Recaudo en Vivo
     this.api.getCargos().subscribe((cargos) => {
-      if (cargos) {
-        const mappedTx: TransactionItem[] = cargos.slice(0, 6).map((c: any, idx: number) => ({
+      const list = Array.isArray(cargos) ? cargos : (cargos?.data || []);
+      if (list && list.length > 0) {
+        const mappedTx: TransactionItem[] = list.slice(0, 6).map((c: any, idx: number) => ({
           id: c.id,
           codigo_transaccion: `WMP-984${200 + idx}`,
           jugador_nombre: c.jugador_nombre,
@@ -1436,8 +1440,9 @@ export class DashboardComponent implements OnInit {
 
     // 6. Cargar Biometría para Radar Físico & Top Players
     this.api.getBiometria().subscribe((bios) => {
-      if (bios) {
-        const mappedTop: TopPlayer[] = bios.slice(0, 3).map((b: any) => ({
+      const list = Array.isArray(bios) ? bios : (bios?.data || []);
+      if (list && list.length > 0) {
+        const mappedTop: TopPlayer[] = list.slice(0, 3).map((b: any) => ({
           id: b.id,
           nombre: `${b.jugador_nombre} #${b.numero_dorsal || ''}`,
           dorsal: b.numero_dorsal || 10,

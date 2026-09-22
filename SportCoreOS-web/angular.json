@@ -30,7 +30,12 @@
               }
             ],
             "styles": ["src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "flatpickr",
+              "flatpickr/dist/l10n/es.js",
+              "flatpickr/dist/l10n/es"
+            ]
           },
           "configurations": {
             "production": {

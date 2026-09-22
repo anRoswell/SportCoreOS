@@ -1,0 +1,219 @@
+/* ==========================================================================
+   SportCoreOS — Form Controls & Selectors Standardization
+   Ensures uniform height (42px standard, 36px small, 48px large),
+   consistent padding, typography, dark/light themes and zero vertical drift
+   ========================================================================== */
+
+/* Variables de Altura Estándar de Controles */
+:root {
+  --control-height-sm: 34px;
+  --control-height-md: 42px;
+  --control-height-lg: 48px;
+}
+
+/* Regla Universal de Selects, Inputs y Controles de Formulario */
+select,
+.sport-select,
+.form-select,
+.input-group select,
+.filter-group select,
+.table-filter-select,
+.sport-input,
+.form-control,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input.flatpickr-input,
+.flatpickr-enhanced-input {
+  height: var(--control-height-md);
+  min-height: var(--control-height-md);
+  line-height: 1.5;
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  vertical-align: middle;
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
+    background-color: var(--bg-card);
+  }
+
+  &::placeholder {
+    color: var(--text-dim);
+    opacity: 0.85;
+  }
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--bg-surface);
+  }
+}
+
+/* Estilo Especializado para Selects */
+select,
+.sport-select,
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.25rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+
+  option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    padding: 0.5rem;
+  }
+}
+
+[data-theme="dark"], body.dark-theme {
+  select,
+  .sport-select,
+  .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  }
+}
+
+/* Variantes de Tamaño para Filtros y Tablas */
+.select-sm,
+.input-sm,
+.filter-group select,
+.table-filter-select {
+  height: var(--control-height-sm) !important;
+  min-height: var(--control-height-sm) !important;
+  padding: 0.35rem 0.75rem !important;
+  padding-right: 2rem !important;
+  font-size: 0.8rem !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.select-lg,
+.input-lg {
+  height: var(--control-height-lg) !important;
+  min-height: var(--control-height-lg) !important;
+  padding: 0.75rem 1.25rem !important;
+  font-size: 1rem !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Alineación en Barras de Filtros */
+.filter-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .filter-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+}
+
+/* ==========================================================================
+   Campos de Moneda ($ y .) & Validación de Formularios
+   ========================================================================== */
+.currency-input-wrap,
+.sport-currency-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .currency-prefix {
+    position: absolute;
+    left: 0.85rem;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    pointer-events: none;
+    z-index: 2;
+    font-family: monospace;
+    user-select: none;
+  }
+
+  input,
+  .sport-input {
+    width: 100%;
+    padding-left: 2.2rem !important;
+    font-family: monospace;
+    font-weight: 700;
+  }
+}
+
+.currency-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-xs);
+  margin-top: 0.3rem;
+  font-family: monospace;
+}
+
+/* Retroalimentación de Validación */
+.required-star {
+  color: #f43f5e;
+  font-weight: 800;
+  margin-left: 0.15rem;
+}
+
+.field-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #f43f5e;
+  font-weight: 600;
+  margin-top: 0.3rem;
+  animation: fadeIn 0.2s ease;
+
+  i {
+    font-size: 0.8rem;
+  }
+}
+
+.is-invalid,
+input.ng-invalid.ng-touched:not(form),
+select.ng-invalid.ng-touched:not(form),
+textarea.ng-invalid.ng-touched:not(form) {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2) !important;
+}
+
+.is-valid,
+input.ng-valid.ng-touched:not(form),
+select.ng-valid.ng-touched:not(form),
+textarea.ng-valid.ng-touched:not(form) {
+  border-color: rgba(16, 185, 129, 0.6) !important;
+}
+

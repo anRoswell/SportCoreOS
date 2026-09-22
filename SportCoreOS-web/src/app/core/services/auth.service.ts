@@ -50,19 +50,6 @@ export interface LoginResponse {
   };
 }
 
-export interface OnboardingDto {
-  clubNombre: string;
-  sigla: string;
-  ciudad: string;
-  pais?: string;
-  logoUrl?: string;
-  adminNombre: string;
-  adminApellido: string;
-  adminEmail: string;
-  adminPassword: string;
-  adminTelefono?: string;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -182,8 +169,9 @@ export class AuthService {
 
   /**
    * Autenticación Real contra el backend NestJS (POST /api/v1/auth/login)
+   * La escuela / club se determina automáticamente según la membresía del usuario
    */
-  login(email: string, pass: string, clubId: string = '10000000-0000-0000-0000-000000000001'): Observable<UserProfile> {
+  login(email: string, pass: string): Observable<UserProfile> {
     const body = { email: email.trim().toLowerCase(), password: pass };
 
     return this.http.post<any>(`${this.apiUrl}/auth/login`, body).pipe(
@@ -198,33 +186,6 @@ export class AuthService {
           rol: data.user.rol as any,
           rolLabel: this.getRoleLabel(data.user.rol),
           avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120`,
-          clubId: data.user.clubId || clubId,
-          clubNombre: data.user.clubNombre,
-          clubSlug: data.user.clubSlug,
-          clubLogo: data.user.clubLogo,
-        };
-
-        this.setSession(data.accessToken, userProfile);
-        return userProfile;
-      })
-    );
-  }
-
-  /**
-   * Onboarding & Registro de Nueva Escuela Deportiva con auto-login
-   */
-  registerClubOnboarding(dto: OnboardingDto): Observable<UserProfile> {
-    return this.http.post<any>(`${this.apiUrl}/clubes/onboarding`, dto).pipe(
-      map((res) => {
-        const data = res.data ? res.data : res;
-        const userProfile: UserProfile = {
-          id: data.user.id,
-          email: data.user.email,
-          nombres: data.user.nombre,
-          apellidos: data.user.apellido,
-          rol: data.user.rol as any,
-          rolLabel: this.getRoleLabel(data.user.rol),
-          avatar: data.user.avatar || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120`,
           clubId: data.user.clubId,
           clubNombre: data.user.clubNombre,
           clubSlug: data.user.clubSlug,
@@ -237,9 +198,9 @@ export class AuthService {
     );
   }
 
-  loginWithPersona(personaId: string, clubId: string = '10000000-0000-0000-0000-000000000001'): Observable<UserProfile> {
+  loginWithPersona(personaId: string): Observable<UserProfile> {
     const persona = this.demoPersonas.find((p) => p.id === personaId) || this.demoPersonas[0];
-    return this.login(persona.email, persona.password, clubId);
+    return this.login(persona.email, persona.password);
   }
 
   private setSession(token: string, user: UserProfile): void {
@@ -249,6 +210,21 @@ export class AuthService {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(this.TOKEN_KEY, token);
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+
+      if (user.clubId) {
+        const storedClub = {
+          id: user.clubId,
+          nombre: user.clubNombre || 'Academia Vinculada',
+          slug: user.clubSlug || 'academia-vinculada',
+          logo: user.clubLogo || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          plan: 'Plan Élite Pro',
+          sigla: 'SC',
+          ciudad: 'Colombia',
+          pais: 'Colombia',
+          activo: true,
+        };
+        localStorage.setItem(environment.activeClubKey, JSON.stringify(storedClub));
+      }
     }
   }
 

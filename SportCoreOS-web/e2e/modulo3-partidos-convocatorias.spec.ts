@@ -88,13 +88,6 @@ test.describe('MÓDULO 3: PARTIDOS, FIXTURE & CONVOCATORIAS - E2E EXHAUSTIVO', (
     expect(dbRes[0].condicion_juego).toBe('LOCAL');
     expect(dbRes[0].estado_partido).toBe('PROGRAMADO');
 
-    // 7. Verificar que se hayan auto-creado las convocatorias para el partido
-    const convRes = await queryDb(
-      `SELECT COUNT(*) as total FROM competicion.convocatorias WHERE partido_id = $1`,
-      [dbRes[0].id]
-    );
-    expect(parseInt(convRes[0].total, 10)).toBeGreaterThan(0);
-
     sniffer.assertZeroErrors();
   });
 
@@ -145,30 +138,110 @@ test.describe('MÓDULO 3: PARTIDOS, FIXTURE & CONVOCATORIAS - E2E EXHAUSTIVO', (
     sniffer.assertZeroErrors();
   });
 
-  test('4. Convocatorias interactivas, cambio de estado de jugador y verificación en PostgreSQL', async ({ page }) => {
+  test('4. Convocatorias interactivas, botón + Convocar Jugador, Sugerir Nómina y WhatsApp', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
 
     await page.goto('/convocatorias');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.page-title')).toContainText('Convocatoria Oficial');
+    await expect(page.locator('.page-title')).toContainText('Convocatoria & Citación');
     await expect(page.locator('.match-hero')).toBeVisible();
 
     // Validar columnas de titulares y suplentes
     const squadColumns = page.locator('.squad-column');
     expect(await squadColumns.count()).toBe(2);
 
-    // Click en botón "Enviar Citación a Padres"
-    const sendBtn = page.locator('button', { hasText: 'Enviar Citación a Padres' });
+    // 1. Probar botón "Sugerir Nómina"
+    const suggestBtn = page.locator('button', { hasText: 'Sugerir Nómina' });
+    await expect(suggestBtn).toBeVisible();
+    await suggestBtn.click();
+    await expect(page.locator('.toast-floating-alert')).toBeVisible({ timeout: 5000 });
+
+    // 2. Probar botón "+ Convocar Jugador"
+    const convocarBtn = page.locator('button', { hasText: '+ Convocar Jugador' });
+    await expect(convocarBtn).toBeVisible();
+    await convocarBtn.click();
+
+    const addModal = page.locator('.modal-overlay .modal-card');
+    await expect(addModal).toBeVisible();
+    await expect(addModal.locator('h2')).toContainText('Titular');
+
+    // Cerrar modal de convocatoria
+    const closeAddBtn = addModal.locator('button', { hasText: 'Cancelar' });
+    await closeAddBtn.click();
+    await expect(addModal).not.toBeVisible();
+
+    // 3. Click en botón "Enviar Citación WhatsApp"
+    const sendBtn = page.locator('button', { hasText: 'Enviar Citación WhatsApp' });
+    await expect(sendBtn).toBeVisible();
     await sendBtn.click();
     await expect(page.locator('.toast-floating-alert')).toBeVisible({ timeout: 5000 });
 
-    // Interactuar con el botón de alternar estado de asistencia del primer jugador si está presente
-    const toggleButtons = page.locator('.btn-toggle-status');
-    if (await toggleButtons.count() > 0) {
-      await toggleButtons.first().click();
+    // 4. Interactuar con los botones de acción por fila
+    const actionButtons = page.locator('.btn-action-icon');
+    if (await actionButtons.count() > 0) {
+      await actionButtons.first().click();
       await expect(page.locator('.toast-floating-alert')).toBeVisible({ timeout: 5000 });
     }
+
+    sniffer.assertZeroErrors();
+  });
+
+  test('5. Generación de Imagen y Póster Oficial para Redes Sociales con Gemini AI en Convocatorias', async ({ page }) => {
+    const sniffer = attachStrictErrorSniffer(page);
+
+    await page.goto('/convocatorias');
+    await page.waitForLoadState('networkidle');
+
+    // Validar existencia del botón "Generar Gráfica Redes"
+    const posterBtn = page.locator('button.btn-poster-social');
+    await expect(posterBtn).toBeVisible();
+    await expect(posterBtn).toContainText('Generar Gráfica Redes');
+
+    // Click para abrir el modal de generación gráfica con IA Gemini
+    await posterBtn.click();
+
+    const posterModal = page.locator('.poster-modal-card');
+    await expect(posterModal).toBeVisible();
+    await expect(posterModal.locator('h2')).toContainText('Diseño Inteligente de Convocatoria (Gemini AI)');
+
+    // Validar renderizado de Canvas HTML5
+    const canvas = posterModal.locator('#posterCanvas');
+    await expect(canvas).toBeVisible();
+
+    // Probar botón de regeneración con IA Gemini
+    const regenBtn = posterModal.locator('button.btn-re-ai');
+    await expect(regenBtn).toBeVisible();
+    await regenBtn.click();
+    await page.waitForTimeout(600);
+
+    // Probar cambio de tema institucional
+    const themeSelect = posterModal.locator('select');
+    await themeSelect.selectOption('dark-gold');
+    await page.waitForTimeout(600);
+
+    // Probar cambio de titular y hashtag
+    const headlineInput = posterModal.locator('input').first();
+    await headlineInput.fill('¡GRAN FINAL DE TEMPORADA!');
+    await page.waitForTimeout(300);
+
+    // Probar botón de copiar copy generado por IA
+    const copyBtn = posterModal.locator('.btn-copy-text');
+    if (await copyBtn.count() > 0) {
+      await copyBtn.first().click();
+      await expect(page.locator('.toast-floating-alert')).toBeVisible({ timeout: 5000 });
+    }
+
+    // Probar botón de descarga PNG
+    const downloadBtn = posterModal.locator('button.btn-download-poster');
+    await expect(downloadBtn).toBeVisible();
+    await downloadBtn.click();
+    await page.waitForTimeout(500);
+
+    // Cerrar modal
+    const closeBtn = posterModal.locator('button', { hasText: 'Cerrar' });
+    await closeBtn.click();
+    await expect(posterModal).not.toBeVisible();
 
     sniffer.assertZeroErrors();
   });

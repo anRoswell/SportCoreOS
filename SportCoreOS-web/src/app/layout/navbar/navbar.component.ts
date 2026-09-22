@@ -1,15 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
-import { ApiService } from '../../core/services/api.service';
+import { ApiService, Club } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
-
 import { ProfileService } from '../../core/services/profile.service';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, LanguageSelectorComponent],
   template: `
     <header class="navbar">
       <!-- Sección Izquierda: Toggle Sidebar + Búsqueda -->
@@ -25,22 +27,116 @@ import { ProfileService } from '../../core/services/profile.service';
         </div>
       </div>
 
-      <!-- Sección Derecha: Selector Club, Theme Switcher, Notificaciones, Acciones, Perfil -->
+      <!-- Sección Derecha: Selector Club, Multiidioma, Theme Switcher, Notificaciones, Acciones, Perfil -->
       <div class="navbar-actions">
-        <!-- Selector Multi-Tenant de Clubes -->
-        <div class="club-selector-wrap">
-          <i class="fa-solid fa-shield-halved club-icon"></i>
+        <!-- Selector Multi-Tenant de Escuelas y Clubes (Dropdown Rico + Fallback Select) -->
+        <div class="club-selector-container">
+          <button 
+            type="button" 
+            class="club-trigger-btn" 
+            (click)="toggleClubDropdown($event)"
+            [title]="'Escuela activa: ' + api.activeClub().nombre + ' (' + api.activeClub().ciudad + ')'"
+            aria-haspopup="true"
+            [attr.aria-expanded]="isOpenClubDropdown()">
+            <div class="club-icon-wrap">
+              <i class="fa-solid fa-shield-halved club-icon"></i>
+            </div>
+            <div class="club-info-wrap">
+              <span class="club-name">{{ api.activeClub().nombre }}</span>
+              <span class="club-meta">{{ api.activeClub().ciudad }} • {{ api.activeClub().sigla }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-down caret-arrow" [class.rotated]="isOpenClubDropdown()"></i>
+          </button>
+
+          <!-- Select nativo accesible para sincronización y pruebas automatizadas E2E -->
           <select 
-            class="club-select" 
-            [value]="api.activeClub().id" 
-            (change)="onClubChange($event)">
+            class="club-select visually-hidden-for-tests" 
+            [ngModel]="api.activeClub().id" 
+            (ngModelChange)="onClubChange($event)">
             @for (club of api.availableClubs(); track club.id) {
               <option [value]="club.id">
                 {{ club.nombre }} ({{ club.ciudad }})
               </option>
             }
           </select>
+
+          <!-- Dropdown Popup de Escuelas Disponibles -->
+          @if (isOpenClubDropdown()) {
+            <div class="club-dropdown-card">
+              <div class="dropdown-header">
+                <div class="header-title-row">
+                  <span class="dropdown-title">
+                    <i class="fa-solid fa-school text-emerald"></i> Academias & Escuelas ({{ api.availableClubs().length }})
+                  </span>
+                  <button type="button" class="btn-refresh-clubs" (click)="refreshClubs($event)" title="Actualizar lista de escuelas">
+                    <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isRefreshing()"></i>
+                  </button>
+                </div>
+                
+                <!-- Buscador de Escuelas en Vivo -->
+                <div class="club-search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input 
+                    type="text" 
+                    [ngModel]="searchClubQuery()" 
+                    (ngModelChange)="searchClubQuery.set($event)"
+                    placeholder="Filtrar por nombre o ciudad..." 
+                    class="club-filter-input" 
+                    (click)="$event.stopPropagation()" />
+                </div>
+              </div>
+
+              <div class="dropdown-club-list">
+                @for (club of filteredClubs(); track club.id) {
+                  <button 
+                    type="button" 
+                    class="club-option-item" 
+                    [class.is-active]="club.id === api.activeClub().id"
+                    (click)="selectClubFromDropdown(club.id)">
+                    <div class="club-opt-avatar">
+                      @if (club.logo) {
+                        <img [src]="club.logo" [alt]="club.nombre" />
+                      } @else {
+                        <i class="fa-solid fa-shield-halved"></i>
+                      }
+                    </div>
+                    <div class="club-opt-details">
+                      <div class="club-opt-name-row">
+                        <strong class="club-opt-name">{{ club.nombre }}</strong>
+                        <span class="club-sigla-pill">{{ club.sigla }}</span>
+                      </div>
+                      <div class="club-opt-sub">
+                        <span><i class="fa-solid fa-location-dot"></i> {{ club.ciudad }}</span>
+                        <span class="plan-tag">{{ club.plan }}</span>
+                      </div>
+                    </div>
+                    @if (club.id === api.activeClub().id) {
+                      <div class="active-indicator">
+                        <i class="fa-solid fa-circle-check check-icon"></i>
+                      </div>
+                    }
+                  </button>
+                } @empty {
+                  <div class="empty-clubs">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>No se encontraron escuelas con '{{ searchClubQuery() }}'</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Footer de Acciones Super Admin -->
+              <div class="dropdown-footer">
+                <button type="button" class="btn-manage-schools" (click)="goToSchoolManagement($event)">
+                  <i class="fa-solid fa-cubes"></i>
+                  <span>Administrar Módulos & Licencias</span>
+                </button>
+              </div>
+            </div>
+          }
         </div>
+
+        <!-- Selector Multiidioma (i18n) -->
+        <app-language-selector></app-language-selector>
 
         <!-- Botón Selector de Tema (Light / Dark Mode) -->
         <button 
@@ -95,7 +191,7 @@ import { ProfileService } from '../../core/services/profile.service';
                 <button class="dropdown-item" (click)="onOpenProfile()">
                   <i class="fa-regular fa-id-badge"></i> Mi Perfil Deportivo
                 </button>
-                <button class="dropdown-item" (click)="closeDropdown()">
+                <button class="dropdown-item" (click)="goToSchoolManagement($event)">
                   <i class="fa-solid fa-sliders"></i> Ajustes de la Escuela
                 </button>
               </div>
@@ -161,7 +257,7 @@ import { ProfileService } from '../../core/services/profile.service';
       border: 1px solid var(--border-color);
       border-radius: var(--radius-full);
       padding: 0.5rem 1rem;
-      width: 340px;
+      width: 300px;
       transition: all 0.2s ease;
 
       &:focus-within {
@@ -202,36 +298,336 @@ import { ProfileService } from '../../core/services/profile.service';
     .navbar-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
-    .club-selector-wrap {
+    /* Selector Multi-Tenant de Clubes */
+    .club-selector-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .club-trigger-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.65rem;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-full);
-      padding: 0.4rem 0.85rem;
+      padding: 0.35rem 0.85rem 0.35rem 0.5rem;
+      cursor: pointer;
       transition: all 0.2s ease;
+      max-width: 280px;
 
       &:hover {
         border-color: var(--color-primary);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-sm);
       }
 
-      .club-icon {
+      .club-icon-wrap {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.12);
         color: var(--color-primary);
-        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
       }
 
-      .club-select {
+      .club-info-wrap {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        overflow: hidden;
+        line-height: 1.15;
+
+        .club-name {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--text-main);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .club-meta {
+          font-size: 0.65rem;
+          color: var(--text-muted);
+          font-weight: 600;
+        }
+      }
+
+      .caret-arrow {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        transition: transform 0.2s ease;
+        margin-left: 0.15rem;
+
+        &.rotated {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .visually-hidden-for-tests {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    .club-dropdown-card {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 320px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-dropdown);
+      padding: 0.75rem;
+      z-index: 1000;
+      animation: dropdownFadeIn 0.15s ease-out;
+
+      .dropdown-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 0.5rem;
+
+        .header-title-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          .dropdown-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+
+            .text-emerald {
+              color: var(--color-primary);
+            }
+          }
+
+          .btn-refresh-clubs {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.2rem 0.35rem;
+            font-size: 0.8rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+
+            &:hover {
+              color: var(--color-primary);
+              background: var(--bg-surface);
+            }
+          }
+        }
+
+        .club-search-input-wrap {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 0.35rem 0.65rem;
+
+          i {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+          }
+
+          .club-filter-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.775rem;
+            color: var(--text-main);
+            width: 100%;
+
+            &::placeholder {
+              color: var(--text-dim);
+            }
+          }
+        }
+      }
+
+      .dropdown-club-list {
+        max-height: 240px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .club-option-item {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        width: 100%;
+        padding: 0.5rem 0.65rem;
         background: transparent;
-        border: none;
-        outline: none;
-        font-size: 0.8rem;
-        font-weight: 700;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
         color: var(--text-main);
+        text-align: left;
         cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: var(--bg-surface);
+          border-color: var(--border-color);
+        }
+
+        &.is-active {
+          background: rgba(16, 185, 129, 0.12);
+          border-color: rgba(16, 185, 129, 0.3);
+
+          .club-opt-name {
+            color: var(--color-primary);
+          }
+        }
+
+        .club-opt-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          flex-shrink: 0;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          i {
+            color: var(--color-primary);
+            font-size: 0.85rem;
+          }
+        }
+
+        .club-opt-details {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+          overflow: hidden;
+
+          .club-opt-name-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.35rem;
+
+            .club-opt-name {
+              font-size: 0.8rem;
+              font-weight: 700;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .club-sigla-pill {
+              font-size: 0.65rem;
+              font-weight: 800;
+              background: var(--bg-surface);
+              border: 1px solid var(--border-color);
+              padding: 0.1rem 0.35rem;
+              border-radius: 4px;
+              color: var(--text-muted);
+            }
+          }
+
+          .club-opt-sub {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.675rem;
+            color: var(--text-muted);
+
+            .plan-tag {
+              color: var(--color-primary);
+              font-weight: 600;
+            }
+          }
+        }
+
+        .active-indicator {
+          color: var(--color-primary);
+          font-size: 0.85rem;
+        }
+      }
+
+      .empty-clubs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        font-size: 0.775rem;
+        color: var(--text-muted);
+        justify-content: center;
+      }
+
+      .dropdown-footer {
+        padding-top: 0.6rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+
+        .btn-manage-schools {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.45rem;
+          width: 100%;
+          padding: 0.45rem 0.75rem;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--text-main);
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(16, 185, 129, 0.08);
+          }
+        }
+      }
+    }
+
+    @keyframes dropdownFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
@@ -477,21 +873,82 @@ import { ProfileService } from '../../core/services/profile.service';
     }
   `]
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   api = inject(ApiService);
   themeService = inject(ThemeService);
   authService = inject(AuthService);
   profileService = inject(ProfileService);
+  private router = inject(Router);
+  private elementRef = inject(ElementRef);
 
   readonly showDropdown = signal<boolean>(false);
+  readonly isOpenClubDropdown = signal<boolean>(false);
+  readonly searchClubQuery = signal<string>('');
+  readonly isRefreshing = signal<boolean>(false);
 
-  onClubChange(event: Event): void {
-    const clubId = (event.target as HTMLSelectElement).value;
+  readonly filteredClubs = computed<Club[]>(() => {
+    const query = this.searchClubQuery().toLowerCase().trim();
+    const list = this.api.availableClubs();
+    if (!query) return list;
+    return list.filter(
+      (c) =>
+        c.nombre.toLowerCase().includes(query) ||
+        c.ciudad.toLowerCase().includes(query) ||
+        c.sigla.toLowerCase().includes(query)
+    );
+  });
+
+  ngOnInit(): void {
+    this.api.loadClubs();
+  }
+
+  toggleClubDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isOpenClubDropdown.update((val) => !val);
+    if (this.isOpenClubDropdown()) {
+      this.showDropdown.set(false);
+      this.searchClubQuery.set('');
+    }
+  }
+
+  closeClubDropdown(): void {
+    this.isOpenClubDropdown.set(false);
+    this.searchClubQuery.set('');
+  }
+
+  selectClubFromDropdown(clubId: string): void {
     this.api.selectClub(clubId);
+    this.closeClubDropdown();
+  }
+
+  onClubChange(clubIdOrEvent: string | Event): void {
+    const clubId = typeof clubIdOrEvent === 'string' 
+      ? clubIdOrEvent 
+      : (clubIdOrEvent.target as HTMLSelectElement).value;
+    this.api.selectClub(clubId);
+  }
+
+  refreshClubs(event: Event): void {
+    event.stopPropagation();
+    this.isRefreshing.set(true);
+    this.api.loadClubs();
+    setTimeout(() => {
+      this.isRefreshing.set(false);
+    }, 600);
+  }
+
+  goToSchoolManagement(event: Event): void {
+    event.stopPropagation();
+    this.closeClubDropdown();
+    this.closeDropdown();
+    this.router.navigate(['/modulos-escuela']);
   }
 
   toggleUserDropdown(): void {
     this.showDropdown.update((val) => !val);
+    if (this.showDropdown()) {
+      this.isOpenClubDropdown.set(false);
+    }
   }
 
   closeDropdown(): void {
@@ -507,4 +964,13 @@ export class NavbarComponent {
     this.closeDropdown();
     this.authService.logout();
   }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.closeClubDropdown();
+      this.closeDropdown();
+    }
+  }
 }
+

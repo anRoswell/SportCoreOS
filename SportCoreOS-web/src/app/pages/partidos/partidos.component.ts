@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { CatalogosService } from '../../core/services/catalogos.service';
+import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
 
 @Component({
   selector: 'app-partidos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlatpickrDirective],
   template: `
     <div class="partidos-page">
       <!-- HEADER -->
@@ -100,6 +102,9 @@ import { ApiService } from '../../core/services/api.service';
                     <button class="btn-primary btn-sm btn-acta" (click)="openActaModal(p)" title="Ver acta digital y eventos">
                       <i class="fa-solid fa-clipboard-list"></i> Acta
                     </button>
+                    <button class="btn-secondary btn-sm btn-delete-match" (click)="openDeleteModal(p)" title="Eliminar / Cancelar Partido">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -118,7 +123,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL PROGRAMAR PARTIDO -->
       @if (showScheduleModal()) {
         <div class="modal-overlay" (click)="closeScheduleModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -156,7 +161,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g3">
                   <div class="input-group">
                     <label><i class="fa-regular fa-calendar"></i> Fecha de Juego *</label>
-                    <input type="date" [(ngModel)]="newMatch.fecha_partido" name="fecha_partido" class="sport-input" required />
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newMatch.fecha_partido" name="fecha_partido" class="sport-input" required />
                   </div>
                   <div class="input-group">
                     <label><i class="fa-regular fa-clock"></i> Hora Partido *</label>
@@ -188,7 +193,14 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g2">
                   <div class="input-group">
                     <label><i class="fa-solid fa-shirt"></i> Indumentaria / Uniforme</label>
-                    <input type="text" [(ngModel)]="newMatch.indumentaria_kit" name="indumentaria_kit" placeholder="ej. Kit Titular Esmeralda" class="sport-input" />
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="newMatch.indumentaria_kit" name="indumentaria_kit" class="sport-input">
+                        @for (kit of kitsIndumentaria(); track kit.codigo) {
+                          <option [value]="kit.nombre">{{ kit.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -209,7 +221,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL EDITAR PARTIDO (CON BOTONES DE ACCIÓN) -->
       @if (showEditModal() && selectedMatchToEdit()) {
         <div class="modal-overlay" (click)="closeEditModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-amber">
@@ -247,7 +259,7 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g3">
                   <div class="input-group">
                     <label><i class="fa-regular fa-calendar"></i> Fecha de Juego *</label>
-                    <input type="date" [(ngModel)]="editMatch.fecha_partido" name="editFecha" class="sport-input" required />
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="editMatch.fecha_partido" name="editFecha" class="sport-input" required />
                   </div>
                   <div class="input-group">
                     <label><i class="fa-regular fa-clock"></i> Hora Partido *</label>
@@ -296,6 +308,20 @@ import { ApiService } from '../../core/services/api.service';
                     </select>
                   </div>
                 </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-shirt"></i> Indumentaria / Uniforme</label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="editMatch.indumentaria_kit" name="editIndumentaria" class="sport-input">
+                        @for (kit of kitsIndumentaria(); track kit.codigo) {
+                          <option [value]="kit.nombre">{{ kit.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- BOTONES DE ACCIÓN (FOOTER) -->
@@ -315,7 +341,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL ACTA DIGITAL DE PARTIDO -->
       @if (showActaModal() && selectedPartido()) {
         <div class="modal-overlay" (click)="closeActaModal()">
-          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg modal-xl" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-blue">
@@ -395,6 +421,61 @@ import { ApiService } from '../../core/services/api.service';
             <div class="modal-actions">
               <button type="button" class="btn-secondary" (click)="closeActaModal()">
                 <i class="fa-solid fa-xmark"></i> Cerrar Acta
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR ELIMINACIÓN DE PARTIDO -->
+      @if (showDeleteModal() && matchToDelete()) {
+        <div class="modal-overlay" (click)="closeDeleteModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="delete-confirm-header">
+              <div class="delete-confirm-icon-wrap">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="delete-confirm-title-wrap">
+                <h3>¿Eliminar Partido del Calendario?</h3>
+                <p>Estás a punto de anular este compromiso del fixture oficial del club</p>
+              </div>
+              <button class="btn-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-preview">
+                <div class="match-mini-icon">
+                  <i class="fa-solid fa-futbol"></i>
+                </div>
+                <div class="player-retire-info">
+                  <span class="retire-player-name">vs. {{ matchToDelete()?.rival_nombre }}</span>
+                  <div class="retire-player-tags">
+                    <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ matchToDelete()?.categoria_nombre || 'Categoría' }}</span>
+                    <span class="meta-tag"><i class="fa-regular fa-calendar"></i> {{ matchToDelete()?.fecha_partido }} ({{ matchToDelete()?.hora_partido }})</span>
+                    <span class="meta-tag"><i class="fa-solid fa-location-dot"></i> {{ matchToDelete()?.sede_cancha }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Operación:</h4>
+                  <ul>
+                    <li>Se anularán las convocatorias y citaciones asociadas a este encuentro.</li>
+                    <li>Las estadísticas y eventos registrados en el acta no se contabilizarán en la tabla.</li>
+                    <li>Esta acción es definitiva y retirará el evento del calendario de los padres y deportistas.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeDeleteModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Partido
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmDeleteMatch()">
+                <i class="fa-solid fa-trash-can"></i> Sí, Eliminar Partido
               </button>
             </div>
           </div>
@@ -627,6 +708,27 @@ import { ApiService } from '../../core/services/api.service';
       }
     }
 
+    .btn-delete-match {
+      color: #ef4444;
+      &:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: #ef4444;
+      }
+    }
+
+    .match-mini-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
     .toast-floating-alert {
       position: fixed;
       bottom: 2rem;
@@ -646,8 +748,10 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class PartidosComponent implements OnInit {
   api = inject(ApiService);
+  private catalogos = inject(CatalogosService);
   private router = inject(Router);
 
+  readonly kitsIndumentaria = this.catalogos.kitsIndumentaria;
   readonly partidos = signal<any[]>([]);
   readonly categorias = signal<any[]>([]);
   readonly selectedCategoriaId = signal<string>('TODAS');
@@ -657,6 +761,8 @@ export class PartidosComponent implements OnInit {
   readonly showActaModal = signal<boolean>(false);
   readonly selectedPartido = signal<any | null>(null);
   readonly actaEvents = signal<any[]>([]);
+  readonly showDeleteModal = signal<boolean>(false);
+  readonly matchToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
 
   newMatch = {
@@ -710,7 +816,8 @@ export class PartidosComponent implements OnInit {
     });
 
     this.api.getPartidos().subscribe((data) => {
-      this.partidos.set(data || []);
+      const rows = Array.isArray(data) ? data : (data?.data || []);
+      this.partidos.set(rows);
     });
   }
 
@@ -746,8 +853,24 @@ export class PartidosComponent implements OnInit {
   }
 
   submitSchedule(): void {
-    if (!this.newMatch.categoria_id || !this.newMatch.rival_nombre || !this.newMatch.sede_cancha) {
-      this.showToast('Por favor completa todos los campos requeridos.');
+    if (!this.newMatch.categoria_id) {
+      this.showToast('Debes seleccionar una categoría (*)');
+      return;
+    }
+    if (!this.newMatch.rival_nombre?.trim()) {
+      this.showToast('El nombre del equipo rival es obligatorio (*)');
+      return;
+    }
+    if (!this.newMatch.fecha_partido) {
+      this.showToast('Indica la fecha del encuentro (*)');
+      return;
+    }
+    if (!this.newMatch.hora_partido) {
+      this.showToast('Indica la hora de inicio del partido (*)');
+      return;
+    }
+    if (!this.newMatch.sede_cancha?.trim()) {
+      this.showToast('La sede o cancha es obligatoria (*)');
       return;
     }
 
@@ -767,8 +890,24 @@ export class PartidosComponent implements OnInit {
     const partido = this.selectedMatchToEdit();
     if (!partido || !partido.id) return;
 
-    if (!this.editMatch.categoria_id || !this.editMatch.rival_nombre || !this.editMatch.sede_cancha) {
-      this.showToast('Por favor completa todos los campos requeridos.');
+    if (!this.editMatch.categoria_id) {
+      this.showToast('Debes seleccionar una categoría (*)');
+      return;
+    }
+    if (!this.editMatch.rival_nombre?.trim()) {
+      this.showToast('El nombre del equipo rival es obligatorio (*)');
+      return;
+    }
+    if (!this.editMatch.fecha_partido) {
+      this.showToast('Indica la fecha del encuentro (*)');
+      return;
+    }
+    if (!this.editMatch.hora_partido) {
+      this.showToast('Indica la hora de inicio del partido (*)');
+      return;
+    }
+    if (!this.editMatch.sede_cancha?.trim()) {
+      this.showToast('La sede o cancha es obligatoria (*)');
       return;
     }
 
@@ -822,6 +961,32 @@ export class PartidosComponent implements OnInit {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partido.sede_cancha)}`;
     window.open(url, '_blank');
     this.showToast(`Abriendo ubicación para ${partido.sede_cancha}`);
+  }
+
+  openDeleteModal(partido: any): void {
+    this.matchToDelete.set(partido);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.matchToDelete.set(null);
+  }
+
+  confirmDeleteMatch(): void {
+    const match = this.matchToDelete();
+    if (!match || !match.id) return;
+
+    this.api.deletePartido(match.id).subscribe({
+      next: () => {
+        this.showToast(`Partido vs ${match.rival_nombre} eliminado del calendario.`);
+        this.closeDeleteModal();
+        this.loadData();
+      },
+      error: () => {
+        this.showToast('Error al eliminar el partido.');
+      }
+    });
   }
 
   private showToast(msg: string): void {

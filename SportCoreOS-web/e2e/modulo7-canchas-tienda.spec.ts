@@ -162,7 +162,7 @@ test.describe('MÓDULO 08 & 09: CANCHAS & TIENDA DE INDUMENTARIA - E2E EXHAUSTIV
     const btnAddCancha = modalGestion.locator('button', { hasText: 'Añadir Nueva Cancha' });
     await btnAddCancha.click();
 
-    const modalFormCancha = page.locator('.modal-card', { hasText: 'Nueva Cancha' });
+    const modalFormCancha = page.locator('.modal-card').filter({ has: page.locator('input[name="cNombre"]') });
     await expect(modalFormCancha).toBeVisible();
 
     // Llenar formulario

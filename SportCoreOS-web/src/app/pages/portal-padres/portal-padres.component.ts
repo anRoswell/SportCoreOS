@@ -419,7 +419,8 @@ export class PortalPadresComponent implements OnInit {
 
   loadData(): void {
     // Cargar jugadores del club y tomar el primero (Luis Díaz o el que corresponda)
-    this.api.getJugadores().subscribe((jugadores) => {
+    this.api.getJugadores().subscribe((res) => {
+      const jugadores = Array.isArray(res) ? res : (res?.data || []);
       if (jugadores && jugadores.length > 0) {
         const p = jugadores[0];
         this.jugador.set(p);
@@ -434,7 +435,8 @@ export class PortalPadresComponent implements OnInit {
     });
 
     // Cargar próximo partido
-    this.api.getPartidos().subscribe((partidos) => {
+    this.api.getPartidos().subscribe((data) => {
+      const partidos = Array.isArray(data) ? data : (data?.data || []);
       if (partidos && partidos.length > 0) {
         const m = partidos[0];
         this.proximoPartido.set(m);
@@ -450,7 +452,8 @@ export class PortalPadresComponent implements OnInit {
     });
 
     // Cargar cargos
-    this.api.getCargos().subscribe((cargos) => {
+    this.api.getCargos().subscribe((data) => {
+      const cargos = Array.isArray(data) ? data : (data?.data || []);
       if (cargos && cargos.length > 0) {
         this.cargoPendiente.set(cargos[0]);
       }

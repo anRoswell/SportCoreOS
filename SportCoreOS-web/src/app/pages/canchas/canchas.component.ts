@@ -2,11 +2,13 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { CatalogosService } from '../../core/services/catalogos.service';
+import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
 
 @Component({
   selector: 'app-canchas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlatpickrDirective],
   template: `
     <div class="canchas-page">
       <!-- HEADER -->
@@ -19,7 +21,9 @@ import { ApiService } from '../../core/services/api.service';
           <div class="date-picker-wrap">
             <label class="date-label"><i class="fa-regular fa-calendar"></i> Fecha:</label>
             <input
-              type="date"
+              type="text"
+              appFlatpickr
+              placeholder="dd/mm/aaaa"
               [ngModel]="selectedFecha()"
               (ngModelChange)="onFechaChange($event)"
               class="sport-input date-input"
@@ -178,7 +182,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL NUEVA RESERVA -->
       @if (showReservaModal()) {
         <div class="modal-overlay" (click)="closeReservaModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -209,7 +213,7 @@ import { ApiService } from '../../core/services/api.service';
                   </div>
                   <div class="input-group">
                     <label>Fecha de Turno <span class="required-star">*</span></label>
-                    <input type="date" [(ngModel)]="reservaForm.fecha_reserva" name="fecha_reserva" class="sport-input" required />
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="reservaForm.fecha_reserva" name="fecha_reserva" class="sport-input" required />
                   </div>
                 </div>
 
@@ -267,14 +271,20 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g2">
                   <div class="input-group">
                     <label>Seña / Anticipo Abonado ($ COP)</label>
-                    <input type="number" [(ngModel)]="reservaForm.monto_anticipo" name="monto_anticipo" class="sport-input" />
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="reservaForm.monto_anticipo" name="monto_anticipo" min="0" class="sport-input" placeholder="0" />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-money-bill-wave"></i> {{ formatCurrency(reservaForm.monto_anticipo) }} COP
+                    </div>
                   </div>
                   <div class="input-group">
-                    <label>Medio de Pago</label>
+                    <label>Medio de Pago <span class="required-star">*</span></label>
                     <div class="sport-select-wrapper">
-                      <select [(ngModel)]="reservaForm.metodo_pago" name="metodo_pago" class="sport-input">
+                      <select [(ngModel)]="reservaForm.metodo_pago" name="metodo_pago" class="sport-input" required>
                         <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
-                        <option value="EFECTIVO">Efectivo en Caja</option>
+                        <option value="EFECTIVO_CAJA">Efectivo en Caja</option>
                         <option value="TRANSFERENCIA">Transferencia Bancolombia/Nequi</option>
                       </select>
                       <i class="fa-solid fa-chevron-down select-chevron"></i>
@@ -329,13 +339,19 @@ import { ApiService } from '../../core/services/api.service';
             <form (ngSubmit)="submitPagoCaja()" class="modal-form">
               <div class="input-group">
                 <label>Monto a Recibir ($ COP) <span class="required-star">*</span></label>
-                <input type="number" [(ngModel)]="pagoCajaMonto" name="pagoMonto" class="sport-input" required />
+                <div class="currency-input-wrap">
+                  <span class="currency-prefix">$</span>
+                  <input type="number" [(ngModel)]="pagoCajaMonto" name="pagoMonto" min="0" class="sport-input" required placeholder="0" />
+                </div>
+                <div class="currency-preview-badge">
+                  <i class="fa-solid fa-receipt"></i> {{ formatCurrency(pagoCajaMonto) }} COP
+                </div>
               </div>
               <div class="input-group">
                 <label>Método de Pago <span class="required-star">*</span></label>
                 <div class="sport-select-wrapper">
                   <select [(ngModel)]="pagoCajaMetodo" name="pagoMetodo" class="sport-input">
-                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="EFECTIVO_CAJA">Efectivo (Caja)</option>
                     <option value="DATAFONO">Datáfono / Tarjeta</option>
                     <option value="TRANSFERENCIA">Nequi / Daviplata</option>
                   </select>
@@ -394,9 +410,14 @@ import { ApiService } from '../../core/services/api.service';
                       <td>{{ c.hora_apertura }} - {{ c.hora_cierre }}</td>
                       <td><span class="badge badge-success">Activa</span></td>
                       <td>
-                        <button class="btn-secondary btn-sm" (click)="openEditCanchaModal(c)">
-                          <i class="fa-solid fa-pen-to-square"></i> Editar
-                        </button>
+                        <div style="display:flex;gap:0.4rem;">
+                          <button class="btn-secondary btn-sm" (click)="openEditCanchaModal(c)">
+                            <i class="fa-solid fa-pen-to-square"></i> Editar
+                          </button>
+                          <button class="btn-secondary btn-sm" style="color:#ef4444;" (click)="openDeleteCanchaModal(c)" title="Desactivar Cancha">
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   }
@@ -417,7 +438,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL CREAR / EDITAR CANCHA -->
       @if (showCreateCanchaModal() || showEditCanchaModal()) {
         <div class="modal-overlay" (click)="closeCanchaFormModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-emerald">
@@ -442,10 +463,9 @@ import { ApiService } from '../../core/services/api.service';
                     <label>Tipo de Superficie <span class="required-star">*</span></label>
                     <div class="sport-select-wrapper">
                       <select [(ngModel)]="canchaForm.tipo_superficie" name="cSuperficie" class="sport-input" required>
-                        <option value="sintetica_f5">Sintética Fútbol 5</option>
-                        <option value="sintetica_f8">Sintética Fútbol 8</option>
-                        <option value="natural_f11">Grama Natural Fútbol 11</option>
-                        <option value="futsal_madera">Coliseo Madera Futsal</option>
+                        @for (sup of tiposSuperficie(); track sup.codigo) {
+                          <option [value]="sup.codigo">{{ sup.nombre }}</option>
+                        }
                       </select>
                       <i class="fa-solid fa-chevron-down select-chevron"></i>
                     </div>
@@ -455,11 +475,23 @@ import { ApiService } from '../../core/services/api.service';
                 <div class="form-row g2">
                   <div class="input-group">
                     <label>Tarifa Hora Diurna ($ COP) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="canchaForm.precio_hora_diurna" name="cDiurna" class="sport-input" required />
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="canchaForm.precio_hora_diurna" name="cDiurna" min="0" class="sport-input" required />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-sun"></i> {{ formatCurrency(canchaForm.precio_hora_diurna) }} / hora
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Tarifa Hora Nocturna con Luz ($ COP) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="canchaForm.precio_hora_nocturna" name="cNocturna" class="sport-input" required />
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="canchaForm.precio_hora_nocturna" name="cNocturna" min="0" class="sport-input" required />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-moon"></i> {{ formatCurrency(canchaForm.precio_hora_nocturna) }} / hora
+                    </div>
                   </div>
                 </div>
               </div>
@@ -530,6 +562,61 @@ import { ApiService } from '../../core/services/api.service';
               </button>
               <button type="button" class="btn-confirm-delete" (click)="confirmarCancelarReserva()">
                 <i class="fa-solid fa-ban"></i> Sí, Cancelar Turno
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR ELIMINACIÓN DE CANCHA -->
+      @if (showDeleteCanchaModal() && canchaToDelete()) {
+        <div class="modal-overlay" (click)="closeDeleteCanchaModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="delete-confirm-header">
+              <div class="delete-confirm-icon-wrap">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="delete-confirm-title-wrap">
+                <h3>¿Desactivar Escenario Deportivo?</h3>
+                <p>Estás a punto de deshabilitar esta cancha del catálogo de alquileres</p>
+              </div>
+              <button class="btn-close" (click)="closeDeleteCanchaModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-preview">
+                <div class="cancha-type-tag" style="background:rgba(16,185,129,0.12);color:#10b981;padding:0.75rem;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-futbol" style="font-size:1.5rem;"></i>
+                </div>
+                <div class="player-retire-info">
+                  <span class="retire-player-name">{{ canchaToDelete()?.nombre }}</span>
+                  <div class="retire-player-tags">
+                    <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ formatSuperficie(canchaToDelete()?.tipo_superficie) }}</span>
+                    <span class="meta-tag"><i class="fa-regular fa-clock"></i> {{ canchaToDelete()?.hora_apertura }} - {{ canchaToDelete()?.hora_cierre }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-tag"></i> Diurna: \${{ canchaToDelete()?.precio_hora_diurna | number }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Operación:</h4>
+                  <ul>
+                    <li>La cancha no aparecerá disponible para nuevos turnos ni reservas públicas.</li>
+                    <li>Las reservas pasadas y facturación histórica se mantendrán intactas en auditoría.</li>
+                    <li>Podrás reactivar este escenario en cualquier momento modificando su estado.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeDeleteCanchaModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Cancha
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmDeleteCancha()">
+                <i class="fa-solid fa-trash-can"></i> Sí, Desactivar Cancha
               </button>
             </div>
           </div>
@@ -921,7 +1008,9 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class CanchasComponent implements OnInit {
   private api = inject(ApiService);
+  private catalogos = inject(CatalogosService);
 
+  readonly tiposSuperficie = this.catalogos.tiposSuperficie;
   readonly selectedFecha = signal<string>(new Date().toISOString().split('T')[0]);
   readonly canchasList = signal<any[]>([]);
   readonly disponibilidadData = signal<any | null>(null);
@@ -932,15 +1021,17 @@ export class CanchasComponent implements OnInit {
   readonly showCreateCanchaModal = signal<boolean>(false);
   readonly showEditCanchaModal = signal<boolean>(false);
   readonly showCancelConfirmModal = signal<boolean>(false);
+  readonly showDeleteCanchaModal = signal<boolean>(false);
   readonly selectedSlotForPay = signal<any | null>(null);
   readonly slotToCancel = signal<any | null>(null);
+  readonly canchaToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
 
   isEditingCancha: boolean = false;
   editingCanchaId: string | null = null;
 
   pagoCajaMonto: number = 0;
-  pagoCajaMetodo: string = 'EFECTIVO';
+  pagoCajaMetodo: string = 'EFECTIVO_CAJA';
 
   readonly horasSlots = [
     { inicio: '06:00', fin: '07:00', esNocturno: false },
@@ -989,8 +1080,9 @@ export class CanchasComponent implements OnInit {
   }
 
   loadCanchas(): void {
-    this.api.getCanchas().subscribe((canchas) => {
-      this.canchasList.set(canchas || []);
+    this.api.getCanchas().subscribe((data) => {
+      const canchas = Array.isArray(data) ? data : (data?.data || []);
+      this.canchasList.set(canchas);
       if (canchas && canchas.length > 0 && !this.reservaForm.cancha_id) {
         this.reservaForm.cancha_id = canchas[0].id;
       }
@@ -1033,6 +1125,13 @@ export class CanchasComponent implements OnInit {
     }
   }
 
+  formatCurrency(val: any): string {
+    if (val === null || val === undefined || val === '') return '$ 0';
+    const num = Number(val);
+    if (isNaN(num)) return '$ 0';
+    return '$ ' + Math.round(num).toLocaleString('es-CO');
+  }
+
   onSlotClick(cancha: any, slot: any): void {
     if (slot.estado === 'disponible') {
       this.reservaForm.cancha_id = cancha.id;
@@ -1054,7 +1153,15 @@ export class CanchasComponent implements OnInit {
 
   submitReserva(): void {
     if (!this.reservaForm.cancha_id || !this.reservaForm.fecha_reserva) {
-      this.showToast('Por favor completa los campos requeridos');
+      this.showToast('Por favor selecciona la cancha y fecha de reserva', true);
+      return;
+    }
+    if (!this.reservaForm.cliente_nombre) {
+      this.showToast('Ingresa el nombre del cliente para la reserva', true);
+      return;
+    }
+    if (this.reservaForm.monto_anticipo < 0) {
+      this.showToast('El monto de anticipo no puede ser negativo', true);
       return;
     }
 
@@ -1205,7 +1312,34 @@ export class CanchasComponent implements OnInit {
     }
   }
 
-  private showToast(msg: string): void {
+  openDeleteCanchaModal(cancha: any): void {
+    this.canchaToDelete.set(cancha);
+    this.showDeleteCanchaModal.set(true);
+  }
+
+  closeDeleteCanchaModal(): void {
+    this.showDeleteCanchaModal.set(false);
+    this.canchaToDelete.set(null);
+  }
+
+  confirmDeleteCancha(): void {
+    const cancha = this.canchaToDelete();
+    if (!cancha || !cancha.id) return;
+
+    this.api.deleteCancha(cancha.id).subscribe({
+      next: () => {
+        this.showToast(`Cancha "${cancha.nombre}" desactivada exitosamente.`);
+        this.closeDeleteCanchaModal();
+        this.loadCanchas();
+        this.loadDisponibilidad();
+      },
+      error: () => {
+        this.showToast('Error al desactivar cancha');
+      }
+    });
+  }
+
+  private showToast(msg: string, isError: boolean = false): void {
     this.toastMessage.set(msg);
     setTimeout(() => {
       this.toastMessage.set('');

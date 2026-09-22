@@ -1,8 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, DemoPersona, OnboardingDto } from '../../core/services/auth.service';
+import { AuthService, DemoPersona } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { ThemeService } from '../../core/services/theme.service';
 
@@ -93,101 +93,98 @@ import { ThemeService } from '../../core/services/theme.service';
           <div class="form-wrapper">
             <!-- Header del Formulario -->
             <div class="form-header">
-              <div class="brand-logo">
-                <div class="logo-icon">⚽</div>
-                <div class="logo-text">
-                  <h2>SportCore<span class="badge-text">OS</span></h2>
-                  <span class="tagline">Sport Management Cloud</span>
+              <div class="brand-header-row">
+                <div class="brand-logo">
+                  <div class="logo-icon">⚽</div>
+                  <div class="logo-text">
+                    <h2>SportCore<span class="badge-text">OS</span></h2>
+                    <span class="tagline">Sport Management Cloud</span>
+                  </div>
+                </div>
+
+                <div class="saas-secure-badge">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span>Acceso Corporativo SaaS</span>
                 </div>
               </div>
 
               <div class="welcome-row">
-                <div>
-                  <h3 class="welcome-heading">Bienvenido de nuevo</h3>
-                  <p class="welcome-desc">Ingresa tus credenciales o selecciona un rol demo.</p>
-                </div>
-                <button type="button" class="btn-onboarding-link" (click)="openOnboardingModal()">
-                  <i class="fa-solid fa-plus-circle"></i>
-                  <span>Registrar Academia</span>
-                </button>
+                <h3 class="welcome-heading">Bienvenido de nuevo</h3>
+                <p class="welcome-desc">Ingresa tus credenciales o selecciona un rol demo para explorar.</p>
               </div>
             </div>
 
-            <!-- Selector de Club / Escuela -->
-            <div class="input-group club-select-group">
-              <label for="clubSelect"><i class="fa-solid fa-shield-halved"></i> Seleccionar Academia / Club</label>
-              <div class="select-wrapper">
-                <select id="clubSelect" [(ngModel)]="selectedClubId" class="sport-select">
-                  @for (club of api.availableClubs(); track club.id) {
-                    <option [value]="club.id">{{ club.nombre }} ({{ club.ciudad }})</option>
-                  }
-                </select>
-                <i class="fa-solid fa-chevron-down select-arrow"></i>
-              </div>
-            </div>
-
-            <!-- Formulario Principal -->
+            <!-- Formulario Principal en 2 Columnas -->
             <form (ngSubmit)="onSubmit()" class="login-form">
-              <!-- Campo Email -->
-              <div class="input-group">
-                <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
-                <div class="input-wrapper">
-                  <input 
-                    type="email" 
-                    id="email" 
-                    [(ngModel)]="email" 
-                    name="email" 
-                    placeholder="ej. carlos.valderrama@sportcore.com" 
-                    required 
-                    class="sport-input" />
+              <div class="form-row-2col">
+                <!-- Campo Email -->
+                <div class="input-group">
+                  <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+                  <div class="input-wrapper">
+                    <input 
+                      type="email" 
+                      id="email" 
+                      [(ngModel)]="email" 
+                      name="email" 
+                      placeholder="ej. carlos.valderrama@sportcore.com" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div class="input-group">
+                  <div class="label-row">
+                    <label for="password"><i class="fa-solid fa-lock"></i> Contraseña</label>
+                    <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">¿Olvidaste clave?</a>
+                  </div>
+                  <div class="input-wrapper">
+                    <input 
+                      [type]="showPassword() ? 'text' : 'password'" 
+                      id="password" 
+                      [(ngModel)]="password" 
+                      name="password" 
+                      placeholder="••••••••••••" 
+                      required 
+                      class="sport-input" />
+                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()">
+                      <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <!-- Campo Contraseña -->
-              <div class="input-group">
-                <div class="label-row">
-                  <label for="password"><i class="fa-solid fa-lock"></i> Contraseña</label>
-                  <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">¿Olvidaste tu clave?</a>
-                </div>
-                <div class="input-wrapper">
-                  <input 
-                    [type]="showPassword() ? 'text' : 'password'" 
-                    id="password" 
-                    [(ngModel)]="password" 
-                    name="password" 
-                    placeholder="••••••••••••" 
-                    required 
-                    class="sport-input" />
-                  <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()">
-                    <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Checkbox Recordar Sesión -->
-              <div class="form-options">
+              <!-- Fila Submit y Recordar Sesión -->
+              <div class="form-actions-bar">
                 <label class="checkbox-label">
                   <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
                   <span class="custom-checkbox"></span>
                   <span class="label-text">Mantener sesión iniciada</span>
                 </label>
-              </div>
 
-              <!-- Botón Submit -->
-              <button type="submit" class="btn-login" [disabled]="loading()">
-                @if (loading()) {
-                  <i class="fa-solid fa-spinner fa-spin"></i>
-                  <span>Autenticando en SportCore...</span>
-                } @else {
-                  <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                  <span>Iniciar Sesión</span>
-                }
-              </button>
+                <button type="submit" class="btn-login" [disabled]="loading()">
+                  @if (loading()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Autenticando...</span>
+                  } @else {
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Iniciar Sesión</span>
+                  }
+                </button>
+              </div>
             </form>
 
             <!-- Separador -->
             <div class="divider">
               <span>O ACCEDE EN 1 CLIC CON UN PERFIL DEMO</span>
+            </div>
+
+            <!-- Indicador de Colegio / Academia Demo -->
+            <div class="demo-school-badge">
+              <i class="fa-solid fa-school-flag"></i>
+              <span class="badge-label">Colegio / Academia Demo:</span>
+              <strong class="school-title">Club Deportivo Futuros Cracks FC</strong>
+              <span class="badge-city">• Cartagena</span>
             </div>
 
             <!-- Personas Demo de Prueba -->
@@ -213,14 +210,15 @@ import { ThemeService } from '../../core/services/theme.service';
               }
             </div>
 
-            <!-- Banner de Creación de Escuela -->
-            <div class="onboarding-callout" (click)="openOnboardingModal()">
-              <div class="callout-icon">🚀</div>
-              <div class="callout-content">
-                <strong>¿Fundador o Director Deportivo?</strong>
-                <span>Registra tu propia academia en 1 minuto y empieza gratis</span>
+            <!-- Callout Informativo de Seguridad SaaS -->
+            <div class="saas-info-callout">
+              <div class="callout-icon">
+                <i class="fa-solid fa-shield-halved"></i>
               </div>
-              <i class="fa-solid fa-arrow-right callout-arrow"></i>
+              <div class="callout-content">
+                <strong class="callout-title">Acceso Institucional Centralizado</strong>
+                <span class="callout-desc">El registro de nuevas academias y la habilitación de licencias es administrado exclusivamente por el Super Administrador Global.</span>
+              </div>
             </div>
 
             <!-- Toast / Feedback Message -->
@@ -238,191 +236,39 @@ import { ThemeService } from '../../core/services/theme.service';
           </div>
         </div>
       </div>
-
-      <!-- =========================================================================
-           MODAL DE ONBOARDING: REGISTRO DE NUEVA ESCUELA / CLUB
-           ========================================================================= -->
-      @if (showOnboardingModal()) {
-        <div class="modal-backdrop" (click)="closeOnboardingModal()">
-          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-            <!-- Modal Header -->
-            <div class="modal-header">
-              <div class="modal-title-wrap">
-                <div class="modal-icon-badge">
-                  <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <div class="modal-title-text">
-                  <h2>Registrar Escuela de Fútbol</h2>
-                  <p class="modal-subtitle">Crea tu academia en FutCoreOS y configura tu cuenta de Director Deportivo</p>
-                </div>
-              </div>
-              <button class="modal-close-btn btn-close" (click)="closeOnboardingModal()" aria-label="Cerrar">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <!-- Modal Body Form -->
-            <form (ngSubmit)="submitOnboarding()" class="modal-form">
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-building-flag"></i> 1. Información de la Academia</span>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-school"></i> Nombre de la Academia <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.clubNombre" 
-                      name="clubNombre" 
-                      placeholder="ej. Academia Leones FC" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-barcode"></i> Sigla / Código Corto <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.sigla" 
-                      name="sigla" 
-                      placeholder="ej. LFC (máx 10 letras)" 
-                      maxlength="10" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                </div>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-city"></i> Ciudad Sede Principal <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.ciudad" 
-                      name="ciudad" 
-                      placeholder="ej. Bogotá D.C., Medellín..." 
-                      required 
-                      class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-globe"></i> País</label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.pais" 
-                      name="pais" 
-                      placeholder="Colombia" 
-                      class="sport-input" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-user-tie"></i> 2. Director Deportivo Inicial</span>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.adminNombre" 
-                      name="adminNombre" 
-                      placeholder="ej. Andrés" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="onboardingData.adminApellido" 
-                      name="adminApellido" 
-                      placeholder="ej. Escobar" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                </div>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-envelope"></i> Correo Electrónico <span class="required-star">*</span></label>
-                    <input 
-                      type="email" 
-                      [(ngModel)]="onboardingData.adminEmail" 
-                      name="adminEmail" 
-                      placeholder="ej. director@futcore.com" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-brands fa-whatsapp"></i> Teléfono Móvil</label>
-                    <input 
-                      type="tel" 
-                      [(ngModel)]="onboardingData.adminTelefono" 
-                      name="adminTelefono" 
-                      placeholder="+57 300 123 4567" 
-                      class="sport-input" />
-                  </div>
-                </div>
-
-                <div class="input-group">
-                  <label><i class="fa-solid fa-key"></i> Contraseña de Acceso <span class="required-star">*</span> (Mínimo 6 caracteres)</label>
-                  <input 
-                    type="password" 
-                    [(ngModel)]="onboardingData.adminPassword" 
-                    name="adminPassword" 
-                    placeholder="••••••••••••" 
-                    minlength="6" 
-                    required 
-                    class="sport-input" />
-                </div>
-              </div>
-
-              <!-- Modal Actions -->
-              <div class="modal-actions">
-                <button type="button" class="btn-secondary btn-cancel" (click)="closeOnboardingModal()">
-                  <i class="fa-solid fa-xmark"></i> Cancelar
-                </button>
-                <button type="submit" class="btn-primary btn-submit" [disabled]="onboardingLoading()">
-                  @if (onboardingLoading()) {
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span>Registrando Academia...</span>
-                  } @else {
-                    <i class="fa-solid fa-check-circle"></i>
-                    <span>Crear Academia Deportiva</span>
-                  }
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      }
     </div>
   `,
   styles: [`
     .login-wrapper {
       min-height: 100vh;
+      height: 100vh;
       background: var(--bg-main);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       overflow-x: hidden;
-      padding: 1.5rem;
+      overflow-y: auto;
+      padding: 1rem 1.5rem;
+      box-sizing: border-box;
       transition: background-color 0.25s ease;
     }
 
     /* Botón Flotante para cambiar Tema */
     .theme-toggle-floating {
       position: fixed;
-      top: 1.5rem;
+      top: 1.25rem;
       right: 1.5rem;
       z-index: 100;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.45rem 0.9rem;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-full);
       color: var(--text-main);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       box-shadow: var(--shadow-md);
       cursor: pointer;
@@ -441,14 +287,16 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .login-container {
       width: 100%;
-      max-width: 1280px;
-      min-height: 750px;
+      max-width: 1480px;
+      height: calc(100vh - 2rem);
+      max-height: 860px;
+      min-height: 580px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-card);
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
+      grid-template-columns: 1.05fr 1.25fr;
       overflow: hidden;
       position: relative;
       transition: background-color 0.25s ease, border-color 0.25s ease;
@@ -461,12 +309,12 @@ import { ThemeService } from '../../core/services/theme.service';
       background: linear-gradient(160deg, rgba(9, 15, 29, 0.88) 0%, rgba(13, 23, 46, 0.80) 50%, rgba(6, 78, 59, 0.82) 100%), 
                   url('/assets/images/login-sport-bg.jpg') center center / cover no-repeat;
       color: #ffffff;
-      padding: 3.5rem;
+      padding: 2.25rem 2.75rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
 
       &::before {
         content: '';
@@ -482,18 +330,18 @@ import { ThemeService } from '../../core/services/theme.service';
       z-index: 2;
       display: flex;
       flex-direction: column;
-      gap: 1.75rem;
+      gap: 1.15rem;
     }
 
     .brand-badge-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 0.35rem 0.85rem;
+      padding: 0.25rem 0.75rem;
       border-radius: var(--radius-full);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       color: #34d399;
@@ -515,11 +363,12 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .hero-title {
-      font-size: clamp(2rem, 3.2vw, 2.75rem);
+      font-size: clamp(1.6rem, 2.1vw, 2.25rem);
       font-weight: 800;
       line-height: 1.15;
       letter-spacing: -0.02em;
       color: #ffffff;
+      margin: 0;
 
       .highlight {
         background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
@@ -529,37 +378,38 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .hero-subtitle {
-      font-size: 1rem;
-      line-height: 1.6;
+      font-size: 0.875rem;
+      line-height: 1.45;
       color: #cbd5e1;
-      max-width: 520px;
+      max-width: 540px;
+      margin: 0;
     }
 
     .hero-stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      gap: 0.75rem;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 1.25rem;
+      padding: 0.85rem 1rem;
       border-radius: var(--radius-lg);
     }
 
     .stat-card {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.15rem;
 
       .stat-number {
-        font-size: 1.65rem;
+        font-size: 1.45rem;
         font-weight: 800;
         color: #34d399;
         line-height: 1;
       }
 
       .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.725rem;
         color: #94a3b8;
         font-weight: 600;
       }
@@ -568,18 +418,18 @@ import { ThemeService } from '../../core/services/theme.service';
     .features-list {
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 0.55rem;
 
       .feature-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        font-size: 0.9rem;
+        gap: 0.65rem;
+        font-size: 0.825rem;
         color: #e2e8f0;
 
         i {
           color: #34d399;
-          font-size: 1rem;
+          font-size: 0.9rem;
         }
       }
     }
@@ -587,23 +437,23 @@ import { ThemeService } from '../../core/services/theme.service';
     .hero-trust-footer {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      font-size: 0.8rem;
+      gap: 0.85rem;
+      font-size: 0.75rem;
       color: #94a3b8;
-      padding-top: 1rem;
+      padding-top: 0.75rem;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
 
       .trust-badges {
         display: flex;
-        gap: 0.65rem;
+        gap: 0.5rem;
         flex-wrap: wrap;
       }
 
       .trust-badge {
         background: rgba(255, 255, 255, 0.08);
-        padding: 0.25rem 0.6rem;
+        padding: 0.2rem 0.55rem;
         border-radius: var(--radius-xs);
-        font-size: 0.75rem;
+        font-size: 0.725rem;
         color: #cbd5e1;
         display: inline-flex;
         align-items: center;
@@ -620,42 +470,51 @@ import { ThemeService } from '../../core/services/theme.service';
        ========================================================================= */
     .login-form-panel {
       background: var(--bg-card);
-      padding: 3.5rem;
+      padding: 1.75rem 2.5rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
       position: relative;
+      overflow-y: auto;
     }
 
     .form-wrapper {
-      max-width: 440px;
+      max-width: 620px;
       width: 100%;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 1.35rem;
+      gap: 0.75rem;
     }
 
     .form-header {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.45rem;
+
+      .brand-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
 
       .brand-logo {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.65rem;
 
         .logo-icon {
-          font-size: 2rem;
+          font-size: 1.75rem;
         }
 
         .logo-text {
           h2 {
-            font-size: 1.45rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: var(--text-main);
             letter-spacing: -0.02em;
+            margin: 0;
 
             .badge-text {
               color: var(--color-primary);
@@ -663,7 +522,7 @@ import { ThemeService } from '../../core/services/theme.service';
           }
 
           .tagline {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: var(--text-muted);
             letter-spacing: 0.05em;
@@ -673,102 +532,83 @@ import { ThemeService } from '../../core/services/theme.service';
 
       .welcome-row {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5rem;
+        flex-direction: column;
+        gap: 0.15rem;
 
         .welcome-heading {
-          font-size: 1.35rem;
+          font-size: 1.2rem;
           font-weight: 800;
           color: var(--text-heading);
           letter-spacing: -0.01em;
+          margin: 0;
         }
 
         .welcome-desc {
-          font-size: 0.8rem;
+          font-size: 0.775rem;
           color: var(--text-muted);
-        }
-
-        .btn-onboarding-link {
-          background: rgba(16, 185, 129, 0.1);
-          border: 1px solid rgba(16, 185, 129, 0.3);
-          color: var(--color-primary);
-          padding: 0.4rem 0.75rem;
-          border-radius: var(--radius-full);
-          font-size: 0.75rem;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: var(--color-primary);
-            color: #ffffff;
-            transform: translateY(-1px);
-          }
+          margin: 0;
         }
       }
-    }
 
-    .club-select-group {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 0.65rem 0.85rem;
-    }
-
-    .select-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-
-      .sport-select {
-        width: 100%;
-        background: transparent;
-        border: none;
-        outline: none;
-        color: var(--text-main);
-        font-size: 0.875rem;
-        font-weight: 600;
-        appearance: none;
-        cursor: pointer;
-        padding-right: 1.5rem;
-      }
-
-      .select-arrow {
-        position: absolute;
-        right: 0;
-        pointer-events: none;
+      .btn-onboarding-link {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--color-primary);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
         font-size: 0.75rem;
-        color: var(--text-muted);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--color-primary);
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
       }
     }
 
     .login-form {
       display: flex;
       flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    .form-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 1rem;
+      margin-top: 0.1rem;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.25rem;
 
       label {
-        font-size: 0.775rem;
+        font-size: 0.75rem;
         font-weight: 700;
         color: var(--text-body);
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.35rem;
 
         i {
           color: var(--color-primary);
-          font-size: 0.85rem;
+          font-size: 0.8rem;
         }
       }
 
@@ -778,7 +618,7 @@ import { ThemeService } from '../../core/services/theme.service';
         align-items: center;
 
         .forgot-link {
-          font-size: 0.75rem;
+          font-size: 0.725rem;
           color: var(--color-primary);
           font-weight: 600;
           text-decoration: none;
@@ -796,12 +636,12 @@ import { ThemeService } from '../../core/services/theme.service';
 
         .sport-input {
           width: 100%;
-          padding: 0.7rem 0.85rem;
+          padding: 0.6rem 0.8rem;
           background: var(--bg-input);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           color: var(--text-main);
-          font-size: 0.875rem;
+          font-size: 0.85rem;
           outline: none;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -813,12 +653,12 @@ import { ThemeService } from '../../core/services/theme.service';
 
         .btn-toggle-eye {
           position: absolute;
-          right: 0.85rem;
+          right: 0.75rem;
           background: transparent;
           border: none;
           color: var(--text-muted);
           cursor: pointer;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
 
           &:hover {
             color: var(--text-main);
@@ -829,12 +669,12 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .sport-input {
       width: 100%;
-      padding: 0.7rem 0.85rem;
+      padding: 0.6rem 0.8rem;
       background: var(--bg-input);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       color: var(--text-main);
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -844,43 +684,38 @@ import { ThemeService } from '../../core/services/theme.service';
       }
     }
 
-    .form-options {
+    .checkbox-label {
       display: flex;
       align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      font-size: 0.775rem;
+      color: var(--text-body);
 
-      .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        font-size: 0.8rem;
-        color: var(--text-body);
-
-        input {
-          accent-color: var(--color-primary);
-          width: 15px;
-          height: 15px;
-        }
+      input {
+        accent-color: var(--color-primary);
+        width: 15px;
+        height: 15px;
       }
     }
 
     .btn-login {
-      width: 100%;
+      flex: 0 0 auto;
+      min-width: 170px;
       background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
       color: #ffffff;
-      font-size: 0.925rem;
+      font-size: 0.875rem;
       font-weight: 700;
-      padding: 0.8rem 1.25rem;
+      padding: 0.625rem 1.25rem;
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.65rem;
+      gap: 0.55rem;
       box-shadow: var(--shadow-glow);
       cursor: pointer;
       border: none;
       transition: all 0.2s ease;
-      margin-top: 0.15rem;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
@@ -898,9 +733,10 @@ import { ThemeService } from '../../core/services/theme.service';
       align-items: center;
       text-align: center;
       color: var(--text-dim);
-      font-size: 0.675rem;
+      font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.06em;
+      margin: 0.1rem 0;
 
       &::before, &::after {
         content: '';
@@ -909,25 +745,62 @@ import { ThemeService } from '../../core/services/theme.service';
       }
 
       span {
-        padding: 0 0.85rem;
+        padding: 0 0.75rem;
       }
     }
 
-    /* Personas Demo Grid */
+    .demo-school-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-full);
+      padding: 0.25rem 0.85rem;
+      margin: 0 auto;
+      font-size: 0.72rem;
+      width: fit-content;
+      max-width: 100%;
+      text-align: center;
+      transition: all 0.2s ease;
+
+      i {
+        color: var(--color-primary);
+        font-size: 0.75rem;
+      }
+
+      .badge-label {
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+
+      .school-title {
+        color: var(--color-primary);
+        font-weight: 700;
+      }
+
+      .badge-city {
+        color: var(--text-dim);
+        font-weight: 500;
+      }
+    }
+
+    /* Personas Demo Grid (3 cols) */
     .demo-personas-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.55rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.45rem;
     }
 
     .persona-btn {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 0.55rem 0.7rem;
+      padding: 0.45rem 0.55rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -941,8 +814,8 @@ import { ThemeService } from '../../core/services/theme.service';
 
       .persona-avatar {
         position: relative;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         flex-shrink: 0;
 
@@ -957,10 +830,10 @@ import { ThemeService } from '../../core/services/theme.service';
           position: absolute;
           bottom: 0;
           right: 0;
-          width: 9px;
-          height: 9px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          border: 2px solid var(--bg-card);
+          border: 1.5px solid var(--bg-card);
         }
       }
 
@@ -977,7 +850,7 @@ import { ThemeService } from '../../core/services/theme.service';
         flex-direction: column;
 
         .persona-label {
-          font-size: 0.725rem;
+          font-size: 0.68rem;
           font-weight: 700;
           color: var(--text-main);
           white-space: nowrap;
@@ -986,7 +859,7 @@ import { ThemeService } from '../../core/services/theme.service';
         }
 
         .persona-name {
-          font-size: 0.65rem;
+          font-size: 0.625rem;
           color: var(--text-muted);
           white-space: nowrap;
           overflow: hidden;
@@ -999,31 +872,38 @@ import { ThemeService } from '../../core/services/theme.service';
       }
 
       .persona-arrow {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         color: var(--text-dim);
       }
     }
 
-    /* Onboarding Callout */
-    .onboarding-callout {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px dashed rgba(16, 185, 129, 0.4);
+    /* Callout Informativo de Seguridad SaaS */
+    .saas-info-callout {
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.2);
       border-radius: var(--radius-md);
-      padding: 0.75rem 0.85rem;
+      padding: 0.6rem 0.9rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      cursor: pointer;
       transition: all 0.2s ease;
 
       &:hover {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: var(--color-primary);
-        transform: translateY(-1px);
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.35);
       }
 
       .callout-icon {
-        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--color-primary);
+        font-size: 0.95rem;
+        flex-shrink: 0;
       }
 
       .callout-content {
@@ -1032,30 +912,28 @@ import { ThemeService } from '../../core/services/theme.service';
         flex-direction: column;
         gap: 0.15rem;
 
-        strong {
-          font-size: 0.8rem;
+        .callout-title {
+          font-size: 0.78rem;
+          font-weight: 700;
           color: var(--text-heading);
+          letter-spacing: -0.01em;
         }
 
-        span {
+        .callout-desc {
           font-size: 0.7rem;
           color: var(--text-muted);
+          line-height: 1.35;
         }
-      }
-
-      .callout-arrow {
-        font-size: 0.8rem;
-        color: var(--color-primary);
       }
     }
 
     .toast-alert {
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 0.85rem;
       border-radius: var(--radius-md);
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.3);
       color: #059669;
-      font-size: 0.825rem;
+      font-size: 0.8rem;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -1070,8 +948,9 @@ import { ThemeService } from '../../core/services/theme.service';
 
     .form-footer {
       text-align: center;
-      font-size: 0.725rem;
+      font-size: 0.68rem;
       color: var(--text-dim);
+      margin-top: 0.1rem;
     }
 
     /* =========================================================================
@@ -1130,15 +1009,16 @@ import { ThemeService } from '../../core/services/theme.service';
     @media (max-width: 1024px) {
       .login-container {
         grid-template-columns: 1fr;
-        min-height: auto;
+        height: auto;
+        max-height: none;
       }
 
       .login-hero {
-        padding: 2.5rem;
+        padding: 2rem;
       }
 
       .login-form-panel {
-        padding: 2.5rem;
+        padding: 2rem;
       }
     }
 
@@ -1159,6 +1039,19 @@ import { ThemeService } from '../../core/services/theme.service';
         padding: 1.5rem;
       }
 
+      .form-row-2col {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-login {
+        width: 100%;
+      }
+
       .demo-personas-grid {
         grid-template-columns: 1fr;
       }
@@ -1169,7 +1062,7 @@ import { ThemeService } from '../../core/services/theme.service';
     }
   `]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   authService = inject(AuthService);
   api = inject(ApiService);
   themeService = inject(ThemeService);
@@ -1177,7 +1070,6 @@ export class LoginComponent {
 
   email = 'carlos.valderrama@sportcore.com';
   password = 'sportcore2026';
-  selectedClubId = '10000000-0000-0000-0000-000000000001';
   rememberMe = true;
 
   readonly showPassword = signal<boolean>(false);
@@ -1185,21 +1077,9 @@ export class LoginComponent {
   readonly toastMessage = signal<string>('');
   readonly isToastError = signal<boolean>(false);
 
-  // Modal de Onboarding
-  readonly showOnboardingModal = signal<boolean>(false);
-  readonly onboardingLoading = signal<boolean>(false);
-
-  onboardingData: OnboardingDto = {
-    clubNombre: '',
-    sigla: '',
-    ciudad: 'Bogotá D.C.',
-    pais: 'Colombia',
-    adminNombre: '',
-    adminApellido: '',
-    adminEmail: '',
-    adminPassword: '',
-    adminTelefono: '',
-  };
+  ngOnInit(): void {
+    this.api.loadClubs();
+  }
 
   togglePasswordVisibility(): void {
     this.showPassword.update((val) => !val);
@@ -1212,10 +1092,10 @@ export class LoginComponent {
     }
 
     this.loading.set(true);
-    this.api.selectClub(this.selectedClubId);
 
-    this.authService.login(this.email, this.password, this.selectedClubId).subscribe({
+    this.authService.login(this.email, this.password).subscribe({
       next: (user) => {
+        this.api.setClubFromUser(user);
         this.loading.set(false);
         this.showToast(`¡Bienvenido ${user.nombres}! Redirigiendo...`, false);
         setTimeout(() => {
@@ -1232,10 +1112,10 @@ export class LoginComponent {
 
   loginWithPersona(personaId: string): void {
     this.loading.set(true);
-    this.api.selectClub(this.selectedClubId);
 
-    this.authService.loginWithPersona(personaId, this.selectedClubId).subscribe({
+    this.authService.loginWithPersona(personaId).subscribe({
       next: (user) => {
+        this.api.setClubFromUser(user);
         this.loading.set(false);
         this.showToast(`¡Bienvenido ${user.nombres}!`, false);
         setTimeout(() => {
@@ -1245,67 +1125,6 @@ export class LoginComponent {
       error: (err) => {
         this.loading.set(false);
         const errorMsg = err?.error?.message || 'Error al autenticar perfil demo.';
-        this.showToast(errorMsg, true);
-      },
-    });
-  }
-
-  openOnboardingModal(): void {
-    this.onboardingData = {
-      clubNombre: '',
-      sigla: '',
-      ciudad: 'Bogotá D.C.',
-      pais: 'Colombia',
-      adminNombre: '',
-      adminApellido: '',
-      adminEmail: '',
-      adminPassword: '',
-      adminTelefono: '',
-    };
-    this.showOnboardingModal.set(true);
-  }
-
-  closeOnboardingModal(): void {
-    this.showOnboardingModal.set(false);
-  }
-
-  submitOnboarding(): void {
-    if (
-      !this.onboardingData.clubNombre ||
-      !this.onboardingData.sigla ||
-      !this.onboardingData.ciudad ||
-      !this.onboardingData.adminNombre ||
-      !this.onboardingData.adminApellido ||
-      !this.onboardingData.adminEmail ||
-      !this.onboardingData.adminPassword
-    ) {
-      this.showToast('Por favor completa todos los campos requeridos (*).', true);
-      return;
-    }
-
-    if (this.onboardingData.adminPassword.length < 6) {
-      this.showToast('La contraseña debe tener mínimo 6 caracteres.', true);
-      return;
-    }
-
-    this.onboardingLoading.set(true);
-
-    this.authService.registerClubOnboarding(this.onboardingData).subscribe({
-      next: (user) => {
-        this.onboardingLoading.set(false);
-        this.showOnboardingModal.set(false);
-        this.api.loadClubs();
-        if (user.clubId) {
-          this.api.selectClub(user.clubId);
-        }
-        this.showToast(`¡Academia creada con éxito! Bienvenido ${user.nombres}`, false);
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 500);
-      },
-      error: (err) => {
-        this.onboardingLoading.set(false);
-        const errorMsg = err?.error?.message || 'Error al registrar la academia. Intenta nuevamente.';
         this.showToast(errorMsg, true);
       },
     });

@@ -272,7 +272,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL REGISTRAR PEDIDO / VENTA -->
       @if (showBuyModal() && selectedProduct()) {
         <div class="modal-overlay" (click)="closeBuyModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -451,7 +451,13 @@ import { ApiService } from '../../core/services/api.service';
                   </div>
                   <div class="input-group">
                     <label>Precio Venta ($ COP) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="productForm.precio_venta" name="pPrecio" class="sport-input" required />
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="productForm.precio_venta" name="pPrecio" min="0" class="sport-input" required />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-tag"></i> {{ formatCurrency(productForm.precio_venta) }} COP
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Personalizable</label>
@@ -961,13 +967,15 @@ export class TiendaComponent implements OnInit {
 
   loadCatalogo(): void {
     this.api.getCatalogoTienda().subscribe((data) => {
-      this.catalogoList.set(data || []);
+      const rows = Array.isArray(data) ? data : (data?.data || []);
+      this.catalogoList.set(rows);
     });
   }
 
   loadPedidos(): void {
     this.api.getPedidosTienda().subscribe((data) => {
-      this.pedidosList.set(data || []);
+      const rows = Array.isArray(data) ? data : (data?.data || []);
+      this.pedidosList.set(rows);
     });
   }
 
@@ -979,6 +987,13 @@ export class TiendaComponent implements OnInit {
       case 'accesorios': return 'Accesorios';
       default: return cat;
     }
+  }
+
+  formatCurrency(val: any): string {
+    if (val === null || val === undefined || val === '') return '$ 0';
+    const num = Number(val);
+    if (isNaN(num)) return '$ 0';
+    return '$ ' + Math.round(num).toLocaleString('es-CO');
   }
 
   openBuyModal(producto: any): void {

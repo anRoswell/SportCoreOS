@@ -136,7 +136,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL GENERAR COBROS DEL MES -->
       @if (showGenerarModal()) {
         <div class="modal-overlay" (click)="closeGenerarModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-amber">
@@ -199,7 +199,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL REGISTRAR PAGO PSE -->
       @if (showPagarModal() && selectedCargo()) {
         <div class="modal-overlay" (click)="closePagarModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-blue">
@@ -232,8 +232,14 @@ import { ApiService } from '../../core/services/api.service';
               <div class="modal-section">
                 <span class="modal-section-title"><i class="fa-solid fa-receipt"></i> Datos de Transacción</span>
                 <div class="input-group">
-                  <label><i class="fa-solid fa-money-bill-wave"></i> Monto a Pagar (COP) <span class="required-star">*</span></label>
-                  <input type="number" [(ngModel)]="montoPago" name="montoPago" [max]="selectedCargo()?.saldo_pendiente" min="1000" class="sport-input" required />
+                  <label><i class="fa-solid fa-money-bill-wave"></i> Monto a Pagar ($ COP) <span class="required-star">*</span></label>
+                  <div class="currency-input-wrap">
+                    <span class="currency-prefix">$</span>
+                    <input type="number" [(ngModel)]="montoPago" name="montoPago" [max]="selectedCargo()?.saldo_pendiente" min="1000" class="sport-input" required />
+                  </div>
+                  <div class="currency-preview-badge">
+                    <i class="fa-solid fa-receipt"></i> {{ formatCurrency(montoPago) }} COP
+                  </div>
                 </div>
 
                 <div class="input-group">
@@ -535,7 +541,8 @@ export class FinanzasComponent implements OnInit {
     });
 
     this.api.getCargos().subscribe((data) => {
-      this.cargos.set(data || []);
+      const rows = Array.isArray(data) ? data : (data?.data || []);
+      this.cargos.set(rows);
     });
 
     this.api.getCategorias().subscribe((cats) => {
@@ -589,6 +596,13 @@ export class FinanzasComponent implements OnInit {
         this.showToast('Error al procesar el pago.');
       },
     });
+  }
+
+  formatCurrency(val: any): string {
+    if (val === null || val === undefined || val === '') return '$ 0';
+    const num = Number(val);
+    if (isNaN(num)) return '$ 0';
+    return '$ ' + Math.round(num).toLocaleString('es-CO');
   }
 
   onSendBulkReminders(): void {

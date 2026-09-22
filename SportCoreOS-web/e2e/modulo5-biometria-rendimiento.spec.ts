@@ -28,8 +28,8 @@ test.describe('MÓDULO 5: BIOMETRÍA DEPORTIVA & TEST FÍSICOS - E2E EXHAUSTIVO'
     expect(await rows.count()).toBeGreaterThanOrEqual(1);
 
     // Probar selector de categoría
-    const catSelect = page.locator('.sport-select');
-    await expect(catSelect).toBeVisible();
+    const catPills = page.locator('.category-pills .pill');
+    await expect(catPills.first()).toBeVisible();
 
     sniffer.assertZeroErrors();
   });
@@ -44,7 +44,7 @@ test.describe('MÓDULO 5: BIOMETRÍA DEPORTIVA & TEST FÍSICOS - E2E EXHAUSTIVO'
     const newBtn = page.locator('button', { hasText: 'Nueva Medición Antropométrica' });
     await newBtn.click();
 
-    const modal = page.locator('.modal-card.modal-lg');
+    const modal = page.locator('.modal-card.modal-xl');
     await expect(modal).toBeVisible();
 
     // 2. Probar Cancelar

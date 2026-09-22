@@ -2,11 +2,13 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, JugadorExpediente360 } from '../../core/services/api.service';
+import { CatalogosService } from '../../core/services/catalogos.service';
+import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
 
 @Component({
   selector: 'app-jugadores',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlatpickrDirective],
   template: `
     <div class="jugadores-page">
       <!-- HEADER DE LA PÁGINA & ACCIONES PRINCIPALES -->
@@ -61,90 +63,243 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
         </div>
       </div>
 
-      <!-- BARRA DE FILTROS & BÚSQUEDA REACTIVA -->
+      <!-- BARRA DE FILTROS & BÚSQUEDA REACTIVA LUXURY SUITE -->
       <div class="filters-card">
-        <div class="filters-top">
-          <!-- Buscador de texto global -->
-          <div class="search-box">
+        <!-- Fila 1: Buscador Principal, Selector de Ordenamiento y Selector de Vista -->
+        <div class="filters-main-row">
+          <!-- Buscador de Texto Multicriterio con Lupa Prominente y Contador -->
+          <div class="search-box luxury-search">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input 
               type="text" 
               [ngModel]="searchQuery()" 
               (ngModelChange)="onSearchChange($event)"
-              placeholder="Buscar por nombre, apellido, documento o EPS..." 
+              placeholder="Buscar por Nombre, Apellidos, Documento (TI/CC), Dorsal (#), Posición, EPS..." 
               class="search-input" />
             @if (searchQuery()) {
-              <button class="clear-search-btn" (click)="clearSearch()">
+              <button class="clear-search-btn" (click)="clearSearch()" title="Borrar búsqueda">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             }
+            @if (totalFilteredCount() > 0) {
+              <span class="search-count-badge">
+                {{ totalFilteredCount() }} {{ totalFilteredCount() === 1 ? 'jugador' : 'jugadores' }}
+              </span>
+            }
           </div>
 
-          <!-- Filtro por Posición Táctica -->
-          <div class="sport-select-wrapper filter-select-wrap">
-            <select [ngModel]="selectedPosicion()" (ngModelChange)="onPosicionFilterChange($event)" class="filter-select">
-              <option value="TODAS">⚡ Todas las Posiciones</option>
-              <option value="portero">🧤 Porteros / Arqueros</option>
-              <option value="defensa">🛡️ Defensas (Central / Lateral)</option>
-              <option value="volante">🎯 Volantes / Mediocampistas</option>
-              <option value="delantero">⚽ Delanteros / Extremos</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          <!-- Selector de Criterio de Ordenación -->
+          <div class="sort-selector-wrapper">
+            <label class="filter-label"><i class="fa-solid fa-arrow-down-a-z"></i> Ordenar:</label>
+            <div class="sport-select-wrapper filter-select-wrap">
+              <select [ngModel]="selectedSortBy()" (ngModelChange)="onSortByChange($event)" class="filter-select">
+                <option value="APELLIDO_ASC">🔤 Apellidos (A → Z)</option>
+                <option value="NOMBRE_ASC">🔤 Nombres (A → Z)</option>
+                <option value="DORSAL_ASC">🔢 Número Dorsal (#)</option>
+                <option value="CREATED_DESC">✨ Más Recientes</option>
+                <option value="TALLA_DESC">📏 Mayor Estatura</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
           </div>
 
-          <!-- Filtro por Rama / Género -->
-          <div class="sport-select-wrapper filter-select-wrap">
-            <select [ngModel]="selectedGenero()" (ngModelChange)="onGeneroFilterChange($event)" class="filter-select">
-              <option value="TODOS">👥 Todas las Ramas</option>
-              <option value="MASCULINO">♂️ Masculino</option>
-              <option value="FEMENINO">♀️ Femenino</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          <!-- Selector de Modo de Vista (Tabla vs Tarjetas Ficha 360°) -->
+          <div class="view-mode-toggle">
+            <button 
+              type="button" 
+              class="view-mode-btn" 
+              [class.active]="viewMode() === 'TABLE'" 
+              (click)="toggleViewMode('TABLE')"
+              title="Vista de Tabla Detallada">
+              <i class="fa-solid fa-table-list"></i>
+              <span>Tabla</span>
+            </button>
+            <button 
+              type="button" 
+              class="view-mode-btn" 
+              [class.active]="viewMode() === 'CARDS'" 
+              (click)="toggleViewMode('CARDS')"
+              title="Vista de Tarjetas Fichas 360°">
+              <i class="fa-solid fa-id-card-clip"></i>
+              <span>Fichas</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fila 2: Filtros de Rama, Posición Táctica y Estado de Matrícula -->
+        <div class="filters-secondary-row">
+          <!-- Filtro Rama / Género -->
+          <div class="filter-group">
+            <span class="filter-group-label"><i class="fa-solid fa-venus-mars"></i> Rama:</span>
+            <div class="segmented-filter-pills">
+              <button 
+                type="button" 
+                class="seg-pill" 
+                [class.active]="selectedGenero() === 'TODOS'"
+                (click)="onGeneroFilterChange('TODOS')">
+                Todas
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill" 
+                [class.active]="selectedGenero() === 'MASCULINO'"
+                (click)="onGeneroFilterChange('MASCULINO')">
+                <i class="fa-solid fa-mars"></i> Masc
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill" 
+                [class.active]="selectedGenero() === 'FEMENINO'"
+                (click)="onGeneroFilterChange('FEMENINO')">
+                <i class="fa-solid fa-venus"></i> Fem
+              </button>
+            </div>
           </div>
 
-          <!-- Selector de Estado -->
-          <div class="estado-select-wrapper filter-select-wrap">
-            <select [ngModel]="selectedEstado()" (ngModelChange)="onEstadoFilterChange($event)" class="filter-select">
-              <option value="TODOS">Todos los Estados</option>
-              <option value="ACTIVO">Activos</option>
-              <option value="LESIONADO">Lesionados</option>
-              <option value="SUSPENDIDO">Suspendidos</option>
-              <option value="RETIRADO">Retirados</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          <!-- Filtro Posición Táctica -->
+          <div class="filter-group">
+            <span class="filter-group-label"><i class="fa-solid fa-compass"></i> Posición:</span>
+            <div class="sport-select-wrapper filter-select-wrap">
+              <select [ngModel]="selectedPosicion()" (ngModelChange)="onPosicionFilterChange($event)" class="filter-select">
+                <option value="TODAS">⚡ Todas las Posiciones</option>
+                <option value="portero">🧤 Porteros / Arqueros</option>
+                <option value="defensa">🛡️ Defensas (Central / Lateral)</option>
+                <option value="volante">🎯 Volantes / Mediocampistas</option>
+                <option value="delantero">⚽ Delanteros / Extremos</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
           </div>
 
+          <!-- Filtro Estado Matrícula -->
+          <div class="filter-group">
+            <span class="filter-group-label"><i class="fa-solid fa-toggle-on"></i> Estado:</span>
+            <div class="segmented-filter-pills status-filter-pills">
+              <button 
+                type="button" 
+                class="seg-pill" 
+                [class.active]="selectedEstado() === 'TODOS'"
+                (click)="onEstadoFilterChange('TODOS')">
+                Todos
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill pill-activo" 
+                [class.active]="selectedEstado() === 'ACTIVO'"
+                (click)="onEstadoFilterChange('ACTIVO')">
+                <span class="dot-activo"></span> Activos
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill pill-lesionado" 
+                [class.active]="selectedEstado() === 'LESIONADO'"
+                (click)="onEstadoFilterChange('LESIONADO')">
+                <span class="dot-lesionado"></span> Lesión
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill pill-inactivo" 
+                [class.active]="selectedEstado() === 'INACTIVO'"
+                (click)="onEstadoFilterChange('INACTIVO')">
+                <span class="dot-inactivo"></span> Inactivos
+              </button>
+              <button 
+                type="button" 
+                class="seg-pill pill-retirado" 
+                [class.active]="selectedEstado() === 'RETIRADO'"
+                (click)="onEstadoFilterChange('RETIRADO')">
+                <span class="dot-retirado"></span> Retirados
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón de Limpiar Todo -->
           @if (hasActiveFilters()) {
-            <button class="btn-clear-all-filters" (click)="resetAllFilters()" title="Limpiar todos los filtros aplicados">
+            <button class="btn-clear-all-filters" (click)="resetAllFilters()" title="Restablecer todos los filtros y búsqueda">
               <i class="fa-solid fa-filter-circle-xmark"></i>
-              <span>Restablecer</span>
+              <span>Limpiar Filtros</span>
             </button>
           }
         </div>
 
-        <!-- Categorías Pills Bar -->
-        <div class="category-pills">
-          <button 
-            class="pill" 
-            [class.active]="selectedCategoriaId() === 'TODAS'"
-            (click)="selectCategoria('TODAS')">
-            <span>Todas las Categorías</span>
-            <span class="pill-count">({{ jugadores().length }})</span>
-          </button>
-          @for (cat of categorias(); track cat.id) {
+        <!-- Fila 3: Cinta de Categorías Deportivas con Pills Dinámicas -->
+        <div class="category-pills-container">
+          <span class="category-ribbon-label"><i class="fa-solid fa-layer-group"></i> Categoría:</span>
+          <div class="category-pills">
             <button 
               class="pill" 
-              [class.active]="selectedCategoriaId() === cat.id"
-              (click)="selectCategoria(cat.id)">
-              <span class="cat-dot" [style.background-color]="cat.color_distintivo || '#10B981'"></span>
-              <span>{{ cat.nombre }}</span>
-              <span class="pill-count">({{ getCategoryCount(cat.id) }})</span>
+              [class.active]="selectedCategoriaId() === 'TODAS'"
+              (click)="selectCategoria('TODAS')">
+              <span>Todas las Categorías</span>
+              <span class="pill-count">({{ totalRecords() }})</span>
             </button>
-          }
+            @for (cat of categorias(); track cat.id) {
+              <button 
+                class="pill" 
+                [class.active]="selectedCategoriaId() === cat.id"
+                (click)="selectCategoria(cat.id)">
+                <span class="cat-dot" [style.background-color]="cat.color_distintivo || '#10B981'"></span>
+                <span>{{ cat.nombre }}</span>
+                @if (cat.codigo_categoria) {
+                  <span class="cat-code-badge">{{ cat.codigo_categoria }}</span>
+                }
+                <span class="pill-count">({{ getCategoryCount(cat.id) }})</span>
+              </button>
+            }
+          </div>
         </div>
+
+        <!-- Fila 4 (Condicional): Chips de Filtros Activos para Descarte Rápido -->
+        @if (hasActiveFilters()) {
+          <div class="active-chips-bar">
+            <span class="chips-title"><i class="fa-solid fa-sliders"></i> Filtros activos:</span>
+            
+            @if (searchQuery().trim()) {
+              <span class="filter-chip">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                "{{ searchQuery() }}"
+                <button type="button" (click)="removeSearchFilter()"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+            }
+
+            @if (selectedCategoriaId() !== 'TODAS') {
+              <span class="filter-chip">
+                <i class="fa-solid fa-shield"></i>
+                Cat: {{ getSelectedCategoryName() }}
+                <button type="button" (click)="removeCategoriaFilter()"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+            }
+
+            @if (selectedGenero() !== 'TODOS') {
+              <span class="filter-chip">
+                <i class="fa-solid fa-venus-mars"></i>
+                {{ selectedGenero() === 'MASCULINO' ? 'Masculino' : 'Femenino' }}
+                <button type="button" (click)="removeGeneroFilter()"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+            }
+
+            @if (selectedPosicion() !== 'TODAS') {
+              <span class="filter-chip">
+                <i class="fa-solid fa-compass"></i>
+                Pos: {{ selectedPosicion() }}
+                <button type="button" (click)="removePosicionFilter()"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+            }
+
+            @if (selectedEstado() !== 'TODOS') {
+              <span class="filter-chip">
+                <i class="fa-solid fa-circle-info"></i>
+                Estado: {{ selectedEstado() }}
+                <button type="button" (click)="removeEstadoFilter()"><i class="fa-solid fa-xmark"></i></button>
+              </span>
+            }
+
+            <button type="button" class="btn-text-clear" (click)="resetAllFilters()">Borrar todos</button>
+          </div>
+        }
       </div>
 
-      <!-- TABLA DE JUGADORES -->
+      <!-- CONTENEDOR DE JUGADORES (TABLA O TARJETAS 360°) -->
       <div class="fut-table-container">
         @if (loading()) {
           <div class="loading-state">
@@ -155,140 +310,223 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
           <div class="empty-state">
             <div class="empty-icon">⚽</div>
             <h3>No se encontraron jugadores</h3>
-            <p>No hay alumnos registrados que coincidan con los filtros seleccionados.</p>
-            <button class="btn-primary-sm" (click)="openCreateModal()">
-              <i class="fa-solid fa-user-plus"></i> Inscribir Primer Jugador
-            </button>
+            <p>
+              @if (searchQuery().trim()) {
+                No hay deportistas que coincidan con la búsqueda "<strong>{{ searchQuery() }}</strong>".
+              } @else {
+                No hay alumnos registrados que coincidan con los filtros seleccionados.
+              }
+            </p>
+            <div class="empty-actions">
+              @if (hasActiveFilters()) {
+                <button class="btn-secondary" (click)="resetAllFilters()">
+                  <i class="fa-solid fa-filter-circle-xmark"></i> Limpiar Búsqueda y Filtros
+                </button>
+              }
+              <button class="btn-primary" (click)="openCreateModal()">
+                <i class="fa-solid fa-user-plus"></i> Inscribir Nuevo Jugador
+              </button>
+            </div>
           </div>
         } @else {
-          <table class="fut-table">
-            <thead>
-              <tr>
-                <th>Dorsal / Foto</th>
-                <th>Nombre del Jugador</th>
-                <th>Documento</th>
-                <th>Categoría</th>
-                <th>Posición & Perfil</th>
-                <th>Biometría (Talla / Peso / IMC)</th>
-                <th>Estado</th>
-                <th class="text-right">Acciones 360°</th>
-              </tr>
-            </thead>
-            <tbody>
+          <!-- VISTA 1: TABLA DETALLADA -->
+          @if (viewMode() === 'TABLE') {
+            <table class="fut-table">
+              <thead>
+                <tr>
+                  <th>Dorsal / Foto</th>
+                  <th>Nombre del Jugador</th>
+                  <th>Documento</th>
+                  <th>Categoría</th>
+                  <th>Posición & Perfil</th>
+                  <th>Biometría (Talla / Peso / IMC)</th>
+                  <th>Estado</th>
+                  <th class="text-right">Acciones 360°</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (j of paginatedJugadores(); track j.id) {
+                  <tr class="player-row" [attr.data-doc]="j.numero_documento">
+                    <!-- Dorsal / Foto -->
+                    <td>
+                      <div class="player-cell">
+                        <div class="dorsal-tag">
+                          <span class="dorsal-hash">#</span>{{ j.numero_dorsal || '-' }}
+                        </div>
+                        <div class="avatar-sm">
+                          <img 
+                            [src]="resolvePhotoUrl(j.foto_url, j.genero)" 
+                            [alt]="j.nombres" />
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Nombre -->
+                    <td>
+                      <div class="name-box">
+                        <span class="player-name" (click)="openExpediente(j.id)">
+                          {{ j.nombres }} {{ j.apellidos }}
+                        </span>
+                        <span class="player-sub">
+                          {{ getEdad(j.fecha_nacimiento) }} años • {{ j.eps || 'EPS Sanitas' }}
+                        </span>
+                      </div>
+                    </td>
+
+                    <!-- Categoría -->
+                    <td>
+                      <span class="badge-cat" [style.background-color]="j.color_distintivo || '#10B981'">
+                        <i class="fa-solid fa-shield"></i>
+                        {{ j.categoria_nombre }}
+                      </span>
+                    </td>
+
+                    <!-- Posición -->
+                    <td>
+                      <div class="pos-cell">
+                        <i class="fa-solid fa-futbol"></i>
+                        <span>{{ j.posicion_principal }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Rama / Género -->
+                    <td>
+                      <span class="gender-pill" [class]="j.genero ? j.genero.toLowerCase() : 'masculino'">
+                        <i class="fa-solid" [class.fa-mars]="j.genero === 'MASCULINO'" [class.fa-venus]="j.genero === 'FEMENINO'"></i>
+                        {{ j.genero === 'FEMENINO' ? 'Femenino' : 'Masculino' }}
+                      </span>
+                    </td>
+
+                    <!-- Documento -->
+                    <td>
+                      <span class="doc-text">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
+                    </td>
+
+                    <!-- Estado Matrícula -->
+                    <td>
+                      <span class="status-badge" [class]="j.estado_matricula ? j.estado_matricula.toLowerCase() : 'activo'">
+                        <span class="status-dot"></span>
+                        {{ j.estado_matricula || 'ACTIVO' }}
+                      </span>
+                    </td>
+
+                    <!-- Beca -->
+                    <td>
+                      <span class="scholarship-pill" [class.has-beca]="j.porcentaje_beca > 0">
+                        {{ j.porcentaje_beca > 0 ? (j.porcentaje_beca + '% Beca') : '100% Tarifa' }}
+                      </span>
+                    </td>
+
+                    <!-- Acciones -->
+                    <td>
+                      <div class="table-actions">
+                        <button class="action-btn btn-view" (click)="openExpediente(j.id)" title="Ver Expediente 360°">
+                          <i class="fa-solid fa-folder-open"></i>
+                        </button>
+                        <button class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Retirar / Dar de Baja">
+                          <i class="fa-solid fa-user-minus"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          <!-- VISTA DE TARJETAS (FICHAS 360°) -->
+          @if (viewMode() === 'CARDS') {
+            <div class="player-cards-grid">
               @for (j of paginatedJugadores(); track j.id) {
-                <tr class="player-row" [attr.data-doc]="j.numero_documento">
-                  <!-- Dorsal / Foto -->
-                  <td>
-                    <div class="player-cell">
-                      <div class="dorsal-tag">
-                        <span class="dorsal-hash">#</span>{{ j.numero_dorsal || '-' }}
-                      </div>
-                      <div class="avatar-sm">
-                        <img 
-                          [src]="j.foto_url || getDefaultAvatar(j.genero)" 
-                          [alt]="j.nombres" />
-                      </div>
-                    </div>
-                  </td>
-
-                  <!-- Nombre -->
-                  <td>
-                    <div class="name-box">
-                      <span class="player-name" (click)="openExpediente(j.id)">
-                        {{ j.nombres }} {{ j.apellidos }}
-                      </span>
-                      <span class="player-sub">
-                        {{ getEdad(j.fecha_nacimiento) }} años • {{ j.eps || 'EPS Sanitas' }}
-                      </span>
-                    </div>
-                  </td>
-
-                  <!-- Documento -->
-                  <td>
-                    <span class="doc-badge">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
-                  </td>
-
-                  <!-- Categoría -->
-                  <td>
-                    <span class="badge-cat" [style.border-color]="j.color_distintivo || '#10B981'">
-                      <span class="dot" [style.background-color]="j.color_distintivo || '#10B981'"></span>
+                <div class="player-feature-card">
+                  <!-- Header de la tarjeta: Categoría y Dorsal -->
+                  <div class="pfc-header">
+                    <span class="pfc-category-badge">
+                      <span class="cat-dot" [style.background-color]="j.color_distintivo || '#10B981'"></span>
                       {{ j.categoria_nombre }}
                     </span>
-                  </td>
+                    <span class="pfc-dorsal-tag">#{{ j.numero_dorsal || '-' }}</span>
+                  </div>
 
-                  <!-- Posición / Pierna -->
-                  <td>
-                    <div class="position-info">
-                      <span class="pos">{{ j.posicion_principal }}</span>
-                      @if (j.posicion_secundaria) {
-                        <span class="pos-sec-badge" title="Posición Secundaria / Polifuncionalidad">
-                          <i class="fa-solid fa-arrows-split-up-and-left"></i> {{ j.posicion_secundaria }}
-                        </span>
-                      }
-                      <span class="foot">
-                        <i class="fa-solid fa-shoe-prints"></i> {{ j.pierna_habil || 'DIESTRO' }}
-                      </span>
+                  <!-- Cuerpo Principal: Foto, Nombre, Documento y Estado -->
+                  <div class="pfc-body">
+                    <div class="pfc-avatar-wrap" (click)="openExpediente(j.id)">
+                      <img [src]="resolvePhotoUrl(j.foto_url, j.genero)" [alt]="j.nombres" />
+                      <span class="pfc-status-dot" [class]="j.estado_matricula ? j.estado_matricula.toLowerCase() : 'activo'" [title]="j.estado_matricula"></span>
                     </div>
-                  </td>
+                    
+                    <div class="pfc-player-info">
+                      <h3 class="pfc-name" (click)="openExpediente(j.id)">{{ j.nombres }} {{ j.apellidos }}</h3>
+                      <div class="pfc-meta-row">
+                        <span class="pfc-doc">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
+                        <span class="pfc-age">• {{ getEdad(j.fecha_nacimiento) }} años</span>
+                      </div>
+                    </div>
+                  </div>
 
-                  <!-- Biometría -->
-                  <td>
+                  <!-- Posición & Perfil Táctico -->
+                  <div class="pfc-tactics">
+                    <div class="pfc-pos-pill">
+                      <i class="fa-solid fa-futbol"></i>
+                      <span>{{ j.posicion_principal }}</span>
+                    </div>
+                    @if (j.posicion_secundaria) {
+                      <span class="pos-sec-badge" title="Posición Secundaria">
+                        <i class="fa-solid fa-arrows-split-up-and-left"></i> {{ j.posicion_secundaria }}
+                      </span>
+                    }
+                    <span class="pfc-foot-badge">
+                      <i class="fa-solid fa-shoe-prints"></i> {{ j.pierna_habil || 'DIESTRO' }}
+                    </span>
+                  </div>
+
+                  <!-- Radar Biométrico Resumen -->
+                  <div class="pfc-bio-strip">
                     @if (j.talla_cm && j.peso_kg) {
-                      <div class="bio-info">
-                        <span class="bio-metrics">{{ j.talla_cm }} cm • {{ j.peso_kg }} kg</span>
-                        <span class="imc-badge" [class]="getImcClass(j.imc)">
-                          IMC: {{ j.imc }} ({{ getImcLabel(j.imc) }})
-                        </span>
+                      <div class="pfc-bio-item">
+                        <span class="lbl">Talla</span>
+                        <strong>{{ j.talla_cm }} cm</strong>
+                      </div>
+                      <div class="pfc-bio-item">
+                        <span class="lbl">Peso</span>
+                        <strong>{{ j.peso_kg }} kg</strong>
+                      </div>
+                      <div class="pfc-bio-item">
+                        <span class="lbl">IMC</span>
+                        <span class="imc-badge" [class]="getImcClass(j.imc)">{{ j.imc }}</span>
                       </div>
                     } @else {
-                      <button class="btn-add-bio-link" (click)="openBiometriaModal(j)">
-                        <i class="fa-solid fa-plus"></i> Registrar Talla/Peso
+                      <button class="pfc-btn-add-bio" (click)="openBiometriaModal(j)">
+                        <i class="fa-solid fa-plus"></i> Registrar Biometría
                       </button>
                     }
-                  </td>
+                  </div>
 
-                  <!-- Estado Matrícula -->
-                  <td>
-                    <span class="status-badge" [class]="j.estado_matricula ? j.estado_matricula.toLowerCase() : 'activo'">
-                      <span class="status-dot"></span>
-                      {{ j.estado_matricula || 'ACTIVO' }}
-                    </span>
-                  </td>
-
-                  <!-- Acciones -->
-                  <td>
-                    <div class="table-actions">
-                      <button 
-                        class="action-btn btn-view" 
-                        (click)="openExpediente(j.id)"
-                        title="Ver Expediente 360° Completo">
-                        <i class="fa-solid fa-id-card"></i>
-                        <span>Ficha 360°</span>
-                      </button>
-                      <button 
-                        class="action-btn btn-bio" 
-                        (click)="openBiometriaModal(j)"
-                        title="Registrar Prueba Biométrica">
+                  <!-- Footer con Acciones 360° -->
+                  <div class="pfc-footer">
+                    <button class="pfc-btn-view" (click)="openExpediente(j.id)">
+                      <i class="fa-solid fa-id-card"></i>
+                      <span>Ficha 360°</span>
+                    </button>
+                    <div class="pfc-sub-actions">
+                      <button class="action-btn btn-bio" (click)="openBiometriaModal(j)" title="Registrar Biometría">
                         <i class="fa-solid fa-heart-pulse"></i>
                       </button>
-                      <button 
-                        class="action-btn btn-edit" 
-                        (click)="openEditModal(j)"
-                        title="Editar Jugador">
+                      <button class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
                         <i class="fa-solid fa-pen"></i>
                       </button>
-                      <button 
-                        class="action-btn btn-delete" 
-                        (click)="openDeleteConfirmModal(j)"
-                        title="Dar de Baja / Retirar Atleta">
+                      <button class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Dar de Baja">
                         <i class="fa-solid fa-user-xmark"></i>
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          }
 
           <!-- BARRA DE PAGINACIÓN PROFESIONAL -->
           <div class="pagination-bar">
@@ -354,7 +592,7 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
               <div class="exp-player-banner">
                 <div class="exp-avatar-wrap">
                   <img 
-                    [src]="selectedExpediente()!.jugador.foto_url || getDefaultAvatar(selectedExpediente()!.jugador.genero)" 
+                    [src]="resolvePhotoUrl(selectedExpediente()!.jugador.foto_url, selectedExpediente()!.jugador.genero)" 
                     [alt]="selectedExpediente()!.jugador.nombres" />
                   <div class="exp-dorsal-tag">
                     #{{ selectedExpediente()!.jugador.numero_dorsal || '-' }}
@@ -515,13 +753,14 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                         </div>
                         <div class="input-group">
                           <label>Parentesco</label>
-                          <select [(ngModel)]="newAcudiente.parentesco" name="acParentesco" class="sport-input">
-                            <option value="PADRE">Padre</option>
-                            <option value="MADRE">Madre</option>
-                            <option value="TUTOR">Tutor Legal</option>
-                            <option value="ABUELO">Abuelo/a</option>
-                            <option value="OTRO">Otro</option>
-                          </select>
+                          <div class="sport-select-wrapper">
+                            <select [(ngModel)]="newAcudiente.parentesco" name="acParentesco" class="sport-input">
+                              @for (par of parentescos(); track par.codigo) {
+                                <option [value]="par.codigo">{{ par.nombre }}</option>
+                              }
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-chevron"></i>
+                          </div>
                         </div>
                       </div>
                       <div class="form-actions-right">
@@ -786,10 +1025,15 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
               <!-- Fotografía Oficial del Deportista -->
               <div class="modal-section">
                 <span class="modal-section-title"><i class="fa-solid fa-camera"></i> Fotografía Oficial del Atleta</span>
-                <div class="athlete-photo-uploader">
+                <div 
+                  class="athlete-photo-uploader"
+                  (paste)="handlePhotoBoxPaste($event, 'edit')"
+                  (dragover)="$event.preventDefault()"
+                  (drop)="handlePhotoBoxDrop($event, 'edit')">
                   <div class="photo-preview-box">
                     <img 
-                      [src]="editPlayerData.fotoUrl || getDefaultAvatar(editPlayerData.genero)" 
+                      [src]="resolvePhotoUrl(editPlayerData.fotoUrl, editPlayerData.genero, 'edit')" 
+                      (error)="onPhotoPreviewError($event, 'edit')"
                       alt="Foto Atleta" 
                       class="athlete-photo-img" />
                     @if (uploadingPhoto()) {
@@ -825,15 +1069,36 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                         </button>
                       }
                     </div>
-                    <p class="photo-hint">Formatos aceptados: PNG, JPG, WEBP. Tamaño máximo: 5 MB.</p>
+                    <p class="photo-hint">Formatos: PNG, JPG, WEBP. Arrastra una imagen o pega directamente (Ctrl+V).</p>
                     <div class="url-input-wrap">
-                      <label><i class="fa-solid fa-link"></i> O ingresar URL directa de la imagen:</label>
-                      <input 
-                        type="url" 
-                        [(ngModel)]="editPlayerData.fotoUrl" 
-                        name="epFotoUrl" 
-                        placeholder="https://ejemplo.com/fotos/atleta.jpg" 
-                        class="sport-input" />
+                      <label><i class="fa-solid fa-link"></i> O ingresar / pegar URL directa de la imagen:</label>
+                      <div class="url-input-inner">
+                        <input 
+                          type="text" 
+                          [(ngModel)]="editPlayerData.fotoUrl" 
+                          (ngModelChange)="onPhotoUrlChange($event, 'edit')"
+                          (paste)="onPhotoUrlPaste($event, 'edit')"
+                          name="epFotoUrl" 
+                          placeholder="/uploads/... o https://ejemplo.com/atleta.jpg" 
+                          class="sport-input url-input" />
+                        <button 
+                          type="button" 
+                          class="btn-paste-clipboard" 
+                          (click)="pasteFromClipboard('edit')"
+                          title="Pegar desde el portapapeles">
+                          <i class="fa-regular fa-clipboard"></i>
+                          <span>Pegar</span>
+                        </button>
+                        @if (editPlayerData.fotoUrl) {
+                          <button 
+                            type="button" 
+                            class="btn-clear-url" 
+                            (click)="removePhoto('edit')"
+                            title="Limpiar URL">
+                            <i class="fa-solid fa-xmark"></i>
+                          </button>
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -858,11 +1123,9 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                     <label><i class="fa-solid fa-address-card"></i> Tipo Documento <span class="required-star">*</span></label>
                     <div class="sport-select-wrapper">
                       <select [(ngModel)]="editPlayerData.tipoDocumento" name="epTipoDoc" class="sport-input">
-                        <option value="TI">🪪 Tarjeta de Identidad (TI)</option>
-                        <option value="RC">📄 Registro Civil (RC)</option>
-                        <option value="CC">💳 Cédula de Ciudadanía (CC)</option>
-                        <option value="CE">🌍 Cédula de Extranjería (CE)</option>
-                        <option value="PASAPORTE">✈️ Pasaporte Oficial</option>
+                        @for (td of tiposDocumento(); track td.codigo) {
+                          <option [value]="td.codigo">{{ td.icono }} {{ td.nombre }}</option>
+                        }
                       </select>
                       <i class="fa-solid fa-chevron-down select-chevron"></i>
                     </div>
@@ -873,7 +1136,7 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                   </div>
                   <div class="input-group">
                     <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
-                    <input type="date" [(ngModel)]="editPlayerData.fechaNacimiento" name="epFechaNac" required class="sport-input" />
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="editPlayerData.fechaNacimiento" name="epFechaNac" required class="sport-input" />
                   </div>
                 </div>
 
@@ -897,8 +1160,16 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                     </div>
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS</label>
-                    <input type="text" [(ngModel)]="editPlayerData.eps" name="epEps" placeholder="ej. SURA, Sanitas, Compensar" class="sport-input" />
+                    <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS / Seguro Médico</label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="editPlayerData.eps" name="epEps" class="sport-input">
+                        <option value="">-- Seleccionar EPS / Seguro Médico --</option>
+                        @for (eps of epsList(); track eps.codigo) {
+                          <option [value]="eps.nombre">{{ eps.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1024,9 +1295,9 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                     </div>
                     <div class="sport-select-wrapper">
                       <select [(ngModel)]="editPlayerData.piernaHabil" name="epPierna" class="sport-input">
-                        <option value="DIESTRO">⚡ DIESTRO (Pie Derecho)</option>
-                        <option value="ZURDO">🎯 ZURDO (Pie Izquierdo)</option>
-                        <option value="AMBIDIESTRO">🔄 AMBIDIESTRO (Ambos Perfiles)</option>
+                        @for (ph of piernasHabiles(); track ph.codigo) {
+                          <option [value]="ph.codigo">{{ ph.nombre }}</option>
+                        }
                       </select>
                       <i class="fa-solid fa-chevron-down select-chevron"></i>
                     </div>
@@ -1037,14 +1308,10 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                   </div>
                 </div>
 
-                <div class="form-row g2">
+                <div class="form-row">
                   <div class="input-group">
                     <label><i class="fa-solid fa-hand-holding-dollar"></i> Porcentaje de Beca (%)</label>
                     <input type="number" [(ngModel)]="editPlayerData.porcentajeBeca" name="epBeca" min="0" max="100" class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-image"></i> URL Foto del Atleta</label>
-                    <input type="url" [(ngModel)]="editPlayerData.fotoUrl" name="epFoto" placeholder="https://..." class="sport-input" />
                   </div>
                 </div>
               </div>
@@ -1067,9 +1334,13 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
       <!-- =====================================================================
            MODAL: INSCRIBIR NUEVO JUGADOR
            ===================================================================== -->
+      <!-- =====================================================================
+           MODAL: INSCRIBIR NUEVO JUGADOR (CON STEPPER DE 3 PASOS)
+           ===================================================================== -->
       @if (showCreateModal()) {
         <div class="modal-backdrop" (click)="closeCreateModal()">
-          <div class="form-modal-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="form-modal-card modal-xl stepper-modal-card" (click)="$event.stopPropagation()">
+            <!-- Header del Modal -->
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -1077,7 +1348,7 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
                 </div>
                 <div class="modal-title-text">
                   <h2>Inscribir Nuevo Jugador</h2>
-                  <p class="modal-subtitle">Ficha integral de matrícula deportiva, datos personales y acudientes</p>
+                  <p class="modal-subtitle">Ficha integral de matrícula deportiva en 3 sencillos pasos</p>
                 </div>
               </div>
               <button class="modal-close-btn btn-close" (click)="closeCreateModal()" aria-label="Cerrar">
@@ -1085,234 +1356,424 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
               </button>
             </div>
 
+            <!-- BARRA INDICADORA DEL STEPPER (3 PASOS) -->
+            <div class="modal-stepper-nav">
+              <div 
+                class="step-item" 
+                [class.active]="createStep() === 1" 
+                [class.completed]="createStep() > 1"
+                (click)="setCreateStep(1)">
+                <div class="step-circle">
+                  @if (createStep() > 1) {
+                    <i class="fa-solid fa-check"></i>
+                  } @else {
+                    <span>1</span>
+                  }
+                </div>
+                <div class="step-label-wrap">
+                  <span class="step-number">PASO 1</span>
+                  <span class="step-title">Datos Personales & Foto</span>
+                </div>
+              </div>
+
+              <div class="step-connector" [class.filled]="createStep() > 1"></div>
+
+              <div 
+                class="step-item" 
+                [class.active]="createStep() === 2" 
+                [class.completed]="createStep() > 2"
+                (click)="setCreateStep(2)">
+                <div class="step-circle">
+                  @if (createStep() > 2) {
+                    <i class="fa-solid fa-check"></i>
+                  } @else {
+                    <span>2</span>
+                  }
+                </div>
+                <div class="step-label-wrap">
+                  <span class="step-number">PASO 2</span>
+                  <span class="step-title">Perfil Deportivo & Dorsal</span>
+                </div>
+              </div>
+
+              <div class="step-connector" [class.filled]="createStep() > 2"></div>
+
+              <div 
+                class="step-item" 
+                [class.active]="createStep() === 3"
+                (click)="setCreateStep(3)">
+                <div class="step-circle">
+                  <span>3</span>
+                </div>
+                <div class="step-label-wrap">
+                  <span class="step-number">PASO 3</span>
+                  <span class="step-title">Familia & Confirmación</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- FORMULARIO CON VISTAS POR PASO -->
             <form (ngSubmit)="submitCreateJugador()" class="modal-form">
-              <!-- Fotografía Oficial del Deportista -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-camera"></i> Fotografía Oficial del Atleta</span>
-                <div class="athlete-photo-uploader">
-                  <div class="photo-preview-box">
-                    <img 
-                      [src]="newPlayerData.fotoUrl || getDefaultAvatar(newPlayerData.genero)" 
-                      alt="Foto Atleta" 
-                      class="athlete-photo-img" />
-                    @if (uploadingPhoto()) {
-                      <div class="photo-loading-overlay">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                      </div>
-                    }
-                  </div>
-                  <div class="photo-controls">
-                    <div class="photo-actions-row">
-                      <input 
-                        type="file" 
-                        #createFileInput 
-                        (change)="onPhotoSelected($event, 'create')" 
-                        accept="image/*" 
-                        style="display: none" />
-                      <button 
-                        type="button" 
-                        class="btn-upload-photo" 
-                        (click)="createFileInput.click()" 
-                        [disabled]="uploadingPhoto()">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <span>{{ uploadingPhoto() ? 'Subiendo imagen...' : 'Seleccionar Archivo de Foto' }}</span>
-                      </button>
-                      @if (newPlayerData.fotoUrl) {
-                        <button 
-                          type="button" 
-                          class="btn-remove-photo" 
-                          (click)="removePhoto('create')"
-                          title="Quitar foto actual">
-                          <i class="fa-solid fa-trash-can"></i>
-                          <span>Quitar</span>
-                        </button>
-                      }
-                    </div>
-                    <p class="photo-hint">Formatos aceptados: PNG, JPG, WEBP. Tamaño máximo: 5 MB.</p>
-                    <div class="url-input-wrap">
-                      <label><i class="fa-solid fa-link"></i> O ingresar URL directa de la imagen:</label>
-                      <input 
-                        type="url" 
-                        [(ngModel)]="newPlayerData.fotoUrl" 
-                        name="npFotoUrl" 
-                        placeholder="https://ejemplo.com/fotos/atleta.jpg" 
-                        class="sport-input" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sección 1: Datos Personales -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> 1. Datos Personales & Identificación</span>
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="newPlayerData.nombres" name="npNombres" placeholder="ej. Tomás" required class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="newPlayerData.apellidos" name="npApellidos" placeholder="ej. Gómez Palacio" required class="sport-input" />
-                  </div>
-                </div>
-
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-address-card"></i> Tipo Documento <span class="required-star">*</span></label>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="newPlayerData.tipoDocumento" name="npTipoDoc" class="sport-input">
-                        <option value="TI">🪪 Tarjeta de Identidad (TI)</option>
-                        <option value="RC">📄 Registro Civil (RC)</option>
-                        <option value="CC">💳 Cédula de Ciudadanía (CC)</option>
-                        <option value="CE">🌍 Cédula de Extranjería (CE)</option>
-                        <option value="PASAPORTE">✈️ Pasaporte Oficial</option>
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-barcode"></i> No. Documento <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="newPlayerData.numeroDocumento" name="npDoc" placeholder="1023456789" required class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
-                    <input type="date" [(ngModel)]="newPlayerData.fechaNacimiento" name="npFechaNac" required class="sport-input" />
-                  </div>
-                </div>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-venus-mars"></i> Género / Rama</label>
-                    <div class="segmented-pill-selector">
-                      <button type="button" class="pill-btn" [class.active]="newPlayerData.genero === 'MASCULINO'" (click)="newPlayerData.genero = 'MASCULINO'">
-                        <i class="fa-solid fa-mars"></i> Masculino
-                      </button>
-                      <button type="button" class="pill-btn" [class.active]="newPlayerData.genero === 'FEMENINO'" (click)="newPlayerData.genero = 'FEMENINO'">
-                        <i class="fa-solid fa-venus"></i> Femenino
-                      </button>
-                    </div>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="newPlayerData.genero" name="npGenero" class="sport-input">
-                        <option value="MASCULINO">⚽ Rama Masculina</option>
-                        <option value="FEMENINO">⚽ Rama Femenina</option>
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS</label>
-                    <input type="text" [(ngModel)]="newPlayerData.eps" name="npEps" placeholder="ej. SURA, Sanitas, Compensar" class="sport-input" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sección 2: Datos Deportivos -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> 2. Perfil Deportivo & Categoría</span>
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-shield"></i> Categoría a Asignar <span class="required-star">*</span></label>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="newPlayerData.categoriaId" name="npCat" required class="sport-input">
-                        <option value="" disabled>Selecciona una categoría...</option>
-                        @for (cat of categorias(); track cat.id) {
-                          <option [value]="cat.id">🏆 {{ cat.nombre }} ({{ cat.codigo_categoria }} • {{ cat.anio_nacimiento_min }}-{{ cat.anio_nacimiento_max }})</option>
+              <!-- PASO 1: DATOS PERSONALES, IDENTIFICACIÓN & FOTOGRAFÍA -->
+              @if (createStep() === 1) {
+                <div class="stepper-step-pane animate-fade">
+                  <!-- Fotografía Oficial del Deportista -->
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-camera"></i> Fotografía Oficial del Atleta</span>
+                    <div 
+                      class="athlete-photo-uploader"
+                      (paste)="handlePhotoBoxPaste($event, 'create')"
+                      (dragover)="$event.preventDefault()"
+                      (drop)="handlePhotoBoxDrop($event, 'create')">
+                      <div class="photo-preview-box">
+                        <img 
+                          [src]="resolvePhotoUrl(newPlayerData.fotoUrl, newPlayerData.genero, 'create')" 
+                          (error)="onPhotoPreviewError($event, 'create')"
+                          alt="Foto Atleta" 
+                          class="athlete-photo-img" />
+                        @if (uploadingPhoto()) {
+                          <div class="photo-loading-overlay">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                          </div>
                         }
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                      </div>
+                      <div class="photo-controls">
+                        <div class="photo-actions-row">
+                          <input 
+                            type="file" 
+                            #createFileInput 
+                            (change)="onPhotoSelected($event, 'create')" 
+                            accept="image/*" 
+                            style="display: none" />
+                          <button 
+                            type="button" 
+                            class="btn-upload-photo" 
+                            (click)="createFileInput.click()" 
+                            [disabled]="uploadingPhoto()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>{{ uploadingPhoto() ? 'Subiendo imagen...' : 'Seleccionar Archivo de Foto' }}</span>
+                          </button>
+                          @if (newPlayerData.fotoUrl) {
+                            <button 
+                              type="button" 
+                              class="btn-remove-photo" 
+                              (click)="removePhoto('create')"
+                              title="Quitar foto actual">
+                              <i class="fa-solid fa-trash-can"></i>
+                              <span>Quitar</span>
+                            </button>
+                          }
+                        </div>
+                        <p class="photo-hint">Formatos: PNG, JPG, WEBP. Arrastra una imagen o pega directamente (Ctrl+V).</p>
+                        <div class="url-input-wrap">
+                          <label><i class="fa-solid fa-link"></i> O ingresar / pegar URL directa de la imagen:</label>
+                          <div class="url-input-inner">
+                            <input 
+                              type="text" 
+                              [(ngModel)]="newPlayerData.fotoUrl" 
+                              (ngModelChange)="onPhotoUrlChange($event, 'create')"
+                              (paste)="onPhotoUrlPaste($event, 'create')"
+                              name="npFotoUrl" 
+                              placeholder="/uploads/... o https://ejemplo.com/atleta.jpg" 
+                              class="sport-input url-input" />
+                            <button 
+                              type="button" 
+                              class="btn-paste-clipboard" 
+                              (click)="pasteFromClipboard('create')"
+                              title="Pegar desde el portapapeles">
+                              <i class="fa-regular fa-clipboard"></i>
+                              <span>Pegar</span>
+                            </button>
+                            @if (newPlayerData.fotoUrl) {
+                              <button 
+                                type="button" 
+                                class="btn-clear-url" 
+                                (click)="removePhoto('create')"
+                                title="Limpiar URL">
+                                <i class="fa-solid fa-xmark"></i>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-shirt"></i> Número de Dorsal (1-99)</label>
-                    <input type="number" [(ngModel)]="newPlayerData.numeroDorsal" name="npDorsal" min="1" max="99" placeholder="ej. 10" class="sport-input" />
+
+                  <!-- Datos Personales & Documento -->
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> Datos Personales & Identificación Legal</span>
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
+                        <input type="text" [(ngModel)]="newPlayerData.nombres" name="npNombres" placeholder="ej. Tomás Mateo" required class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
+                        <input type="text" [(ngModel)]="newPlayerData.apellidos" name="npApellidos" placeholder="ej. Gómez Restrepo" required class="sport-input" />
+                      </div>
+                    </div>
+
+                    <div class="form-row g3">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-address-card"></i> Tipo Documento <span class="required-star">*</span></label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.tipoDocumento" name="npTipoDoc" class="sport-input">
+                            @for (td of tiposDocumento(); track td.codigo) {
+                              <option [value]="td.codigo">{{ td.icono }} {{ td.nombre }}</option>
+                            }
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-barcode"></i> No. Documento <span class="required-star">*</span></label>
+                        <input type="text" [(ngModel)]="newPlayerData.numeroDocumento" name="npDoc" placeholder="1023456789" required class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
+                        <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newPlayerData.fechaNacimiento" name="npFechaNac" required class="sport-input" />
+                      </div>
+                    </div>
+
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-venus-mars"></i> Rama / Género</label>
+                        <div class="segmented-pill-selector">
+                          <button type="button" class="pill-btn" [class.active]="newPlayerData.genero === 'MASCULINO'" (click)="newPlayerData.genero = 'MASCULINO'">
+                            <i class="fa-solid fa-mars"></i> Masculino
+                          </button>
+                          <button type="button" class="pill-btn" [class.active]="newPlayerData.genero === 'FEMENINO'" (click)="newPlayerData.genero = 'FEMENINO'">
+                            <i class="fa-solid fa-venus"></i> Femenino
+                          </button>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS / Seguro Médico</label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.eps" name="npEps" class="sport-input">
+                            <option value="">-- Seleccionar EPS / Seguro Médico --</option>
+                            @for (eps of epsList(); track eps.codigo) {
+                              <option [value]="eps.nombre">{{ eps.nombre }}</option>
+                            }
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Footer del Paso 1 -->
+                  <div class="modal-actions step-actions">
+                    <button type="button" class="btn-secondary btn-cancel" (click)="closeCreateModal()">
+                      <i class="fa-solid fa-xmark"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn-primary" (click)="nextCreateStep()" [disabled]="!isStep1Valid()">
+                      <span>Siguiente: Perfil Deportivo</span>
+                      <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                   </div>
                 </div>
+              }
 
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-compass"></i> Posición Principal <span class="required-star">*</span></label>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="newPlayerData.posicionPrincipal" name="npPos" required class="sport-input">
-                        <optgroup label="🧤 PORTERÍA & ARQUEROS">
-                          <option value="Arquero">🧤 Portero / Arquero Titular</option>
-                          <option value="Portero">🧤 Guardameta</option>
-                        </optgroup>
-                        <optgroup label="🛡️ LÍNEA DEFENSIVA">
-                          <option value="Defensa Central">🛡️ Defensa Central (Zaguero)</option>
-                          <option value="Lateral Derecho">⚡ Lateral Derecho (Carrilero)</option>
-                          <option value="Lateral Izquierdo">⚡ Lateral Izquierdo (Carrilero)</option>
-                        </optgroup>
-                        <optgroup label="⚙️ MEDIOCAMPO & CREACIÓN">
-                          <option value="Volante de Marca">🛡️ Volante de Marca / Pivote (5)</option>
-                          <option value="Volante Mixto">⚙️ Volante Mixto / Interior (8)</option>
-                          <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo / Enganche (10)</option>
-                        </optgroup>
-                        <optgroup label="⚡ DELANTERA & ATAQUE">
-                          <option value="Extremo Derecho">⚡ Extremo Derecho (Punta)</option>
-                          <option value="Extremo Izquierdo">⚡ Extremo Izquierdo (Punta)</option>
-                          <option value="Delantero Centro">⚽ Delantero Centro (9 de Área)</option>
-                        </optgroup>
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+              <!-- PASO 2: PERFIL DEPORTIVO, CATEGORÍA, DORSAL & POSICIONES -->
+              @if (createStep() === 2) {
+                <div class="stepper-step-pane animate-fade">
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> Perfil Deportivo, Categoría & Dorsal</span>
+                    
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-shield"></i> Categoría Deportiva <span class="required-star">*</span></label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.categoriaId" name="npCat" required class="sport-input">
+                            <option value="" disabled>Selecciona una categoría...</option>
+                            @for (cat of categorias(); track cat.id) {
+                              <option [value]="cat.id">🏆 {{ cat.nombre }} ({{ cat.codigo_categoria }} • {{ cat.anio_nacimiento_min }}-{{ cat.anio_nacimiento_max }})</option>
+                            }
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-shirt"></i> Número Dorsal Asignado (1-99)</label>
+                        <input type="number" [(ngModel)]="newPlayerData.numeroDorsal" name="npDorsal" min="1" max="99" placeholder="ej. 10" class="sport-input" />
+                      </div>
+                    </div>
+
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-compass"></i> Posición Principal (Táctica) <span class="required-star">*</span></label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.posicionPrincipal" name="npPos" required class="sport-input">
+                            <optgroup label="🧤 PORTERÍA & ARQUEROS">
+                              <option value="Arquero">🧤 Portero / Arquero Titular</option>
+                              <option value="Portero">🧤 Guardameta</option>
+                            </optgroup>
+                            <optgroup label="🛡️ LÍNEA DEFENSIVA">
+                              <option value="Defensa Central">🛡️ Defensa Central (Zaguero)</option>
+                              <option value="Lateral Derecho">⚡ Lateral Derecho (Carrilero)</option>
+                              <option value="Lateral Izquierdo">⚡ Lateral Izquierdo (Carrilero)</option>
+                            </optgroup>
+                            <optgroup label="⚙️ MEDIOCAMPO & CREACIÓN">
+                              <option value="Volante de Marca">🛡️ Volante de Marca / Pivote (5)</option>
+                              <option value="Volante Mixto">⚙️ Volante Mixto / Interior (8)</option>
+                              <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo / Enganche (10)</option>
+                            </optgroup>
+                            <optgroup label="⚡ DELANTERA & ATAQUE">
+                              <option value="Extremo Derecho">⚡ Extremo Derecho (Punta)</option>
+                              <option value="Extremo Izquierdo">⚡ Extremo Izquierdo (Punta)</option>
+                              <option value="Delantero Centro">⚽ Delantero Centro (9 de Área)</option>
+                              <option value="Segundo Delantero">🎯 Segundo Delantero</option>
+                            </optgroup>
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-location-crosshairs"></i> Posición Secundaria (Polifuncional)</label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.posicionSecundaria" name="npPosSec" class="sport-input">
+                            <option value="">— Ninguna (Especialista Único) —</option>
+                            <option value="Arquero">🧤 Portero / Arquero</option>
+                            <option value="Defensa Central">🛡️ Defensa Central</option>
+                            <option value="Lateral Derecho">⚡ Lateral Derecho</option>
+                            <option value="Lateral Izquierdo">⚡ Lateral Izquierdo</option>
+                            <option value="Volante de Marca">🛡️ Volante de Marca (5)</option>
+                            <option value="Volante Mixto">⚙️ Volante Mixto (8)</option>
+                            <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo (10)</option>
+                            <option value="Extremo Derecho">⚡ Extremo Derecho</option>
+                            <option value="Extremo Izquierdo">⚡ Extremo Izquierdo</option>
+                            <option value="Delantero Centro">⚽ Delantero Centro</option>
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-shoe-prints"></i> Pierna Hábil / Perfil</label>
+                        <div class="segmented-pill-selector">
+                          <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'DIESTRO'" (click)="newPlayerData.piernaHabil = 'DIESTRO'">
+                            <i class="fa-solid fa-shoe-prints"></i> Diestro
+                          </button>
+                          <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'ZURDO'" (click)="newPlayerData.piernaHabil = 'ZURDO'">
+                            <i class="fa-solid fa-shoe-prints fa-flip-horizontal"></i> Zurdo
+                          </button>
+                          <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'AMBIDIESTRO'" (click)="newPlayerData.piernaHabil = 'AMBIDIESTRO'">
+                            <i class="fa-solid fa-repeat"></i> Ambidextro
+                          </button>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-toggle-on"></i> Estado Inicial de Matrícula</label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.estadoMatricula" name="npEstado" class="sport-input">
+                            <option value="ACTIVO">🟢 ACTIVO — En competencia oficial</option>
+                            <option value="LESIONADO">🟡 LESIONADO — En departamento médico</option>
+                            <option value="INACTIVO">⚪ INACTIVO — En pausa administrativa</option>
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-location-crosshairs"></i> Posición Secundaria</label>
-                    <input type="text" [(ngModel)]="newPlayerData.posicionSecundaria" name="npPosSec" placeholder="ej. Extremo Derecho" class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-shoe-prints"></i> Pierna Hábil</label>
-                    <div class="segmented-pill-selector">
-                      <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'DIESTRO'" (click)="newPlayerData.piernaHabil = 'DIESTRO'">
-                        <i class="fa-solid fa-shoe-prints"></i> Diestro
-                      </button>
-                      <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'ZURDO'" (click)="newPlayerData.piernaHabil = 'ZURDO'">
-                        <i class="fa-solid fa-shoe-prints fa-flip-horizontal"></i> Zurdo
-                      </button>
-                      <button type="button" class="pill-btn" [class.active]="newPlayerData.piernaHabil === 'AMBIDIESTRO'" (click)="newPlayerData.piernaHabil = 'AMBIDIESTRO'">
-                        <i class="fa-solid fa-repeat"></i> Ambidextro
-                      </button>
-                    </div>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="newPlayerData.piernaHabil" name="npPierna" class="sport-input">
-                        <option value="DIESTRO">⚡ DIESTRO (Pie Derecho)</option>
-                        <option value="ZURDO">🎯 ZURDO (Pie Izquierdo)</option>
-                        <option value="AMBIDIESTRO">🔄 AMBIDIESTRO (Ambos Perfiles)</option>
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
-                    </div>
+
+                  <!-- Footer del Paso 2 -->
+                  <div class="modal-actions step-actions">
+                    <button type="button" class="btn-secondary" (click)="prevCreateStep()">
+                      <i class="fa-solid fa-arrow-left"></i>
+                      <span>Atrás: Datos Personales</span>
+                    </button>
+                    <button type="button" class="btn-primary" (click)="nextCreateStep()" [disabled]="!isStep2Valid()">
+                      <span>Siguiente: Núcleo Familiar</span>
+                      <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                   </div>
                 </div>
-              </div>
+              }
 
-              <!-- Sección 3: Acudiente Inicial (Opcional) -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-people-roof"></i> 3. Acudiente / Contacto Principal (Opcional)</span>
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user-tie"></i> Nombres Acudiente</label>
-                    <input type="text" [(ngModel)]="newPlayerData.acudienteNombres" name="npAcNom" placeholder="ej. Carlos" class="sport-input" />
+              <!-- PASO 3: NÚCLEO FAMILIAR & CONFIRMACIÓN FINAL -->
+              @if (createStep() === 3) {
+                <div class="stepper-step-pane animate-fade">
+                  <!-- Datos del Acudiente Principal -->
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-people-roof"></i> Acudiente / Contacto Familiar Principal (Recomendado)</span>
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-user-tie"></i> Nombres del Acudiente</label>
+                        <input type="text" [(ngModel)]="newPlayerData.acudienteNombres" name="npAcNom" placeholder="ej. Carlos Eduardo" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-user-tie"></i> Apellidos del Acudiente</label>
+                        <input type="text" [(ngModel)]="newPlayerData.acudienteApellidos" name="npAcApe" placeholder="ej. Gómez Palacio" class="sport-input" />
+                      </div>
+                    </div>
+
+                    <div class="form-row g3">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-person-breastfeeding"></i> Parentesco</label>
+                        <div class="sport-select-wrapper">
+                          <select [(ngModel)]="newPlayerData.acudienteParentesco" name="npAcPar" class="sport-input">
+                            @for (par of parentescos(); track par.codigo) {
+                              <option [value]="par.codigo">{{ par.nombre }}</option>
+                            }
+                          </select>
+                          <i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </div>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-brands fa-whatsapp"></i> Teléfono Móvil (WhatsApp)</label>
+                        <input type="tel" [(ngModel)]="newPlayerData.acudienteTelefono" name="npAcTel" placeholder="+57 310 123 4567" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+                        <input type="email" [(ngModel)]="newPlayerData.acudienteEmail" name="npAcEmail" placeholder="padre.familia@gmail.com" class="sport-input" />
+                      </div>
+                    </div>
                   </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-user-tie"></i> Apellidos Acudiente</label>
-                    <input type="text" [(ngModel)]="newPlayerData.acudienteApellidos" name="npAcApe" placeholder="ej. Gómez" class="sport-input" />
+
+                  <!-- Resumen de Confirmación (Ficha Preview) -->
+                  <div class="modal-section preview-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-clipboard-check"></i> Resumen de Ficha Deportiva Pre-Inscripción</span>
+                    <div class="pre-inscription-summary-card">
+                      <div class="pisc-avatar">
+                        <img [src]="resolvePhotoUrl(newPlayerData.fotoUrl, newPlayerData.genero, 'create')" alt="Atleta" />
+                        <span class="pisc-dorsal">#{{ newPlayerData.numeroDorsal || '-' }}</span>
+                      </div>
+                      <div class="pisc-info">
+                        <div class="pisc-name-row">
+                          <h4>{{ newPlayerData.nombres || 'Nombre Atleta' }} {{ newPlayerData.apellidos || 'Apellidos' }}</h4>
+                          <span class="status-badge activo"><span class="status-dot"></span> {{ newPlayerData.estadoMatricula }}</span>
+                        </div>
+                        <div class="pisc-pills-row">
+                          <span class="meta-pill"><i class="fa-solid fa-id-card"></i> {{ newPlayerData.tipoDocumento }} {{ newPlayerData.numeroDocumento || 'Sin documento' }}</span>
+                          <span class="meta-pill"><i class="fa-solid fa-cake-candles"></i> {{ getEdad(newPlayerData.fechaNacimiento) }} años</span>
+                          <span class="meta-pill"><i class="fa-solid fa-shield"></i> {{ getSelectedCategoryNameForId(newPlayerData.categoriaId) }}</span>
+                          <span class="meta-pill"><i class="fa-solid fa-futbol"></i> {{ newPlayerData.posicionPrincipal }} ({{ newPlayerData.piernaHabil }})</span>
+                        </div>
+                        @if (newPlayerData.acudienteNombres) {
+                          <div class="pisc-acudiente-note">
+                            <i class="fa-solid fa-user-check"></i> Acudiente: <strong>{{ newPlayerData.acudienteNombres }} {{ newPlayerData.acudienteApellidos }}</strong> ({{ newPlayerData.acudienteParentesco }}) • Tel: {{ newPlayerData.acudienteTelefono || 'Sin tel' }}
+                          </div>
+                        }
+                      </div>
+                    </div>
                   </div>
-                  <div class="input-group">
-                    <label><i class="fa-brands fa-whatsapp"></i> Teléfono (WhatsApp)</label>
-                    <input type="tel" [(ngModel)]="newPlayerData.acudienteTelefono" name="npAcTel" placeholder="+57 310 123 4567" class="sport-input" />
+
+                  <!-- Footer del Paso 3 -->
+                  <div class="modal-actions step-actions">
+                    <button type="button" class="btn-secondary" (click)="prevCreateStep()">
+                      <i class="fa-solid fa-arrow-left"></i>
+                      <span>Atrás: Perfil Deportivo</span>
+                    </button>
+                    <button type="submit" class="btn-primary btn-submit" [disabled]="savingPlayer">
+                      <i class="fa-solid fa-user-check"></i>
+                      <span>{{ savingPlayer ? 'Guardando en BD...' : '⚽ Confirmar e Inscribir Jugador' }}</span>
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" class="btn-secondary btn-cancel" (click)="closeCreateModal()">
-                  <i class="fa-solid fa-xmark"></i> Cancelar
-                </button>
-                <button type="submit" class="btn-primary btn-submit" [disabled]="savingPlayer">
-                  <i class="fa-solid fa-user-check"></i>
-                  <span>{{ savingPlayer ? 'Inscribiendo...' : 'Inscribir Jugador' }}</span>
-                </button>
-              </div>
+              }
             </form>
           </div>
         </div>
@@ -1323,7 +1784,7 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
            ===================================================================== -->
       @if (showBiometriaModal() && selectedPlayerForBio()) {
         <div class="modal-backdrop" (click)="closeBiometriaModal()">
-          <div class="bio-modal-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="bio-modal-card modal-xl" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -1340,72 +1801,80 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
             </div>
 
             <form (ngSubmit)="submitBiometria()" class="modal-form">
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-weight-scale"></i> Antropometría Básica</span>
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-ruler-vertical"></i> Estatura / Talla (cm) <span class="required-star">*</span></label>
-                    <input 
-                      type="number" 
-                      step="0.1" 
-                      [(ngModel)]="newBioData.tallaCm" 
-                      name="bioTalla" 
-                      placeholder="ej. 168.5" 
-                      required 
-                      class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-weight-hanging"></i> Peso Corporal (Kg) <span class="required-star">*</span></label>
-                    <input 
-                      type="number" 
-                      step="0.1" 
-                      [(ngModel)]="newBioData.pesoKg" 
-                      name="bioPeso" 
-                      placeholder="ej. 58.2" 
-                      required 
-                      class="sport-input" />
+              <div class="modal-form-grid-2col">
+                <!-- Columna Izquierda: Antropometría Básica & Preview IMC -->
+                <div class="modal-col">
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-weight-scale"></i> 1. Antropometría Básica</span>
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-ruler-vertical"></i> Estatura / Talla (cm) <span class="required-star">*</span></label>
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          [(ngModel)]="newBioData.tallaCm" 
+                          name="bioTalla" 
+                          placeholder="ej. 168.5" 
+                          required 
+                          class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-weight-hanging"></i> Peso Corporal (Kg) <span class="required-star">*</span></label>
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          [(ngModel)]="newBioData.pesoKg" 
+                          name="bioPeso" 
+                          placeholder="ej. 58.2" 
+                          required 
+                          class="sport-input" />
+                      </div>
+                    </div>
+
+                    <!-- IMC Preview Calculado en Vivo -->
+                    @if (newBioData.tallaCm > 0 && newBioData.pesoKg > 0) {
+                      <div class="imc-live-preview">
+                        <span>Índice de Masa Corporal (IMC) Calculado:</span>
+                        <strong>{{ calculateLiveImc() }}</strong>
+                        <span class="imc-tag" [class]="getImcClass(calculateLiveImc())">
+                          {{ getImcLabel(calculateLiveImc()) }}
+                        </span>
+                      </div>
+                    }
                   </div>
                 </div>
 
-                <!-- IMC Preview Calculado en Vivo -->
-                @if (newBioData.tallaCm > 0 && newBioData.pesoKg > 0) {
-                  <div class="imc-live-preview">
-                    <span>Índice de Masa Corporal (IMC) Calculado:</span>
-                    <strong>{{ calculateLiveImc() }}</strong>
-                    <span class="imc-tag" [class]="getImcClass(calculateLiveImc())">
-                      {{ getImcLabel(calculateLiveImc()) }}
-                    </span>
+                <!-- Columna Derecha: Pruebas de Rendimiento & Observaciones -->
+                <div class="modal-col">
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-gauge-high"></i> 2. Pruebas de Rendimiento Físico</span>
+                    <div class="form-row g3">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-person-running"></i> Test Cooper (m)</label>
+                        <input type="number" [(ngModel)]="newBioData.testCooperMetros" name="bioCooper" placeholder="ej. 2800" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-bolt"></i> Sprint 30m (s)</label>
+                        <input type="number" step="0.01" [(ngModel)]="newBioData.velocidad30mSeg" name="bioVel" placeholder="ej. 3.90" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-arrows-up-down"></i> Salto Vert. (cm)</label>
+                        <input type="number" step="0.5" [(ngModel)]="newBioData.saltoVerticalCm" name="bioSalto" placeholder="ej. 45.0" class="sport-input" />
+                      </div>
+                    </div>
                   </div>
-                }
-              </div>
 
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-gauge-high"></i> Pruebas de Rendimiento Físico</span>
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-person-running"></i> Test Cooper (Metros)</label>
-                    <input type="number" [(ngModel)]="newBioData.testCooperMetros" name="bioCooper" placeholder="ej. 2800" class="sport-input" />
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-clipboard-user"></i> 3. Observaciones del DT / Evaluador</span>
+                    <div class="input-group">
+                      <textarea 
+                        [(ngModel)]="newBioData.observaciones" 
+                        name="bioObs" 
+                        rows="2" 
+                        placeholder="Notas sobre el estado físico, potencia o nutrición..." 
+                        class="sport-input"></textarea>
+                    </div>
                   </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-bolt"></i> Sprint 30m (Segundos)</label>
-                    <input type="number" step="0.01" [(ngModel)]="newBioData.velocidad30mSeg" name="bioVel" placeholder="ej. 3.90" class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label><i class="fa-solid fa-arrows-up-down"></i> Salto Vertical (cm)</label>
-                    <input type="number" step="0.5" [(ngModel)]="newBioData.saltoVerticalCm" name="bioSalto" placeholder="ej. 45.0" class="sport-input" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-clipboard-user"></i> Observaciones del Evaluador / DT</span>
-                <div class="input-group">
-                  <textarea 
-                    [(ngModel)]="newBioData.observaciones" 
-                    name="bioObs" 
-                    rows="3" 
-                    placeholder="Notas sobre el estado físico, potencia o recomendaciones de nutrición..." 
-                    class="sport-input"></textarea>
                 </div>
               </div>
 
@@ -1451,7 +1920,7 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
               <div class="player-retire-card">
                 <div class="retire-avatar-wrap">
                   <img 
-                    [src]="selectedPlayerToDelete()!.foto_url || getDefaultAvatar(selectedPlayerToDelete()!.genero)" 
+                    [src]="resolvePhotoUrl(selectedPlayerToDelete()!.foto_url, selectedPlayerToDelete()!.genero)" 
                     [alt]="selectedPlayerToDelete()!.nombres" />
                   <div class="retire-dorsal-tag">
                     #{{ selectedPlayerToDelete()!.numero_dorsal || '-' }}
@@ -1654,25 +2123,27 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
       }
     }
 
-    /* Filters Card */
+    /* Filters Card & Multi-Criteria Search Suite */
     .filters-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem;
+      padding: 1.15rem 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 1rem;
       box-shadow: var(--shadow-sm);
     }
 
-    .filters-top {
+    .filters-main-row {
       display: flex;
-      gap: 1rem;
       align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
 
-      .search-box {
+      .search-box.luxury-search {
         flex: 1;
+        min-width: 280px;
         position: relative;
         display: flex;
         align-items: center;
@@ -1680,24 +2151,30 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
         .search-icon {
           position: absolute;
           left: 1rem;
-          color: var(--text-muted);
-          font-size: 0.85rem;
+          color: var(--color-primary);
+          font-size: 0.95rem;
         }
 
         .search-input {
           width: 100%;
-          padding: 0.65rem 2.25rem 0.65rem 2.5rem;
+          padding: 0.7rem 7rem 0.7rem 2.65rem;
           background: var(--bg-input);
-          border: 1px solid var(--border-color);
+          border: 1.5px solid var(--border-color);
           border-radius: var(--radius-md);
           color: var(--text-main);
           font-size: 0.875rem;
           outline: none;
           transition: all 0.2s ease;
 
+          &::placeholder {
+            color: var(--text-muted);
+            font-size: 0.825rem;
+          }
+
           &:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px var(--color-primary-glow);
+            background: var(--bg-card);
           }
         }
 
@@ -1708,85 +2185,619 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
           border: none;
           color: var(--text-muted);
           cursor: pointer;
+          font-size: 0.85rem;
+          padding: 0.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
-          &:hover { color: var(--text-main); }
+          &:hover { color: #ef4444; }
+        }
+
+        .search-count-badge {
+          position: absolute;
+          right: 2.25rem;
+          background: rgba(16, 185, 129, 0.12);
+          color: var(--color-primary);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          font-size: 0.725rem;
+          font-weight: 700;
+          padding: 0.15rem 0.55rem;
+          border-radius: var(--radius-full);
+          pointer-events: none;
+          white-space: nowrap;
         }
       }
 
-      .estado-select-wrapper {
-        position: relative;
+      .sort-selector-wrapper {
         display: flex;
         align-items: center;
+        gap: 0.45rem;
 
-        .filter-select {
-          padding: 0.65rem 2rem 0.65rem 1rem;
-          background: var(--bg-input);
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          color: var(--text-main);
-          font-size: 0.875rem;
-          font-weight: 600;
-          outline: none;
-          appearance: none;
-          cursor: pointer;
-        }
-
-        .select-chevron {
-          position: absolute;
-          right: 0.75rem;
-          pointer-events: none;
-          font-size: 0.75rem;
+        .filter-label {
+          font-size: 0.8rem;
+          font-weight: 700;
           color: var(--text-muted);
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+      }
+
+      .view-mode-toggle {
+        display: flex;
+        align-items: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 3px;
+        gap: 3px;
+
+        .view-mode-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          padding: 0.45rem 0.75rem;
+          border-radius: var(--radius-sm);
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          transition: all 0.2s ease;
+
+          &:hover:not(.active) {
+            color: var(--text-main);
+            background: var(--bg-card-hover);
+          }
+
+          &.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px var(--color-primary-glow);
+          }
         }
       }
     }
 
-    .category-pills {
+    .filters-secondary-row {
       display: flex;
-      gap: 0.5rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
 
-      .pill {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        color: var(--text-body);
-        padding: 0.4rem 0.85rem;
-        border-radius: var(--radius-full);
-        font-size: 0.775rem;
-        font-weight: 600;
+      .filter-group {
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s ease;
+        gap: 0.5rem;
 
-        .cat-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
-
-        .pill-count {
-          color: var(--text-muted);
-          font-size: 0.7rem;
-        }
-
-        &:hover {
-          background: var(--bg-card-hover);
-          color: var(--text-main);
-        }
-
-        &.active {
-          background: var(--color-primary);
-          border-color: var(--color-primary);
-          color: #ffffff;
+        .filter-group-label {
+          font-size: 0.775rem;
           font-weight: 700;
-
-          .pill-count { color: rgba(255, 255, 255, 0.8); }
+          color: var(--text-muted);
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          white-space: nowrap;
         }
       }
+
+      .segmented-filter-pills {
+        display: flex;
+        align-items: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 3px;
+        gap: 3px;
+
+        .seg-pill {
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-body);
+          padding: 0.35rem 0.75rem;
+          border-radius: var(--radius-sm);
+          font-size: 0.75rem;
+          font-weight: 700;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+
+          &:hover:not(.active) {
+            color: var(--text-main);
+            background: var(--bg-card-hover);
+          }
+
+          &.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px var(--color-primary-glow);
+          }
+
+          .dot-activo, .dot-lesionado, .dot-inactivo, .dot-retirado {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+          }
+
+          .dot-activo { background: #10b981; }
+          .dot-lesionado { background: #ef4444; }
+          .dot-inactivo { background: #94a3b8; }
+          .dot-retirado { background: #f59e0b; }
+
+          &.pill-activo.active {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: #10b981;
+            color: #10b981;
+            box-shadow: none;
+          }
+
+          &.pill-lesionado.active {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: #ef4444;
+            color: #ef4444;
+            box-shadow: none;
+          }
+
+          &.pill-inactivo.active {
+            background: rgba(148, 163, 184, 0.18);
+            border-color: #94a3b8;
+            color: #94a3b8;
+            box-shadow: none;
+          }
+
+          &.pill-retirado.active {
+            background: rgba(245, 158, 11, 0.18);
+            border-color: #f59e0b;
+            color: #f59e0b;
+            box-shadow: none;
+          }
+        }
+      }
+
+      .btn-clear-all-filters {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.85rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: #ef4444;
+        border-radius: var(--radius-md);
+        font-size: 0.775rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        margin-left: auto;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: #ef4444;
+        }
+      }
+    }
+
+    .filter-select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+
+      .filter-select {
+        padding: 0.55rem 2rem 0.55rem 0.85rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        color: var(--text-main);
+        font-size: 0.825rem;
+        font-weight: 600;
+        outline: none;
+        appearance: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 2px var(--color-primary-glow);
+        }
+      }
+
+      .select-chevron {
+        position: absolute;
+        right: 0.75rem;
+        pointer-events: none;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .category-pills-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .category-ribbon-label {
+        font-size: 0.775rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .category-pills {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        scrollbar-width: thin;
+
+        .pill {
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          color: var(--text-body);
+          padding: 0.4rem 0.85rem;
+          border-radius: var(--radius-full);
+          font-size: 0.775rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+
+          .cat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+          }
+
+          .cat-code-badge {
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: var(--radius-xs);
+            font-weight: 800;
+          }
+
+          .pill-count {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+          }
+
+          &:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-main);
+          }
+
+          &.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #ffffff;
+            font-weight: 700;
+
+            .cat-code-badge { background: rgba(0, 0, 0, 0.2); }
+            .pill-count { color: rgba(255, 255, 255, 0.85); }
+          }
+        }
+      }
+    }
+
+    .active-chips-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-top: 0.65rem;
+      border-top: 1px dashed var(--border-color);
+
+      .chips-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--color-primary);
+        padding: 0.2rem 0.55rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 700;
+
+        button {
+          background: transparent;
+          border: none;
+          color: inherit;
+          cursor: pointer;
+          font-size: 0.7rem;
+          padding: 0;
+          margin-left: 0.15rem;
+          display: flex;
+          align-items: center;
+
+          &:hover { color: #ef4444; }
+        }
+      }
+
+      .btn-text-clear {
+        background: transparent;
+        border: none;
+        color: #ef4444;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: underline;
+        margin-left: 0.35rem;
+
+        &:hover { opacity: 0.8; }
+      }
+    }
+
+    /* Player Cards Grid (Fichas 360°) */
+    .player-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+      padding: 1.25rem;
+      background: var(--bg-card);
+
+      .player-fut-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-top: 4px solid #10B981;
+        border-radius: var(--radius-lg);
+        padding: 1.15rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.25s ease;
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+          border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .pfc-top-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          .pfc-cat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-heading);
+
+            .cat-dot {
+              width: 7px;
+              height: 7px;
+              border-radius: 50%;
+            }
+          }
+
+          .pfc-dorsal-tag {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: var(--color-primary);
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.15rem 0.55rem;
+            border-radius: var(--radius-sm);
+          }
+        }
+
+        .pfc-body {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+
+          .pfc-avatar-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            background: var(--bg-card);
+            flex-shrink: 0;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+
+            .pfc-status-dot {
+              position: absolute;
+              bottom: 1px;
+              right: 1px;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              border: 2px solid var(--bg-surface);
+
+              &.activo { background: #10b981; }
+              &.lesionado { background: #ef4444; }
+              &.inactivo { background: #94a3b8; }
+              &.retirado { background: #f59e0b; }
+            }
+          }
+
+          .pfc-player-info {
+            flex: 1;
+            overflow: hidden;
+
+            .pfc-name {
+              font-size: 0.95rem;
+              font-weight: 800;
+              color: var(--text-heading);
+              margin: 0 0 0.2rem 0;
+              cursor: pointer;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+
+              &:hover {
+                color: var(--color-primary);
+                text-decoration: underline;
+              }
+            }
+
+            .pfc-meta-row {
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              font-weight: 600;
+              display: flex;
+              gap: 0.25rem;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+        }
+
+        .pfc-tactics {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+
+          .pfc-pos-pill {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+            padding: 0.25rem 0.55rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.725rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+          }
+
+          .pfc-foot-badge {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: auto;
+          }
+        }
+
+        .pfc-bio-strip {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 0.45rem 0.75rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+
+          .pfc-bio-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .lbl {
+              font-size: 0.625rem;
+              color: var(--text-muted);
+              font-weight: 700;
+              text-transform: uppercase;
+            }
+
+            strong {
+              font-size: 0.8rem;
+              font-weight: 800;
+              color: var(--text-heading);
+            }
+          }
+
+          .pfc-btn-add-bio {
+            width: 100%;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            color: var(--color-primary);
+            padding: 0.3rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.725rem;
+            font-weight: 700;
+            cursor: pointer;
+
+            &:hover {
+              background: rgba(16, 185, 129, 0.08);
+              border-color: var(--color-primary);
+            }
+          }
+        }
+
+        .pfc-footer {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          margin-top: auto;
+          padding-top: 0.65rem;
+          border-top: 1px solid var(--border-color);
+
+          .pfc-btn-view {
+            flex: 1;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--color-primary);
+            padding: 0.45rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: var(--color-primary);
+              color: #ffffff;
+            }
+          }
+
+          .pfc-sub-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+          }
+        }
+      }
+    }
+
+    .empty-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     /* Table Styles */
@@ -2200,6 +3211,196 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
       justify-content: center;
       padding: 1.5rem;
       animation: fadeIn 0.2s ease;
+    }
+
+    /* =========================================================================
+       MODAL STEPPER: INSCRIBIR NUEVO JUGADOR (3 PASOS)
+       ========================================================================= */
+    .modal-stepper-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.75rem;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      gap: 0.75rem;
+      flex-wrap: nowrap;
+
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+
+        .step-circle {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 0.85rem;
+          background: var(--bg-input);
+          color: var(--text-muted);
+          border: 2px solid var(--border-color);
+          transition: all 0.25s ease;
+        }
+
+        .step-label-wrap {
+          display: flex;
+          flex-direction: column;
+
+          .step-number {
+            font-size: 0.625rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+          }
+
+          .step-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-body);
+            transition: color 0.2s ease;
+          }
+        }
+
+        &.active {
+          .step-circle {
+            background: var(--color-primary);
+            color: #ffffff;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-glow);
+          }
+
+          .step-label-wrap {
+            .step-number { color: var(--color-primary); }
+            .step-title { color: var(--text-heading); font-weight: 800; }
+          }
+        }
+
+        &.completed {
+          .step-circle {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border-color: #10b981;
+          }
+
+          .step-label-wrap {
+            .step-title { color: var(--text-heading); }
+          }
+        }
+      }
+
+      .step-connector {
+        flex: 1;
+        height: 2px;
+        background: var(--border-color);
+        margin: 0 0.5rem;
+        transition: background 0.3s ease;
+
+        &.filled {
+          background: #10b981;
+        }
+      }
+    }
+
+    .stepper-step-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .step-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 0.5rem;
+    }
+
+    .pre-inscription-summary-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+
+      .pisc-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid var(--color-primary);
+        position: relative;
+        flex-shrink: 0;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .pisc-dorsal {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          background: var(--color-primary);
+          color: #ffffff;
+          font-size: 0.7rem;
+          font-weight: 900;
+          padding: 1px 4px;
+          border-radius: var(--radius-xs);
+        }
+      }
+
+      .pisc-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+
+        .pisc-name-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          h4 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin: 0;
+          }
+        }
+
+        .pisc-pills-row {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+        }
+
+        .pisc-acudiente-note {
+          font-size: 0.775rem;
+          color: var(--text-muted);
+          background: var(--bg-card);
+          padding: 0.35rem 0.65rem;
+          border-radius: var(--radius-xs);
+          border: 1px dashed var(--border-color);
+          margin-top: 0.25rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+      }
     }
 
     .expediente-modal {
@@ -2770,14 +3971,51 @@ import { ApiService, JugadorExpediente360 } from '../../core/services/api.servic
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+    @media (max-width: 1024px) {
+      .filters-main-row {
+        flex-direction: column;
+        align-items: stretch;
+
+        .search-box.luxury-search {
+          min-width: 100%;
+        }
+
+        .sort-selector-wrapper, .view-mode-toggle {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+
+      .filters-secondary-row {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .btn-clear-all-filters {
+          margin-left: 0;
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+
     @media (max-width: 768px) {
       .grid-2-col, .grid-3-col { grid-template-columns: 1fr; }
-      .filters-top { flex-direction: column; }
+      .player-cards-grid { grid-template-columns: 1fr; }
+      .pagination-bar { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+      .pagination-controls { justify-content: center; width: 100%; }
     }
   `]
 })
 export class JugadoresComponent implements OnInit {
   private api = inject(ApiService);
+  private catalogos = inject(CatalogosService);
+
+  // Catálogos dinámicos desde Backend / Base de Datos
+  epsList = this.catalogos.epsList;
+  tiposDocumento = this.catalogos.tiposDocumento;
+  parentescos = this.catalogos.parentescos;
+  piernasHabiles = this.catalogos.piernasHabiles;
+  posiciones = this.catalogos.posiciones;
 
   // Estados reactivos con Signals
   jugadores = signal<any[]>([]);
@@ -2792,6 +4030,10 @@ export class JugadoresComponent implements OnInit {
   selectedEstado = signal<string>('TODOS');
   selectedPosicion = signal<string>('TODAS');
   selectedGenero = signal<string>('TODOS');
+  selectedSortBy = signal<string>('APELLIDO_ASC');
+
+  // Modo de visualización (Tabla o Fichas 360°)
+  viewMode = signal<'TABLE' | 'CARDS'>('TABLE');
 
   // Paginación Reactiva
   currentPage = signal<number>(1);
@@ -2802,9 +4044,12 @@ export class JugadoresComponent implements OnInit {
   selectedExpediente = signal<JugadorExpediente360 | null>(null);
   activeExpTab = signal<'DEPORTIVO' | 'FAMILIA' | 'BIOMETRIA' | 'FINANZAS'>('DEPORTIVO');
 
-  // Modal Inscribir Alumno
+  // Modal Inscribir Alumno (con Stepper de 3 Pasos)
   showCreateModal = signal<boolean>(false);
+  createStep = signal<number>(1);
   uploadingPhoto = signal<boolean>(false);
+  localPhotoPreviewCreate = signal<string | null>(null);
+  localPhotoPreviewEdit = signal<string | null>(null);
   savingPlayer = false;
   newPlayerData = {
     categoriaId: '',
@@ -2819,9 +4064,15 @@ export class JugadoresComponent implements OnInit {
     piernaHabil: 'DIESTRO',
     numeroDorsal: 9,
     eps: 'SURA EPS',
+    estadoMatricula: 'ACTIVO',
+    porcentajeBeca: 0,
     acudienteNombres: '',
     acudienteApellidos: '',
     acudienteTelefono: '',
+    acudienteEmail: '',
+    acudienteParentesco: 'PADRE',
+    acudienteTipoDoc: 'CC',
+    acudienteNumeroDoc: '',
     fotoUrl: '',
   };
 
@@ -2877,11 +4128,27 @@ export class JugadoresComponent implements OnInit {
     parentesco: 'PADRE',
   };
 
+  // Totales y Paginación Server-Side
+  totalRecords = signal<number>(0);
+  totalPages = signal<number>(1);
+
   // KPIs Computados
-  totalJugadores = computed(() => this.jugadores().length);
-  activosCount = computed(() => this.jugadores().filter(j => j.estado_matricula === 'ACTIVO').length);
-  lesionadosCount = computed(() => this.jugadores().filter(j => j.estado_matricula === 'LESIONADO').length);
-  evaluadosCount = computed(() => this.jugadores().filter(j => j.talla_cm && j.peso_kg).length);
+  totalJugadores = computed(() => this.totalRecords());
+  activosCount = computed(() => {
+    const list = this.jugadores();
+    if (!list || !Array.isArray(list)) return 0;
+    return list.filter(j => j.estado_matricula === 'ACTIVO').length;
+  });
+  lesionadosCount = computed(() => {
+    const list = this.jugadores();
+    if (!list || !Array.isArray(list)) return 0;
+    return list.filter(j => j.estado_matricula === 'LESIONADO').length;
+  });
+  evaluadosCount = computed(() => {
+    const list = this.jugadores();
+    if (!list || !Array.isArray(list)) return 0;
+    return list.filter(j => j.talla_cm && j.peso_kg).length;
+  });
 
   // Filtros Reactivos Activos Check
   hasActiveFilters = computed(() => {
@@ -2892,66 +4159,18 @@ export class JugadoresComponent implements OnInit {
       this.selectedGenero() !== 'TODOS';
   });
 
-  // Lista Filtrada Completa
-  jugadoresFiltrados = computed(() => {
-    let list = this.jugadores();
-
-    // 1. Filtro por Categoría
-    if (this.selectedCategoriaId() !== 'TODAS') {
-      list = list.filter(j => j.categoria_id === this.selectedCategoriaId());
-    }
-
-    // 2. Filtro por Estado de Matrícula
-    if (this.selectedEstado() !== 'TODOS') {
-      list = list.filter(j => j.estado_matricula === this.selectedEstado());
-    }
-
-    // 3. Filtro por Posición Táctica
-    if (this.selectedPosicion() !== 'TODAS') {
-      const pos = this.selectedPosicion().toLowerCase();
-      list = list.filter(j => {
-        const p1 = (j.posicion_principal || '').toLowerCase();
-        const p2 = (j.posicion_secundaria || '').toLowerCase();
-        if (pos === 'portero') return p1.includes('portero') || p1.includes('arquero') || p2.includes('portero') || p2.includes('arquero');
-        if (pos === 'defensa') return p1.includes('defensa') || p1.includes('central') || p1.includes('lateral') || p1.includes('carrilero') || p2.includes('defensa') || p2.includes('central') || p2.includes('lateral');
-        if (pos === 'volante') return p1.includes('volante') || p1.includes('medio') || p1.includes('pivote') || p1.includes('interior') || p1.includes('enganche') || p2.includes('volante') || p2.includes('medio');
-        if (pos === 'delantero') return p1.includes('delantero') || p1.includes('extremo') || p1.includes('punta') || p1.includes('ariete') || p2.includes('delantero') || p2.includes('extremo');
-        return p1.includes(pos) || p2.includes(pos);
-      });
-    }
-
-    // 4. Filtro por Rama / Género
-    if (this.selectedGenero() !== 'TODOS') {
-      list = list.filter(j => (j.genero || 'MASCULINO') === this.selectedGenero());
-    }
-
-    // 5. Búsqueda de texto (Nombre, Apellido, Documento, EPS, Dorsal, Posición)
-    if (this.searchQuery().trim()) {
-      const q = this.searchQuery().toLowerCase().trim();
-      list = list.filter(j => 
-        (j.nombres && j.nombres.toLowerCase().includes(q)) ||
-        (j.apellidos && j.apellidos.toLowerCase().includes(q)) ||
-        (j.numero_documento && j.numero_documento.toLowerCase().includes(q)) ||
-        (j.eps && j.eps.toLowerCase().includes(q)) ||
-        (j.posicion_principal && j.posicion_principal.toLowerCase().includes(q)) ||
-        (j.posicion_secundaria && j.posicion_secundaria.toLowerCase().includes(q)) ||
-        (j.numero_dorsal && j.numero_dorsal.toString().includes(q))
-      );
-    }
-
-    return list;
+  // Nombre de categoría seleccionada para el chip
+  getSelectedCategoryName = computed(() => {
+    const catId = this.selectedCategoriaId();
+    if (catId === 'TODAS') return 'Todas';
+    const found = this.categorias().find(c => c.id === catId);
+    return found ? found.nombre : 'Categoría';
   });
 
-  // Paginación Reactiva
-  totalFilteredCount = computed(() => this.jugadoresFiltrados().length);
-  totalPages = computed(() => Math.max(1, Math.ceil(this.totalFilteredCount() / this.pageSize())));
-
-  paginatedJugadores = computed(() => {
-    const list = this.jugadoresFiltrados();
-    const cur = Math.min(Math.max(1, this.currentPage()), this.totalPages());
-    const start = (cur - 1) * this.pageSize();
-    return list.slice(start, start + this.pageSize());
-  });
+  // Lista visible (cargada página a página desde la BD)
+  jugadoresFiltrados = computed(() => this.jugadores());
+  paginatedJugadores = computed(() => this.jugadores());
+  totalFilteredCount = computed(() => this.totalRecords());
 
   showingStart = computed(() => {
     if (this.totalFilteredCount() === 0) return 0;
@@ -2988,54 +4207,142 @@ export class JugadoresComponent implements OnInit {
 
   loadCategorias() {
     this.api.getCategorias().subscribe(cats => {
-      this.categorias.set(cats || []);
-      if (cats && cats.length > 0 && !this.newPlayerData.categoriaId) {
-        this.newPlayerData.categoriaId = cats[0].id;
+      const rows = Array.isArray(cats) ? cats : ((cats as any)?.data || []);
+      this.categorias.set(rows);
+      if (rows && rows.length > 0 && !this.newPlayerData.categoriaId) {
+        this.newPlayerData.categoriaId = rows[0].id;
       }
     });
   }
 
   loadJugadores() {
     this.loading.set(true);
-    this.api.getJugadores().subscribe({
-      next: (data) => {
-        this.jugadores.set(data || []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
+    this.api
+      .getJugadores({
+        page: this.currentPage(),
+        limit: this.pageSize(),
+        categoriaId: this.selectedCategoriaId(),
+        search: this.searchQuery(),
+        estado: this.selectedEstado(),
+        posicion: this.selectedPosicion(),
+        genero: this.selectedGenero(),
+        sortBy: this.selectedSortBy(),
+      })
+      .subscribe({
+        next: (res) => {
+          let rows: any[] = [];
+          let total = 0;
+          let totalPages = 1;
+
+          if (Array.isArray(res)) {
+            rows = res;
+            total = res.length;
+            totalPages = Math.max(1, Math.ceil(total / this.pageSize()));
+          } else if (res && typeof res === 'object') {
+            if (Array.isArray(res.data)) {
+              rows = res.data;
+              total = typeof res.total === 'number' ? res.total : rows.length;
+              totalPages = typeof res.totalPages === 'number' ? res.totalPages : Math.max(1, Math.ceil(total / this.pageSize()));
+            } else if (res.data && Array.isArray(res.data.data)) {
+              rows = res.data.data;
+              total = typeof res.data.total === 'number' ? res.data.total : rows.length;
+              totalPages = typeof res.data.totalPages === 'number' ? res.data.totalPages : Math.max(1, Math.ceil(total / this.pageSize()));
+            }
+          }
+
+          this.jugadores.set(rows);
+          this.totalRecords.set(total);
+          this.totalPages.set(totalPages);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.error('Error cargando jugadores:', err);
+          this.jugadores.set([]);
+          this.totalRecords.set(0);
+          this.totalPages.set(1);
+          this.loading.set(false);
+        },
+      });
   }
 
   selectCategoria(catId: string) {
     this.selectedCategoriaId.set(catId);
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
+  private searchDebounceTimer?: any;
   onSearchChange(value: string) {
     this.searchQuery.set(value);
     this.currentPage.set(1);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.loadJugadores();
+    }, 300);
+  }
+
+  onSortByChange(value: string) {
+    this.selectedSortBy.set(value);
+    this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  toggleViewMode(mode: 'TABLE' | 'CARDS') {
+    this.viewMode.set(mode);
   }
 
   onPosicionFilterChange(value: string) {
     this.selectedPosicion.set(value);
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   onGeneroFilterChange(value: string) {
     this.selectedGenero.set(value);
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   onEstadoFilterChange(value: string) {
     this.selectedEstado.set(value);
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   clearSearch() {
     this.searchQuery.set('');
     this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  removeSearchFilter() {
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  removeCategoriaFilter() {
+    this.selectedCategoriaId.set('TODAS');
+    this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  removeGeneroFilter() {
+    this.selectedGenero.set('TODOS');
+    this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  removePosicionFilter() {
+    this.selectedPosicion.set('TODAS');
+    this.currentPage.set(1);
+    this.loadJugadores();
+  }
+
+  removeEstadoFilter() {
+    this.selectedEstado.set('TODOS');
+    this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   resetAllFilters() {
@@ -3044,22 +4351,28 @@ export class JugadoresComponent implements OnInit {
     this.selectedEstado.set('TODOS');
     this.selectedPosicion.set('TODAS');
     this.selectedGenero.set('TODOS');
+    this.selectedSortBy.set('APELLIDO_ASC');
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages()) {
       this.currentPage.set(page);
+      this.loadJugadores();
     }
   }
 
   setPageSize(size: number | string) {
     this.pageSize.set(Number(size));
     this.currentPage.set(1);
+    this.loadJugadores();
   }
 
   getCategoryCount(catId: string): number {
-    return this.jugadores().filter(j => j.categoria_id === catId).length;
+    const list = this.jugadores();
+    if (!list || !Array.isArray(list)) return 0;
+    return list.filter(j => j.categoria_id === catId).length;
   }
 
   // Manejo de Expediente 360°
@@ -3083,7 +4396,10 @@ export class JugadoresComponent implements OnInit {
   }
 
   // Inscribir Jugador
+  // Inscribir Jugador
   openCreateModal() {
+    this.createStep.set(1);
+    this.localPhotoPreviewCreate.set(null);
     this.newPlayerData = {
       categoriaId: this.categorias().length > 0 ? this.categorias()[0].id : '',
       nombres: '',
@@ -3097,51 +4413,228 @@ export class JugadoresComponent implements OnInit {
       piernaHabil: 'DIESTRO',
       numeroDorsal: (this.jugadores().length + 1) % 99 || 7,
       eps: 'SURA EPS',
+      estadoMatricula: 'ACTIVO',
+      porcentajeBeca: 0,
       acudienteNombres: '',
       acudienteApellidos: '',
       acudienteTelefono: '',
+      acudienteEmail: '',
+      acudienteParentesco: 'PADRE',
+      acudienteTipoDoc: 'CC',
+      acudienteNumeroDoc: '',
       fotoUrl: '',
     };
     this.showCreateModal.set(true);
   }
 
-  onPhotoSelected(event: Event, mode: 'create' | 'edit') {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+  getSelectedCategoryNameForId(id: string): string {
+    if (!id) return 'Sin categoría';
+    const cat = this.categorias().find(c => c.id === id);
+    return cat ? cat.nombre : 'Categoría';
+  }
 
-    const file = input.files[0];
-    if (!file.type.startsWith('image/')) {
-      this.showToast('Por favor selecciona un archivo de imagen válido', true);
+  setCreateStep(step: number) {
+    if (step === 2 && !this.isStep1Valid()) {
+      this.showToast('Por favor completa los nombres, apellidos, documento y fecha de nacimiento', true);
       return;
     }
+    if (step === 3 && (!this.isStep1Valid() || !this.isStep2Valid())) {
+      this.showToast('Por favor selecciona la categoría deportiva y posición del jugador', true);
+      return;
+    }
+    this.createStep.set(step);
+  }
 
+  nextCreateStep() {
+    if (this.createStep() === 1) {
+      if (!this.isStep1Valid()) {
+        this.showToast('Por favor completa los campos obligatorios del Paso 1 (Nombres, Apellidos, Documento, Fecha)', true);
+        return;
+      }
+      this.createStep.set(2);
+    } else if (this.createStep() === 2) {
+      if (!this.isStep2Valid()) {
+        this.showToast('Por favor selecciona la categoría y posición principal del jugador', true);
+        return;
+      }
+      this.createStep.set(3);
+    }
+  }
+
+  prevCreateStep() {
+    if (this.createStep() > 1) {
+      this.createStep.update(s => s - 1);
+    }
+  }
+
+  isStep1Valid(): boolean {
+    return !!(
+      this.newPlayerData.nombres?.trim() &&
+      this.newPlayerData.apellidos?.trim() &&
+      this.newPlayerData.numeroDocumento?.trim() &&
+      this.newPlayerData.fechaNacimiento
+    );
+  }
+
+  isStep2Valid(): boolean {
+    return !!(
+      this.newPlayerData.categoriaId &&
+      this.newPlayerData.posicionPrincipal
+    );
+  }
+
+  cleanImageUrl(rawUrl: string): string {
+    if (!rawUrl) return '';
+    let clean = rawUrl.trim();
+    // Remover comillas dobles o simples envolventes
+    if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith("'") && clean.endsWith("'"))) {
+      clean = clean.slice(1, -1).trim();
+    }
+    // Formato Markdown: ![alt](https://...)
+    const mdMatch = clean.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/i);
+    if (mdMatch) clean = mdMatch[1];
+    // Formato HTML: <img src="https://...">
+    const htmlMatch = clean.match(/src=["'](https?:\/\/[^"']+)["']/i);
+    if (htmlMatch) clean = htmlMatch[1];
+    // Formato con brackets: <https://...> o (https://...)
+    if ((clean.startsWith('<') && clean.endsWith('>')) || (clean.startsWith('(') && clean.endsWith(')'))) {
+      clean = clean.slice(1, -1).trim();
+    }
+    // Si contiene /uploads/ con protocolo/host, extraer solo la ruta relativa /uploads/...
+    const uploadsIdx = clean.indexOf('/uploads/');
+    if (uploadsIdx !== -1 && (clean.startsWith('http://') || clean.startsWith('https://'))) {
+      clean = clean.substring(uploadsIdx);
+    }
+    return clean;
+  }
+
+  onPhotoUrlChange(val: string, mode: 'create' | 'edit') {
+    const clean = this.cleanImageUrl(val);
+    if (mode === 'create') {
+      this.newPlayerData.fotoUrl = clean;
+      this.localPhotoPreviewCreate.set(null);
+    } else {
+      this.editPlayerData.fotoUrl = clean;
+      this.localPhotoPreviewEdit.set(null);
+    }
+  }
+
+  onPhotoUrlPaste(event: ClipboardEvent, mode: 'create' | 'edit') {
+    const pastedText = event.clipboardData?.getData('text');
+    if (pastedText) {
+      event.preventDefault();
+      const clean = this.cleanImageUrl(pastedText);
+      if (mode === 'create') {
+        this.newPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewCreate.set(null);
+      } else {
+        this.editPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewEdit.set(null);
+      }
+    }
+  }
+
+  async pasteFromClipboard(mode: 'create' | 'edit') {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          const clean = this.cleanImageUrl(text);
+          if (mode === 'create') {
+            this.newPlayerData.fotoUrl = clean;
+            this.localPhotoPreviewCreate.set(null);
+          } else {
+            this.editPlayerData.fotoUrl = clean;
+            this.localPhotoPreviewEdit.set(null);
+          }
+        }
+      }
+    } catch {
+      // Ignorar si el navegador no permite acceso directo al portapapeles
+    }
+  }
+
+  handlePhotoBoxPaste(event: ClipboardEvent, mode: 'create' | 'edit') {
+    if (event.clipboardData?.items) {
+      for (let i = 0; i < event.clipboardData.items.length; i++) {
+        const item = event.clipboardData.items[i];
+        if (item.type.indexOf('image') !== -1) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            this.processPhotoFile(file, mode);
+            return;
+          }
+        }
+      }
+    }
+    const text = event.clipboardData?.getData('text');
+    if (text && (text.startsWith('http://') || text.startsWith('https://') || text.startsWith('data:image') || text.startsWith('/uploads/'))) {
+      event.preventDefault();
+      const clean = this.cleanImageUrl(text);
+      if (mode === 'create') {
+        this.newPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewCreate.set(null);
+      } else {
+        this.editPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewEdit.set(null);
+      }
+    }
+  }
+
+  handlePhotoBoxDrop(event: DragEvent, mode: 'create' | 'edit') {
+    event.preventDefault();
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        this.processPhotoFile(file, mode);
+        return;
+      }
+    }
+    const text = event.dataTransfer?.getData('text');
+    if (text) {
+      const clean = this.cleanImageUrl(text);
+      if (mode === 'create') {
+        this.newPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewCreate.set(null);
+      } else {
+        this.editPlayerData.fotoUrl = clean;
+        this.localPhotoPreviewEdit.set(null);
+      }
+    }
+  }
+
+  processPhotoFile(file: File, mode: 'create' | 'edit') {
     if (file.size > 5 * 1024 * 1024) {
       this.showToast('La imagen supera el límite de 5 MB', true);
       return;
     }
-
     this.uploadingPhoto.set(true);
 
-    // Live preview inmediata con FileReader
     const reader = new FileReader();
     reader.onload = () => {
+      const base64 = reader.result as string;
       if (mode === 'create') {
-        this.newPlayerData.fotoUrl = reader.result as string;
+        this.localPhotoPreviewCreate.set(base64);
       } else {
-        this.editPlayerData.fotoUrl = reader.result as string;
+        this.localPhotoPreviewEdit.set(base64);
       }
     };
     reader.readAsDataURL(file);
 
-    // Subida al backend mediante endpoint de almacenamiento
     this.api.uploadFile(file, 'avatars').subscribe({
       next: (res) => {
         this.uploadingPhoto.set(false);
-        const uploadedUrl = res.url || res.filename;
-        if (mode === 'create') {
-          this.newPlayerData.fotoUrl = uploadedUrl;
-        } else {
-          this.editPlayerData.fotoUrl = uploadedUrl;
+        // Guardar y mostrar estrictamente la ruta relativa donde se cargó (ej: /uploads/clubes/...)
+        const relativeUrl = res.url || (res.filename ? `/uploads/${res.filename}` : res.path) || '';
+        if (relativeUrl) {
+          if (mode === 'create') {
+            this.newPlayerData.fotoUrl = relativeUrl;
+            this.localPhotoPreviewCreate.set(null);
+          } else {
+            this.editPlayerData.fotoUrl = relativeUrl;
+            this.localPhotoPreviewEdit.set(null);
+          }
         }
         this.showToast('¡Fotografía cargada correctamente!', false);
       },
@@ -3152,11 +4645,48 @@ export class JugadoresComponent implements OnInit {
     });
   }
 
+  resolvePhotoUrl(url: string | null | undefined, genero?: string, mode?: 'create' | 'edit'): string {
+    if (mode === 'create' && this.localPhotoPreviewCreate()) {
+      return this.localPhotoPreviewCreate()!;
+    }
+    if (mode === 'edit' && this.localPhotoPreviewEdit()) {
+      return this.localPhotoPreviewEdit()!;
+    }
+    if (!url || !url.trim()) {
+      return this.getDefaultAvatar(genero || 'MASCULINO');
+    }
+    return this.api.resolveFileUrl(url);
+  }
+
+  onPhotoSelected(event: Event, mode: 'create' | 'edit') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor selecciona un archivo de imagen válido', true);
+      return;
+    }
+    this.processPhotoFile(file, mode);
+  }
+
+  onPhotoPreviewError(event: Event, mode: 'create' | 'edit') {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      const genero = mode === 'create' ? this.newPlayerData.genero : this.editPlayerData.genero;
+      const fallback = this.getDefaultAvatar(genero);
+      if (img.src !== fallback) {
+        img.src = fallback;
+      }
+    }
+  }
+
   removePhoto(mode: 'create' | 'edit') {
     if (mode === 'create') {
       this.newPlayerData.fotoUrl = '';
+      this.localPhotoPreviewCreate.set(null);
     } else {
       this.editPlayerData.fotoUrl = '';
+      this.localPhotoPreviewEdit.set(null);
     }
     this.showToast('Fotografía removida', false);
   }
@@ -3166,8 +4696,28 @@ export class JugadoresComponent implements OnInit {
   }
 
   submitCreateJugador() {
-    if (!this.newPlayerData.nombres || !this.newPlayerData.apellidos || !this.newPlayerData.numeroDocumento || !this.newPlayerData.categoriaId) {
-      this.showToast('Por favor completa los campos obligatorios (*)', true);
+    if (!this.newPlayerData.nombres?.trim()) {
+      this.showToast('El nombre del deportista es obligatorio (*)', true);
+      return;
+    }
+    if (!this.newPlayerData.apellidos?.trim()) {
+      this.showToast('Los apellidos del deportista son obligatorios (*)', true);
+      return;
+    }
+    if (!this.newPlayerData.numeroDocumento?.trim()) {
+      this.showToast('El número de documento de identidad es obligatorio (*)', true);
+      return;
+    }
+    if (this.newPlayerData.numeroDocumento.trim().length < 5) {
+      this.showToast('El número de documento debe tener al menos 5 caracteres', true);
+      return;
+    }
+    if (!this.newPlayerData.categoriaId) {
+      this.showToast('Debes seleccionar una categoría deportiva válida (*)', true);
+      return;
+    }
+    if (this.newPlayerData.numeroDorsal && (this.newPlayerData.numeroDorsal < 1 || this.newPlayerData.numeroDorsal > 99)) {
+      this.showToast('El número de dorsal debe estar entre 1 y 99', true);
       return;
     }
 
@@ -3223,6 +4773,15 @@ export class JugadoresComponent implements OnInit {
   submitBiometria() {
     const player = this.selectedPlayerForBio();
     if (!player) return;
+
+    if (!this.newBioData.pesoKg || this.newBioData.pesoKg < 20 || this.newBioData.pesoKg > 180) {
+      this.showToast('Ingresa un peso corporal válido entre 20 y 180 kg', true);
+      return;
+    }
+    if (!this.newBioData.tallaCm || this.newBioData.tallaCm < 80 || this.newBioData.tallaCm > 240) {
+      this.showToast('Ingresa una estatura / talla válida entre 80 y 240 cm', true);
+      return;
+    }
 
     this.savingBio = true;
     const payload = {
@@ -3312,6 +4871,7 @@ export class JugadoresComponent implements OnInit {
   // Editar & Retirar
   openEditModal(player: any) {
     this.selectedPlayerToEdit.set(player);
+    this.localPhotoPreviewEdit.set(null);
     this.editPlayerData = {
       categoriaId: player.categoria_id || (this.categorias().length > 0 ? this.categorias()[0].id : ''),
       nombres: player.nombres || '',
@@ -3341,8 +4901,32 @@ export class JugadoresComponent implements OnInit {
     const player = this.selectedPlayerToEdit();
     if (!player || !player.id) return;
 
-    if (!this.editPlayerData.nombres || !this.editPlayerData.apellidos || !this.editPlayerData.numeroDocumento || !this.editPlayerData.categoriaId) {
-      this.showToast('Por favor completa los campos obligatorios (*)', true);
+    if (!this.editPlayerData.nombres?.trim()) {
+      this.showToast('El nombre del deportista es obligatorio (*)', true);
+      return;
+    }
+    if (!this.editPlayerData.apellidos?.trim()) {
+      this.showToast('Los apellidos del deportista son obligatorios (*)', true);
+      return;
+    }
+    if (!this.editPlayerData.numeroDocumento?.trim()) {
+      this.showToast('El número de documento es obligatorio (*)', true);
+      return;
+    }
+    if (this.editPlayerData.numeroDocumento.trim().length < 5) {
+      this.showToast('El número de documento debe tener al menos 5 caracteres', true);
+      return;
+    }
+    if (!this.editPlayerData.categoriaId) {
+      this.showToast('Debes seleccionar una categoría deportiva válida (*)', true);
+      return;
+    }
+    if (this.editPlayerData.numeroDorsal && (this.editPlayerData.numeroDorsal < 1 || this.editPlayerData.numeroDorsal > 99)) {
+      this.showToast('El número de dorsal debe estar entre 1 y 99', true);
+      return;
+    }
+    if (this.editPlayerData.porcentajeBeca && (this.editPlayerData.porcentajeBeca < 0 || this.editPlayerData.porcentajeBeca > 100)) {
+      this.showToast('El porcentaje de beca debe estar entre 0% y 100%', true);
       return;
     }
 

@@ -66,6 +66,9 @@ import { ApiService } from '../../core/services/api.service';
                 <button class="btn-secondary btn-sm" (click)="openPlantelModal(c)" title="Ver Plantel Oficial">
                   <i class="fa-solid fa-users-rectangle"></i> Ver Plantel
                 </button>
+                <button class="btn-secondary btn-sm btn-icon-only btn-danger-hover" (click)="openDeleteModal(c)" title="Desactivar Categoría">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -80,7 +83,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL CREAR CATEGORÍA -->
       @if (showCreateModal()) {
         <div class="modal-overlay" (click)="closeCreateModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge">
@@ -172,7 +175,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL EDITAR CATEGORÍA (CON BOTONES DE ACCIÓN) -->
       @if (showEditModal() && selectedCategoryToEdit()) {
         <div class="modal-overlay" (click)="closeEditModal()">
-          <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-amber">
@@ -265,7 +268,7 @@ import { ApiService } from '../../core/services/api.service';
       <!-- MODAL PLANTEL DE LA CATEGORÍA -->
       @if (showPlantelModal() && selectedCategory()) {
         <div class="modal-overlay" (click)="closePlantelModal()">
-          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-card modal-lg modal-xl" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <div class="modal-icon-badge badge-blue">
@@ -346,7 +349,62 @@ import { ApiService } from '../../core/services/api.service';
         </div>
       }
 
-      <!-- TOAST -->
+      <!-- MODAL CONFIRMAR ELIMINACIÓN/DESACTIVACIÓN CATEGORÍA -->
+      @if (showDeleteModal() && categoryToDelete()) {
+        <div class="modal-overlay" (click)="closeDeleteModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="delete-confirm-header">
+              <div class="delete-confirm-icon-wrap">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="delete-confirm-title-wrap">
+                <h3>¿Desactivar Categoría Deportiva?</h3>
+                <p>Estás a punto de deshabilitar este grupo del catálogo de planteles del club</p>
+              </div>
+              <button class="btn-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-preview">
+                <div class="cat-badge" [style.background-color]="categoryToDelete()?.color_distintivo || '#10b981'">
+                  {{ categoryToDelete()?.codigo_categoria }}
+                </div>
+                <div class="player-retire-info">
+                  <span class="retire-player-name">{{ categoryToDelete()?.nombre }}</span>
+                  <div class="retire-player-tags">
+                    <span class="meta-tag"><i class="fa-solid fa-venus-mars"></i> {{ categoryToDelete()?.rama }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-users"></i> {{ categoryToDelete()?.total_jugadores || 0 }} jugadores</span>
+                    <span class="meta-tag"><i class="fa-solid fa-calendar"></i> {{ categoryToDelete()?.anio_nacimiento_min }} - {{ categoryToDelete()?.anio_nacimiento_max }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Operación:</h4>
+                  <ul>
+                    <li>La categoría no estará disponible para programar nuevos partidos oficiales.</li>
+                    <li>Los jugadores registrados permanecerán en el sistema y podrán ser reubicados.</li>
+                    <li>Podrás reactivar o consultar el historial en cualquier momento.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeDeleteModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Categoría
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmDeleteCategory()">
+                <i class="fa-solid fa-trash-can"></i> Sí, Desactivar Categoría
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST MESSAGE -->
       @if (toastMessage()) {
         <div class="toast-floating-alert">
           <i class="fa-solid fa-circle-check"></i>
@@ -603,6 +661,8 @@ export class CategoriasComponent implements OnInit {
   readonly showPlantelModal = signal<boolean>(false);
   readonly selectedCategory = signal<any | null>(null);
   readonly plantelPlayers = signal<any[]>([]);
+  readonly showDeleteModal = signal<boolean>(false);
+  readonly categoryToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
 
   newCat = {
@@ -629,6 +689,7 @@ export class CategoriasComponent implements OnInit {
 
   readonly filteredCategorias = computed(() => {
     const list = this.categorias();
+    if (!list || !Array.isArray(list)) return [];
     const rama = this.selectedRama();
     if (rama === 'TODAS') return list;
     return list.filter((c) => c.rama === rama);
@@ -640,7 +701,8 @@ export class CategoriasComponent implements OnInit {
 
   loadCategorias(): void {
     this.api.getCategorias().subscribe((data) => {
-      this.categorias.set(data || []);
+      const rows = Array.isArray(data) ? data : ((data as any)?.data || []);
+      this.categorias.set(rows);
     });
   }
 
@@ -673,8 +735,20 @@ export class CategoriasComponent implements OnInit {
   }
 
   submitCreateCategory(): void {
-    if (!this.newCat.nombre || !this.newCat.codigo_categoria) {
-      this.showToast('Por favor completa los campos requeridos');
+    if (!this.newCat.nombre?.trim()) {
+      this.showToast('El nombre de la categoría es obligatorio (*)');
+      return;
+    }
+    if (!this.newCat.codigo_categoria?.trim()) {
+      this.showToast('El código o sigla de la categoría es obligatorio (*)');
+      return;
+    }
+    if (this.newCat.anio_nacimiento_min > this.newCat.anio_nacimiento_max) {
+      this.showToast('El año mínimo no puede ser mayor al año máximo.');
+      return;
+    }
+    if (this.newCat.cupo_maximo && this.newCat.cupo_maximo < 1) {
+      this.showToast('El cupo máximo debe ser de al menos 1 deportista.');
       return;
     }
 
@@ -704,8 +778,20 @@ export class CategoriasComponent implements OnInit {
     const cat = this.selectedCategoryToEdit();
     if (!cat || !cat.id) return;
 
-    if (!this.editCat.nombre || !this.editCat.codigo_categoria) {
-      this.showToast('Por favor completa los campos requeridos');
+    if (!this.editCat.nombre?.trim()) {
+      this.showToast('El nombre de la categoría es obligatorio (*)');
+      return;
+    }
+    if (!this.editCat.codigo_categoria?.trim()) {
+      this.showToast('El código o sigla de la categoría es obligatorio (*)');
+      return;
+    }
+    if (this.editCat.anio_nacimiento_min > this.editCat.anio_nacimiento_max) {
+      this.showToast('El año mínimo no puede ser mayor al año máximo.');
+      return;
+    }
+    if (this.editCat.cupo_maximo && this.editCat.cupo_maximo < 1) {
+      this.showToast('El cupo máximo debe ser de al menos 1 deportista.');
       return;
     }
 
@@ -733,6 +819,32 @@ export class CategoriasComponent implements OnInit {
     this.showPlantelModal.set(false);
     this.selectedCategory.set(null);
     this.plantelPlayers.set([]);
+  }
+
+  openDeleteModal(cat: any): void {
+    this.categoryToDelete.set(cat);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.categoryToDelete.set(null);
+  }
+
+  confirmDeleteCategory(): void {
+    const cat = this.categoryToDelete();
+    if (!cat || !cat.id) return;
+
+    this.api.deleteCategoria(cat.id).subscribe({
+      next: () => {
+        this.showToast(`Categoría "${cat.nombre}" desactivada exitosamente.`);
+        this.closeDeleteModal();
+        this.loadCategorias();
+      },
+      error: () => {
+        this.showToast('Error al desactivar la categoría.');
+      }
+    });
   }
 
   private showToast(msg: string): void {

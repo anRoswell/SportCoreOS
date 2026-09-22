@@ -1,22 +1,29 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
-import { ApiService } from '../services/api.service';
 import { environment } from '../../../environments/environment';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const apiService = inject(ApiService);
+  let token: string | null = null;
+  let activeClubId: string | null = null;
 
-  const token = authService.token() || (typeof window !== 'undefined' ? localStorage.getItem(environment.tokenKey) : null);
-  const activeClub = apiService.activeClub();
+  if (typeof window !== 'undefined' && window.localStorage) {
+    token = localStorage.getItem(environment.tokenKey);
+    const storedClub = localStorage.getItem(environment.activeClubKey);
+    if (storedClub) {
+      try {
+        const parsed = JSON.parse(storedClub);
+        activeClubId = parsed.id || null;
+      } catch {
+        // ignore JSON parse error
+      }
+    }
+  }
 
   let headersConfig: Record<string, string> = {
     'Accept': 'application/json',
   };
 
-  if (activeClub?.id) {
-    headersConfig['X-Club-Id'] = activeClub.id;
+  if (activeClubId) {
+    headersConfig['X-Club-Id'] = activeClubId;
   }
 
   if (token) {
