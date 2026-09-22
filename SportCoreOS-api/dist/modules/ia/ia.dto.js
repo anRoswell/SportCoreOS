@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChatTacticoDtDto = exports.GenerarBoletinAlumnoDto = void 0;
+exports.GenerarGraficaConvocatoriaDto = exports.ChatTacticoDtDto = exports.GenerarBoletinAlumnoDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class GenerarBoletinAlumnoDto {
@@ -20,7 +20,7 @@ class GenerarBoletinAlumnoDto {
 exports.GenerarBoletinAlumnoDto = GenerarBoletinAlumnoDto;
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'ID único del jugador', example: 'e1e0691e-691e-4c92-9046-871955524534' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], GenerarBoletinAlumnoDto.prototype, "jugador_id", void 0);
@@ -60,4 +60,35 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], ChatTacticoDtDto.prototype, "sistema_base", void 0);
+class GenerarGraficaConvocatoriaDto {
+    partido_id;
+    estilo_diseno;
+    tono_titular;
+    prompt_personalizado;
+}
+exports.GenerarGraficaConvocatoriaDto = GenerarGraficaConvocatoriaDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'ID único del partido', example: 'f1000000-0000-0000-0000-000000000001' }),
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], GenerarGraficaConvocatoriaDto.prototype, "partido_id", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Estilo visual de diseño Gemini', example: 'ELITE_NEON' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], GenerarGraficaConvocatoriaDto.prototype, "estilo_diseno", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Tono del titular generado', example: 'MATCHDAY_EPIC' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], GenerarGraficaConvocatoriaDto.prototype, "tono_titular", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Instrucción o prompt creativo personalizado', example: 'Enfocar en la solidez defensiva y velocidad en bandas' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], GenerarGraficaConvocatoriaDto.prototype, "prompt_personalizado", void 0);
 //# sourceMappingURL=ia.dto.js.map

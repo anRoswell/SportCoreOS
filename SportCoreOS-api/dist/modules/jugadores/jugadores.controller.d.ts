@@ -3,7 +3,13 @@ import { CreateJugadorDto, UpdateJugadorDto, CreateAcudienteDto, CreateBiometria
 export declare class JugadoresController {
     private readonly jugadoresService;
     constructor(jugadoresService: JugadoresService);
-    getJugadores(user: any, search?: string, categoriaId?: string, estado?: string): Promise<any[]>;
+    getJugadores(user: any, page?: number, limit?: number, search?: string, categoriaId?: string, estado?: string, posicion?: string, genero?: string, sortBy?: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     getById(id: string, user: any): Promise<any>;
     getExpediente(id: string, user: any): Promise<{
         jugador: any;

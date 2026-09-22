@@ -26,14 +26,14 @@ let IaRepository = class IaRepository {
        FROM deportivo.jugadores j 
        LEFT JOIN deportivo.categorias c ON j.categoria_id = c.id 
        WHERE j.id = $1 AND j.club_id = $2`, [jugadorId, clubId]);
-        const biometriaRes = await this.db.query(`SELECT * FROM deportivo.evaluaciones_biometricas 
+        const biometriaRes = await this.db.query(`SELECT * FROM rendimiento.evaluaciones_biometricas 
        WHERE jugador_id = $1 
        ORDER BY fecha_evaluacion DESC LIMIT 2`, [jugadorId]);
-        const partidosRes = await this.db.query(`SELECT a.minutos_jugados, a.goles, a.asistencias, a.tarjetas_amarillas, a.calificacion_rendimiento,
+        const partidosRes = await this.db.query(`SELECT c.rol_convocatoria, c.posicion_designada,
               p.rival_nombre, p.goles_club, p.goles_rival, p.fecha_partido
-       FROM deportivo.alineaciones a
-       JOIN deportivo.partidos p ON a.partido_id = p.id
-       WHERE a.jugador_id = $1 AND p.club_id = $2
+       FROM competicion.convocatorias c
+       JOIN competicion.partidos p ON c.partido_id = p.id
+       WHERE c.jugador_id = $1 AND p.club_id = $2
        ORDER BY p.fecha_partido DESC LIMIT 5`, [jugadorId, clubId]);
         return {
             jugador: jugadorRes.rows[0] || null,
@@ -57,10 +57,29 @@ let IaRepository = class IaRepository {
         return res.rows[0];
     }
     async getPlantelesParaAnalisis(categoriaId, clubId) {
-        const res = await this.db.query(`SELECT j.nombres, j.apellidos, j.posicion_principal, j.pie_habil, j.estado, j.dorsal
+        const res = await this.db.query(`SELECT j.nombres, j.apellidos, j.posicion_principal, j.pierna_habil, j.estado_matricula, j.numero_dorsal
        FROM deportivo.jugadores j
-       WHERE j.categoria_id = $1 AND j.club_id = $2 AND j.estado = 'ACTIVO'`, [categoriaId, clubId]);
+       WHERE j.categoria_id = $1 AND j.club_id = $2 AND j.estado_matricula = 'ACTIVO'`, [categoriaId, clubId]);
         return res.rows;
+    }
+    async getPartidoConvocatoriaParaGrafica(partidoId, clubId) {
+        const partidoRes = await this.db.query(`SELECT p.*, c.nombre as categoria_nombre
+       FROM competicion.partidos p
+       LEFT JOIN deportivo.categorias c ON p.categoria_id = c.id
+       WHERE p.id = $1 AND p.club_id = $2`, [partidoId, clubId]);
+        const convocadosRes = await this.db.query(`SELECT con.*, j.nombres, j.apellidos, j.numero_dorsal, j.posicion_principal, j.foto_url
+       FROM competicion.convocatorias con
+       JOIN deportivo.jugadores j ON con.jugador_id = j.id
+       WHERE con.partido_id = $1
+       ORDER BY con.rol_convocatoria DESC, j.numero_dorsal ASC`, [partidoId]);
+        const clubRes = await this.db.query(`SELECT id, nombre, sigla, ciudad, logo_url
+       FROM core.clubes
+       WHERE id = $1`, [clubId]);
+        return {
+            partido: partidoRes.rows[0] || null,
+            convocados: convocadosRes.rows,
+            club: clubRes.rows[0] || null,
+        };
     }
 };
 exports.IaRepository = IaRepository;

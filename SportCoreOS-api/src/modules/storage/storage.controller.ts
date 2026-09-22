@@ -1,7 +1,9 @@
 import {
   Controller,
+  Get,
   Post,
   Delete,
+  Param,
   Query,
   UseInterceptors,
   UploadedFile,
@@ -81,6 +83,16 @@ export class StorageController {
       entidadId,
       tipoDocumento,
     );
+  }
+
+  @Get('entidad/:entidadTipo/:entidadId')
+  @ApiOperation({ summary: 'Consultar archivos asociados a una entidad (JUGADOR, CLUB, PRODUCTO, etc.)' })
+  async getByEntidad(
+    @CurrentUser() user: any,
+    @Param('entidadTipo') entidadTipo: string,
+    @Param('entidadId') entidadId: string,
+  ) {
+    return this.storageService.getArchivosByEntidad(user.clubId, entidadTipo, entidadId);
   }
 
   @Delete('file')

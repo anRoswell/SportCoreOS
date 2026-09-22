@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PartidosService } from './partidos.service';
 import { CreatePartidoDto, UpdatePartidoDto, CreateEventoActaDto } from './partidos.dto';
@@ -13,13 +13,27 @@ export class PartidosController {
   constructor(private readonly partidosService: PartidosService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar calendario y fixture de partidos' })
-  @ApiQuery({ name: 'categoriaId', required: false })
+  @ApiOperation({ summary: 'Listar calendario y fixture de partidos con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'categoriaId', required: false, type: String })
+  @ApiQuery({ name: 'estado', required: false, type: String })
   async getPartidos(
     @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
     @Query('categoriaId') categoriaId?: string,
+    @Query('estado') estado?: string,
   ) {
-    return this.partidosService.findByClub(user.clubId, categoriaId);
+    return this.partidosService.findByClub(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      categoriaId,
+      estado,
+    });
   }
 
   @Get(':id')
@@ -42,6 +56,12 @@ export class PartidosController {
     @Body() dto: UpdatePartidoDto,
   ) {
     return this.partidosService.update(id, user.clubId, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar o cancelar un partido del calendario' })
+  async delete(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.partidosService.delete(id, user.clubId);
   }
 
   @Post(':id/eventos')

@@ -3,7 +3,9 @@ export declare enum TipoDocumento {
     CC = "CC",
     RC = "RC",
     CE = "CE",
-    PASAPORTE = "PASAPORTE"
+    PASAPORTE = "PASAPORTE",
+    PPT = "PPT",
+    NUIP = "NUIP"
 }
 export declare enum PiernaHabil {
     DIESTRO = "DIESTRO",
@@ -35,8 +37,11 @@ export declare class CreateJugadorDto {
     numeroDorsal?: number;
     eps?: string;
     estadoMatricula?: EstadoMatricula;
+    porcentajeBeca?: number;
     acudienteNombres?: string;
     acudienteApellidos?: string;
+    acudienteTipoDoc?: string;
+    acudienteNumeroDoc?: string;
     acudienteNumeroDocumento?: string;
     acudienteTelefono?: string;
     acudienteEmail?: string;

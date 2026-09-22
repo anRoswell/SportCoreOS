@@ -19,8 +19,24 @@ export class JugadoresService {
 
   constructor(private readonly jugadoresRepository: JugadoresRepository) {}
 
-  async findAllByClub(clubId: string, search?: string, categoriaId?: string, estado?: string) {
-    return this.jugadoresRepository.findJugadoresByClub(clubId, search, categoriaId, estado);
+  async findAllByClub(
+    clubId: string,
+    optionsOrSearch?:
+      | string
+      | {
+          search?: string;
+          categoriaId?: string;
+          estado?: string;
+          posicion?: string;
+          genero?: string;
+          page?: number;
+          limit?: number;
+          sortBy?: string;
+        },
+    categoriaId?: string,
+    estado?: string,
+  ) {
+    return this.jugadoresRepository.findJugadoresByClub(clubId, optionsOrSearch, categoriaId, estado);
   }
 
   async findById(id: string, clubId: string) {
@@ -83,13 +99,14 @@ export class JugadoresService {
 
     // 4. Si se incluyeron datos del Acudiente, registrarlo y vincularlo
     let acudienteCreado = null;
-    if (dto.acudienteNombres && dto.acudienteNumeroDocumento && dto.acudienteTelefono) {
+    const numDocAcudiente = dto.acudienteNumeroDoc || dto.acudienteNumeroDocumento;
+    if (dto.acudienteNombres && numDocAcudiente && dto.acudienteTelefono) {
       try {
         acudienteCreado = await this.jugadoresRepository.createAcudiente({
           nombres: dto.acudienteNombres,
           apellidos: dto.acudienteApellidos || '',
-          tipoDocumento: 'CC',
-          numeroDocumento: dto.acudienteNumeroDocumento,
+          tipoDocumento: dto.acudienteTipoDoc || 'CC',
+          numeroDocumento: numDocAcudiente,
           telefonoMovil: dto.acudienteTelefono,
           email: dto.acudienteEmail,
           parentesco: dto.acudienteParentesco || 'PADRE',

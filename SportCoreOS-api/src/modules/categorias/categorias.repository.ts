@@ -8,19 +8,63 @@ export class CategoriasRepository extends BaseRepository {
     super(db, 'deportivo.categorias');
   }
 
-  async findCategoriasByClub(clubId: string) {
-    const res = await this.db.query(
+  async findCategoriasByClub(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      rama?: string;
+    },
+  ) {
+    const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['c.club_id = $1', 'c.activa = true'];
+    const params: any[] = [clubId];
+
+    if (options?.rama && options.rama !== 'TODAS') {
+      params.push(options.rama);
+      whereParts.push(`c.rama = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(c.nombre ILIKE $${pIdx} OR c.codigo_categoria ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM deportivo.categorias c
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
       `SELECT c.id, c.nombre, c.codigo_categoria, c.anio_nacimiento_min, c.anio_nacimiento_max,
               c.rama, c.nivel_competencia, c.color_distintivo, c.activa,
               u.id as dt_id, CONCAT(u.nombre, ' ', u.apellido) as dt_nombre,
               (SELECT COUNT(*) FROM deportivo.jugadores j WHERE j.categoria_id = c.id AND j.estado_matricula = 'ACTIVO') as total_jugadores
        FROM deportivo.categorias c
        LEFT JOIN core.usuarios u ON u.id = c.director_tecnico_id
-       WHERE c.club_id = $1 AND c.activa = true
-       ORDER BY c.anio_nacimiento_max ASC`,
-      [clubId],
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY c.anio_nacimiento_max ASC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
     );
-    return res.rows;
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findPlantelByCategoria(categoriaId: string, clubId: string) {

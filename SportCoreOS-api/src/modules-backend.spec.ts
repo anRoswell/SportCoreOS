@@ -92,7 +92,8 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
         .get('/api/v1/finanzas/cargos')
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(200);
-      const list = res.body.data || res.body;
+      const data = res.body.data !== undefined ? res.body.data : res.body;
+      const list = Array.isArray(data) ? data : (data?.data || []);
       expect(Array.isArray(list)).toBe(true);
     });
   });
@@ -183,7 +184,8 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
         .get('/api/v1/categorias')
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(200);
-      const list = res.body.data || res.body;
+      const payload = res.body.data !== undefined ? res.body.data : res.body;
+      const list = Array.isArray(payload) ? payload : (payload?.data || []);
       expect(Array.isArray(list)).toBe(true);
       expect(list.some((c: any) => c.id === testCatId)).toBe(true);
     });
@@ -232,6 +234,13 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
           observacion: 'Gol de media distancia',
         });
       expect(res.status).toBe(201);
+    });
+
+    it('DELETE /api/v1/partidos/:id -> elimina o cancela partido del fixture', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/v1/partidos/${testPartidoId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(200);
     });
   });
 
@@ -313,6 +322,15 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
       testCanchaId = data.id;
     });
 
+    it('GET /api/v1/canchas/:id -> obtiene detalle de la cancha por ID', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/canchas/${testCanchaId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(200);
+      const data = res.body.data || res.body;
+      expect(data.id).toBe(testCanchaId);
+    });
+
     it('GET /api/v1/canchas/disponibilidad -> consulta matriz horaria', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/v1/canchas/disponibilidad?fecha=2026-03-25')
@@ -336,7 +354,7 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
           cliente_nombre: 'Cliente Integración',
           cliente_telefono: '+57 310 000 1122',
           monto_anticipo: 37500,
-          metodo_pago: 'EFECTIVO',
+          metodo_pago: 'EFECTIVO_CAJA',
         });
       expect(res.status).toBe(201);
       const data = res.body.data || res.body;
@@ -349,7 +367,7 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           monto: 37500,
-          metodo_pago: 'EFECTIVO',
+          metodo_pago: 'EFECTIVO_CAJA',
         });
       expect(res.status).toBe(200);
       const data = res.body.data || res.body;
@@ -359,6 +377,13 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
     it('PATCH /api/v1/canchas/reservas/:id/cancelar -> cancela reserva', async () => {
       const res = await request(app.getHttpServer())
         .patch(`/api/v1/canchas/reservas/${testReservaId}/cancelar`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(200);
+    });
+
+    it('DELETE /api/v1/canchas/:id -> desactiva la cancha', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/v1/canchas/${testCanchaId}`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(res.status).toBe(200);
     });
@@ -397,6 +422,16 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
       );
       expect(dbVar.rows.length).toBeGreaterThan(0);
       testVarianteId = dbVar.rows[0].id;
+    });
+
+    it('GET /api/v1/tienda/productos/:id -> obtiene detalle de producto con variantes', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/tienda/productos/${testProductoId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(200);
+      const data = res.body.data || res.body;
+      expect(data.id).toBe(testProductoId);
+      expect(data.variantes.length).toBeGreaterThan(0);
     });
 
     it('POST /api/v1/tienda/pedidos -> genera compra y decrementa stock en BD', async () => {
@@ -680,6 +715,24 @@ describe('SportCoreOS Backend Integration Test Suite (All 12 Modules & PostgreSQ
       );
       expect(dbCheck.rows.length).toBe(1);
       expect(dbCheck.rows[0].entidad_tipo).toBe('SESION_GPS');
+    });
+
+    it('GET /api/v1/storage/entidad/JUGADOR/:id -> consulta archivos del jugador y verifica formato de URL para el Front', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/v1/storage/entidad/JUGADOR/40000000-0000-0000-0000-000000000001')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      const list = res.body.data || res.body;
+      expect(Array.isArray(list)).toBe(true);
+      expect(list.length).toBeGreaterThan(0);
+
+      // Verificación de estructura de la URL consumible por Angular/Móvil
+      const foto = list.find((item: any) => item.tipo_documento === 'FOTO_PERFIL');
+      expect(foto).toBeDefined();
+      expect(foto.url).toMatch(/^\/uploads\/clubes\/.+\.(png|webp|jpg)$/);
+      expect(foto).toHaveProperty('nombre_original');
+      expect(foto).toHaveProperty('tamano_bytes');
     });
 
     it('DELETE /api/v1/storage/file -> elimina archivos físicos del servidor', async () => {

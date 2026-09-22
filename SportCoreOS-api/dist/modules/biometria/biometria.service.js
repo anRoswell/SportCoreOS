@@ -48,17 +48,74 @@ let BiometriaService = class BiometriaService {
        ORDER BY eb.fecha_evaluacion ASC`, [jugadorId]);
         return res.rows;
     }
-    async findByClub(clubId) {
-        const res = await this.db.query(`SELECT eb.*, 
-              CONCAT(j.nombres, ' ', j.apellidos) as jugador_nombre,
-              j.numero_dorsal, j.posicion_principal,
-              c.nombre as categoria_nombre, c.codigo_categoria
+    async findByClub(clubId, options) {
+        const page = Math.max(1, Number(options?.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(options?.limit) || 10));
+        const offset = (page - 1) * limit;
+        const whereParts = ['j.club_id = $1'];
+        const params = [clubId];
+        if (options?.categoriaId && options.categoriaId !== 'TODAS') {
+            params.push(options.categoriaId);
+            whereParts.push(`j.categoria_id = $${params.length}`);
+        }
+        if (options?.diagnostico && options.diagnostico !== 'TODOS') {
+            if (options.diagnostico === 'OPTIMO') {
+                whereParts.push('(eb.imc >= 18.5 AND eb.imc <= 24.9)');
+            }
+            else if (options.diagnostico === 'SOBREPESO') {
+                whereParts.push('(eb.imc >= 25.0 AND eb.imc <= 29.9)');
+            }
+            else if (options.diagnostico === 'OBESIDAD') {
+                whereParts.push('(eb.imc >= 30.0)');
+            }
+            else if (options.diagnostico === 'BAJOPESO') {
+                whereParts.push('(eb.imc < 18.5)');
+            }
+        }
+        if (options?.search && options.search.trim()) {
+            params.push(`%${options.search.trim()}%`);
+            const pIdx = params.length;
+            whereParts.push(`(j.nombres ILIKE $${pIdx} OR j.apellidos ILIKE $${pIdx} OR CAST(j.numero_dorsal AS TEXT) ILIKE $${pIdx} OR eb.observaciones ILIKE $${pIdx})`);
+        }
+        let orderClause = 'ORDER BY eb.fecha_evaluacion DESC, j.apellidos ASC';
+        if (options?.sortBy === 'FECHA_ASC')
+            orderClause = 'ORDER BY eb.fecha_evaluacion ASC';
+        else if (options?.sortBy === 'IMC_DESC')
+            orderClause = 'ORDER BY eb.imc DESC NULLS LAST';
+        else if (options?.sortBy === 'IMC_ASC')
+            orderClause = 'ORDER BY eb.imc ASC NULLS LAST';
+        else if (options?.sortBy === 'COOPER_DESC')
+            orderClause = 'ORDER BY eb.test_cooper_metros DESC NULLS LAST';
+        else if (options?.sortBy === 'VELOCIDAD_ASC')
+            orderClause = 'ORDER BY eb.velocidad_30m_seg ASC NULLS LAST';
+        else if (options?.sortBy === 'SALTO_DESC')
+            orderClause = 'ORDER BY eb.salto_vertical_cm DESC NULLS LAST';
+        else if (options?.sortBy === 'JUGADOR_ASC')
+            orderClause = 'ORDER BY j.apellidos ASC, j.nombres ASC';
+        const countRes = await this.db.query(`SELECT COUNT(*) as count
        FROM rendimiento.evaluaciones_biometricas eb
        JOIN deportivo.jugadores j ON j.id = eb.jugador_id
        JOIN deportivo.categorias c ON c.id = j.categoria_id
-       WHERE j.club_id = $1
-       ORDER BY eb.fecha_evaluacion DESC, j.apellidos ASC`, [clubId]);
-        return res.rows;
+       WHERE ${whereParts.join(' AND ')}`, params);
+        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const queryParams = [...params, limit, offset];
+        const dataRes = await this.db.query(`SELECT eb.*, 
+              CONCAT(j.nombres, ' ', j.apellidos) as jugador_nombre,
+              j.numero_dorsal, j.posicion_principal, j.categoria_id, j.foto_url as avatar_url,
+              c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo
+       FROM rendimiento.evaluaciones_biometricas eb
+       JOIN deportivo.jugadores j ON j.id = eb.jugador_id
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       WHERE ${whereParts.join(' AND ')}
+       ${orderClause}
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`, queryParams);
+        return {
+            data: dataRes.rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
     }
 };
 exports.BiometriaService = BiometriaService;

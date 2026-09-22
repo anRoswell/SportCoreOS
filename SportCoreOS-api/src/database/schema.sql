@@ -84,6 +84,26 @@ CREATE INDEX IF NOT EXISTS idx_archivos_club ON core.archivos_adjuntos(club_id);
 CREATE INDEX IF NOT EXISTS idx_archivos_entidad ON core.archivos_adjuntos(entidad_tipo, entidad_id);
 CREATE INDEX IF NOT EXISTS idx_archivos_tipo ON core.archivos_adjuntos(tipo_documento);
 
+-- 1.5 PARÁMETROS DEL SISTEMA Y CATÁLOGOS DINÁMICOS
+CREATE TABLE IF NOT EXISTS core.parametros_sistema (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+    modulo VARCHAR(50) NOT NULL DEFAULT 'GENERAL',
+    clave VARCHAR(100) NOT NULL,
+    valor TEXT NOT NULL,
+    tipo_valor VARCHAR(20) NOT NULL DEFAULT 'STRING', -- 'STRING', 'NUMBER', 'BOOLEAN', 'JSON'
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    estado BOOLEAN NOT NULL DEFAULT TRUE,
+    es_editable BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_parametros_modulo ON core.parametros_sistema(modulo);
+CREATE INDEX IF NOT EXISTS idx_parametros_clave ON core.parametros_sistema(clave);
+CREATE INDEX IF NOT EXISTS idx_parametros_club ON core.parametros_sistema(club_id);
+
 -- ============================================================================
 -- SCHEMA: deportivo (Categorías, Fichas de Jugadores y Familias)
 -- ============================================================================

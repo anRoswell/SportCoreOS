@@ -28,6 +28,18 @@ let ConvocatoriasController = class ConvocatoriasController {
     async responder(convocatoriaId, body) {
         return this.convocatoriasService.responderConvocatoria(convocatoriaId, body.estado, body.motivoExcusa, body.jugadorId);
     }
+    async addJugador(partidoId, body) {
+        return this.convocatoriasService.addJugadorConvocatoria(partidoId, body.jugadorId, body.rol || 'TITULAR', body.posicion);
+    }
+    async removeJugador(partidoId, jugadorId) {
+        return this.convocatoriasService.removeJugadorConvocatoria(partidoId, jugadorId);
+    }
+    async cambiarRol(partidoId, jugadorId, body) {
+        return this.convocatoriasService.cambiarRolConvocatoria(partidoId, jugadorId, body.rol);
+    }
+    async sugerir(partidoId, body) {
+        return this.convocatoriasService.sugerirConvocatoria(partidoId, body.limiteTitulares || 11, body.limiteSuplentes || 7);
+    }
 };
 exports.ConvocatoriasController = ConvocatoriasController;
 __decorate([
@@ -47,6 +59,43 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ConvocatoriasController.prototype, "responder", null);
+__decorate([
+    (0, common_1.Post)('partido/:partidoId/jugadores'),
+    (0, swagger_1.ApiOperation)({ summary: 'Agregar o convocar jugador a un partido' }),
+    __param(0, (0, common_1.Param)('partidoId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ConvocatoriasController.prototype, "addJugador", null);
+__decorate([
+    (0, common_1.Post)('partido/:partidoId/jugadores/:jugadorId/eliminar'),
+    (0, swagger_1.ApiOperation)({ summary: 'Desconvocar / Quitar jugador de la citación' }),
+    __param(0, (0, common_1.Param)('partidoId')),
+    __param(1, (0, common_1.Param)('jugadorId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], ConvocatoriasController.prototype, "removeJugador", null);
+__decorate([
+    (0, common_1.Post)('partido/:partidoId/jugadores/:jugadorId/rol'),
+    (0, swagger_1.ApiOperation)({ summary: 'Cambiar rol de convocatoria (TITULAR / SUPLENTE / RESERVA)' }),
+    __param(0, (0, common_1.Param)('partidoId')),
+    __param(1, (0, common_1.Param)('jugadorId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], ConvocatoriasController.prototype, "cambiarRol", null);
+__decorate([
+    (0, common_1.Post)('partido/:partidoId/sugerir'),
+    (0, swagger_1.ApiOperation)({ summary: 'Pre-armar sugerencia de convocatoria para el DT' }),
+    __param(0, (0, common_1.Param)('partidoId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ConvocatoriasController.prototype, "sugerir", null);
 exports.ConvocatoriasController = ConvocatoriasController = __decorate([
     (0, swagger_1.ApiTags)('Convocatorias a Partidos'),
     (0, swagger_1.ApiBearerAuth)(),

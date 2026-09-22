@@ -17,8 +17,8 @@ let ScoutingService = class ScoutingService {
     constructor(scoutingRepo) {
         this.scoutingRepo = scoutingRepo;
     }
-    async findAllProspectos(clubId, search, estado, posicion) {
-        return this.scoutingRepo.findAllProspectos(clubId, search, estado, posicion);
+    async findAllProspectos(clubId, optionsOrSearch, estado, posicion) {
+        return this.scoutingRepo.findAllProspectos(clubId, optionsOrSearch, estado, posicion);
     }
     async findProspectoById(id, clubId) {
         const prospecto = await this.scoutingRepo.findProspectoById(id, clubId);

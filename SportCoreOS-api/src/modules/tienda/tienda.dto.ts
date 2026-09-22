@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, Min, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, Min, IsArray, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CategoriaProductoTienda, MetodoPago } from '../../common/enums/domain.enums';
 
 export class CreateVarianteDto {
   @ApiProperty({ description: 'Talla del producto', example: '12' })
@@ -30,10 +31,10 @@ export class CreateProductoDto {
   @IsNotEmpty()
   nombre: string;
 
-  @ApiProperty({ description: 'Categoría de producto', example: 'uniforme_oficial', enum: ['uniforme_oficial', 'entrenamiento', 'accesorios', 'balones'] })
-  @IsString()
+  @ApiProperty({ description: 'Categoría de producto', example: CategoriaProductoTienda.UNIFORME_OFICIAL, enum: CategoriaProductoTienda })
   @IsNotEmpty()
-  categoria: string;
+  @IsEnum(CategoriaProductoTienda)
+  categoria: CategoriaProductoTienda;
 
   @ApiProperty({ description: 'Precio unitario de venta', example: 145000 })
   @IsNumber()
@@ -124,10 +125,10 @@ export class CreatePedidoDto {
   @IsString()
   comprador_telefono?: string;
 
-  @ApiPropertyOptional({ description: 'Método de pago', example: 'WOMPI_PSE', enum: ['WOMPI_PSE', 'EFECTIVO_CAJA', 'TRANSFERENCIA'] })
+  @ApiPropertyOptional({ description: 'Método de pago', example: MetodoPago.WOMPI_PSE, enum: MetodoPago })
   @IsOptional()
-  @IsString()
-  metodo_pago?: string;
+  @IsEnum(MetodoPago)
+  metodo_pago?: MetodoPago;
 }
 
 export class DespacharPedidoDto {

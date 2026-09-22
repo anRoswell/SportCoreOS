@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AjustarStockDto = exports.DespacharPedidoDto = exports.CreatePedidoDto = exports.UpdateProductoDto = exports.CreateProductoDto = exports.CreateVarianteDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const domain_enums_1 = require("../../common/enums/domain.enums");
 class CreateVarianteDto {
     talla;
     stock_actual;
@@ -60,9 +61,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProductoDto.prototype, "nombre", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Categoría de producto', example: 'uniforme_oficial', enum: ['uniforme_oficial', 'entrenamiento', 'accesorios', 'balones'] }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ description: 'Categoría de producto', example: domain_enums_1.CategoriaProductoTienda.UNIFORME_OFICIAL, enum: domain_enums_1.CategoriaProductoTienda }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.CategoriaProductoTienda),
     __metadata("design:type", String)
 ], CreateProductoDto.prototype, "categoria", void 0);
 __decorate([
@@ -188,9 +189,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreatePedidoDto.prototype, "comprador_telefono", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Método de pago', example: 'WOMPI_PSE', enum: ['WOMPI_PSE', 'EFECTIVO_CAJA', 'TRANSFERENCIA'] }),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Método de pago', example: domain_enums_1.MetodoPago.WOMPI_PSE, enum: domain_enums_1.MetodoPago }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.MetodoPago),
     __metadata("design:type", String)
 ], CreatePedidoDto.prototype, "metodo_pago", void 0);
 class DespacharPedidoDto {

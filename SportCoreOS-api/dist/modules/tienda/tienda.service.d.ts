@@ -3,12 +3,35 @@ import { CreateProductoDto, CreatePedidoDto, DespacharPedidoDto, AjustarStockDto
 export declare class TiendaService {
     private readonly tiendaRepo;
     constructor(tiendaRepo: TiendaRepository);
-    getCatalogo(clubId: string): Promise<any[]>;
+    getCatalogo(clubId: string, options?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        categoria?: string;
+    }): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
+    getProductoById(id: string, clubId: string): Promise<any>;
     createProducto(clubId: string, dto: CreateProductoDto): Promise<any>;
     updateProducto(id: string, clubId: string, dto: any): Promise<any>;
     deleteProducto(id: string, clubId: string): Promise<any>;
     ajustarStock(varianteId: string, dto: AjustarStockDto): Promise<any>;
     createPedido(clubId: string, dto: CreatePedidoDto): Promise<any>;
-    getPedidos(clubId: string): Promise<any[]>;
+    getPedidos(clubId: string, options?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        estadoDespacho?: string;
+    }): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     despacharPedido(pedidoId: string, dto: DespacharPedidoDto): Promise<any>;
 }

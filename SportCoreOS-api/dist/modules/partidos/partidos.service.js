@@ -17,8 +17,8 @@ let PartidosService = class PartidosService {
     constructor(partidosRepository) {
         this.partidosRepository = partidosRepository;
     }
-    async findByClub(clubId, categoriaId) {
-        return this.partidosRepository.findPartidosByClub(clubId, categoriaId);
+    async findByClub(clubId, optionsOrCatId) {
+        return this.partidosRepository.findPartidosByClub(clubId, optionsOrCatId);
     }
     async findDetallePartido(partidoId, clubId) {
         const detalle = await this.partidosRepository.findDetalle(partidoId, clubId);
@@ -32,6 +32,13 @@ let PartidosService = class PartidosService {
     }
     async update(id, clubId, data) {
         return this.partidosRepository.updatePartido(id, clubId, data);
+    }
+    async delete(id, clubId) {
+        const deleted = await this.partidosRepository.deletePartido(id, clubId);
+        if (!deleted) {
+            throw new common_1.NotFoundException('Partido no encontrado');
+        }
+        return { success: true, message: 'Partido eliminado exitosamente', id };
     }
     async addEvento(partidoId, data) {
         return this.partidosRepository.createEventoActa(partidoId, data);

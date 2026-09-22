@@ -24,8 +24,13 @@ let TelemetriaController = class TelemetriaController {
     constructor(telemetriaService) {
         this.telemetriaService = telemetriaService;
     }
-    async getSesiones(user) {
-        return this.telemetriaService.findAllSesiones(user.clubId);
+    async getSesiones(user, page, limit, search, tipoSesion) {
+        return this.telemetriaService.findAllSesiones(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            tipoSesion,
+        });
     }
     async getSesionById(id, user) {
         return this.telemetriaService.findSesionById(id, user.clubId);
@@ -43,10 +48,18 @@ let TelemetriaController = class TelemetriaController {
 exports.TelemetriaController = TelemetriaController;
 __decorate([
     (0, common_1.Get)('sesiones'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las sesiones de telemetría GPS del club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las sesiones de telemetría GPS del club con paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'tipoSesion', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('tipoSesion')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", Promise)
 ], TelemetriaController.prototype, "getSesiones", null);
 __decorate([

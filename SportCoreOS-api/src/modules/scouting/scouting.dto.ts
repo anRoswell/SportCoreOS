@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, Max, IsDateString } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, Max, IsDateString, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EstadoScouting, RecomendacionScouting } from '../../common/enums/domain.enums';
 
 export class CreateProspectoDto {
   @ApiProperty({ description: 'Nombres y apellidos del prospecto', example: 'Mateo Henao Quintana' })
@@ -62,10 +63,10 @@ export class CreateProspectoDto {
   @IsOptional()
   video_highlight_url?: string;
 
-  @ApiPropertyOptional({ description: 'Estado en el pipeline de captación', example: 'en_observacion' })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Estado en el pipeline de captación', example: EstadoScouting.EN_OBSERVACION, enum: EstadoScouting })
   @IsOptional()
-  estado_scouting?: string;
+  @IsEnum(EstadoScouting)
+  estado_scouting?: EstadoScouting;
 
   @ApiPropertyOptional({ description: 'Notas iniciales del ojeador', example: 'Gran técnica individual y velocidad de desborde.' })
   @IsString()
@@ -89,10 +90,10 @@ export class UpdateProspectoDto {
   @IsOptional()
   club_origen?: string;
 
-  @ApiPropertyOptional({ description: 'Estado en el pipeline (en_observacion, interes_fichaje, fichado, descartado)' })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Estado en el pipeline', enum: EstadoScouting })
   @IsOptional()
-  estado_scouting?: string;
+  @IsEnum(EstadoScouting)
+  estado_scouting?: EstadoScouting;
 
   @ApiPropertyOptional({ description: 'Valoración general estimada (1.0 a 10.0)' })
   @IsNumber()
@@ -145,8 +146,8 @@ export class CreateEvaluacionDto {
   @IsOptional()
   comentarios_cualitativos?: string;
 
-  @ApiProperty({ description: 'Recomendación del scout (FICHAR_YA, SEGUIMIENTO, DESCARTAR)', example: 'FICHAR_YA' })
-  @IsString()
+  @ApiProperty({ description: 'Recomendación del scout (FICHAR_YA, SEGUIMIENTO_CONTINUO, DESCARTAR)', example: RecomendacionScouting.FICHAR_YA, enum: RecomendacionScouting })
   @IsNotEmpty()
-  recomendacion: string;
+  @IsEnum(RecomendacionScouting)
+  recomendacion: RecomendacionScouting;
 }

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CondicionJuego, EstadoPartido, TipoEventoActa } from '../../common/enums/domain.enums';
 
 export class CreatePartidoDto {
   @ApiProperty({ example: 'uuid-categoria' })
@@ -33,10 +34,10 @@ export class CreatePartidoDto {
   @IsNotEmpty()
   sede_cancha: string;
 
-  @ApiPropertyOptional({ example: 'LOCAL', enum: ['LOCAL', 'VISITANTE'] })
+  @ApiPropertyOptional({ example: CondicionJuego.LOCAL, enum: CondicionJuego })
   @IsOptional()
-  @IsString()
-  condicion_juego?: string;
+  @IsEnum(CondicionJuego)
+  condicion_juego?: CondicionJuego;
 
   @ApiPropertyOptional({ example: 'Kit Titular Verde Esmeralda' })
   @IsOptional()
@@ -82,20 +83,20 @@ export class UpdatePartidoDto {
   @IsString()
   sede_cancha?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: CondicionJuego })
   @IsOptional()
-  @IsString()
-  condicion_juego?: string;
+  @IsEnum(CondicionJuego)
+  condicion_juego?: CondicionJuego;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   indumentaria_kit?: string;
 
-  @ApiPropertyOptional({ enum: ['PROGRAMADO', 'EN_JUEGO', 'FINALIZADO', 'APLAZADO', 'CANCELADO'] })
+  @ApiPropertyOptional({ enum: EstadoPartido })
   @IsOptional()
-  @IsString()
-  estado_partido?: string;
+  @IsEnum(EstadoPartido)
+  estado_partido?: EstadoPartido;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -122,10 +123,10 @@ export class CreateEventoActaDto {
   @IsNotEmpty()
   minuto_juego: number;
 
-  @ApiProperty({ example: 'GOL', enum: ['GOL', 'TARJETA_AMARILLA', 'TARJETA_ROJA', 'CAMBIO_ENTRA', 'CAMBIO_SALE', 'ASISTENCIA'] })
-  @IsString()
+  @ApiProperty({ example: TipoEventoActa.GOL, enum: TipoEventoActa })
   @IsNotEmpty()
-  tipo_evento: string;
+  @IsEnum(TipoEventoActa)
+  tipo_evento: TipoEventoActa;
 
   @ApiPropertyOptional({ example: 'Remate de media distancia' })
   @IsOptional()

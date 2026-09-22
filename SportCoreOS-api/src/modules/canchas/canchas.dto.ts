@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, IsUUID, Min, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, IsUUID, Min, Matches, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TipoSuperficieCancha, TipoReservaCancha, MetodoPago } from '../../common/enums/domain.enums';
 
 export class CreateCanchaDto {
   @ApiProperty({ description: 'Nombre descriptivo de la cancha', example: 'Cancha Sintética 8 - El Campín' })
@@ -7,10 +8,10 @@ export class CreateCanchaDto {
   @IsNotEmpty()
   nombre: string;
 
-  @ApiProperty({ description: 'Tipo de superficie', example: 'sintetica_f8', enum: ['sintetica_f5', 'sintetica_f8', 'natural_f11', 'futsal_madera'] })
-  @IsString()
+  @ApiProperty({ description: 'Tipo de superficie', example: TipoSuperficieCancha.SINTETICA_F8, enum: TipoSuperficieCancha })
   @IsNotEmpty()
-  tipo_superficie: string;
+  @IsEnum(TipoSuperficieCancha)
+  tipo_superficie: TipoSuperficieCancha;
 
   @ApiProperty({ description: 'Precio de la hora diurna (sin luz)', example: 80000 })
   @IsNumber()
@@ -85,10 +86,10 @@ export class CreateReservaDto {
   @Matches(/^([01]\d|2[0-3]):?([0-5]\d)$/)
   hora_fin: string;
 
-  @ApiProperty({ description: 'Tipo de reserva', example: 'alquiler_particular', enum: ['entrenamiento_club', 'partido_oficial', 'alquiler_particular', 'mantenimiento'] })
-  @IsString()
+  @ApiProperty({ description: 'Tipo de reserva', example: TipoReservaCancha.ALQUILER_PARTICULAR, enum: TipoReservaCancha })
   @IsNotEmpty()
-  tipo_reserva: string;
+  @IsEnum(TipoReservaCancha)
+  tipo_reserva: TipoReservaCancha;
 
   @ApiPropertyOptional({ description: 'Nombre del cliente / empresa' })
   @IsOptional()
@@ -105,10 +106,10 @@ export class CreateReservaDto {
   @IsNumber()
   monto_anticipo?: number;
 
-  @ApiPropertyOptional({ description: 'Método de pago de anticipo', example: 'TRANSFERENCIA' })
+  @ApiPropertyOptional({ description: 'Método de pago de anticipo', example: MetodoPago.TRANSFERENCIA, enum: MetodoPago })
   @IsOptional()
-  @IsString()
-  metodo_pago?: string;
+  @IsEnum(MetodoPago)
+  metodo_pago?: MetodoPago;
 }
 
 export class PagarCajaDto {
@@ -117,8 +118,8 @@ export class PagarCajaDto {
   @Min(0)
   monto: number;
 
-  @ApiProperty({ description: 'Método de pago en caja', example: 'EFECTIVO', enum: ['EFECTIVO', 'DATAFONO', 'TRANSFERENCIA'] })
-  @IsString()
+  @ApiProperty({ description: 'Método de pago en caja', example: MetodoPago.EFECTIVO_CAJA, enum: MetodoPago })
   @IsNotEmpty()
-  metodo_pago: string;
+  @IsEnum(MetodoPago)
+  metodo_pago: MetodoPago;
 }

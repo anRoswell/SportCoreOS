@@ -6,8 +6,24 @@ import { CreateProductoDto, CreatePedidoDto, DespacharPedidoDto, AjustarStockDto
 export class TiendaService {
   constructor(private readonly tiendaRepo: TiendaRepository) {}
 
-  async getCatalogo(clubId: string) {
-    return this.tiendaRepo.findCatalogoByClub(clubId);
+  async getCatalogo(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      categoria?: string;
+    },
+  ) {
+    return this.tiendaRepo.findCatalogoByClub(clubId, options);
+  }
+
+  async getProductoById(id: string, clubId: string) {
+    const producto = await this.tiendaRepo.findProductoById(id, clubId);
+    if (!producto) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+    return producto;
   }
 
   async createProducto(clubId: string, dto: CreateProductoDto) {
@@ -86,8 +102,16 @@ export class TiendaService {
     return this.tiendaRepo.createPedido(pedidoData);
   }
 
-  async getPedidos(clubId: string) {
-    return this.tiendaRepo.findPedidosByClub(clubId);
+  async getPedidos(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      estadoDespacho?: string;
+    },
+  ) {
+    return this.tiendaRepo.findPedidosByClub(clubId, options);
   }
 
   async despacharPedido(pedidoId: string, dto: DespacharPedidoDto) {

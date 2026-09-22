@@ -6,8 +6,16 @@ import { CreateSesionGpsDto, CreateMetricaGpsDto } from './telemetria.dto';
 export class TelemetriaService {
   constructor(private readonly telemetriaRepo: TelemetriaRepository) {}
 
-  async findAllSesiones(clubId: string) {
-    return this.telemetriaRepo.findAllSesiones(clubId);
+  async findAllSesiones(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      tipoSesion?: string;
+    },
+  ) {
+    return this.telemetriaRepo.findAllSesiones(clubId, options);
   }
 
   async findSesionById(id: string, clubId: string) {

@@ -1,3 +1,4 @@
+import { CategoriaProductoTienda, MetodoPago } from '../../common/enums/domain.enums';
 export declare class CreateVarianteDto {
     talla: string;
     stock_actual: number;
@@ -6,7 +7,7 @@ export declare class CreateVarianteDto {
 export declare class CreateProductoDto {
     codigo_sku: string;
     nombre: string;
-    categoria: string;
+    categoria: CategoriaProductoTienda;
     precio_venta: number;
     foto_url?: string;
     personalizable?: boolean;
@@ -28,7 +29,7 @@ export declare class CreatePedidoDto {
     estampado_dorsal?: number;
     comprador_nombre?: string;
     comprador_telefono?: string;
-    metodo_pago?: string;
+    metodo_pago?: MetodoPago;
 }
 export declare class DespacharPedidoDto {
     recibido_por: string;

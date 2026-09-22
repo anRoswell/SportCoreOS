@@ -26,8 +26,14 @@ let FinanzasController = class FinanzasController {
     async getResumen(user) {
         return this.finanzasService.getResumenFinanciero(user.clubId);
     }
-    async getCargos(user, categoriaId) {
-        return this.finanzasService.getCargosPorCobrar(user.clubId, categoriaId);
+    async getCargos(user, page, limit, search, categoriaId, estadoPago) {
+        return this.finanzasService.getCargosPorCobrar(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            categoriaId,
+            estadoPago,
+        });
     }
     async generarMensualidad(user, body) {
         const now = new Date();
@@ -50,12 +56,20 @@ __decorate([
 ], FinanzasController.prototype, "getResumen", null);
 __decorate([
     (0, common_1.Get)('cargos'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar cargos y estados de cuenta de los jugadores' }),
-    (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar cargos y estados de cuenta con paginación y filtros' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'estadoPago', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('categoriaId')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('categoriaId')),
+    __param(5, (0, common_1.Query)('estadoPago')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String]),
     __metadata("design:returntype", Promise)
 ], FinanzasController.prototype, "getCargos", null);
 __decorate([

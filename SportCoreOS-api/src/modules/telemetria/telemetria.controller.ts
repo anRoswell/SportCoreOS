@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TelemetriaService } from './telemetria.service';
 import { CreateSesionGpsDto, CreateMetricaGpsDto } from './telemetria.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,9 +13,24 @@ export class TelemetriaController {
   constructor(private readonly telemetriaService: TelemetriaService) {}
 
   @Get('sesiones')
-  @ApiOperation({ summary: 'Listar todas las sesiones de telemetría GPS del club' })
-  async getSesiones(@CurrentUser() user: any) {
-    return this.telemetriaService.findAllSesiones(user.clubId);
+  @ApiOperation({ summary: 'Listar todas las sesiones de telemetría GPS del club con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'tipoSesion', required: false, type: String })
+  async getSesiones(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('tipoSesion') tipoSesion?: string,
+  ) {
+    return this.telemetriaService.findAllSesiones(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      tipoSesion,
+    });
   }
 
   @Get('sesiones/:id')

@@ -296,6 +296,76 @@ let DatabaseService = DatabaseService_1 = class DatabaseService {
             });
             return this.wrapResult(results);
         }
+        if (upperSql.includes('FROM CORE.PARAMETROS_SISTEMA') || upperSql.includes('FROM CORE.PARAMETROS_SISTEMA P')) {
+            if (upperSql.includes('WHERE P.MODULO = $1') || upperSql.includes('WHERE MODULO = $1')) {
+                const modulo = (params[0] || '').toString().toUpperCase();
+                const clubId = params[1] || null;
+                const results = (this.memoryStore.parametros_sistema || []).filter(p => p.modulo === modulo && (!clubId || p.club_id === clubId || p.club_id === null));
+                return this.wrapResult(results);
+            }
+            if (upperSql.includes('WHERE CLAVE = $1 AND CLUB_ID = $2')) {
+                const [clave, clubId] = params;
+                const found = (this.memoryStore.parametros_sistema || []).find(p => p.clave === clave && p.club_id === clubId);
+                return this.wrapResult(found ? [found] : []);
+            }
+            if (upperSql.includes('WHERE CLAVE = $1 AND CLUB_ID IS NULL')) {
+                const [clave] = params;
+                const found = (this.memoryStore.parametros_sistema || []).find(p => p.clave === clave && (p.club_id === null || p.club_id === undefined));
+                return this.wrapResult(found ? [found] : []);
+            }
+            if (upperSql.includes('WHERE ID = $1')) {
+                const id = params[0];
+                const found = (this.memoryStore.parametros_sistema || []).find(p => p.id === id);
+                return this.wrapResult(found ? [found] : []);
+            }
+            const clubId = params[0] || null;
+            const results = (this.memoryStore.parametros_sistema || []).filter(p => !clubId || p.club_id === clubId || p.club_id === null);
+            return this.wrapResult(results);
+        }
+        if (upperSql.startsWith('INSERT INTO CORE.PARAMETROS_SISTEMA')) {
+            const [clubId, modulo, clave, valor, tipoValor, titulo, descripcion, estado, esEditable] = params;
+            const newParam = {
+                id: `param-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                club_id: clubId || null,
+                modulo: (modulo || 'GENERAL').toUpperCase(),
+                clave: (clave || '').toUpperCase(),
+                valor: valor || '',
+                tipo_valor: tipoValor || 'STRING',
+                titulo: titulo || '',
+                descripcion: descripcion || null,
+                estado: estado !== undefined ? estado : true,
+                es_editable: esEditable !== undefined ? esEditable : true,
+                created_at: new Date(),
+                updated_at: new Date(),
+            };
+            this.memoryStore.parametros_sistema.push(newParam);
+            return this.wrapResult([newParam], 1);
+        }
+        if (upperSql.startsWith('UPDATE CORE.PARAMETROS_SISTEMA')) {
+            const id = params[0];
+            const param = (this.memoryStore.parametros_sistema || []).find(p => p.id === id);
+            if (param) {
+                param.valor = params[1] !== undefined ? params[1] : param.valor;
+                if (params.length > 2)
+                    param.titulo = params[2];
+                if (params.length > 3)
+                    param.descripcion = params[3];
+                if (params.length > 4)
+                    param.estado = params[4];
+                param.updated_at = new Date();
+                return this.wrapResult([param], 1);
+            }
+            return this.wrapResult([], 0);
+        }
+        if (upperSql.startsWith('DELETE FROM CORE.PARAMETROS_SISTEMA')) {
+            const id = params[0];
+            const idx = (this.memoryStore.parametros_sistema || []).findIndex(p => p.id === id);
+            if (idx >= 0) {
+                this.memoryStore.parametros_sistema.splice(idx, 1);
+                return this.wrapResult([{ id }], 1);
+            }
+            return this.wrapResult([], 0);
+        }
         return this.wrapResult([]);
     }
     wrapResult(rows, rowCount) {
@@ -815,6 +885,186 @@ let DatabaseService = DatabaseService_1 = class DatabaseService {
                     metodo_pago: 'WOMPI_PSE',
                     codigo_qr: 'SPORT-TIENDA-MATEO-07',
                     created_at: new Date(),
+                },
+            ],
+            parametros_sistema: [
+                {
+                    id: 'e0000000-0000-0000-0000-000000000001',
+                    club_id: null,
+                    modulo: 'DEPORTIVO',
+                    clave: 'CATALOGO_EPS',
+                    valor: JSON.stringify([
+                        { codigo: 'SURA', nombre: 'SURA EPS', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'SANITAS', nombre: 'Sanitas EPS', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'COMPENSAR', nombre: 'Compensar EPS', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'SALUD_TOTAL', nombre: 'Salud Total EPS', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'NUEVA_EPS', nombre: 'Nueva EPS', tipo: 'EPS_MIXTO' },
+                        { codigo: 'FAMISANAR', nombre: 'Famisanar EPS', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'SOS', nombre: 'EPS S.O.S', tipo: 'EPS_CONTRIBUTIVO' },
+                        { codigo: 'COOSALUD', nombre: 'Coosalud EPS', tipo: 'EPS_SUBSIDIADO' },
+                        { codigo: 'MUTUAL_SER', nombre: 'Mutual Ser', tipo: 'EPS_SUBSIDIADO' },
+                        { codigo: 'CAPITAL_SALUD', nombre: 'Capital Salud EPS', tipo: 'EPS_SUBSIDIADO' },
+                        { codigo: 'ASMET_SALUD', nombre: 'Asmet Salud EPS', tipo: 'EPS_SUBSIDIADO' },
+                        { codigo: 'SAVIA_SALUD', nombre: 'Savia Salud EPS', tipo: 'EPS_SUBSIDIADO' },
+                        { codigo: 'PREPAGADA_POLIZA', nombre: 'Póliza Médica Privada / Prepagada', tipo: 'POLIZA_PRIVADA' },
+                        { codigo: 'OTRA_EPS', nombre: 'Particular / Otra EPS no listada', tipo: 'OTRO' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Catálogo Oficial de Entidades EPS y Seguros Médicos',
+                    descripcion: 'Listado de entidades promotoras de salud y aseguradoras médicas autorizadas para la ficha del jugador.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000002',
+                    club_id: null,
+                    modulo: 'CORE',
+                    clave: 'TIPOS_DOCUMENTO',
+                    valor: JSON.stringify([
+                        { codigo: 'TI', nombre: 'Tarjeta de Identidad (TI)', icono: '🪪' },
+                        { codigo: 'RC', nombre: 'Registro Civil (RC)', icono: '📄' },
+                        { codigo: 'CC', nombre: 'Cédula de Ciudadanía (CC)', icono: '💳' },
+                        { codigo: 'CE', nombre: 'Cédula de Extranjería (CE)', icono: '🌍' },
+                        { codigo: 'PASAPORTE', nombre: 'Pasaporte Internacional', icono: '✈️' },
+                        { codigo: 'PEP', nombre: 'Permiso Especial Permanencia (PEP)', icono: '📜' },
+                        { codigo: 'PPT', nombre: 'Permiso Protección Temporal (PPT)', icono: '📑' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Tipos de Documento de Identidad',
+                    descripcion: 'Documentos de identidad válidos para jugadores, acudientes y personal del club.',
+                    estado: true,
+                    es_editable: false,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000003',
+                    club_id: null,
+                    modulo: 'DEPORTIVO',
+                    clave: 'PARENTESCOS_ACUDIENTE',
+                    valor: JSON.stringify([
+                        { codigo: 'PADRE', nombre: 'Padre' },
+                        { codigo: 'MADRE', nombre: 'Madre' },
+                        { codigo: 'TUTOR_LEGAL', nombre: 'Tutor Legal' },
+                        { codigo: 'ABUELO_A', nombre: 'Abuelo / Abuela' },
+                        { codigo: 'TIO_A', nombre: 'Tío / Tía' },
+                        { codigo: 'HERMANO_A', nombre: 'Hermano / Hermana' },
+                        { codigo: 'OTRO', nombre: 'Otro Familiar / Acudiente' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Catálogo de Parentescos Familiares',
+                    descripcion: 'Relaciones familiares permitidas para los acudientes y tutores de los deportistas.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000004',
+                    club_id: null,
+                    modulo: 'DEPORTIVO',
+                    clave: 'POSICIONES_JUGADOR',
+                    valor: JSON.stringify([
+                        { codigo: 'POR', nombre: 'Portero / Guardameta (POR)', linea: 'ARQUERO' },
+                        { codigo: 'LD', nombre: 'Lateral Derecho (LD)', linea: 'DEFENSA' },
+                        { codigo: 'DFC', nombre: 'Defensa Central (DFC)', linea: 'DEFENSA' },
+                        { codigo: 'LI', nombre: 'Lateral Izquierdo (LI)', linea: 'DEFENSA' },
+                        { codigo: 'MCD', nombre: 'Volante de Marca / Pivote (MCD)', linea: 'MEDIOCAMPO' },
+                        { codigo: 'MC', nombre: 'Volante Mixto / Interior (MC)', linea: 'MEDIOCAMPO' },
+                        { codigo: 'MCO', nombre: 'Volante Creativo / Enganche (MCO)', linea: 'MEDIOCAMPO' },
+                        { codigo: 'ED', nombre: 'Extremo Derecho (ED)', linea: 'ATAQUE' },
+                        { codigo: 'EI', nombre: 'Extremo Izquierdo (EI)', linea: 'ATAQUE' },
+                        { codigo: 'DC', nombre: 'Delantero Centro / 9 (DC)', linea: 'ATAQUE' },
+                        { codigo: 'SD', nombre: 'Segundo Delantero (SD)', linea: 'ATAQUE' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Posiciones Tácticas en Cancha',
+                    descripcion: 'Catálogo estándar de demarcaciones futbolísticas para la ficha deportiva y convocatorias.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000005',
+                    club_id: null,
+                    modulo: 'DEPORTIVO',
+                    clave: 'PIERNAS_HABILES',
+                    valor: JSON.stringify([
+                        { codigo: 'DIESTRO', nombre: 'Diestro (Pie Derecho)' },
+                        { codigo: 'ZURDO', nombre: 'Zurdo (Pie Izquierdo)' },
+                        { codigo: 'AMBIDIESTRO', nombre: 'Ambidiestro (Ambos Pies)' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Perfiles de Pierna Hábil',
+                    descripcion: 'Perfil de lateralidad del jugador para informes técnicos y scouting.',
+                    estado: true,
+                    es_editable: false,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000006',
+                    club_id: null,
+                    modulo: 'COMPETICION',
+                    clave: 'KITS_INDUMENTARIA',
+                    valor: JSON.stringify([
+                        { codigo: 'KIT_TITULAR', nombre: 'Kit Titular (Esmeralda Pro)' },
+                        { codigo: 'KIT_ALTERNO', nombre: 'Kit Alterno (Blanco Élite)' },
+                        { codigo: 'KIT_TERCERO', nombre: 'Kit Tercero (Negro / Dorado)' },
+                        { codigo: 'KIT_PORTERO', nombre: 'Kit Portero (Amarillo Neón)' },
+                        { codigo: 'PETO_ENTRENAMIENTO', nombre: 'Peto de Entrenamiento Fluo' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Kits de Indumentaria para Partidos',
+                    descripcion: 'Equipaciones de juego disponibles para la programación de partidos y actas.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000007',
+                    club_id: null,
+                    modulo: 'RENDIMIENTO',
+                    clave: 'DISPOSITIVOS_GPS',
+                    valor: JSON.stringify([
+                        { codigo: 'CATAPULT_10HZ', nombre: 'Catapult Vector / ClearSky (10Hz)' },
+                        { codigo: 'POLAR_TEAM_PRO', nombre: 'Polar Team Pro (10Hz)' },
+                        { codigo: 'STATSPORTS_APEX', nombre: 'STATSports Apex Pro' },
+                        { codigo: 'K_SPORT_10HZ', nombre: 'K-Sport Live Tracking' },
+                        { codigo: 'WIMU_PRO', nombre: 'RealTrack WIMU PRO' },
+                        { codigo: 'GPS_GENERICO', nombre: 'Sensor GPS / Wearable Genérico' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Dispositivos y Sensores GPS Compatibles',
+                    descripcion: 'Marcas y especificaciones de telemetría deportiva homologadas.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                {
+                    id: 'e0000000-0000-0000-0000-000000000008',
+                    club_id: null,
+                    modulo: 'OPERACIONES',
+                    clave: 'TIPOS_SUPERFICIE_CANCHA',
+                    valor: JSON.stringify([
+                        { codigo: 'sintetica_f5', nombre: 'Sintética Fútbol 5' },
+                        { codigo: 'sintetica_f8', nombre: 'Sintética Fútbol 8' },
+                        { codigo: 'natural_f11', nombre: 'Grama Natural Fútbol 11' },
+                        { codigo: 'futsal_madera', nombre: 'Coliseo Madera Futsal' },
+                        { codigo: 'arena_futbol', nombre: 'Cancha de Arena / Playa' },
+                    ]),
+                    tipo_valor: 'JSON',
+                    titulo: 'Tipos de Superficie de Cancha',
+                    descripcion: 'Catálogo de terrenos de juego e instalaciones deportivas.',
+                    estado: true,
+                    es_editable: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
                 },
             ],
         };

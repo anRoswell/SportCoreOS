@@ -9,6 +9,7 @@ import {
   Max,
   IsEmail,
   IsBoolean,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -19,6 +20,8 @@ export enum TipoDocumento {
   RC = 'RC',
   CE = 'CE',
   PASAPORTE = 'PASAPORTE',
+  PPT = 'PPT',
+  NUIP = 'NUIP',
 }
 
 export enum PiernaHabil {
@@ -112,6 +115,13 @@ export class CreateJugadorDto {
   @IsEnum(EstadoMatricula)
   estadoMatricula?: EstadoMatricula;
 
+  @ApiPropertyOptional({ example: 0, description: 'Porcentaje de beca deportiva (0 a 100)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  porcentajeBeca?: number;
+
   // Datos opcionales del Acudiente / Familiar Principal
   @ApiPropertyOptional({ example: 'Luis Manuel' })
   @IsOptional()
@@ -122,6 +132,16 @@ export class CreateJugadorDto {
   @IsOptional()
   @IsString()
   acudienteApellidos?: string;
+
+  @ApiPropertyOptional({ example: 'CC' })
+  @IsOptional()
+  @IsString()
+  acudienteTipoDoc?: string;
+
+  @ApiPropertyOptional({ example: '79845123' })
+  @IsOptional()
+  @IsString()
+  acudienteNumeroDoc?: string;
 
   @ApiPropertyOptional({ example: '79845123' })
   @IsOptional()
@@ -135,6 +155,7 @@ export class CreateJugadorDto {
 
   @ApiPropertyOptional({ example: 'padre.gomez@gmail.com' })
   @IsOptional()
+  @ValidateIf((o) => !!o.acudienteEmail && o.acudienteEmail.trim().length > 0)
   @IsEmail()
   acudienteEmail?: string;
 

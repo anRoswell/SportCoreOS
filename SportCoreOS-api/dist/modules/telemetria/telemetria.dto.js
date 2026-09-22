@@ -29,7 +29,7 @@ __decorate([
 ], CreateSesionGpsDto.prototype, "fecha_sesion", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ description: 'ID del partido asociado', example: '5d61a1ec-aa7c-457c-8d79-6433475217bc' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateSesionGpsDto.prototype, "partido_id", void 0);
@@ -73,7 +73,7 @@ class CreateMetricaGpsDto {
 exports.CreateMetricaGpsDto = CreateMetricaGpsDto;
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'ID del jugador monitoreado', example: 'e1e0691e-691e-4c92-9046-871955524534' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateMetricaGpsDto.prototype, "jugador_id", void 0);

@@ -13,6 +13,7 @@ exports.CreateEventoActaDto = exports.UpdatePartidoDto = exports.CreatePartidoDt
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+const domain_enums_1 = require("../../common/enums/domain.enums");
 class CreatePartidoDto {
     categoria_id;
     rival_nombre;
@@ -63,9 +64,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreatePartidoDto.prototype, "sede_cancha", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'LOCAL', enum: ['LOCAL', 'VISITANTE'] }),
+    (0, swagger_1.ApiPropertyOptional)({ example: domain_enums_1.CondicionJuego.LOCAL, enum: domain_enums_1.CondicionJuego }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.CondicionJuego),
     __metadata("design:type", String)
 ], CreatePartidoDto.prototype, "condicion_juego", void 0);
 __decorate([
@@ -132,9 +133,9 @@ __decorate([
     __metadata("design:type", String)
 ], UpdatePartidoDto.prototype, "sede_cancha", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)(),
+    (0, swagger_1.ApiPropertyOptional)({ enum: domain_enums_1.CondicionJuego }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.CondicionJuego),
     __metadata("design:type", String)
 ], UpdatePartidoDto.prototype, "condicion_juego", void 0);
 __decorate([
@@ -144,9 +145,9 @@ __decorate([
     __metadata("design:type", String)
 ], UpdatePartidoDto.prototype, "indumentaria_kit", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: ['PROGRAMADO', 'EN_JUEGO', 'FINALIZADO', 'APLAZADO', 'CANCELADO'] }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: domain_enums_1.EstadoPartido }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.EstadoPartido),
     __metadata("design:type", String)
 ], UpdatePartidoDto.prototype, "estado_partido", void 0);
 __decorate([
@@ -185,9 +186,9 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateEventoActaDto.prototype, "minuto_juego", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'GOL', enum: ['GOL', 'TARJETA_AMARILLA', 'TARJETA_ROJA', 'CAMBIO_ENTRA', 'CAMBIO_SALE', 'ASISTENCIA'] }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ example: domain_enums_1.TipoEventoActa.GOL, enum: domain_enums_1.TipoEventoActa }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.TipoEventoActa),
     __metadata("design:type", String)
 ], CreateEventoActaDto.prototype, "tipo_evento", void 0);
 __decorate([

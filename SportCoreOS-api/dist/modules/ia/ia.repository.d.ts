@@ -11,4 +11,9 @@ export declare class IaRepository {
     getMetricasFatigaJugador(jugadorId: string): Promise<any[]>;
     guardarLogGeneracion(clubId: string, jugadorId: string | null, codigoTemplate: string, promptTokens: number, completionTokens: number, contenidoGenerado: string, metadata?: any): Promise<any>;
     getPlantelesParaAnalisis(categoriaId: string, clubId: string): Promise<any[]>;
+    getPartidoConvocatoriaParaGrafica(partidoId: string, clubId: string): Promise<{
+        partido: any;
+        convocados: any[];
+        club: any;
+    }>;
 }

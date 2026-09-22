@@ -24,8 +24,14 @@ let PartidosController = class PartidosController {
     constructor(partidosService) {
         this.partidosService = partidosService;
     }
-    async getPartidos(user, categoriaId) {
-        return this.partidosService.findByClub(user.clubId, categoriaId);
+    async getPartidos(user, page, limit, search, categoriaId, estado) {
+        return this.partidosService.findByClub(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            categoriaId,
+            estado,
+        });
     }
     async getDetalle(id, user) {
         return this.partidosService.findDetallePartido(id, user.clubId);
@@ -36,6 +42,9 @@ let PartidosController = class PartidosController {
     async update(id, user, dto) {
         return this.partidosService.update(id, user.clubId, dto);
     }
+    async delete(id, user) {
+        return this.partidosService.delete(id, user.clubId);
+    }
     async addEvento(id, dto) {
         return this.partidosService.addEvento(id, dto);
     }
@@ -43,12 +52,20 @@ let PartidosController = class PartidosController {
 exports.PartidosController = PartidosController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar calendario y fixture de partidos' }),
-    (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar calendario y fixture de partidos con paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'estado', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('categoriaId')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('categoriaId')),
+    __param(5, (0, common_1.Query)('estado')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String]),
     __metadata("design:returntype", Promise)
 ], PartidosController.prototype, "getPartidos", null);
 __decorate([
@@ -79,6 +96,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, partidos_dto_1.UpdatePartidoDto]),
     __metadata("design:returntype", Promise)
 ], PartidosController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar o cancelar un partido del calendario' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], PartidosController.prototype, "delete", null);
 __decorate([
     (0, common_1.Post)(':id/eventos'),
     (0, swagger_1.ApiOperation)({ summary: 'Registrar un evento en el acta digital del partido (gol, tarjeta, etc)' }),

@@ -1,7 +1,2 @@
-export declare enum Role {
-    SUPER_ADMIN = "SUPER_ADMIN",
-    DIRECTOR_DEPORTIVO = "DIRECTOR_DEPORTIVO",
-    ENTRENADOR_DT = "ENTRENADOR_DT",
-    PADRE_ACUDIENTE = "PADRE_ACUDIENTE",
-    ADMIN_FINANCIERO = "ADMIN_FINANCIERO"
-}
+export { Role } from './domain.enums';
+export * from './domain.enums';

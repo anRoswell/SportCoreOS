@@ -18,6 +18,9 @@ const swagger_1 = require("@nestjs/swagger");
 const clubes_service_1 = require("./clubes.service");
 const clubes_dto_1 = require("./clubes.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const role_enum_1 = require("../../common/enums/role.enum");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
 let ClubesController = class ClubesController {
@@ -56,14 +59,17 @@ let ClubesController = class ClubesController {
 };
 exports.ClubesController = ClubesController;
 __decorate([
-    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPER_ADMIN),
     (0, common_1.Post)('onboarding'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, swagger_1.ApiOperation)({
-        summary: 'Registrar una nueva escuela o academia de fútbol (Onboarding con Auto-Login)',
-        description: 'Crea el club multi-tenant, el usuario Administrador/Director Deportivo, la membresía y devuelve el JWT para inicio de sesión inmediato.',
+        summary: 'Registrar una nueva escuela deportiva (Exclusivo Super Administrador)',
+        description: 'Crea el club multi-tenant, el usuario Director Deportivo inicial y su membresía en la base de datos.',
     }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'Academia registrada y sesión iniciada con éxito' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Academia registrada exitosamente por el Super Administrador' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Acceso denegado: solo el Super Administrador puede crear escuelas' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'El correo del administrador ya está en uso' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -121,9 +127,10 @@ __decorate([
 ], ClubesController.prototype, "getStaff", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPER_ADMIN),
     (0, common_1.Post)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Crear un nuevo club (SuperAdmin)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Crear un nuevo club (Exclusivo SuperAdmin)' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [clubes_dto_1.CreateClubDto]),
@@ -131,9 +138,10 @@ __decorate([
 ], ClubesController.prototype, "create", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPER_ADMIN),
     (0, common_1.Patch)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Actualizar datos de un club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Actualizar datos de un club (Exclusivo SuperAdmin)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -142,9 +150,10 @@ __decorate([
 ], ClubesController.prototype, "update", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.SUPER_ADMIN),
     (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Desactivar un club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Desactivar un club (Exclusivo SuperAdmin)' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

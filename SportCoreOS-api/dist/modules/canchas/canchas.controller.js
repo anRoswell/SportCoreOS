@@ -24,8 +24,20 @@ let CanchasController = class CanchasController {
     constructor(canchasService) {
         this.canchasService = canchasService;
     }
-    async getCanchas(user) {
-        return this.canchasService.getCanchas(user.clubId);
+    async getCanchas(user, page, limit, search, tipoSuperficie) {
+        return this.canchasService.getCanchas(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            tipoSuperficie,
+        });
+    }
+    async getDisponibilidad(user, fecha) {
+        const targetFecha = fecha || new Date().toISOString().split('T')[0];
+        return this.canchasService.getMatrizDisponibilidad(user.clubId, targetFecha);
+    }
+    async getCanchaById(id, user) {
+        return this.canchasService.getCanchaById(id, user.clubId);
     }
     async createCancha(user, dto) {
         return this.canchasService.createCancha(user.clubId, dto);
@@ -33,9 +45,8 @@ let CanchasController = class CanchasController {
     async updateCancha(id, user, dto) {
         return this.canchasService.updateCancha(id, user.clubId, dto);
     }
-    async getDisponibilidad(user, fecha) {
-        const targetFecha = fecha || new Date().toISOString().split('T')[0];
-        return this.canchasService.getMatrizDisponibilidad(user.clubId, targetFecha);
+    async deleteCancha(id, user) {
+        return this.canchasService.deleteCancha(id, user.clubId);
     }
     async createReserva(user, dto) {
         return this.canchasService.createReserva(user.clubId, dto);
@@ -50,12 +61,39 @@ let CanchasController = class CanchasController {
 exports.CanchasController = CanchasController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las canchas y escenarios deportivos del club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las canchas y escenarios deportivos del club con paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'tipoSuperficie', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('tipoSuperficie')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", Promise)
 ], CanchasController.prototype, "getCanchas", null);
+__decorate([
+    (0, common_1.Get)('disponibilidad'),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener matriz horaria de disponibilidad por fecha' }),
+    (0, swagger_1.ApiQuery)({ name: 'fecha', required: true, example: '2026-03-25' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('fecha')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], CanchasController.prototype, "getDisponibilidad", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener detalle de una cancha específica' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], CanchasController.prototype, "getCanchaById", null);
 __decorate([
     (0, common_1.Post)(),
     (0, swagger_1.ApiOperation)({ summary: 'Crear una nueva cancha o escenario deportivo' }),
@@ -76,15 +114,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CanchasController.prototype, "updateCancha", null);
 __decorate([
-    (0, common_1.Get)('disponibilidad'),
-    (0, swagger_1.ApiOperation)({ summary: 'Obtener matriz horaria de disponibilidad por fecha' }),
-    (0, swagger_1.ApiQuery)({ name: 'fecha', required: true, example: '2026-03-25' }),
-    __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('fecha')),
+    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Desactivar o eliminar una cancha' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], CanchasController.prototype, "getDisponibilidad", null);
+], CanchasController.prototype, "deleteCancha", null);
 __decorate([
     (0, common_1.Post)('reservas'),
     (0, swagger_1.ApiOperation)({ summary: 'Crear una nueva reserva horaria con bloqueo transaccional' }),

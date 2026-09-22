@@ -5,7 +5,7 @@
 -- 1. SCHEMA CORE: CLUBES
 INSERT INTO core.clubes (id, nombre, slug, sigla, ciudad, pais, logo_url, plan, activo)
 VALUES
-  ('10000000-0000-0000-0000-000000000001', 'Club Deportivo Futuros Cracks FC', 'futuros-cracks-fc', 'FCFC', 'Bogotá D.C.', 'Colombia', 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120&auto=format&fit=crop&q=80', 'Plan Élite Pro', true),
+  ('10000000-0000-0000-0000-000000000001', 'Club Deportivo Futuros Cracks FC', 'futuros-cracks-fc', 'FCFC', 'Cartagena', 'Colombia', 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120&auto=format&fit=crop&q=80', 'Plan Élite Pro', true),
   ('10000000-0000-0000-0000-000000000002', 'Academia Semillero Santa Fe', 'semillero-santa-fe', 'SSF', 'Medellín', 'Colombia', 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120&auto=format&fit=crop&q=80', 'Plan Élite Pro', true),
   ('10000000-0000-0000-0000-000000000003', 'Millonarios Cantera Norte', 'millonarios-cantera-norte', 'MCN', 'Cali', 'Colombia', 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=120&auto=format&fit=crop&q=80', 'Plan Élite Pro', true)
 ON CONFLICT (id) DO NOTHING;
@@ -165,5 +165,131 @@ VALUES
   ('70000000-0000-0000-0000-000000000011', '70000000-0000-0000-0000-000000000001', 'e1e0691e-691e-4c92-9046-871955524534', 9850.50, 31.80, 680.00, 24, 18, 14, 580.40, 168, 194, '[{"x": 25, "y": 60, "intensity": 0.8}, {"x": 35, "y": 75, "intensity": 0.95}, {"x": 50, "y": 80, "intensity": 0.7}]'::jsonb),
   ('70000000-0000-0000-0000-000000000012', '70000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002', 10420.00, 29.50, 420.00, 16, 22, 19, 610.20, 172, 190, '[{"x": 48, "y": 45, "intensity": 0.9}, {"x": 52, "y": 55, "intensity": 0.85}, {"x": 50, "y": 30, "intensity": 0.75}]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+
+-- 22. SCHEMA CORE: PARÁMETROS DEL SISTEMA & CATÁLOGOS OFICIALES (MÓDULO 14)
+INSERT INTO core.parametros_sistema (id, club_id, modulo, clave, valor, tipo_valor, titulo, descripcion, estado, es_editable)
+VALUES
+  (
+    'e0000000-0000-0000-0000-000000000001',
+    NULL,
+    'DEPORTIVO',
+    'CATALOGO_EPS',
+    '[{"codigo":"SURA","nombre":"SURA EPS","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"SANITAS","nombre":"Sanitas EPS","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"COMPENSAR","nombre":"Compensar EPS","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"SALUD_TOTAL","nombre":"Salud Total EPS","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"NUEVA_EPS","nombre":"Nueva EPS","tipo":"EPS_MIXTO"},{"codigo":"FAMISANAR","nombre":"Famisanar EPS","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"SOS","nombre":"EPS S.O.S","tipo":"EPS_CONTRIBUTIVO"},{"codigo":"COOSALUD","nombre":"Coosalud EPS","tipo":"EPS_SUBSIDIADO"},{"codigo":"MUTUAL_SER","nombre":"Mutual Ser","tipo":"EPS_SUBSIDIADO"},{"codigo":"CAPITAL_SALUD","nombre":"Capital Salud EPS","tipo":"EPS_SUBSIDIADO"},{"codigo":"ASMET_SALUD","nombre":"Asmet Salud EPS","tipo":"EPS_SUBSIDIADO"},{"codigo":"SAVIA_SALUD","nombre":"Savia Salud EPS","tipo":"EPS_SUBSIDIADO"},{"codigo":"PREPAGADA_POLIZA","nombre":"Póliza Médica Privada / Prepagada","tipo":"POLIZA_PRIVADA"},{"codigo":"OTRA_EPS","nombre":"Particular / Otra EPS no listada","tipo":"OTRO"}]',
+    'JSON',
+    'Catálogo Oficial de Entidades EPS y Seguros Médicos',
+    'Listado de entidades promotoras de salud y aseguradoras médicas autorizadas para la ficha del jugador.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000002',
+    NULL,
+    'CORE',
+    'TIPOS_DOCUMENTO',
+    '[{"codigo":"TI","nombre":"Tarjeta de Identidad (TI)","icono":"🪪"},{"codigo":"RC","nombre":"Registro Civil (RC)","icono":"📄"},{"codigo":"CC","nombre":"Cédula de Ciudadanía (CC)","icono":"💳"},{"codigo":"CE","nombre":"Cédula de Extranjería (CE)","icono":"🌍"},{"codigo":"PASAPORTE","nombre":"Pasaporte Internacional","icono":"✈️"},{"codigo":"PEP","nombre":"Permiso Especial Permanencia (PEP)","icono":"📜"},{"codigo":"PPT","nombre":"Permiso Protección Temporal (PPT)","icono":"📑"}]',
+    'JSON',
+    'Tipos de Documento de Identidad',
+    'Documentos de identidad válidos para jugadores, acudientes y personal del club.',
+    true,
+    false
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000003',
+    NULL,
+    'DEPORTIVO',
+    'PARENTESCOS_ACUDIENTE',
+    '[{"codigo":"PADRE","nombre":"Padre"},{"codigo":"MADRE","nombre":"Madre"},{"codigo":"TUTOR_LEGAL","nombre":"Tutor Legal"},{"codigo":"ABUELO_A","nombre":"Abuelo / Abuela"},{"codigo":"TIO_A","nombre":"Tío / Tía"},{"codigo":"HERMANO_A","nombre":"Hermano / Hermana"},{"codigo":"OTRO","nombre":"Otro Familiar / Acudiente"}]',
+    'JSON',
+    'Catálogo de Parentescos Familiares',
+    'Relaciones familiares permitidas para los acudientes y tutores de los deportistas.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000004',
+    NULL,
+    'DEPORTIVO',
+    'POSICIONES_JUGADOR',
+    '[{"codigo":"POR","nombre":"Portero / Guardameta (POR)","linea":"ARQUERO"},{"codigo":"LD","nombre":"Lateral Derecho (LD)","linea":"DEFENSA"},{"codigo":"DFC","nombre":"Defensa Central (DFC)","linea":"DEFENSA"},{"codigo":"LI","nombre":"Lateral Izquierdo (LI)","linea":"DEFENSA"},{"codigo":"MCD","nombre":"Volante de Marca / Pivote (MCD)","linea":"MEDIOCAMPO"},{"codigo":"MC","nombre":"Volante Mixto / Interior (MC)","linea":"MEDIOCAMPO"},{"codigo":"MCO","nombre":"Volante Creativo / Enganche (MCO)","linea":"MEDIOCAMPO"},{"codigo":"ED","nombre":"Extremo Derecho (ED)","linea":"ATAQUE"},{"codigo":"EI","nombre":"Extremo Izquierdo (EI)","linea":"ATAQUE"},{"codigo":"DC","nombre":"Delantero Centro / 9 (DC)","linea":"ATAQUE"},{"codigo":"SD","nombre":"Segundo Delantero (SD)","linea":"ATAQUE"}]',
+    'JSON',
+    'Posiciones Tácticas en Cancha',
+    'Catálogo estándar de demarcaciones futbolísticas para la ficha deportiva y convocatorias.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000005',
+    NULL,
+    'DEPORTIVO',
+    'PIERNAS_HABILES',
+    '[{"codigo":"DIESTRO","nombre":"Diestro (Pie Derecho)"},{"codigo":"ZURDO","nombre":"Zurdo (Pie Izquierdo)"},{"codigo":"AMBIDIESTRO","nombre":"Ambidiestro (Ambos Pies)"}]',
+    'JSON',
+    'Perfiles de Pierna Hábil',
+    'Perfil de lateralidad del jugador para informes técnicos y scouting.',
+    true,
+    false
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000006',
+    NULL,
+    'COMPETICION',
+    'KITS_INDUMENTARIA',
+    '[{"codigo":"KIT_TITULAR","nombre":"Kit Titular (Esmeralda Pro)"},{"codigo":"KIT_ALTERNO","nombre":"Kit Alterno (Blanco Élite)"},{"codigo":"KIT_TERCERO","nombre":"Kit Tercero (Negro / Dorado)"},{"codigo":"KIT_PORTERO","nombre":"Kit Portero (Amarillo Neón)"},{"codigo":"PETO_ENTRENAMIENTO","nombre":"Peto de Entrenamiento Fluo"}]',
+    'JSON',
+    'Kits de Indumentaria para Partidos',
+    'Equipaciones de juego disponibles para la programación de partidos y actas.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000007',
+    NULL,
+    'RENDIMIENTO',
+    'DISPOSITIVOS_GPS',
+    '[{"codigo":"CATAPULT_10HZ","nombre":"Catapult Vector / ClearSky (10Hz)"},{"codigo":"POLAR_TEAM_PRO","nombre":"Polar Team Pro (10Hz)"},{"codigo":"STATSPORTS_APEX","nombre":"STATSports Apex Pro"},{"codigo":"K_SPORT_10HZ","nombre":"K-Sport Live Tracking"},{"codigo":"WIMU_PRO","nombre":"RealTrack WIMU PRO"},{"codigo":"GPS_GENERICO","nombre":"Sensor GPS / Wearable Genérico"}]',
+    'JSON',
+    'Dispositivos y Sensores GPS Compatibles',
+    'Marcas y especificaciones de telemetría deportiva homologadas.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000008',
+    NULL,
+    'OPERACIONES',
+    'TIPOS_SUPERFICIE_CANCHA',
+    '[{"codigo":"sintetica_f5","nombre":"Sintética Fútbol 5"},{"codigo":"sintetica_f8","nombre":"Sintética Fútbol 8"},{"codigo":"natural_f11","nombre":"Grama Natural Fútbol 11"},{"codigo":"futsal_madera","nombre":"Coliseo Madera Futsal"},{"codigo":"arena_futbol","nombre":"Cancha de Arena / Playa"}]',
+    'JSON',
+    'Tipos de Superficie de Cancha',
+    'Catálogo de terrenos de juego e instalaciones deportivas.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000009',
+    NULL,
+    'FINANZAS',
+    'MONEDA_SISTEMA',
+    'COP',
+    'STRING',
+    'Moneda Predeterminada del Sistema',
+    'Símbolo de divisa utilizada en recaudos, pagos y cobros de pensión.',
+    true,
+    true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000010',
+    NULL,
+    'FINANZAS',
+    'DIAS_GRACIA_MORA',
+    '5',
+    'NUMBER',
+    'Días de Gracia para Cobro de Mora',
+    'Margen de tolerancia después de la fecha límite de pago antes de generar recargo.',
+    true,
+    true
+  )
+ON CONFLICT (id) DO NOTHING;
+
 
 

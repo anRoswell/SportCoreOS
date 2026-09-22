@@ -24,8 +24,16 @@ let TiendaController = class TiendaController {
     constructor(tiendaService) {
         this.tiendaService = tiendaService;
     }
-    async getCatalogo(user) {
-        return this.tiendaService.getCatalogo(user.clubId);
+    async getCatalogo(user, page, limit, search, categoria) {
+        return this.tiendaService.getCatalogo(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            categoria,
+        });
+    }
+    async getProductoById(id, user) {
+        return this.tiendaService.getProductoById(id, user.clubId);
     }
     async createProducto(user, dto) {
         return this.tiendaService.createProducto(user.clubId, dto);
@@ -39,8 +47,13 @@ let TiendaController = class TiendaController {
     async ajustarStock(id, dto) {
         return this.tiendaService.ajustarStock(id, dto);
     }
-    async getPedidos(user) {
-        return this.tiendaService.getPedidos(user.clubId);
+    async getPedidos(user, page, limit, search, estadoDespacho) {
+        return this.tiendaService.getPedidos(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            estadoDespacho,
+        });
     }
     async createPedido(user, dto) {
         return this.tiendaService.createPedido(user.clubId, dto);
@@ -52,12 +65,29 @@ let TiendaController = class TiendaController {
 exports.TiendaController = TiendaController;
 __decorate([
     (0, common_1.Get)('catalogo'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar catálogo de productos con tallas y stock en tiempo real' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar catálogo de productos con tallas, stock y paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'categoria', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('categoria')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", Promise)
 ], TiendaController.prototype, "getCatalogo", null);
+__decorate([
+    (0, common_1.Get)('productos/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener detalle de un producto específico con sus tallas/variantes' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], TiendaController.prototype, "getProductoById", null);
 __decorate([
     (0, common_1.Post)('productos'),
     (0, swagger_1.ApiOperation)({ summary: 'Crear nuevo producto con sus variantes de tallas' }),
@@ -97,10 +127,18 @@ __decorate([
 ], TiendaController.prototype, "ajustarStock", null);
 __decorate([
     (0, common_1.Get)('pedidos'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar órdenes y pedidos de indumentaria del club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar órdenes y pedidos de indumentaria con paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'estadoDespacho', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('estadoDespacho')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", Promise)
 ], TiendaController.prototype, "getPedidos", null);
 __decorate([

@@ -37,4 +37,28 @@ export declare class IaController {
         analisis_tactico: string;
         timestamp: string;
     }>;
+    generarGraficaConvocatoria(user: any, dto: any): Promise<{
+        partido_id: any;
+        estilo_diseno: any;
+        titular_impacto: string;
+        copy_redes_sociales: string;
+        hashtags_sugeridos: string;
+        paleta_visual: {
+            primary: string;
+            secondary: string;
+            accent: string;
+            backgroundStart: string;
+            backgroundEnd: string;
+            fontHeading: string;
+            glowIntensity: number;
+        };
+        metadata_diseno: {
+            motor_ia: string;
+            resolucion_optima: string;
+            total_titulares: number;
+            total_suplentes: number;
+            club_sigla: any;
+            club_nombre: any;
+        };
+    }>;
 }

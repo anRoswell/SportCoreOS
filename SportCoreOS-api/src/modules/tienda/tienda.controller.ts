@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Patch, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { TiendaService } from './tienda.service';
 import { CreateProductoDto, CreatePedidoDto, DespacharPedidoDto, AjustarStockDto } from './tienda.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,9 +13,30 @@ export class TiendaController {
   constructor(private readonly tiendaService: TiendaService) {}
 
   @Get('catalogo')
-  @ApiOperation({ summary: 'Listar catálogo de productos con tallas y stock en tiempo real' })
-  async getCatalogo(@CurrentUser() user: any) {
-    return this.tiendaService.getCatalogo(user.clubId);
+  @ApiOperation({ summary: 'Listar catálogo de productos con tallas, stock y paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'categoria', required: false, type: String })
+  async getCatalogo(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('categoria') categoria?: string,
+  ) {
+    return this.tiendaService.getCatalogo(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      categoria,
+    });
+  }
+
+  @Get('productos/:id')
+  @ApiOperation({ summary: 'Obtener detalle de un producto específico con sus tallas/variantes' })
+  async getProductoById(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.tiendaService.getProductoById(id, user.clubId);
   }
 
   @Post('productos')
@@ -53,9 +74,24 @@ export class TiendaController {
   }
 
   @Get('pedidos')
-  @ApiOperation({ summary: 'Listar órdenes y pedidos de indumentaria del club' })
-  async getPedidos(@CurrentUser() user: any) {
-    return this.tiendaService.getPedidos(user.clubId);
+  @ApiOperation({ summary: 'Listar órdenes y pedidos de indumentaria con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'estadoDespacho', required: false, type: String })
+  async getPedidos(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('estadoDespacho') estadoDespacho?: string,
+  ) {
+    return this.tiendaService.getPedidos(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      estadoDespacho,
+    });
   }
 
   @Post('pedidos')

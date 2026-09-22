@@ -8,3 +8,9 @@ export declare class ChatTacticoDtDto {
     categoria_id?: string;
     sistema_base?: string;
 }
+export declare class GenerarGraficaConvocatoriaDto {
+    partido_id: string;
+    estilo_diseno?: string;
+    tono_titular?: string;
+    prompt_personalizado?: string;
+}

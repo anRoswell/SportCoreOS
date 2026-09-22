@@ -17,6 +17,9 @@ import { TiendaModule } from './modules/tienda/tienda.module';
 import { IaModule } from './modules/ia/ia.module';
 import { ScoutingModule } from './modules/scouting/scouting.module';
 import { TelemetriaModule } from './modules/telemetria/telemetria.module';
+import { TenantModulesModule } from './modules/tenant-modules/tenant-modules.module';
+import { ParametrosModule } from './modules/parametros/parametros.module';
+import { RolesModule } from './modules/roles/roles.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -44,6 +47,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     IaModule,
     ScoutingModule,
     TelemetriaModule,
+    TenantModulesModule,
+    ParametrosModule,
+    RolesModule,
   ],
   providers: [
     {

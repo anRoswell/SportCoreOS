@@ -6,8 +6,45 @@ import { CreateSesionGpsDto, CreateMetricaGpsDto } from './telemetria.dto';
 export class TelemetriaRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findAllSesiones(clubId: string) {
-    const res = await this.db.query(
+  async findAllSesiones(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      tipoSesion?: string;
+    },
+  ) {
+    const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['s.club_id = $1'];
+    const params: any[] = [clubId];
+
+    if (options?.tipoSesion && options.tipoSesion !== 'TODOS') {
+      params.push(options.tipoSesion);
+      whereParts.push(`s.tipo_sesion = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(p.rival_nombre ILIKE $${pIdx} OR s.dispositivo_marca ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(DISTINCT s.id) as count
+       FROM deportivo.sesiones_gps s
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
       `SELECT s.*, 
               p.rival_nombre, p.goles_club, p.goles_rival,
               COUNT(m.id) as jugadores_monitoreados,
@@ -16,12 +53,20 @@ export class TelemetriaRepository {
        FROM deportivo.sesiones_gps s
        LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        LEFT JOIN deportivo.metricas_rendimiento_gps m ON s.id = m.sesion_id
-       WHERE s.club_id = $1
+       WHERE ${whereParts.join(' AND ')}
        GROUP BY s.id, p.id
-       ORDER BY s.fecha_sesion DESC`,
-      [clubId]
+       ORDER BY s.fecha_sesion DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
     );
-    return res.rows;
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findSesionById(id: string, clubId: string) {

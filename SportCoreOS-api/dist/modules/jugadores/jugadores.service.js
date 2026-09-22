@@ -19,8 +19,8 @@ let JugadoresService = JugadoresService_1 = class JugadoresService {
     constructor(jugadoresRepository) {
         this.jugadoresRepository = jugadoresRepository;
     }
-    async findAllByClub(clubId, search, categoriaId, estado) {
-        return this.jugadoresRepository.findJugadoresByClub(clubId, search, categoriaId, estado);
+    async findAllByClub(clubId, optionsOrSearch, categoriaId, estado) {
+        return this.jugadoresRepository.findJugadoresByClub(clubId, optionsOrSearch, categoriaId, estado);
     }
     async findById(id, clubId) {
         const jugador = await this.jugadoresRepository.findById(id, clubId);
@@ -65,13 +65,14 @@ let JugadoresService = JugadoresService_1 = class JugadoresService {
             estadoMatricula: dto.estadoMatricula || 'ACTIVO',
         });
         let acudienteCreado = null;
-        if (dto.acudienteNombres && dto.acudienteNumeroDocumento && dto.acudienteTelefono) {
+        const numDocAcudiente = dto.acudienteNumeroDoc || dto.acudienteNumeroDocumento;
+        if (dto.acudienteNombres && numDocAcudiente && dto.acudienteTelefono) {
             try {
                 acudienteCreado = await this.jugadoresRepository.createAcudiente({
                     nombres: dto.acudienteNombres,
                     apellidos: dto.acudienteApellidos || '',
-                    tipoDocumento: 'CC',
-                    numeroDocumento: dto.acudienteNumeroDocumento,
+                    tipoDocumento: dto.acudienteTipoDoc || 'CC',
+                    numeroDocumento: numDocAcudiente,
                     telefonoMovil: dto.acudienteTelefono,
                     email: dto.acudienteEmail,
                     parentesco: dto.acudienteParentesco || 'PADRE',

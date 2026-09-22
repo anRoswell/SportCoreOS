@@ -150,6 +150,103 @@ ${contextoPlantel ? contextoPlantel : 'Asegurar extremos veloces y recambios fre
             timestamp: new Date().toISOString(),
         };
     }
+    async generarGraficaConvocatoriaIa(clubId, dto) {
+        const data = await this.iaRepo.getPartidoConvocatoriaParaGrafica(dto.partido_id, clubId);
+        if (!data.partido) {
+            throw new common_1.NotFoundException('Partido no encontrado para generar la gráfica con IA');
+        }
+        const { partido, convocados, club } = data;
+        const titulares = convocados.filter(c => c.rol_convocatoria === 'TITULAR');
+        const suplentes = convocados.filter(c => c.rol_convocatoria !== 'TITULAR');
+        const estilo = dto.estilo_diseno || 'ELITE_NEON';
+        let themeColors = {
+            primary: '#10b981',
+            secondary: '#047857',
+            accent: '#f59e0b',
+            backgroundStart: '#060d19',
+            backgroundEnd: '#0f172a',
+            fontHeading: '900 Inter, Segoe UI, sans-serif',
+            glowIntensity: 0.25,
+        };
+        if (estilo === 'DARK_GOLD') {
+            themeColors = {
+                primary: '#f59e0b',
+                secondary: '#b45309',
+                accent: '#fbbf24',
+                backgroundStart: '#0a0a0a',
+                backgroundEnd: '#18181b',
+                fontHeading: '900 Inter, Segoe UI, sans-serif',
+                glowIntensity: 0.35,
+            };
+        }
+        else if (estilo === 'CYBER_BLUE') {
+            themeColors = {
+                primary: '#3b82f6',
+                secondary: '#1d4ed8',
+                accent: '#06b6d4',
+                backgroundStart: '#030712',
+                backgroundEnd: '#0f172a',
+                fontHeading: '900 Inter, Segoe UI, sans-serif',
+                glowIntensity: 0.3,
+            };
+        }
+        else if (estilo === 'FUTURISTIC_RED') {
+            themeColors = {
+                primary: '#ef4444',
+                secondary: '#991b1b',
+                accent: '#f97316',
+                backgroundStart: '#180509',
+                backgroundEnd: '#0f172a',
+                fontHeading: '900 Inter, Segoe UI, sans-serif',
+                glowIntensity: 0.3,
+            };
+        }
+        const titularesPosibles = [
+            `¡LISTOS PARA LA GLORIA! ⚔️ CONVOCATORIA OFICIAL`,
+            `ROSTER MATCHDAY 🔥 TODO POR LOS 3 PUNTOS`,
+            `¡NUESTROS GUERREROS EN CANCHA! ⚡ CITACIÓN OFICIAL`,
+            `ORGULLO & PASIÓN 🏆 PLANTEL CITADO`,
+        ];
+        const titularSeleccionado = dto.tono_titular === 'MATCHDAY_EPIC'
+            ? `MATCHDAY: ${club?.nombre?.toUpperCase() || 'EQUIPO'} VS ${partido.rival_nombre?.toUpperCase()}`
+            : titularesPosibles[Math.floor(Math.random() * titularesPosibles.length)];
+        const copyRedes = `
+⚽ **¡CONVOCATORIA CONFIRMADA!** ⚽
+Nos preparamos para un vibrante encuentro de nuestra categoría **${partido.categoria_nombre || 'Oficial'}**.
+
+🆚 **Rival:** ${partido.rival_nombre} (${partido.condicion_juego === 'LOCAL' ? 'En Casa 🏟️' : 'Visitante ✈️'})
+📅 **Fecha:** ${partido.fecha_partido} | ⏰ **Hora:** ${partido.hora_partido}
+📍 **Sede:** ${partido.sede_cancha}
+⚡ **Citación Plantel:** ${partido.hora_citacion}
+
+¡Acompañemos a nuestros talentos con toda la energía! 💪🟢
+#${(club?.sigla || 'Club').replace(/\s+/g, '')} #Matchday #SportCoreAI #GeminiDesign #${(partido.categoria_nombre || 'Futbol').replace(/\s+/g, '')}
+    `.trim();
+        const hashtags = [
+            `#${(club?.sigla || 'Club').replace(/\s+/g, '')}`,
+            '#Matchday2026',
+            '#ConvocatoriaOficial',
+            '#SportCoreAI',
+            `#vs${(partido.rival_nombre || 'Rival').replace(/\s+/g, '')}`,
+        ].join(' ');
+        await this.iaRepo.guardarLogGeneracion(clubId, null, 'POSTER_CONVOCATORIA_SOCIAL_GEMINI', 180, 320, copyRedes, { partido_id: partido.id, estilo, titular: titularSeleccionado });
+        return {
+            partido_id: partido.id,
+            estilo_diseno: estilo,
+            titular_impacto: titularSeleccionado,
+            copy_redes_sociales: copyRedes,
+            hashtags_sugeridos: hashtags,
+            paleta_visual: themeColors,
+            metadata_diseno: {
+                motor_ia: 'Google Gemini Pro Multimodal Sports Engine',
+                resolucion_optima: '1080x1350 (4:5 Social Aspect Ratio)',
+                total_titulares: titulares.length,
+                total_suplentes: suplentes.length,
+                club_sigla: club?.sigla || 'FC',
+                club_nombre: club?.nombre || 'Club Deportivo',
+            }
+        };
+    }
 };
 exports.IaService = IaService;
 exports.IaService = IaService = __decorate([

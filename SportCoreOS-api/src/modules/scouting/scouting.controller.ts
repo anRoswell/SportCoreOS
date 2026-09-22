@@ -13,17 +13,27 @@ export class ScoutingController {
   constructor(private readonly scoutingService: ScoutingService) {}
 
   @Get('prospectos')
-  @ApiOperation({ summary: 'Listar talentos observados con filtros por posición, estado y búsqueda' })
+  @ApiOperation({ summary: 'Listar talentos observados con filtros por posición, estado y búsqueda con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, description: 'Buscar por nombre, club de origen o ciudad' })
   @ApiQuery({ name: 'estado', required: false, description: 'en_observacion, interes_fichaje, fichado, descartado' })
   @ApiQuery({ name: 'posicion', required: false, description: 'Filtrar por posición principal' })
   async getProspectos(
     @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
     @Query('search') search?: string,
     @Query('estado') estado?: string,
     @Query('posicion') posicion?: string,
   ) {
-    return this.scoutingService.findAllProspectos(user.clubId, search, estado, posicion);
+    return this.scoutingService.findAllProspectos(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      estado,
+      posicion,
+    });
   }
 
   @Get('prospectos/:id')

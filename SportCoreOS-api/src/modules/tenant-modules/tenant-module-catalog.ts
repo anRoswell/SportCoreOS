@@ -1,0 +1,145 @@
+export interface TenantModuleDefinition {
+  code: string;
+  name: string;
+  description: string;
+  category: string;
+  order: number;
+  defaultEnabled: boolean;
+  defaultIndefinite: boolean;
+  icon: string;
+}
+
+export const SPORTCORE_MODULE_CATALOG: TenantModuleDefinition[] = [
+  {
+    code: 'JUGADORES',
+    name: 'Jugadores & Plantillas',
+    description: 'Gestión integral de futbolistas, fichas técnicas, historial médico y seguimiento.',
+    category: 'Deportivo',
+    order: 10,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-users',
+  },
+  {
+    code: 'CATEGORIAS',
+    name: 'Categorías & Divisiones',
+    description: 'Estructuración de planteles por edades (Sub-13 a Sub-20, Élite) y asignación DT/PF.',
+    category: 'Deportivo',
+    order: 20,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-sitemap',
+  },
+  {
+    code: 'PARTIDOS',
+    name: 'Partidos & Calendario',
+    description: 'Programación de torneos y amistosos, actas arbitrales, alineaciones y cronología.',
+    category: 'Deportivo',
+    order: 30,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-futbol',
+  },
+  {
+    code: 'CONVOCATORIAS',
+    name: 'Convocatorias & Citaciones',
+    description: 'Citaciones digitales para partidos y entrenamientos con confirmación en tiempo real.',
+    category: 'Deportivo',
+    order: 40,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-bullhorn',
+  },
+  {
+    code: 'BIOMETRIA',
+    name: 'Biometría & Antropometría',
+    description: 'Evaluación física, peso, talla, % grasa, somatotipo y monitoreo de maduración.',
+    category: 'Inteligencia & Rendimiento',
+    order: 50,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-heartbeat',
+  },
+  {
+    code: 'FINANZAS',
+    name: 'Finanzas & Recaudos',
+    description: 'Cobro de matrículas, pensiones mensuales, becas deportivas, pasarela de pagos y balance.',
+    category: 'Finanzas',
+    order: 60,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-coins',
+  },
+  {
+    code: 'CANCHAS',
+    name: 'Canchas & Escenarios',
+    description: 'Alquiler y disponibilidad de escenarios deportivos, canchas sintéticas y tarifas.',
+    category: 'Operación',
+    order: 70,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-vector-square',
+  },
+  {
+    code: 'TIENDA',
+    name: 'Tienda Oficial & Indumentaria',
+    description: 'Venta de uniformes oficiales, balones, accesorios deportivos, pedidos e inventario.',
+    category: 'Operación',
+    order: 80,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-store',
+  },
+  {
+    code: 'IA_GEMINI',
+    name: 'IA Deportiva & Gemini',
+    description: 'Motor de IA para planificación de microciclos, scouting y análisis táctico.',
+    category: 'Inteligencia & Rendimiento',
+    order: 90,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-brain',
+  },
+  {
+    code: 'SCOUTING',
+    name: 'Scouting & Radar de Talentos',
+    description: 'Evaluación multidimensional de prospectos, radar FIFA de atributos y semilleros.',
+    category: 'Inteligencia & Rendimiento',
+    order: 100,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-binoculars',
+  },
+  {
+    code: 'TELEMETRIA_GPS',
+    name: 'Telemetría GPS & Carga ACWR',
+    description: 'Carga de entrenamiento aguda/crónica (ACWR), mapa de calor, sprints e índice de fatiga.',
+    category: 'Inteligencia & Rendimiento',
+    order: 110,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-satellite-dish',
+  },
+  {
+    code: 'PORTAL_PADRES',
+    name: 'Portal Padres & Familia',
+    description: 'Seguimiento formativo, alertas de convocatorias, pagos y boletines de evolución.',
+    category: 'Operación',
+    order: 120,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-user-shield',
+  },
+  {
+    code: 'CONFIGURACION',
+    name: 'Configuración & Seguridad',
+    description: 'Parámetros del sistema, licencias de club, matriz de permisos RBAC y auditoría.',
+    category: 'Administración',
+    order: 130,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-cogs',
+  },
+];
+
+export const SPORTCORE_MODULE_CODES = SPORTCORE_MODULE_CATALOG.map((m) => m.code);

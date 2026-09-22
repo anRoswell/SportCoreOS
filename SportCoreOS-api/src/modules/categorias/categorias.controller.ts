@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CategoriasService } from './categorias.service';
 import { CreateCategoriaDto, UpdateCategoriaDto } from './categorias.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,9 +13,24 @@ export class CategoriasController {
   constructor(private readonly categoriasService: CategoriasService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas las categorías deportivas del club (Sub-7 a Sub-20)' })
-  async getCategorias(@CurrentUser() user: any) {
-    return this.categoriasService.findByClub(user.clubId);
+  @ApiOperation({ summary: 'Listar categorías deportivas del club con paginación y filtros' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'rama', required: false, type: String })
+  async getCategorias(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('rama') rama?: string,
+  ) {
+    return this.categoriasService.findByClub(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      rama,
+    });
   }
 
   @Get(':id/plantel')

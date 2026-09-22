@@ -18,13 +18,27 @@ export class FinanzasController {
   }
 
   @Get('cargos')
-  @ApiOperation({ summary: 'Listar cargos y estados de cuenta de los jugadores' })
-  @ApiQuery({ name: 'categoriaId', required: false })
+  @ApiOperation({ summary: 'Listar cargos y estados de cuenta con paginación y filtros' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'categoriaId', required: false, type: String })
+  @ApiQuery({ name: 'estadoPago', required: false, type: String })
   async getCargos(
     @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
     @Query('categoriaId') categoriaId?: string,
+    @Query('estadoPago') estadoPago?: string,
   ) {
-    return this.finanzasService.getCargosPorCobrar(user.clubId, categoriaId);
+    return this.finanzasService.getCargosPorCobrar(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      categoriaId,
+      estadoPago,
+    });
   }
 
   @Post('cargos/generar-mensualidad')

@@ -6,36 +6,87 @@ import { CreateProspectoDto, UpdateProspectoDto, CreateEvaluacionDto } from './s
 export class ScoutingRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findAllProspectos(clubId: string, search?: string, estado?: string, posicion?: string) {
-    let query = `
-      SELECT p.*,
-             COUNT(e.id) as total_evaluaciones,
-             COALESCE(AVG(e.promedio_global), p.valoracion_general, 0) as score_promedio_calculado
-      FROM deportivo.prospectos_scouting p
-      LEFT JOIN deportivo.evaluaciones_scouting e ON p.id = e.prospecto_id
-      WHERE p.club_id = $1
-    `;
+  async findAllProspectos(
+    clubId: string,
+    optionsOrSearch?:
+      | string
+      | {
+          page?: number;
+          limit?: number;
+          search?: string;
+          estado?: string;
+          posicion?: string;
+        },
+    estadoParam?: string,
+    posicionParam?: string,
+  ) {
+    let search: string | undefined;
+    let estado: string | undefined;
+    let posicion: string | undefined;
+    let page: number = 1;
+    let limit: number = 10;
+
+    if (typeof optionsOrSearch === 'object' && optionsOrSearch !== null) {
+      search = optionsOrSearch.search;
+      estado = optionsOrSearch.estado;
+      posicion = optionsOrSearch.posicion;
+      page = Math.max(1, Number(optionsOrSearch.page) || 1);
+      limit = Math.min(100, Math.max(1, Number(optionsOrSearch.limit) || 10));
+    } else {
+      search = typeof optionsOrSearch === 'string' ? optionsOrSearch : undefined;
+      estado = estadoParam;
+      posicion = posicionParam;
+    }
+
+    const offset = (page - 1) * limit;
+    const whereParts = ['p.club_id = $1'];
     const params: any[] = [clubId];
 
-    if (search) {
-      params.push(`%${search}%`);
-      query += ` AND (p.nombres_apellidos ILIKE $${params.length} OR p.club_origen ILIKE $${params.length} OR p.ciudad ILIKE $${params.length})`;
+    if (search && search.trim()) {
+      params.push(`%${search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(p.nombres_apellidos ILIKE $${pIdx} OR p.club_origen ILIKE $${pIdx} OR p.ciudad ILIKE $${pIdx})`);
     }
 
-    if (estado) {
+    if (estado && estado !== 'TODOS') {
       params.push(estado);
-      query += ` AND p.estado_scouting = $${params.length}`;
+      whereParts.push(`p.estado_scouting = $${params.length}`);
     }
 
-    if (posicion) {
+    if (posicion && posicion !== 'TODAS') {
       params.push(posicion);
-      query += ` AND (p.posicion_principal = $${params.length} OR p.posicion_secundaria = $${params.length})`;
+      whereParts.push(`(p.posicion_principal = $${params.length} OR p.posicion_secundaria = $${params.length})`);
     }
 
-    query += ` GROUP BY p.id ORDER BY p.created_at DESC`;
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM deportivo.prospectos_scouting p
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
 
-    const res = await this.db.query(query, params);
-    return res.rows;
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
+      `SELECT p.*,
+              COUNT(e.id) as total_evaluaciones,
+              COALESCE(AVG(e.promedio_global), p.valoracion_general, 0) as score_promedio_calculado
+       FROM deportivo.prospectos_scouting p
+       LEFT JOIN deportivo.evaluaciones_scouting e ON p.id = e.prospecto_id
+       WHERE ${whereParts.join(' AND ')}
+       GROUP BY p.id
+       ORDER BY p.created_at DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
+    );
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findProspectoById(id: string, clubId: string) {

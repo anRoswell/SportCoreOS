@@ -17,31 +17,61 @@ let ScoutingRepository = class ScoutingRepository {
     constructor(db) {
         this.db = db;
     }
-    async findAllProspectos(clubId, search, estado, posicion) {
-        let query = `
-      SELECT p.*,
-             COUNT(e.id) as total_evaluaciones,
-             COALESCE(AVG(e.promedio_global), p.valoracion_general, 0) as score_promedio_calculado
-      FROM deportivo.prospectos_scouting p
-      LEFT JOIN deportivo.evaluaciones_scouting e ON p.id = e.prospecto_id
-      WHERE p.club_id = $1
-    `;
+    async findAllProspectos(clubId, optionsOrSearch, estadoParam, posicionParam) {
+        let search;
+        let estado;
+        let posicion;
+        let page = 1;
+        let limit = 10;
+        if (typeof optionsOrSearch === 'object' && optionsOrSearch !== null) {
+            search = optionsOrSearch.search;
+            estado = optionsOrSearch.estado;
+            posicion = optionsOrSearch.posicion;
+            page = Math.max(1, Number(optionsOrSearch.page) || 1);
+            limit = Math.min(100, Math.max(1, Number(optionsOrSearch.limit) || 10));
+        }
+        else {
+            search = typeof optionsOrSearch === 'string' ? optionsOrSearch : undefined;
+            estado = estadoParam;
+            posicion = posicionParam;
+        }
+        const offset = (page - 1) * limit;
+        const whereParts = ['p.club_id = $1'];
         const params = [clubId];
-        if (search) {
-            params.push(`%${search}%`);
-            query += ` AND (p.nombres_apellidos ILIKE $${params.length} OR p.club_origen ILIKE $${params.length} OR p.ciudad ILIKE $${params.length})`;
+        if (search && search.trim()) {
+            params.push(`%${search.trim()}%`);
+            const pIdx = params.length;
+            whereParts.push(`(p.nombres_apellidos ILIKE $${pIdx} OR p.club_origen ILIKE $${pIdx} OR p.ciudad ILIKE $${pIdx})`);
         }
-        if (estado) {
+        if (estado && estado !== 'TODOS') {
             params.push(estado);
-            query += ` AND p.estado_scouting = $${params.length}`;
+            whereParts.push(`p.estado_scouting = $${params.length}`);
         }
-        if (posicion) {
+        if (posicion && posicion !== 'TODAS') {
             params.push(posicion);
-            query += ` AND (p.posicion_principal = $${params.length} OR p.posicion_secundaria = $${params.length})`;
+            whereParts.push(`(p.posicion_principal = $${params.length} OR p.posicion_secundaria = $${params.length})`);
         }
-        query += ` GROUP BY p.id ORDER BY p.created_at DESC`;
-        const res = await this.db.query(query, params);
-        return res.rows;
+        const countRes = await this.db.query(`SELECT COUNT(*) as count
+       FROM deportivo.prospectos_scouting p
+       WHERE ${whereParts.join(' AND ')}`, params);
+        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const queryParams = [...params, limit, offset];
+        const dataRes = await this.db.query(`SELECT p.*,
+              COUNT(e.id) as total_evaluaciones,
+              COALESCE(AVG(e.promedio_global), p.valoracion_general, 0) as score_promedio_calculado
+       FROM deportivo.prospectos_scouting p
+       LEFT JOIN deportivo.evaluaciones_scouting e ON p.id = e.prospecto_id
+       WHERE ${whereParts.join(' AND ')}
+       GROUP BY p.id
+       ORDER BY p.created_at DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`, queryParams);
+        return {
+            data: dataRes.rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
     }
     async findProspectoById(id, clubId) {
         const prospectoRes = await this.db.query(`SELECT * FROM deportivo.prospectos_scouting WHERE id = $1 AND club_id = $2`, [id, clubId]);
@@ -49,7 +79,7 @@ let ScoutingRepository = class ScoutingRepository {
             return null;
         const evaluacionesRes = await this.db.query(`SELECT e.*, u.nombre as scout_nombre, u.email as scout_email
        FROM deportivo.evaluaciones_scouting e
-       LEFT JOIN auth.usuarios u ON e.scout_usuario_id = u.id
+       LEFT JOIN core.usuarios u ON e.scout_usuario_id = u.id
        WHERE e.prospecto_id = $1
        ORDER BY e.fecha_observacion DESC`, [id]);
         return {

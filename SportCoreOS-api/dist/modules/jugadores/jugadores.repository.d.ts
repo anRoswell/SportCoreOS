@@ -2,7 +2,22 @@ import { DatabaseService } from '../../database/database.service';
 export declare class JugadoresRepository {
     private readonly db;
     constructor(db: DatabaseService);
-    findJugadoresByClub(clubId: string, search?: string, categoriaId?: string, estado?: string): Promise<any[]>;
+    findJugadoresByClub(clubId: string, optionsOrSearch?: string | {
+        search?: string;
+        categoriaId?: string;
+        estado?: string;
+        posicion?: string;
+        genero?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+    }, categoriaIdParam?: string, estadoParam?: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     findById(id: string, clubId: string): Promise<any>;
     findByDorsal(clubId: string, categoriaId: string, dorsal: number, excludeId?: string): Promise<any>;
     findByDocumento(clubId: string, numeroDocumento: string, excludeId?: string): Promise<any>;

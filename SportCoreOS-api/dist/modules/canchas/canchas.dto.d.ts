@@ -1,6 +1,7 @@
+import { TipoSuperficieCancha, TipoReservaCancha, MetodoPago } from '../../common/enums/domain.enums';
 export declare class CreateCanchaDto {
     nombre: string;
-    tipo_superficie: string;
+    tipo_superficie: TipoSuperficieCancha;
     precio_hora_diurna: number;
     precio_hora_nocturna: number;
     hora_apertura?: string;
@@ -18,13 +19,13 @@ export declare class CreateReservaDto {
     fecha_reserva: string;
     hora_inicio: string;
     hora_fin: string;
-    tipo_reserva: string;
+    tipo_reserva: TipoReservaCancha;
     cliente_nombre?: string;
     cliente_telefono?: string;
     monto_anticipo?: number;
-    metodo_pago?: string;
+    metodo_pago?: MetodoPago;
 }
 export declare class PagarCajaDto {
     monto: number;
-    metodo_pago: string;
+    metodo_pago: MetodoPago;
 }

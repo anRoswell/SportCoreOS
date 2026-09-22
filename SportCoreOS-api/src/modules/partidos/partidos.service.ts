@@ -5,8 +5,19 @@ import { PartidosRepository } from './partidos.repository';
 export class PartidosService {
   constructor(private readonly partidosRepository: PartidosRepository) {}
 
-  async findByClub(clubId: string, categoriaId?: string) {
-    return this.partidosRepository.findPartidosByClub(clubId, categoriaId);
+  async findByClub(
+    clubId: string,
+    optionsOrCatId?:
+      | string
+      | {
+          categoriaId?: string;
+          search?: string;
+          estado?: string;
+          page?: number;
+          limit?: number;
+        },
+  ) {
+    return this.partidosRepository.findPartidosByClub(clubId, optionsOrCatId);
   }
 
   async findDetallePartido(partidoId: string, clubId: string) {
@@ -23,6 +34,14 @@ export class PartidosService {
 
   async update(id: string, clubId: string, data: any) {
     return this.partidosRepository.updatePartido(id, clubId, data);
+  }
+
+  async delete(id: string, clubId: string) {
+    const deleted = await this.partidosRepository.deletePartido(id, clubId);
+    if (!deleted) {
+      throw new NotFoundException('Partido no encontrado');
+    }
+    return { success: true, message: 'Partido eliminado exitosamente', id };
   }
 
   async addEvento(partidoId: string, data: any) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CanchasService } from './canchas.service';
 import { CreateCanchaDto, UpdateCanchaDto, CreateReservaDto, PagarCajaDto } from './canchas.dto';
@@ -13,9 +13,41 @@ export class CanchasController {
   constructor(private readonly canchasService: CanchasService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas las canchas y escenarios deportivos del club' })
-  async getCanchas(@CurrentUser() user: any) {
-    return this.canchasService.getCanchas(user.clubId);
+  @ApiOperation({ summary: 'Listar todas las canchas y escenarios deportivos del club con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'tipoSuperficie', required: false, type: String })
+  async getCanchas(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('tipoSuperficie') tipoSuperficie?: string,
+  ) {
+    return this.canchasService.getCanchas(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      tipoSuperficie,
+    });
+  }
+
+  @Get('disponibilidad')
+  @ApiOperation({ summary: 'Obtener matriz horaria de disponibilidad por fecha' })
+  @ApiQuery({ name: 'fecha', required: true, example: '2026-03-25' })
+  async getDisponibilidad(
+    @CurrentUser() user: any,
+    @Query('fecha') fecha: string,
+  ) {
+    const targetFecha = fecha || new Date().toISOString().split('T')[0];
+    return this.canchasService.getMatrizDisponibilidad(user.clubId, targetFecha);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtener detalle de una cancha específica' })
+  async getCanchaById(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.canchasService.getCanchaById(id, user.clubId);
   }
 
   @Post()
@@ -34,15 +66,10 @@ export class CanchasController {
     return this.canchasService.updateCancha(id, user.clubId, dto);
   }
 
-  @Get('disponibilidad')
-  @ApiOperation({ summary: 'Obtener matriz horaria de disponibilidad por fecha' })
-  @ApiQuery({ name: 'fecha', required: true, example: '2026-03-25' })
-  async getDisponibilidad(
-    @CurrentUser() user: any,
-    @Query('fecha') fecha: string,
-  ) {
-    const targetFecha = fecha || new Date().toISOString().split('T')[0];
-    return this.canchasService.getMatrizDisponibilidad(user.clubId, targetFecha);
+  @Delete(':id')
+  @ApiOperation({ summary: 'Desactivar o eliminar una cancha' })
+  async deleteCancha(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.canchasService.deleteCancha(id, user.clubId);
   }
 
   @Post('reservas')

@@ -24,8 +24,14 @@ let ScoutingController = class ScoutingController {
     constructor(scoutingService) {
         this.scoutingService = scoutingService;
     }
-    async getProspectos(user, search, estado, posicion) {
-        return this.scoutingService.findAllProspectos(user.clubId, search, estado, posicion);
+    async getProspectos(user, page, limit, search, estado, posicion) {
+        return this.scoutingService.findAllProspectos(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            estado,
+            posicion,
+        });
     }
     async getProspectoById(id, user) {
         return this.scoutingService.findProspectoById(id, user.clubId);
@@ -46,16 +52,20 @@ let ScoutingController = class ScoutingController {
 exports.ScoutingController = ScoutingController;
 __decorate([
     (0, common_1.Get)('prospectos'),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar talentos observados con filtros por posición, estado y búsqueda' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar talentos observados con filtros por posición, estado y búsqueda con paginación' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
     (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: 'Buscar por nombre, club de origen o ciudad' }),
     (0, swagger_1.ApiQuery)({ name: 'estado', required: false, description: 'en_observacion, interes_fichaje, fichado, descartado' }),
     (0, swagger_1.ApiQuery)({ name: 'posicion', required: false, description: 'Filtrar por posición principal' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('search')),
-    __param(2, (0, common_1.Query)('estado')),
-    __param(3, (0, common_1.Query)('posicion')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('estado')),
+    __param(5, (0, common_1.Query)('posicion')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String]),
     __metadata("design:returntype", Promise)
 ], ScoutingController.prototype, "getProspectos", null);
 __decorate([

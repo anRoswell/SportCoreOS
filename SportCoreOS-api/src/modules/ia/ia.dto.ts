@@ -34,3 +34,26 @@ export class ChatTacticoDtDto {
   @IsOptional()
   sistema_base?: string;
 }
+
+export class GenerarGraficaConvocatoriaDto {
+  @ApiProperty({ description: 'ID único del partido', example: 'f1000000-0000-0000-0000-000000000001' })
+  @IsUUID()
+  @IsNotEmpty()
+  partido_id: string;
+
+  @ApiPropertyOptional({ description: 'Estilo visual de diseño Gemini', example: 'ELITE_NEON' })
+  @IsString()
+  @IsOptional()
+  estilo_diseno?: string;
+
+  @ApiPropertyOptional({ description: 'Tono del titular generado', example: 'MATCHDAY_EPIC' })
+  @IsString()
+  @IsOptional()
+  tono_titular?: string;
+
+  @ApiPropertyOptional({ description: 'Instrucción o prompt creativo personalizado', example: 'Enfocar en la solidez defensiva y velocidad en bandas' })
+  @IsString()
+  @IsOptional()
+  prompt_personalizado?: string;
+}
+

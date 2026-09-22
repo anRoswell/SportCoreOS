@@ -17,8 +17,15 @@ let TiendaService = class TiendaService {
     constructor(tiendaRepo) {
         this.tiendaRepo = tiendaRepo;
     }
-    async getCatalogo(clubId) {
-        return this.tiendaRepo.findCatalogoByClub(clubId);
+    async getCatalogo(clubId, options) {
+        return this.tiendaRepo.findCatalogoByClub(clubId, options);
+    }
+    async getProductoById(id, clubId) {
+        const producto = await this.tiendaRepo.findProductoById(id, clubId);
+        if (!producto) {
+            throw new common_1.NotFoundException('Producto no encontrado');
+        }
+        return producto;
     }
     async createProducto(clubId, dto) {
         const producto = await this.tiendaRepo.createProducto(clubId, dto);
@@ -83,8 +90,8 @@ let TiendaService = class TiendaService {
         };
         return this.tiendaRepo.createPedido(pedidoData);
     }
-    async getPedidos(clubId) {
-        return this.tiendaRepo.findPedidosByClub(clubId);
+    async getPedidos(clubId, options) {
+        return this.tiendaRepo.findPedidosByClub(clubId, options);
     }
     async despacharPedido(pedidoId, dto) {
         const despachado = await this.tiendaRepo.despacharPedido(pedidoId, dto.recibido_por);

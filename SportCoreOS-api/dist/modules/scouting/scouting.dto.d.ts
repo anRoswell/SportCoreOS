@@ -1,3 +1,4 @@
+import { EstadoScouting, RecomendacionScouting } from '../../common/enums/domain.enums';
 export declare class CreateProspectoDto {
     nombres_apellidos: string;
     fecha_nacimiento: string;
@@ -11,14 +12,14 @@ export declare class CreateProspectoDto {
     altura_cm?: number;
     peso_kg?: number;
     video_highlight_url?: string;
-    estado_scouting?: string;
+    estado_scouting?: EstadoScouting;
     notas_scout?: string;
 }
 export declare class UpdateProspectoDto {
     nombres_apellidos?: string;
     posicion_principal?: string;
     club_origen?: string;
-    estado_scouting?: string;
+    estado_scouting?: EstadoScouting;
     valoracion_general?: number;
     notas_scout?: string;
 }
@@ -30,5 +31,5 @@ export declare class CreateEvaluacionDto {
     score_fisico: number;
     score_mental: number;
     comentarios_cualitativos?: string;
-    recomendacion: string;
+    recomendacion: RecomendacionScouting;
 }

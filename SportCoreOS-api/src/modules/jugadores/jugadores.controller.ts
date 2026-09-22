@@ -30,17 +30,36 @@ export class JugadoresController {
   constructor(private readonly jugadoresService: JugadoresService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar jugadores del club con filtros (categoría, estado, búsqueda)' })
+  @ApiOperation({ summary: 'Listar jugadores del club con filtros (categoría, estado, posición, género, paginación)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Registros por página' })
   @ApiQuery({ name: 'search', required: false, description: 'Buscar por nombres, apellidos o documento' })
   @ApiQuery({ name: 'categoriaId', required: false, description: 'Filtrar por categoría deportiva' })
   @ApiQuery({ name: 'estado', required: false, description: 'Filtrar por estado (ACTIVO, SUSPENDIDO, LESIONADO, RETIRADO)' })
+  @ApiQuery({ name: 'posicion', required: false, description: 'Filtrar por posición táctica' })
+  @ApiQuery({ name: 'genero', required: false, description: 'Filtrar por género' })
+  @ApiQuery({ name: 'sortBy', required: false, description: 'Criterio de ordenación' })
   async getJugadores(
     @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
     @Query('search') search?: string,
     @Query('categoriaId') categoriaId?: string,
     @Query('estado') estado?: string,
+    @Query('posicion') posicion?: string,
+    @Query('genero') genero?: string,
+    @Query('sortBy') sortBy?: string,
   ) {
-    return this.jugadoresService.findAllByClub(user.clubId, search, categoriaId, estado);
+    return this.jugadoresService.findAllByClub(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      categoriaId,
+      estado,
+      posicion,
+      genero,
+      sortBy,
+    });
   }
 
   @Get(':id')

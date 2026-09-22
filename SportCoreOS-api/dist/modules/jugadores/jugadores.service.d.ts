@@ -4,7 +4,22 @@ export declare class JugadoresService {
     private readonly jugadoresRepository;
     private readonly logger;
     constructor(jugadoresRepository: JugadoresRepository);
-    findAllByClub(clubId: string, search?: string, categoriaId?: string, estado?: string): Promise<any[]>;
+    findAllByClub(clubId: string, optionsOrSearch?: string | {
+        search?: string;
+        categoriaId?: string;
+        estado?: string;
+        posicion?: string;
+        genero?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+    }, categoriaId?: string, estado?: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     findById(id: string, clubId: string): Promise<any>;
     findExpedienteCompleto(id: string, clubId: string): Promise<{
         jugador: any;

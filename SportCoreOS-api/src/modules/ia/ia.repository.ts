@@ -79,11 +79,44 @@ export class IaRepository {
 
   async getPlantelesParaAnalisis(categoriaId: string, clubId: string) {
     const res = await this.db.query(
-      `SELECT j.nombres, j.apellidos, j.posicion_principal, j.pie_habil, j.estado, j.dorsal
+      `SELECT j.nombres, j.apellidos, j.posicion_principal, j.pierna_habil, j.estado_matricula, j.numero_dorsal
        FROM deportivo.jugadores j
-       WHERE j.categoria_id = $1 AND j.club_id = $2 AND j.estado = 'ACTIVO'`,
+       WHERE j.categoria_id = $1 AND j.club_id = $2 AND j.estado_matricula = 'ACTIVO'`,
       [categoriaId, clubId]
     );
     return res.rows;
   }
+
+  async getPartidoConvocatoriaParaGrafica(partidoId: string, clubId: string) {
+    const partidoRes = await this.db.query(
+      `SELECT p.*, c.nombre as categoria_nombre
+       FROM competicion.partidos p
+       LEFT JOIN deportivo.categorias c ON p.categoria_id = c.id
+       WHERE p.id = $1 AND p.club_id = $2`,
+      [partidoId, clubId]
+    );
+
+    const convocadosRes = await this.db.query(
+      `SELECT con.*, j.nombres, j.apellidos, j.numero_dorsal, j.posicion_principal, j.foto_url
+       FROM competicion.convocatorias con
+       JOIN deportivo.jugadores j ON con.jugador_id = j.id
+       WHERE con.partido_id = $1
+       ORDER BY con.rol_convocatoria DESC, j.numero_dorsal ASC`,
+      [partidoId]
+    );
+
+    const clubRes = await this.db.query(
+      `SELECT id, nombre, sigla, ciudad, logo_url
+       FROM core.clubes
+       WHERE id = $1`,
+      [clubId]
+    );
+
+    return {
+      partido: partidoRes.rows[0] || null,
+      convocados: convocadosRes.rows,
+      club: clubRes.rows[0] || null,
+    };
+  }
 }
+

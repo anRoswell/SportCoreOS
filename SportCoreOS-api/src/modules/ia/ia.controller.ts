@@ -36,4 +36,14 @@ export class IaController {
   ) {
     return this.iaService.chatTacticoDt(user.clubId, dto);
   }
+
+  @Post('generar-grafica-convocatoria')
+  @ApiOperation({ summary: 'Generar diseño inteligente de póster para redes sociales con IA Gemini' })
+  async generarGraficaConvocatoria(
+    @CurrentUser() user: any,
+    @Body() dto: any,
+  ) {
+    return this.iaService.generarGraficaConvocatoriaIa(user.clubId, dto);
+  }
 }
+

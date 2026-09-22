@@ -5,8 +5,16 @@ import { CategoriasRepository } from './categorias.repository';
 export class CategoriasService {
   constructor(private readonly categoriasRepository: CategoriasRepository) {}
 
-  async findByClub(clubId: string) {
-    return this.categoriasRepository.findCategoriasByClub(clubId);
+  async findByClub(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      rama?: string;
+    },
+  ) {
+    return this.categoriasRepository.findCategoriasByClub(clubId, options);
   }
 
   async findPlantelByCategoria(categoriaId: string, clubId: string) {

@@ -5,7 +5,74 @@ import { DatabaseService } from '../../database/database.service';
 export class TiendaRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findCatalogoByClub(clubId: string) {
+  async findCatalogoByClub(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      categoria?: string;
+    },
+  ) {
+    const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['p.club_id = $1', 'p.activo = true'];
+    const params: any[] = [clubId];
+
+    if (options?.categoria && options.categoria !== 'TODAS') {
+      params.push(options.categoria);
+      whereParts.push(`p.categoria = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(p.nombre ILIKE $${pIdx} OR p.codigo_sku ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM deportivo.productos_tienda p
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
+      `SELECT p.*,
+              COALESCE(
+                json_agg(
+                  json_build_object(
+                    'id', v.id,
+                    'talla', v.talla,
+                    'stock_actual', v.stock_actual,
+                    'stock_minimo_alerta', v.stock_minimo_alerta
+                  )
+                ) FILTER (WHERE v.id IS NOT NULL), '[]'
+              ) as variantes
+       FROM deportivo.productos_tienda p
+       LEFT JOIN deportivo.variantes_producto v ON v.producto_id = p.id
+       WHERE ${whereParts.join(' AND ')}
+       GROUP BY p.id
+       ORDER BY p.categoria ASC, p.nombre ASC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
+    );
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
+  }
+
+  async findProductoById(id: string, clubId: string) {
     const res = await this.db.query(
       `SELECT p.*,
               COALESCE(
@@ -20,17 +87,8 @@ export class TiendaRepository {
               ) as variantes
        FROM deportivo.productos_tienda p
        LEFT JOIN deportivo.variantes_producto v ON v.producto_id = p.id
-       WHERE p.club_id = $1 AND p.activo = true
-       GROUP BY p.id
-       ORDER BY p.categoria ASC, p.nombre ASC`,
-      [clubId],
-    );
-    return res.rows;
-  }
-
-  async findProductoById(id: string, clubId: string) {
-    const res = await this.db.query(
-      `SELECT * FROM deportivo.productos_tienda WHERE id = $1 AND club_id = $2`,
+       WHERE p.id = $1 AND p.club_id = $2
+       GROUP BY p.id`,
       [id, clubId],
     );
     return res.rows[0] || null;
@@ -174,19 +232,66 @@ export class TiendaRepository {
     return res.rows[0];
   }
 
-  async findPedidosByClub(clubId: string) {
-    const res = await this.db.query(
+  async findPedidosByClub(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      estadoDespacho?: string;
+    },
+  ) {
+    const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['ped.club_id = $1'];
+    const params: any[] = [clubId];
+
+    if (options?.estadoDespacho && options.estadoDespacho !== 'TODOS') {
+      params.push(options.estadoDespacho);
+      whereParts.push(`ped.estado_despacho = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(p.nombre ILIKE $${pIdx} OR ped.comprador_nombre ILIKE $${pIdx} OR j.nombres ILIKE $${pIdx} OR j.apellidos ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM deportivo.pedidos_tienda ped
+       JOIN deportivo.variantes_producto v ON v.id = ped.variante_id
+       JOIN deportivo.productos_tienda p ON p.id = v.producto_id
+       LEFT JOIN deportivo.jugadores j ON j.id = ped.jugador_id
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
       `SELECT ped.*, p.nombre as producto_nombre, p.codigo_sku, v.talla,
               j.nombres as jugador_nombres, j.apellidos as jugador_apellidos, j.numero_dorsal as jugador_dorsal
        FROM deportivo.pedidos_tienda ped
        JOIN deportivo.variantes_producto v ON v.id = ped.variante_id
        JOIN deportivo.productos_tienda p ON p.id = v.producto_id
        LEFT JOIN deportivo.jugadores j ON j.id = ped.jugador_id
-       WHERE ped.club_id = $1
-       ORDER BY ped.created_at DESC`,
-      [clubId],
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY ped.created_at DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
     );
-    return res.rows;
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async despacharPedido(pedidoId: string, recibidoPor: string) {

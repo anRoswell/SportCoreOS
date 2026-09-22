@@ -8,24 +8,82 @@ export class PartidosRepository extends BaseRepository {
     super(db, 'competicion.partidos');
   }
 
-  async findPartidosByClub(clubId: string, categoriaId?: string) {
-    let query = `
-      SELECT p.*, c.nombre as categoria_nombre, c.codigo_categoria,
-             (SELECT COUNT(*) FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as tiene_convocatoria
-      FROM competicion.partidos p
-      JOIN deportivo.categorias c ON c.id = p.categoria_id
-      WHERE p.club_id = $1
-    `;
-    const params: any[] = [clubId];
+  async findPartidosByClub(
+    clubId: string,
+    optionsOrCatId?:
+      | string
+      | {
+          categoriaId?: string;
+          search?: string;
+          estado?: string;
+          page?: number;
+          limit?: number;
+        },
+  ) {
+    let categoriaId: string | undefined;
+    let search: string | undefined;
+    let estado: string | undefined;
+    let page: number = 1;
+    let limit: number = 10;
 
-    if (categoriaId) {
-      params.push(categoriaId);
-      query += ` AND p.categoria_id = $${params.length}`;
+    if (typeof optionsOrCatId === 'object' && optionsOrCatId !== null) {
+      categoriaId = optionsOrCatId.categoriaId;
+      search = optionsOrCatId.search;
+      estado = optionsOrCatId.estado;
+      page = Math.max(1, Number(optionsOrCatId.page) || 1);
+      limit = Math.min(100, Math.max(1, Number(optionsOrCatId.limit) || 10));
+    } else {
+      categoriaId = typeof optionsOrCatId === 'string' ? optionsOrCatId : undefined;
     }
 
-    query += ` ORDER BY p.fecha_partido DESC, p.hora_partido DESC`;
-    const res = await this.db.query(query, params);
-    return res.rows;
+    const offset = (page - 1) * limit;
+    const whereParts = ['p.club_id = $1'];
+    const params: any[] = [clubId];
+
+    if (categoriaId && categoriaId !== 'TODAS') {
+      params.push(categoriaId);
+      whereParts.push(`p.categoria_id = $${params.length}`);
+    }
+
+    if (estado && estado !== 'TODOS') {
+      params.push(estado);
+      whereParts.push(`p.estado_partido = $${params.length}`);
+    }
+
+    if (search && search.trim()) {
+      params.push(`%${search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(p.rival_nombre ILIKE $${pIdx} OR p.sede_cancha ILIKE $${pIdx} OR p.tipo_partido ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM competicion.partidos p
+       JOIN deportivo.categorias c ON c.id = p.categoria_id
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
+      `SELECT p.*, c.nombre as categoria_nombre, c.codigo_categoria,
+              (SELECT COUNT(*) FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as tiene_convocatoria
+       FROM competicion.partidos p
+       JOIN deportivo.categorias c ON c.id = p.categoria_id
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY p.fecha_partido DESC, p.hora_partido DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
+    );
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findDetalle(partidoId: string, clubId: string) {
@@ -82,27 +140,6 @@ export class PartidosRepository extends BaseRepository {
     );
 
     const partido = res.rows[0];
-
-    // Auto convocar jugadores activos de la categoría
-    const jugadoresRes = await this.db.query(
-      `SELECT id, posicion_principal FROM deportivo.jugadores 
-       WHERE club_id = $1 AND categoria_id = $2 AND estado_matricula = 'ACTIVO'
-       LIMIT 18`,
-      [clubId, data.categoria_id],
-    );
-
-    for (let i = 0; i < jugadoresRes.rows.length; i++) {
-      const jug = jugadoresRes.rows[i];
-      const rol = i < 11 ? 'TITULAR' : 'SUPLENTE';
-      await this.db.query(
-        `INSERT INTO competicion.convocatorias (
-           partido_id, jugador_id, rol_convocatoria, posicion_designada, estado_confirmacion
-         ) VALUES ($1, $2, $3, $4, 'CONFIRMADO')
-         ON CONFLICT DO NOTHING`,
-        [partido.id, jug.id, rol, jug.posicion_principal],
-      );
-    }
-
     return partido;
   }
 
@@ -160,6 +197,17 @@ export class PartidosRepository extends BaseRepository {
       RETURNING *
     `;
     const res = await this.db.query(query, params);
+    return res.rows[0] || null;
+  }
+
+  async deletePartido(id: string, clubId: string) {
+    // Eliminar dependencias primero
+    await this.db.query(`DELETE FROM competicion.actas_partido_eventos WHERE partido_id = $1`, [id]);
+    await this.db.query(`DELETE FROM competicion.convocatorias WHERE partido_id = $1`, [id]);
+    const res = await this.db.query(
+      `DELETE FROM competicion.partidos WHERE id = $1 AND club_id = $2 RETURNING *`,
+      [id, clubId],
+    );
     return res.rows[0] || null;
   }
 

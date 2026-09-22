@@ -3,7 +3,19 @@ import { CreateProspectoDto, UpdateProspectoDto, CreateEvaluacionDto } from './s
 export declare class ScoutingService {
     private readonly scoutingRepo;
     constructor(scoutingRepo: ScoutingRepository);
-    findAllProspectos(clubId: string, search?: string, estado?: string, posicion?: string): Promise<any[]>;
+    findAllProspectos(clubId: string, optionsOrSearch?: string | {
+        page?: number;
+        limit?: number;
+        search?: string;
+        estado?: string;
+        posicion?: string;
+    }, estado?: string, posicion?: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     findProspectoById(id: string, clubId: string): Promise<any>;
     createProspecto(clubId: string, dto: CreateProspectoDto): Promise<any>;
     updateProspecto(id: string, clubId: string, dto: UpdateProspectoDto): Promise<any>;

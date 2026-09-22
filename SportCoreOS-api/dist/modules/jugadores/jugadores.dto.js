@@ -20,6 +20,8 @@ var TipoDocumento;
     TipoDocumento["RC"] = "RC";
     TipoDocumento["CE"] = "CE";
     TipoDocumento["PASAPORTE"] = "PASAPORTE";
+    TipoDocumento["PPT"] = "PPT";
+    TipoDocumento["NUIP"] = "NUIP";
 })(TipoDocumento || (exports.TipoDocumento = TipoDocumento = {}));
 var PiernaHabil;
 (function (PiernaHabil) {
@@ -54,8 +56,11 @@ class CreateJugadorDto {
     numeroDorsal;
     eps;
     estadoMatricula;
+    porcentajeBeca;
     acudienteNombres;
     acudienteApellidos;
+    acudienteTipoDoc;
+    acudienteNumeroDoc;
     acudienteNumeroDocumento;
     acudienteTelefono;
     acudienteEmail;
@@ -149,6 +154,14 @@ __decorate([
     __metadata("design:type", String)
 ], CreateJugadorDto.prototype, "estadoMatricula", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 0, description: 'Porcentaje de beca deportiva (0 a 100)' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], CreateJugadorDto.prototype, "porcentajeBeca", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'Luis Manuel' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -160,6 +173,18 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateJugadorDto.prototype, "acudienteApellidos", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'CC' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateJugadorDto.prototype, "acudienteTipoDoc", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '79845123' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateJugadorDto.prototype, "acudienteNumeroDoc", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '79845123' }),
     (0, class_validator_1.IsOptional)(),
@@ -175,6 +200,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'padre.gomez@gmail.com' }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateIf)((o) => !!o.acudienteEmail && o.acudienteEmail.trim().length > 0),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CreateJugadorDto.prototype, "acudienteEmail", void 0);

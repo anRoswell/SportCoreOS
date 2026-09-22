@@ -17,8 +17,15 @@ let CanchasService = class CanchasService {
     constructor(canchasRepo) {
         this.canchasRepo = canchasRepo;
     }
-    async getCanchas(clubId) {
-        return this.canchasRepo.findCanchasByClub(clubId);
+    async getCanchas(clubId, options) {
+        return this.canchasRepo.findCanchasByClub(clubId, options);
+    }
+    async getCanchaById(id, clubId) {
+        const cancha = await this.canchasRepo.findCanchaById(id, clubId);
+        if (!cancha) {
+            throw new common_1.NotFoundException('Cancha no encontrada');
+        }
+        return cancha;
     }
     async createCancha(clubId, dto) {
         return this.canchasRepo.createCancha(clubId, dto);
@@ -30,8 +37,16 @@ let CanchasService = class CanchasService {
         }
         return updated;
     }
+    async deleteCancha(id, clubId) {
+        const deleted = await this.canchasRepo.deleteCancha(id, clubId);
+        if (!deleted) {
+            throw new common_1.NotFoundException('Cancha no encontrada');
+        }
+        return { success: true, message: 'Cancha eliminada / desactivada exitosamente', id };
+    }
     async getMatrizDisponibilidad(clubId, fecha) {
-        const canchas = await this.canchasRepo.findCanchasByClub(clubId);
+        const canchasRes = await this.canchasRepo.findCanchasByClub(clubId);
+        const canchas = Array.isArray(canchasRes) ? canchasRes : canchasRes.data || [];
         const reservas = await this.canchasRepo.findReservasByFecha(clubId, fecha);
         const horas = [
             '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',

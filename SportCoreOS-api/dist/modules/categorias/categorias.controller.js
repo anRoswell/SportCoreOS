@@ -24,8 +24,13 @@ let CategoriasController = class CategoriasController {
     constructor(categoriasService) {
         this.categoriasService = categoriasService;
     }
-    async getCategorias(user) {
-        return this.categoriasService.findByClub(user.clubId);
+    async getCategorias(user, page, limit, search, rama) {
+        return this.categoriasService.findByClub(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            rama,
+        });
     }
     async getPlantel(id, user) {
         return this.categoriasService.findPlantelByCategoria(id, user.clubId);
@@ -43,10 +48,18 @@ let CategoriasController = class CategoriasController {
 exports.CategoriasController = CategoriasController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las categorías deportivas del club (Sub-7 a Sub-20)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar categorías deportivas del club con paginación y filtros' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    (0, swagger_1.ApiQuery)({ name: 'rama', required: false, type: String }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('rama')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", Promise)
 ], CategoriasController.prototype, "getCategorias", null);
 __decorate([

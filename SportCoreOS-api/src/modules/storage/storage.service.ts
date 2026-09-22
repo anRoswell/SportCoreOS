@@ -176,6 +176,10 @@ export class StorageService {
     this.logger.log(`Vinculados ${urls.length} archivos (por URL) a ${entityType}: ${entityId}`);
   }
 
+  async getArchivosByEntidad(clubId: string, entidadTipo: string, entidadId: string): Promise<ArchivoAdjuntoEntity[]> {
+    return this.archivosRepo.findByEntity(clubId, entidadTipo, entidadId);
+  }
+
   async deleteFile(relativePath: string): Promise<boolean> {
     try {
       const cleanPath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;

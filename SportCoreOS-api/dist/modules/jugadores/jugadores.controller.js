@@ -24,8 +24,17 @@ let JugadoresController = class JugadoresController {
     constructor(jugadoresService) {
         this.jugadoresService = jugadoresService;
     }
-    async getJugadores(user, search, categoriaId, estado) {
-        return this.jugadoresService.findAllByClub(user.clubId, search, categoriaId, estado);
+    async getJugadores(user, page, limit, search, categoriaId, estado, posicion, genero, sortBy) {
+        return this.jugadoresService.findAllByClub(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            categoriaId,
+            estado,
+            posicion,
+            genero,
+            sortBy,
+        });
     }
     async getById(id, user) {
         return this.jugadoresService.findById(id, user.clubId);
@@ -56,16 +65,26 @@ let JugadoresController = class JugadoresController {
 exports.JugadoresController = JugadoresController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar jugadores del club con filtros (categoría, estado, búsqueda)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar jugadores del club con filtros (categoría, estado, posición, género, paginación)' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number, description: 'Número de página' }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, description: 'Registros por página' }),
     (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: 'Buscar por nombres, apellidos o documento' }),
     (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false, description: 'Filtrar por categoría deportiva' }),
     (0, swagger_1.ApiQuery)({ name: 'estado', required: false, description: 'Filtrar por estado (ACTIVO, SUSPENDIDO, LESIONADO, RETIRADO)' }),
+    (0, swagger_1.ApiQuery)({ name: 'posicion', required: false, description: 'Filtrar por posición táctica' }),
+    (0, swagger_1.ApiQuery)({ name: 'genero', required: false, description: 'Filtrar por género' }),
+    (0, swagger_1.ApiQuery)({ name: 'sortBy', required: false, description: 'Criterio de ordenación' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('search')),
-    __param(2, (0, common_1.Query)('categoriaId')),
-    __param(3, (0, common_1.Query)('estado')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('categoriaId')),
+    __param(5, (0, common_1.Query)('estado')),
+    __param(6, (0, common_1.Query)('posicion')),
+    __param(7, (0, common_1.Query)('genero')),
+    __param(8, (0, common_1.Query)('sortBy')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], JugadoresController.prototype, "getJugadores", null);
 __decorate([

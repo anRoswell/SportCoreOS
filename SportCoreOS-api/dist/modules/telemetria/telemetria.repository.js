@@ -17,28 +17,56 @@ let TelemetriaRepository = class TelemetriaRepository {
     constructor(db) {
         this.db = db;
     }
-    async findAllSesiones(clubId) {
-        const res = await this.db.query(`SELECT s.*, 
+    async findAllSesiones(clubId, options) {
+        const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+        const page = Math.max(1, Number(options?.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+        const offset = (page - 1) * limit;
+        const whereParts = ['s.club_id = $1'];
+        const params = [clubId];
+        if (options?.tipoSesion && options.tipoSesion !== 'TODOS') {
+            params.push(options.tipoSesion);
+            whereParts.push(`s.tipo_sesion = $${params.length}`);
+        }
+        if (options?.search && options.search.trim()) {
+            params.push(`%${options.search.trim()}%`);
+            const pIdx = params.length;
+            whereParts.push(`(p.rival_nombre ILIKE $${pIdx} OR s.dispositivo_marca ILIKE $${pIdx})`);
+        }
+        const countRes = await this.db.query(`SELECT COUNT(DISTINCT s.id) as count
+       FROM deportivo.sesiones_gps s
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
+       WHERE ${whereParts.join(' AND ')}`, params);
+        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const queryParams = [...params, limit, offset];
+        const dataRes = await this.db.query(`SELECT s.*, 
               p.rival_nombre, p.goles_club, p.goles_rival,
               COUNT(m.id) as jugadores_monitoreados,
               COALESCE(AVG(m.distancia_total_m), 0) as distancia_promedio_m,
               COALESCE(MAX(m.velocidad_max_kmh), 0) as pico_velocidad_kmh
        FROM deportivo.sesiones_gps s
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        LEFT JOIN deportivo.metricas_rendimiento_gps m ON s.id = m.sesion_id
-       WHERE s.club_id = $1
+       WHERE ${whereParts.join(' AND ')}
        GROUP BY s.id, p.id
-       ORDER BY s.fecha_sesion DESC`, [clubId]);
-        return res.rows;
+       ORDER BY s.fecha_sesion DESC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`, queryParams);
+        return {
+            data: dataRes.rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
     }
     async findSesionById(id, clubId) {
         const sesionRes = await this.db.query(`SELECT s.*, p.rival_nombre, p.fecha_partido 
        FROM deportivo.sesiones_gps s
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        WHERE s.id = $1 AND s.club_id = $2`, [id, clubId]);
         if (!sesionRes.rows[0])
             return null;
-        const metricasRes = await this.db.query(`SELECT m.*, j.nombres, j.apellidos, j.dorsal, j.posicion_principal, j.foto_url
+        const metricasRes = await this.db.query(`SELECT m.*, j.nombres, j.apellidos, j.numero_dorsal, j.posicion_principal, j.foto_url
        FROM deportivo.metricas_rendimiento_gps m
        JOIN deportivo.jugadores j ON m.jugador_id = j.id
        WHERE m.sesion_id = $1
@@ -89,7 +117,7 @@ let TelemetriaRepository = class TelemetriaRepository {
         const res = await this.db.query(`SELECT m.*, s.fecha_sesion, s.tipo_sesion, s.dispositivo_marca, p.rival_nombre
        FROM deportivo.metricas_rendimiento_gps m
        JOIN deportivo.sesiones_gps s ON m.sesion_id = s.id
-       LEFT JOIN deportivo.partidos p ON s.partido_id = p.id
+       LEFT JOIN competicion.partidos p ON s.partido_id = p.id
        WHERE m.jugador_id = $1 AND s.club_id = $2
        ORDER BY s.fecha_sesion DESC LIMIT 15`, [jugadorId, clubId]);
         return res.rows;

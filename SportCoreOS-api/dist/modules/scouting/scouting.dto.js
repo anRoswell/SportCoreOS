@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateEvaluacionDto = exports.UpdateProspectoDto = exports.CreateProspectoDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const domain_enums_1 = require("../../common/enums/domain.enums");
 class CreateProspectoDto {
     nombres_apellidos;
     fecha_nacimiento;
@@ -102,9 +103,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProspectoDto.prototype, "video_highlight_url", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Estado en el pipeline de captación', example: 'en_observacion' }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Estado en el pipeline de captación', example: domain_enums_1.EstadoScouting.EN_OBSERVACION, enum: domain_enums_1.EstadoScouting }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.EstadoScouting),
     __metadata("design:type", String)
 ], CreateProspectoDto.prototype, "estado_scouting", void 0);
 __decorate([
@@ -141,9 +142,9 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProspectoDto.prototype, "club_origen", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Estado en el pipeline (en_observacion, interes_fichaje, fichado, descartado)' }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Estado en el pipeline', enum: domain_enums_1.EstadoScouting }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.EstadoScouting),
     __metadata("design:type", String)
 ], UpdateProspectoDto.prototype, "estado_scouting", void 0);
 __decorate([
@@ -216,9 +217,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateEvaluacionDto.prototype, "comentarios_cualitativos", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Recomendación del scout (FICHAR_YA, SEGUIMIENTO, DESCARTAR)', example: 'FICHAR_YA' }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ description: 'Recomendación del scout (FICHAR_YA, SEGUIMIENTO_CONTINUO, DESCARTAR)', example: domain_enums_1.RecomendacionScouting.FICHAR_YA, enum: domain_enums_1.RecomendacionScouting }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.RecomendacionScouting),
     __metadata("design:type", String)
 ], CreateEvaluacionDto.prototype, "recomendacion", void 0);
 //# sourceMappingURL=scouting.dto.js.map

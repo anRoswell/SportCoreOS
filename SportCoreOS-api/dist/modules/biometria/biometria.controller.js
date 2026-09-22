@@ -23,8 +23,15 @@ let BiometriaController = class BiometriaController {
     constructor(biometriaService) {
         this.biometriaService = biometriaService;
     }
-    async getEvaluaciones(user) {
-        return this.biometriaService.findByClub(user.clubId);
+    async getEvaluaciones(user, page, limit, search, categoriaId, diagnostico, sortBy) {
+        return this.biometriaService.findByClub(user.clubId, {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            search,
+            categoriaId,
+            diagnostico,
+            sortBy,
+        });
     }
     async registrarEvaluacion(user, data) {
         return this.biometriaService.registrarEvaluacion(user.clubId, user.sub, data);
@@ -36,10 +43,22 @@ let BiometriaController = class BiometriaController {
 exports.BiometriaController = BiometriaController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar evaluaciones biométricas de todos los jugadores del club' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar evaluaciones biométricas paginadas con filtros y búsqueda' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number, description: 'Número de página' }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, description: 'Registros por página' }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String, description: 'Búsqueda por nombre, dorsal o notas' }),
+    (0, swagger_1.ApiQuery)({ name: 'categoriaId', required: false, type: String, description: 'Filtro por ID de categoría' }),
+    (0, swagger_1.ApiQuery)({ name: 'diagnostico', required: false, type: String, description: 'Filtro por diagnóstico IMC' }),
+    (0, swagger_1.ApiQuery)({ name: 'sortBy', required: false, type: String, description: 'Criterio de ordenación' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
+    __param(4, (0, common_1.Query)('categoriaId')),
+    __param(5, (0, common_1.Query)('diagnostico')),
+    __param(6, (0, common_1.Query)('sortBy')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], BiometriaController.prototype, "getEvaluaciones", null);
 __decorate([

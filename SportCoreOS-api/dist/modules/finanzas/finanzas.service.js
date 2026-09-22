@@ -20,8 +20,8 @@ let FinanzasService = class FinanzasService {
     async getResumenFinanciero(clubId) {
         return this.finanzasRepository.getResumenFinanciero(clubId);
     }
-    async getCargosPorCobrar(clubId, categoriaId) {
-        return this.finanzasRepository.getCargosPorCobrar(clubId, categoriaId);
+    async getCargosPorCobrar(clubId, optionsOrCatId) {
+        return this.finanzasRepository.getCargosPorCobrar(clubId, optionsOrCatId);
     }
     async generarMensualidad(clubId, mes, anio) {
         return this.finanzasRepository.generarMensualidad(clubId, mes, anio);

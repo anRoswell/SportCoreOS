@@ -6,8 +6,24 @@ import { CreateCanchaDto, UpdateCanchaDto, CreateReservaDto, PagarCajaDto } from
 export class CanchasService {
   constructor(private readonly canchasRepo: CanchasRepository) {}
 
-  async getCanchas(clubId: string) {
-    return this.canchasRepo.findCanchasByClub(clubId);
+  async getCanchas(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      tipoSuperficie?: string;
+    },
+  ) {
+    return this.canchasRepo.findCanchasByClub(clubId, options);
+  }
+
+  async getCanchaById(id: string, clubId: string) {
+    const cancha = await this.canchasRepo.findCanchaById(id, clubId);
+    if (!cancha) {
+      throw new NotFoundException('Cancha no encontrada');
+    }
+    return cancha;
   }
 
   async createCancha(clubId: string, dto: CreateCanchaDto) {
@@ -22,8 +38,17 @@ export class CanchasService {
     return updated;
   }
 
+  async deleteCancha(id: string, clubId: string) {
+    const deleted = await this.canchasRepo.deleteCancha(id, clubId);
+    if (!deleted) {
+      throw new NotFoundException('Cancha no encontrada');
+    }
+    return { success: true, message: 'Cancha eliminada / desactivada exitosamente', id };
+  }
+
   async getMatrizDisponibilidad(clubId: string, fecha: string) {
-    const canchas = await this.canchasRepo.findCanchasByClub(clubId);
+    const canchasRes = await this.canchasRepo.findCanchasByClub(clubId);
+    const canchas = Array.isArray(canchasRes) ? canchasRes : (canchasRes as any).data || [];
     const reservas = await this.canchasRepo.findReservasByFecha(clubId, fecha);
 
     // Generar slots estándar de 1 hora de 06:00 a 23:00 para cada cancha
@@ -33,7 +58,7 @@ export class CanchasService {
       '18:00', '19:00', '20:00', '21:00', '22:00'
     ];
 
-    const canchasWithSlots = canchas.map((cancha) => {
+    const canchasWithSlots = canchas.map((cancha: any) => {
       const slots = horas.map((hInicio) => {
         const [hh] = hInicio.split(':').map(Number);
         const nextH = (hh + 1).toString().padStart(2, '0');

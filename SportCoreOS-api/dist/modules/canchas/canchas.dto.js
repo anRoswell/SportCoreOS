@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PagarCajaDto = exports.CreateReservaDto = exports.UpdateCanchaDto = exports.CreateCanchaDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const domain_enums_1 = require("../../common/enums/domain.enums");
 class CreateCanchaDto {
     nombre;
     tipo_superficie;
@@ -28,9 +29,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateCanchaDto.prototype, "nombre", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Tipo de superficie', example: 'sintetica_f8', enum: ['sintetica_f5', 'sintetica_f8', 'natural_f11', 'futsal_madera'] }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ description: 'Tipo de superficie', example: domain_enums_1.TipoSuperficieCancha.SINTETICA_F8, enum: domain_enums_1.TipoSuperficieCancha }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.TipoSuperficieCancha),
     __metadata("design:type", String)
 ], CreateCanchaDto.prototype, "tipo_superficie", void 0);
 __decorate([
@@ -136,9 +137,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateReservaDto.prototype, "hora_fin", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Tipo de reserva', example: 'alquiler_particular', enum: ['entrenamiento_club', 'partido_oficial', 'alquiler_particular', 'mantenimiento'] }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ description: 'Tipo de reserva', example: domain_enums_1.TipoReservaCancha.ALQUILER_PARTICULAR, enum: domain_enums_1.TipoReservaCancha }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.TipoReservaCancha),
     __metadata("design:type", String)
 ], CreateReservaDto.prototype, "tipo_reserva", void 0);
 __decorate([
@@ -160,9 +161,9 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateReservaDto.prototype, "monto_anticipo", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Método de pago de anticipo', example: 'TRANSFERENCIA' }),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Método de pago de anticipo', example: domain_enums_1.MetodoPago.TRANSFERENCIA, enum: domain_enums_1.MetodoPago }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.MetodoPago),
     __metadata("design:type", String)
 ], CreateReservaDto.prototype, "metodo_pago", void 0);
 class PagarCajaDto {
@@ -177,9 +178,9 @@ __decorate([
     __metadata("design:type", Number)
 ], PagarCajaDto.prototype, "monto", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Método de pago en caja', example: 'EFECTIVO', enum: ['EFECTIVO', 'DATAFONO', 'TRANSFERENCIA'] }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({ description: 'Método de pago en caja', example: domain_enums_1.MetodoPago.EFECTIVO_CAJA, enum: domain_enums_1.MetodoPago }),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(domain_enums_1.MetodoPago),
     __metadata("design:type", String)
 ], PagarCajaDto.prototype, "metodo_pago", void 0);
 //# sourceMappingURL=canchas.dto.js.map

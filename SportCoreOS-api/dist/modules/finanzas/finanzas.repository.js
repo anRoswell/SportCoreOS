@@ -28,25 +28,67 @@ let FinanzasRepository = class FinanzasRepository extends base_repository_1.Base
        WHERE cj.club_id = $1`, [clubId]);
         return res.rows[0];
     }
-    async getCargosPorCobrar(clubId, categoriaId) {
-        let query = `
-      SELECT cj.*, 
-             CONCAT(j.nombres, ' ', j.apellidos) as jugador_nombre, j.numero_documento,
-             c.nombre as categoria_nombre, fc.nombre as concepto_nombre, fc.tipo as concepto_tipo
-      FROM finanzas.cargos_jugador cj
-      JOIN deportivo.jugadores j ON j.id = cj.jugador_id
-      JOIN deportivo.categorias c ON c.id = j.categoria_id
-      JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
-      WHERE cj.club_id = $1
-    `;
-        const params = [clubId];
-        if (categoriaId) {
-            params.push(categoriaId);
-            query += ` AND j.categoria_id = $${params.length}`;
+    async getCargosPorCobrar(clubId, optionsOrCatId) {
+        let categoriaId;
+        let search;
+        let estadoPago;
+        let page = 1;
+        let limit = 10;
+        if (typeof optionsOrCatId === 'object' && optionsOrCatId !== null) {
+            categoriaId = optionsOrCatId.categoriaId;
+            search = optionsOrCatId.search;
+            estadoPago = optionsOrCatId.estadoPago;
+            page = Math.max(1, Number(optionsOrCatId.page) || 1);
+            limit = Math.min(100, Math.max(1, Number(optionsOrCatId.limit) || 10));
         }
-        query += ` ORDER BY cj.fecha_limite_pago ASC, j.apellidos ASC`;
-        const res = await this.db.query(query, params);
-        return res.rows;
+        else {
+            categoriaId = typeof optionsOrCatId === 'string' ? optionsOrCatId : undefined;
+        }
+        const offset = (page - 1) * limit;
+        const whereParts = ['cj.club_id = $1'];
+        const params = [clubId];
+        if (categoriaId && categoriaId !== 'TODAS') {
+            params.push(categoriaId);
+            whereParts.push(`j.categoria_id = $${params.length}`);
+        }
+        if (estadoPago && estadoPago !== 'TODOS') {
+            if (estadoPago === 'PAGADO') {
+                whereParts.push('cj.saldo_pendiente <= 0');
+            }
+            else if (estadoPago === 'MORA') {
+                whereParts.push('cj.saldo_pendiente > 0');
+            }
+        }
+        if (search && search.trim()) {
+            params.push(`%${search.trim()}%`);
+            const pIdx = params.length;
+            whereParts.push(`(j.nombres ILIKE $${pIdx} OR j.apellidos ILIKE $${pIdx} OR j.numero_documento ILIKE $${pIdx} OR fc.nombre ILIKE $${pIdx})`);
+        }
+        const countRes = await this.db.query(`SELECT COUNT(*) as count
+       FROM finanzas.cargos_jugador cj
+       JOIN deportivo.jugadores j ON j.id = cj.jugador_id
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
+       WHERE ${whereParts.join(' AND ')}`, params);
+        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const queryParams = [...params, limit, offset];
+        const dataRes = await this.db.query(`SELECT cj.*, 
+              CONCAT(j.nombres, ' ', j.apellidos) as jugador_nombre, j.numero_documento,
+              c.nombre as categoria_nombre, fc.nombre as concepto_nombre, fc.tipo as concepto_tipo
+       FROM finanzas.cargos_jugador cj
+       JOIN deportivo.jugadores j ON j.id = cj.jugador_id
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY cj.fecha_limite_pago ASC, j.apellidos ASC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`, queryParams);
+        return {
+            data: dataRes.rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
     }
     async generarMensualidad(clubId, mes, anio) {
         let conceptoRes = await this.db.query(`SELECT id, monto_base FROM finanzas.conceptos WHERE club_id = $1 AND tipo = 'PENSION' LIMIT 1`, [clubId]);

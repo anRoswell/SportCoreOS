@@ -17,8 +17,8 @@ let TelemetriaService = class TelemetriaService {
     constructor(telemetriaRepo) {
         this.telemetriaRepo = telemetriaRepo;
     }
-    async findAllSesiones(clubId) {
-        return this.telemetriaRepo.findAllSesiones(clubId);
+    async findAllSesiones(clubId, options) {
+        return this.telemetriaRepo.findAllSesiones(clubId, options);
     }
     async findSesionById(id, clubId) {
         const sesion = await this.telemetriaRepo.findSesionById(id, clubId);

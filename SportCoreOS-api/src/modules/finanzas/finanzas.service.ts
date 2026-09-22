@@ -9,8 +9,19 @@ export class FinanzasService {
     return this.finanzasRepository.getResumenFinanciero(clubId);
   }
 
-  async getCargosPorCobrar(clubId: string, categoriaId?: string) {
-    return this.finanzasRepository.getCargosPorCobrar(clubId, categoriaId);
+  async getCargosPorCobrar(
+    clubId: string,
+    optionsOrCatId?:
+      | string
+      | {
+          categoriaId?: string;
+          search?: string;
+          estadoPago?: string;
+          page?: number;
+          limit?: number;
+        },
+  ) {
+    return this.finanzasRepository.getCargosPorCobrar(clubId, optionsOrCatId);
   }
 
   async generarMensualidad(clubId: string, mes: number, anio: number) {

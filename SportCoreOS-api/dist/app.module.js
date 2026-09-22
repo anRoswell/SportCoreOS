@@ -26,6 +26,9 @@ const tienda_module_1 = require("./modules/tienda/tienda.module");
 const ia_module_1 = require("./modules/ia/ia.module");
 const scouting_module_1 = require("./modules/scouting/scouting.module");
 const telemetria_module_1 = require("./modules/telemetria/telemetria.module");
+const tenant_modules_module_1 = require("./modules/tenant-modules/tenant-modules.module");
+const parametros_module_1 = require("./modules/parametros/parametros.module");
+const roles_module_1 = require("./modules/roles/roles.module");
 const tenant_middleware_1 = require("./common/middleware/tenant.middleware");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
@@ -59,6 +62,9 @@ exports.AppModule = AppModule = __decorate([
             ia_module_1.IaModule,
             scouting_module_1.ScoutingModule,
             telemetria_module_1.TelemetriaModule,
+            tenant_modules_module_1.TenantModulesModule,
+            parametros_module_1.ParametrosModule,
+            roles_module_1.RolesModule,
         ],
         providers: [
             {

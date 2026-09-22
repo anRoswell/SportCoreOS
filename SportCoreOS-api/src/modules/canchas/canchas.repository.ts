@@ -5,16 +5,60 @@ import { DatabaseService } from '../../database/database.service';
 export class CanchasRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findCanchasByClub(clubId: string) {
-    const res = await this.db.query(
+  async findCanchasByClub(
+    clubId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      tipoSuperficie?: string;
+    },
+  ) {
+    const isPaginated = options?.page !== undefined || options?.limit !== undefined;
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || (isPaginated ? 10 : 50)));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['c.club_id = $1', 'c.activa = true'];
+    const params: any[] = [clubId];
+
+    if (options?.tipoSuperficie && options.tipoSuperficie !== 'TODAS') {
+      params.push(options.tipoSuperficie);
+      whereParts.push(`c.tipo_superficie = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`c.nombre ILIKE $${pIdx}`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count
+       FROM deportivo.canchas c
+       WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
       `SELECT c.*, 
               (SELECT COUNT(*) FROM deportivo.reservas_cancha r WHERE r.cancha_id = c.id AND r.fecha_reserva = CURRENT_DATE AND r.estado_turno != 'cancelado') as reservas_hoy
        FROM deportivo.canchas c
-       WHERE c.club_id = $1 AND c.activa = true
-       ORDER BY c.nombre ASC`,
-      [clubId],
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY c.nombre ASC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
     );
-    return res.rows;
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findCanchaById(id: string, clubId: string) {
@@ -77,6 +121,14 @@ export class CanchasRepository {
     const res = await this.db.query(
       `UPDATE deportivo.canchas SET ${fields.join(', ')} WHERE id = $1 AND club_id = $2 RETURNING *`,
       params,
+    );
+    return res.rows[0] || null;
+  }
+
+  async deleteCancha(id: string, clubId: string) {
+    const res = await this.db.query(
+      `UPDATE deportivo.canchas SET activa = false, updated_at = NOW() WHERE id = $1 AND club_id = $2 RETURNING *`,
+      [id, clubId],
     );
     return res.rows[0] || null;
   }

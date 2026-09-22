@@ -17,41 +17,97 @@ let JugadoresRepository = class JugadoresRepository {
     constructor(db) {
         this.db = db;
     }
-    async findJugadoresByClub(clubId, search, categoriaId, estado) {
-        let query = `
-      SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento, j.numero_documento,
-             j.fecha_nacimiento, j.genero, j.foto_url, j.posicion_principal,
-             j.posicion_secundaria, j.pierna_habil, j.numero_dorsal, j.eps, j.estado_matricula,
-             j.created_at, j.updated_at,
-             c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
-             b.peso_kg, b.talla_cm, b.imc, b.fecha_evaluacion as ultima_evaluacion
-      FROM deportivo.jugadores j
-      JOIN deportivo.categorias c ON c.id = j.categoria_id
-      LEFT JOIN LATERAL (
-        SELECT peso_kg, talla_cm, imc, fecha_evaluacion
-        FROM rendimiento.evaluaciones_biometricas eb
-        WHERE eb.jugador_id = j.id
-        ORDER BY eb.fecha_evaluacion DESC
-        LIMIT 1
-      ) b ON true
-      WHERE j.club_id = $1
-    `;
+    async findJugadoresByClub(clubId, optionsOrSearch, categoriaIdParam, estadoParam) {
+        let search;
+        let categoriaId;
+        let estado;
+        let posicion;
+        let genero;
+        let page = 1;
+        let limit = 10;
+        let sortBy;
+        if (typeof optionsOrSearch === 'object' && optionsOrSearch !== null) {
+            search = optionsOrSearch.search;
+            categoriaId = optionsOrSearch.categoriaId;
+            estado = optionsOrSearch.estado;
+            posicion = optionsOrSearch.posicion;
+            genero = optionsOrSearch.genero;
+            page = Math.max(1, Number(optionsOrSearch.page) || 1);
+            limit = Math.min(100, Math.max(1, Number(optionsOrSearch.limit) || 10));
+            sortBy = optionsOrSearch.sortBy;
+        }
+        else {
+            search = typeof optionsOrSearch === 'string' ? optionsOrSearch : undefined;
+            categoriaId = categoriaIdParam;
+            estado = estadoParam;
+        }
+        const offset = (page - 1) * limit;
+        const whereParts = ['j.club_id = $1'];
         const params = [clubId];
         if (categoriaId && categoriaId !== 'TODAS') {
             params.push(categoriaId);
-            query += ` AND j.categoria_id = $${params.length}`;
+            whereParts.push(`j.categoria_id = $${params.length}`);
         }
         if (estado && estado !== 'TODOS') {
             params.push(estado);
-            query += ` AND j.estado_matricula = $${params.length}`;
+            whereParts.push(`j.estado_matricula = $${params.length}`);
+        }
+        if (posicion && posicion !== 'TODAS') {
+            params.push(`%${posicion.toLowerCase()}%`);
+            const pIdx = params.length;
+            whereParts.push(`(LOWER(j.posicion_principal) LIKE $${pIdx} OR LOWER(j.posicion_secundaria) LIKE $${pIdx})`);
+        }
+        if (genero && genero !== 'TODOS') {
+            params.push(genero);
+            whereParts.push(`j.genero = $${params.length}`);
         }
         if (search && search.trim()) {
             params.push(`%${search.trim()}%`);
-            query += ` AND (j.nombres ILIKE $${params.length} OR j.apellidos ILIKE $${params.length} OR j.numero_documento ILIKE $${params.length})`;
+            const pIdx = params.length;
+            whereParts.push(`(j.nombres ILIKE $${pIdx} OR j.apellidos ILIKE $${pIdx} OR (j.nombres || ' ' || j.apellidos) ILIKE $${pIdx} OR (j.apellidos || ' ' || j.nombres) ILIKE $${pIdx} OR j.numero_documento ILIKE $${pIdx} OR j.eps ILIKE $${pIdx} OR CAST(j.numero_dorsal AS TEXT) ILIKE $${pIdx} OR j.posicion_principal ILIKE $${pIdx} OR j.posicion_secundaria ILIKE $${pIdx} OR c.nombre ILIKE $${pIdx} OR c.codigo_categoria ILIKE $${pIdx})`);
         }
-        query += ` ORDER BY j.apellidos ASC, j.nombres ASC`;
-        const res = await this.db.query(query, params);
-        return res.rows;
+        let orderClause = 'ORDER BY j.apellidos ASC, j.nombres ASC';
+        if (sortBy === 'DORSAL_ASC')
+            orderClause = 'ORDER BY j.numero_dorsal ASC NULLS LAST';
+        else if (sortBy === 'NOMBRE_ASC')
+            orderClause = 'ORDER BY j.nombres ASC, j.apellidos ASC';
+        else if (sortBy === 'APELLIDO_ASC')
+            orderClause = 'ORDER BY j.apellidos ASC, j.nombres ASC';
+        else if (sortBy === 'CREATED_DESC')
+            orderClause = 'ORDER BY j.created_at DESC';
+        else if (sortBy === 'TALLA_DESC')
+            orderClause = 'ORDER BY b.talla_cm DESC NULLS LAST';
+        const countRes = await this.db.query(`SELECT COUNT(*) as count
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       WHERE ${whereParts.join(' AND ')}`, params);
+        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const queryParams = [...params, limit, offset];
+        const dataRes = await this.db.query(`SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento, j.numero_documento,
+              j.fecha_nacimiento, j.genero, j.foto_url, j.posicion_principal,
+              j.posicion_secundaria, j.pierna_habil, j.numero_dorsal, j.eps, j.estado_matricula,
+              j.created_at, j.updated_at,
+              c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
+              b.peso_kg, b.talla_cm, b.imc, b.fecha_evaluacion as ultima_evaluacion
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       LEFT JOIN LATERAL (
+         SELECT peso_kg, talla_cm, imc, fecha_evaluacion
+         FROM rendimiento.evaluaciones_biometricas eb
+         WHERE eb.jugador_id = j.id
+         ORDER BY eb.fecha_evaluacion DESC
+         LIMIT 1
+       ) b ON true
+       WHERE ${whereParts.join(' AND ')}
+       ${orderClause}
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`, queryParams);
+        return {
+            data: dataRes.rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
     }
     async findById(id, clubId) {
         const query = `

@@ -19,6 +19,7 @@ interface InMemoryStore {
     productos_tienda: any[];
     variantes_producto: any[];
     pedidos_tienda: any[];
+    parametros_sistema: any[];
 }
 export declare class DatabaseService implements OnModuleInit, OnModuleDestroy {
     private readonly logger;

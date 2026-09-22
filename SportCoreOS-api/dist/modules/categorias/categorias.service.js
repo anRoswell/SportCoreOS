@@ -17,8 +17,8 @@ let CategoriasService = class CategoriasService {
     constructor(categoriasRepository) {
         this.categoriasRepository = categoriasRepository;
     }
-    async findByClub(clubId) {
-        return this.categoriasRepository.findCategoriasByClub(clubId);
+    async findByClub(clubId, options) {
+        return this.categoriasRepository.findCategoriasByClub(clubId, options);
     }
     async findPlantelByCategoria(categoriaId, clubId) {
         return this.categoriasRepository.findPlantelByCategoria(categoriaId, clubId);

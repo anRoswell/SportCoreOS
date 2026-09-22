@@ -15,6 +15,9 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 import { ClubesService } from './clubes.service';
 import { CreateClubDto, UpdateClubDto, OnboardingClubDto } from './clubes.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 
@@ -24,16 +27,19 @@ export class ClubesController {
   constructor(private readonly clubesService: ClubesService) {}
 
   /**
-   * ONBOARDING PÚBLICO: Registro de Nueva Escuela Deportiva con su Director Deportivo
+   * CREAR ESCUELA O CLUB DEPORTIVO (EXCLUSIVO SUPER ADMINISTRADOR)
    */
-  @Public()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   @Post('onboarding')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Registrar una nueva escuela o academia de fútbol (Onboarding con Auto-Login)',
-    description: 'Crea el club multi-tenant, el usuario Administrador/Director Deportivo, la membresía y devuelve el JWT para inicio de sesión inmediato.',
+    summary: 'Registrar una nueva escuela deportiva (Exclusivo Super Administrador)',
+    description: 'Crea el club multi-tenant, el usuario Director Deportivo inicial y su membresía en la base de datos.',
   })
-  @ApiResponse({ status: 201, description: 'Academia registrada y sesión iniciada con éxito' })
+  @ApiResponse({ status: 201, description: 'Academia registrada exitosamente por el Super Administrador' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado: solo el Super Administrador puede crear escuelas' })
   @ApiResponse({ status: 409, description: 'El correo del administrador ya está en uso' })
   async onboarding(@Body() dto: OnboardingClubDto) {
     return this.clubesService.onboarding(dto);
@@ -98,9 +104,10 @@ export class ClubesController {
    * CREAR CLUB (ADMINISTRATIVO)
    */
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo club (SuperAdmin)' })
+  @ApiOperation({ summary: 'Crear un nuevo club (Exclusivo SuperAdmin)' })
   async create(@Body() dto: CreateClubDto) {
     return this.clubesService.create(dto);
   }
@@ -109,9 +116,10 @@ export class ClubesController {
    * ACTUALIZAR CLUB
    */
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar datos de un club' })
+  @ApiOperation({ summary: 'Actualizar datos de un club (Exclusivo SuperAdmin)' })
   async update(@Param('id') id: string, @Body() dto: UpdateClubDto) {
     return this.clubesService.update(id, dto);
   }
@@ -120,9 +128,10 @@ export class ClubesController {
    * DESACTIVAR CLUB
    */
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar un club' })
+  @ApiOperation({ summary: 'Desactivar un club (Exclusivo SuperAdmin)' })
   async delete(@Param('id') id: string) {
     return this.clubesService.delete(id);
   }

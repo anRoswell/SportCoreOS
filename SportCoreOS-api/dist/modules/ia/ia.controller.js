@@ -33,6 +33,9 @@ let IaController = class IaController {
     async chatTacticoDt(user, dto) {
         return this.iaService.chatTacticoDt(user.clubId, dto);
     }
+    async generarGraficaConvocatoria(user, dto) {
+        return this.iaService.generarGraficaConvocatoriaIa(user.clubId, dto);
+    }
 };
 exports.IaController = IaController;
 __decorate([
@@ -62,6 +65,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, ia_dto_1.ChatTacticoDtDto]),
     __metadata("design:returntype", Promise)
 ], IaController.prototype, "chatTacticoDt", null);
+__decorate([
+    (0, common_1.Post)('generar-grafica-convocatoria'),
+    (0, swagger_1.ApiOperation)({ summary: 'Generar diseño inteligente de póster para redes sociales con IA Gemini' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], IaController.prototype, "generarGraficaConvocatoria", null);
 exports.IaController = IaController = __decorate([
     (0, swagger_1.ApiTags)('Módulo 10: SportCore AI (Asistente Gemini)'),
     (0, swagger_1.ApiBearerAuth)(),

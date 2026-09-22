@@ -6,8 +6,21 @@ import { CreateProspectoDto, UpdateProspectoDto, CreateEvaluacionDto } from './s
 export class ScoutingService {
   constructor(private readonly scoutingRepo: ScoutingRepository) {}
 
-  async findAllProspectos(clubId: string, search?: string, estado?: string, posicion?: string) {
-    return this.scoutingRepo.findAllProspectos(clubId, search, estado, posicion);
+  async findAllProspectos(
+    clubId: string,
+    optionsOrSearch?:
+      | string
+      | {
+          page?: number;
+          limit?: number;
+          search?: string;
+          estado?: string;
+          posicion?: string;
+        },
+    estado?: string,
+    posicion?: string,
+  ) {
+    return this.scoutingRepo.findAllProspectos(clubId, optionsOrSearch, estado, posicion);
   }
 
   async findProspectoById(id: string, clubId: string) {
