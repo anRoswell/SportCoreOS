@@ -114,31 +114,59 @@ import { environment } from '../../../environments/environment';
         <div class="quick-actions-grid">
           <a routerLink="/convocatorias" class="action-tile">
             <div class="tile-icon bg-emerald-subtle text-emerald">
-              <i class="fa-solid fa-user-check"></i>
+              <i class="fa-solid fa-clipboard-user"></i>
             </div>
-            <span>Confirmar Asistencia</span>
+            <span>Convocatorias</span>
           </a>
 
-          <a routerLink="/partidos" class="action-tile">
+          <a routerLink="/entrenamientos" class="action-tile">
             <div class="tile-icon bg-blue-subtle text-blue">
-              <i class="fa-solid fa-calendar-days"></i>
+              <i class="fa-solid fa-stopwatch-20"></i>
             </div>
-            <span>Calendario Partidos</span>
+            <span>Asistencia Campo</span>
           </a>
 
-          <a routerLink="/perfil" class="action-tile">
+          <a routerLink="/canchas" class="action-tile">
+            <div class="tile-icon bg-emerald-subtle text-emerald">
+              <i class="fa-solid fa-futbol"></i>
+            </div>
+            <span>Alquiler Canchas</span>
+          </a>
+
+          <a routerLink="/pagos" class="action-tile">
+            <div class="tile-icon bg-blue-subtle text-blue">
+              <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <span>Mensualidades</span>
+          </a>
+
+          <a routerLink="/tienda" class="action-tile">
             <div class="tile-icon bg-amber-subtle text-amber">
-              <i class="fa-solid fa-id-card"></i>
+              <i class="fa-solid fa-bag-shopping"></i>
             </div>
-            <span>Mi Ficha & Carnet</span>
+            <span>Tienda Oficial</span>
           </a>
 
-          <button type="button" class="action-tile" (click)="onSupportClick()">
+          <a routerLink="/rendimiento" class="action-tile">
             <div class="tile-icon bg-purple-subtle text-pink">
-              <i class="fa-brands fa-whatsapp"></i>
+              <i class="fa-solid fa-chart-simple"></i>
             </div>
-            <span>Soporte Academia</span>
-          </button>
+            <span>Radar & Biometría</span>
+          </a>
+
+          <a routerLink="/noticias" class="action-tile">
+            <div class="tile-icon bg-blue-subtle text-blue">
+              <i class="fa-solid fa-newspaper"></i>
+            </div>
+            <span>Noticias & Circulares</span>
+          </a>
+
+          <a routerLink="/notificaciones" class="action-tile">
+            <div class="tile-icon bg-amber-subtle text-amber">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <span>Notificaciones</span>
+          </a>
         </div>
       </section>
     </main>

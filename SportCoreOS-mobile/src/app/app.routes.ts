@@ -53,6 +53,26 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'canchas',
+    loadComponent: () => import('./pages/canchas/canchas-mobile.component').then(m => m.CanchasMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'notificaciones',
+    loadComponent: () => import('./pages/notificaciones/notificaciones-mobile.component').then(m => m.NotificacionesMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'noticias',
+    loadComponent: () => import('./pages/noticias/noticias-mobile.component').then(m => m.NoticiasMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'rendimiento',
+    loadComponent: () => import('./pages/rendimiento/rendimiento-mobile.component').then(m => m.RendimientoMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'perfil',
     loadComponent: () => import('./pages/perfil/perfil-mobile.component').then(m => m.PerfilMobileComponent),
     canActivate: [authGuard]
