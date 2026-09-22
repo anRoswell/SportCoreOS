@@ -314,18 +314,18 @@ import { AlertService } from '../../core/services/alert.service';
     }
 
     .form-floating-group {
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
 
       label {
         display: block;
-        font-size: 0.84rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.35rem;
 
         i {
-          color: #059669;
-          margin-right: 4px;
+          color: #10b981;
+          margin-right: 3px;
         }
       }
 
@@ -333,12 +333,12 @@ import { AlertService } from '../../core/services/alert.service';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.35rem;
 
         .link-forgot {
-          font-size: 0.76rem;
-          font-weight: 800;
-          color: #047857;
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #059669;
           text-decoration: none;
 
           &:hover {
@@ -351,24 +351,24 @@ import { AlertService } from '../../core/services/alert.service';
     .stadium-input {
       width: 100%;
       background: #f8fafc;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid #e2e8f0;
       border-radius: 12px;
-      padding: 0.85rem 1rem;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #020617;
+      padding: 0.8rem 1rem;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: #0f172a;
       outline: none;
       transition: all 0.2s ease;
 
       &:focus {
         background: #ffffff;
         border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
       }
 
       &::placeholder {
         color: #94a3b8;
-        font-weight: 500;
+        font-weight: 400;
       }
     }
 
