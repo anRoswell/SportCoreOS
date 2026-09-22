@@ -38,6 +38,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'entrenamientos',
+    loadComponent: () => import('./pages/entrenamientos/entrenamientos-mobile.component').then(m => m.EntrenamientosMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'perfil',
     loadComponent: () => import('./pages/perfil/perfil-mobile.component').then(m => m.PerfilMobileComponent),
     canActivate: [authGuard]
