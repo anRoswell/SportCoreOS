@@ -408,7 +408,7 @@ export interface JugadorAsistencia {
 
     .page-content {
       padding: 0.85rem;
-      padding-bottom: calc(90px + var(--safe-area-bottom));
+      padding-bottom: calc(140px + var(--safe-area-bottom));
       width: 100%;
       max-width: 100vw;
       overflow-x: hidden !important;
@@ -744,15 +744,23 @@ export interface JugadorAsistencia {
       }
     }
 
-    /* FOOTER GUARDAR */
+    /* FOOTER GUARDAR (BARRA FLOTANTE FIJA SOBRE EL BOTTOM NAV) */
     .save-footer {
-      position: sticky;
+      position: fixed;
       bottom: calc(65px + var(--safe-area-bottom));
-      margin-top: 0.35rem;
-      z-index: 30;
+      left: 0;
+      right: 0;
+      padding: 0.6rem 0.85rem;
+      background: linear-gradient(180deg, rgba(11, 21, 16, 0.4) 0%, rgba(11, 21, 16, 0.95) 40%, #0b1510 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 50;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
 
       .btn-save {
         width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
         padding: 0.85rem;
         font-size: 0.88rem;
         font-weight: 900;
@@ -764,7 +772,7 @@ export interface JugadorAsistencia {
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
         cursor: pointer;
 
         &:active {
