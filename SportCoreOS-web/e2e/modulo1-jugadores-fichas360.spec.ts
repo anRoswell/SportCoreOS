@@ -200,6 +200,14 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     await expect(tabFin).toHaveClass(/active/);
     await expect(page.locator('.fin-stat-card').first()).toBeVisible();
 
+    // Explorar Pestaña 5: Clínicas & Insignias Pro
+    const tabServicios = page.locator('.exp-tab-btn', { hasText: 'Clínicas & Insignias Pro' });
+    await tabServicios.click();
+    await page.waitForTimeout(250);
+    await expect(tabServicios).toHaveClass(/active/);
+    await expect(page.locator('.insignia-card').first()).toBeVisible();
+    await expect(page.locator('.pane-title', { hasText: 'Clínicas de Micro-Habilidades' })).toBeVisible();
+
     // Cerrar Modal
     const btnClose = page.locator('.modal-close-btn');
     await btnClose.click();

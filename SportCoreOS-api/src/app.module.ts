@@ -20,6 +20,7 @@ import { TelemetriaModule } from './modules/telemetria/telemetria.module';
 import { TenantModulesModule } from './modules/tenant-modules/tenant-modules.module';
 import { ParametrosModule } from './modules/parametros/parametros.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { ServiciosModule } from './modules/servicios/servicios.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -50,6 +51,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     TenantModulesModule,
     ParametrosModule,
     RolesModule,
+    ServiciosModule,
   ],
   providers: [
     {

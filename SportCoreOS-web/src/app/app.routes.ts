@@ -183,6 +183,17 @@ export const infraestructuraRoutes: Routes = [
       title: 'Tienda Oficial & Kits Deportivos'
     },
   },
+  {
+    path: 'servicios',
+    loadComponent: () =>
+      import('./pages/servicios/servicios.component').then((m) => m.ServiciosComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'SERVICIOS_MASTERCLASSES',
+      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT', 'SUPER_ADMIN'],
+      title: 'Clínicas & Masterclasses Pro'
+    },
+  },
 ];
 
 /* =============================================================================

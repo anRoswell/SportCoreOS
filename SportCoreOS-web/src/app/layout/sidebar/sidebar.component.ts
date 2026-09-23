@@ -103,6 +103,12 @@ import { AuthService } from '../../core/services/auth.service';
           <span *ngIf="!api.sidebarCollapsed()">Tienda & Kits Oficiales</span>
         </a>
 
+        <a routerLink="/servicios" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Clínicas & Masterclasses' : ''">
+          <i class="fa-solid fa-graduation-cap text-amber"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Servicios & Clínicas</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#f59e0b,#d97706);" *ngIf="!api.sidebarCollapsed()">Nuevo</span>
+        </a>
+
         <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">PORTAL FAMILIAR</div>
 
         <a routerLink="/portal-padres" routerLinkActive="active" class="nav-item parent-portal-link" [title]="api.sidebarCollapsed() ? 'Portal Móvil Padres' : ''">

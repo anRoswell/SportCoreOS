@@ -35,6 +35,7 @@ export interface JugadorExpediente360 {
   acudientes: any[];
   historialBiometrico: any[];
   historialFinanciero: any[];
+  clinicasInsignias?: any[];
   resumenFinanciero: {
     totalFacturado: number;
     totalPagado: number;
@@ -984,6 +985,49 @@ export class ApiService {
       map(res => res.data || res)
     );
   }
+
+  // ==========================================
+  // MÓDULO 16: SERVICIOS ESPECIALIZADOS & MASTERCLASSES
+  // ==========================================
+  getServicios(options?: { categoria?: string; search?: string }): Observable<any[]> {
+    let params = new HttpParams();
+    if (options?.categoria && options.categoria !== 'TODAS') {
+      params = params.set('categoria', options.categoria);
+    }
+    if (options?.search) {
+      params = params.set('search', options.search);
+    }
+    return this.http.get<any>(`${this.apiUrl}/servicios`, { params }).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  getServicioById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/servicios/${id}`).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  createServicio(dto: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/servicios`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  inscribirServicio(servicioId: string, dto: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/servicios/${servicioId}/inscribir`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  getInscripcionesServicio(servicioId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/servicios/${servicioId}/inscripciones`).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
 }
+
 
 

@@ -331,124 +331,132 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
         } @else {
           <!-- VISTA 1: TABLA DETALLADA -->
           @if (viewMode() === 'TABLE') {
-            <table class="fut-table">
-              <thead>
-                <tr>
-                  <th>Dorsal / Foto</th>
-                  <th>Nombre del Jugador</th>
-                  <th>Documento</th>
-                  <th>Categoría</th>
-                  <th>Posición & Perfil</th>
-                  <th>Biometría (Talla / Peso / IMC)</th>
-                  <th>Estado</th>
-                  <th class="text-right">Acciones 360°</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (j of paginatedJugadores(); track j.id) {
-                  <tr class="player-row" [attr.data-doc]="j.numero_documento">
-                    <!-- Dorsal / Foto -->
-                    <td>
-                      <div class="player-cell">
-                        <div class="dorsal-tag">
-                          <span class="dorsal-hash">#</span>{{ j.numero_dorsal || '-' }}
-                        </div>
-                        <div class="avatar-sm">
-                          <img 
-                            [src]="resolvePhotoUrl(j.foto_url, j.genero)" 
-                            [alt]="j.nombres" />
-                        </div>
-                      </div>
-                    </td>
-
-                    <!-- Nombre -->
-                    <td>
-                      <div class="name-box">
-                        <span class="player-name" (click)="openExpediente(j.id)">
-                          {{ j.nombres }} {{ j.apellidos }}
-                        </span>
-                        <span class="player-sub">
-                          {{ getEdad(j.fecha_nacimiento) }} años • {{ j.eps || 'EPS Sanitas' }}
-                        </span>
-                      </div>
-                    </td>
-
-                    <!-- Categoría -->
-                    <td>
-                      <span class="badge-cat" [style.background-color]="j.color_distintivo || '#10B981'">
-                        <i class="fa-solid fa-shield"></i>
-                        {{ j.categoria_nombre }}
-                      </span>
-                    </td>
-
-                    <!-- Posición -->
-                    <td>
-                      <div class="pos-cell">
-                        <i class="fa-solid fa-futbol"></i>
-                        <span>{{ j.posicion_principal }}</span>
-                      </div>
-                    </td>
-
-                    <!-- Rama / Género -->
-                    <td>
-                      <span class="gender-pill" [class]="j.genero ? j.genero.toLowerCase() : 'masculino'">
-                        <i class="fa-solid" [class.fa-mars]="j.genero === 'MASCULINO'" [class.fa-venus]="j.genero === 'FEMENINO'"></i>
-                        {{ j.genero === 'FEMENINO' ? 'Femenino' : 'Masculino' }}
-                      </span>
-                    </td>
-
-                    <!-- Documento -->
-                    <td>
-                      <span class="doc-text">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
-                    </td>
-
-                    <!-- Estado Matrícula -->
-                    <td>
-                      <span class="status-badge" [class]="j.estado_matricula ? j.estado_matricula.toLowerCase() : 'activo'">
-                        <span class="status-dot"></span>
-                        {{ j.estado_matricula || 'ACTIVO' }}
-                      </span>
-                    </td>
-
-                    <!-- Beca -->
-                    <td>
-                      <span class="scholarship-pill" [class.has-beca]="j.porcentaje_beca > 0">
-                        {{ j.porcentaje_beca > 0 ? (j.porcentaje_beca + '% Beca') : '100% Tarifa' }}
-                      </span>
-                    </td>
-
-                    <!-- Acciones -->
-                    <td>
-                      <div class="table-actions">
-                        <button class="action-btn btn-view" (click)="openExpediente(j.id)" title="Ver Expediente 360°">
-                          <i class="fa-solid fa-folder-open"></i>
-                        </button>
-                        <button class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
-                          <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Retirar / Dar de Baja">
-                          <i class="fa-solid fa-user-minus"></i>
-                        </button>
-                      </div>
-                    </td>
+            <div class="table-scroll-wrapper">
+              <table class="fut-table">
+                <thead>
+                  <tr>
+                    <th>Dorsal / Foto</th>
+                    <th>Nombre del Jugador</th>
+                    <th>Categoría</th>
+                    <th>Posición</th>
+                    <th>Rama</th>
+                    <th>Documento</th>
+                    <th>Estado</th>
+                    <th>Beca</th>
+                    <th class="text-right">Acciones 360°</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (j of paginatedJugadores(); track j.id) {
+                    <tr class="player-row" [attr.data-doc]="j.numero_documento">
+                      <!-- Dorsal / Foto -->
+                      <td>
+                        <div class="player-cell">
+                          <div class="dorsal-tag">
+                            <span class="dorsal-hash">#</span>{{ j.numero_dorsal || '-' }}
+                          </div>
+                          <div class="avatar-sm">
+                            <img 
+                              [src]="resolvePhotoUrl(j.foto_url, j.genero)" 
+                              [alt]="j.nombres" />
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- Nombre -->
+                      <td>
+                        <div class="name-box">
+                          <span class="player-name" (click)="openExpediente(j.id)">
+                            {{ j.nombres }} {{ j.apellidos }}
+                          </span>
+                          <span class="player-sub">
+                            {{ getEdad(j.fecha_nacimiento) }} años • {{ j.eps || 'EPS Sanitas' }}
+                          </span>
+                        </div>
+                      </td>
+
+                      <!-- Categoría -->
+                      <td>
+                        <span class="badge-cat" [style.background-color]="j.color_distintivo || '#10B981'">
+                          <i class="fa-solid fa-shield"></i>
+                          {{ j.categoria_nombre }}
+                        </span>
+                      </td>
+
+                      <!-- Posición -->
+                      <td>
+                        <div class="pos-cell">
+                          <i class="fa-solid fa-futbol"></i>
+                          <span>{{ j.posicion_principal }}</span>
+                        </div>
+                      </td>
+
+                      <!-- Rama / Género -->
+                      <td>
+                        <span class="gender-pill" [class]="j.genero ? j.genero.toLowerCase() : 'masculino'">
+                          <i class="fa-solid" [class.fa-mars]="j.genero === 'MASCULINO'" [class.fa-venus]="j.genero === 'FEMENINO'"></i>
+                          {{ j.genero === 'FEMENINO' ? 'Femenino' : 'Masculino' }}
+                        </span>
+                      </td>
+
+                      <!-- Documento -->
+                      <td>
+                        <span class="doc-text">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
+                      </td>
+
+                      <!-- Estado Matrícula -->
+                      <td>
+                        <span class="status-badge" [class]="j.estado_matricula ? j.estado_matricula.toLowerCase() : 'activo'">
+                          <span class="status-dot"></span>
+                          {{ j.estado_matricula || 'ACTIVO' }}
+                        </span>
+                      </td>
+
+                      <!-- Beca -->
+                      <td>
+                        <span class="scholarship-pill" [class.has-beca]="j.porcentaje_beca > 0">
+                          {{ j.porcentaje_beca > 0 ? (j.porcentaje_beca + '% Beca') : '100% Tarifa' }}
+                        </span>
+                      </td>
+
+                      <!-- Acciones -->
+                      <td>
+                        <div class="table-actions">
+                          <button class="action-btn btn-view" (click)="openExpediente(j.id)" title="Ver Expediente 360°">
+                            <i class="fa-solid fa-folder-open"></i>
+                          </button>
+                          <button class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
+                          <button class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Retirar / Dar de Baja">
+                            <i class="fa-solid fa-user-minus"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           }
 
           <!-- VISTA DE TARJETAS (FICHAS 360°) -->
           @if (viewMode() === 'CARDS') {
             <div class="player-cards-grid">
               @for (j of paginatedJugadores(); track j.id) {
-                <div class="player-feature-card">
-                  <!-- Header de la tarjeta: Categoría y Dorsal -->
-                  <div class="pfc-header">
-                    <span class="pfc-category-badge">
+                <div class="player-fut-card" [class.player-card-elite]="j.categoria_nombre?.toLowerCase()?.includes('profesional') || j.categoria_nombre?.toLowerCase()?.includes('élite') || j.categoria_nombre?.toLowerCase()?.includes('elite')">
+                  <!-- Header de la tarjeta: Categoría, Beca y Dorsal -->
+                  <div class="pfc-top-bar">
+                    <span class="pfc-cat-badge">
                       <span class="cat-dot" [style.background-color]="j.color_distintivo || '#10B981'"></span>
                       {{ j.categoria_nombre }}
                     </span>
-                    <span class="pfc-dorsal-tag">#{{ j.numero_dorsal || '-' }}</span>
+                    <div class="pfc-top-tags">
+                      @if (j.porcentaje_beca > 0) {
+                        <span class="pfc-scholarship-tag">{{ j.porcentaje_beca }}% Beca</span>
+                      }
+                      <span class="pfc-dorsal-tag">#{{ j.numero_dorsal || '-' }}</span>
+                    </div>
                   </div>
 
                   <!-- Cuerpo Principal: Foto, Nombre, Documento y Estado -->
@@ -463,6 +471,9 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
                       <div class="pfc-meta-row">
                         <span class="pfc-doc">{{ j.tipo_documento }} {{ j.numero_documento }}</span>
                         <span class="pfc-age">• {{ getEdad(j.fecha_nacimiento) }} años</span>
+                      </div>
+                      <div class="pfc-eps-row">
+                        <i class="fa-solid fa-hospital-user"></i> {{ j.eps || 'EPS Sanitas' }}
                       </div>
                     </div>
                   </div>
@@ -499,7 +510,7 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
                         <span class="imc-badge" [class]="getImcClass(j.imc)">{{ j.imc }}</span>
                       </div>
                     } @else {
-                      <button class="pfc-btn-add-bio" (click)="openBiometriaModal(j)">
+                      <button type="button" class="pfc-btn-add-bio" (click)="openBiometriaModal(j)">
                         <i class="fa-solid fa-plus"></i> Registrar Biometría
                       </button>
                     }
@@ -507,18 +518,18 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
 
                   <!-- Footer con Acciones 360° -->
                   <div class="pfc-footer">
-                    <button class="pfc-btn-view" (click)="openExpediente(j.id)">
+                    <button type="button" class="pfc-btn-view" (click)="openExpediente(j.id)">
                       <i class="fa-solid fa-id-card"></i>
                       <span>Ficha 360°</span>
                     </button>
                     <div class="pfc-sub-actions">
-                      <button class="action-btn btn-bio" (click)="openBiometriaModal(j)" title="Registrar Biometría">
+                      <button type="button" class="action-btn btn-bio" (click)="openBiometriaModal(j)" title="Registrar Biometría">
                         <i class="fa-solid fa-heart-pulse"></i>
                       </button>
-                      <button class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
+                      <button type="button" class="action-btn btn-edit" (click)="openEditModal(j)" title="Editar Jugador">
                         <i class="fa-solid fa-pen"></i>
                       </button>
-                      <button class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Dar de Baja">
+                      <button type="button" class="action-btn btn-delete" (click)="openDeleteConfirmModal(j)" title="Dar de Baja">
                         <i class="fa-solid fa-user-xmark"></i>
                       </button>
                     </div>
@@ -648,6 +659,13 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
                 (click)="activeExpTab.set('FINANZAS')">
                 <i class="fa-solid fa-file-invoice-dollar"></i>
                 <span>4. Estado Financiero</span>
+              </button>
+              <button 
+                class="exp-tab-btn" 
+                [class.active]="activeExpTab() === 'SERVICIOS'"
+                (click)="activeExpTab.set('SERVICIOS')">
+                <i class="fa-solid fa-graduation-cap text-amber"></i>
+                <span>5. Clínicas & Insignias Pro ({{ selectedExpediente()!.clinicasInsignias?.length || 0 }})</span>
               </button>
             </div>
 
@@ -981,6 +999,111 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
                           }
                         </tbody>
                       </table>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- PESTAÑA 5: CLÍNICAS ESPECIALIZADAS & INSIGNIAS PRO -->
+              @if (activeExpTab() === 'SERVICIOS') {
+                <div class="tab-pane">
+                  <div class="pane-header-action">
+                    <div>
+                      <h3 class="pane-title">Clínicas de Micro-Habilidades & Insignias Élite</h3>
+                      <p class="pane-desc">Programas de alto rendimiento completados, certificaciones y pases QR adquiridos.</p>
+                    </div>
+                    <a routerLink="/servicios" (click)="closeExpediente()" class="btn-primary-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                      <i class="fa-solid fa-plus"></i>
+                      <span>Inscribir a Clínica Élite</span>
+                    </a>
+                  </div>
+
+                  <!-- INSIGNIAS DESBLOQUEADAS (BÓVEDA DE RECOMPENSAS FUT) -->
+                  <div class="section-box mt-2">
+                    <h4 class="box-title"><i class="fa-solid fa-award text-amber"></i> Insignias Deportivas Desbloqueadas en Ficha 360°</h4>
+                    <div class="insignias-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:1rem; margin-top:0.75rem;">
+                      <div class="insignia-card" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                        <div style="font-size:1.8rem; background:rgba(16,185,129,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                          ⚡
+                        </div>
+                        <div>
+                          <strong style="color:#ffffff; font-size:0.95rem; display:block;">Rayo de Aceleración Sub-12</strong>
+                          <span style="color:#10b981; font-size:0.8rem; font-weight:700;">+4 Pliometría & Sprint 5m</span>
+                          <span style="display:inline-block; font-size:0.7rem; color:#a7f3d0; background:rgba(16,185,129,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">Certificado</span>
+                        </div>
+                      </div>
+
+                      <div class="insignia-card" style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                        <div style="font-size:1.8rem; background:rgba(6,182,212,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                          🧠
+                        </div>
+                        <div>
+                          <strong style="color:#ffffff; font-size:0.95rem; display:block;">Visión Periférica 360°</strong>
+                          <span style="color:#06b6d4; font-size:0.8rem; font-weight:700;">+5 Neuro-Agilidad Fitlight</span>
+                          <span style="display:inline-block; font-size:0.7rem; color:#bae6fd; background:rgba(6,182,212,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">Certificado</span>
+                        </div>
+                      </div>
+
+                      <div class="insignia-card" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                        <div style="font-size:1.8rem; background:rgba(245,158,11,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                          🪄
+                        </div>
+                        <div>
+                          <strong style="color:#ffffff; font-size:0.95rem; display:block;">Maestro del Desborde 1v1</strong>
+                          <span style="color:#f59e0b; font-size:0.8rem; font-weight:700;">+6 Fintas & Cambio de Ritmo</span>
+                          <span style="display:inline-block; font-size:0.7rem; color:#fde68a; background:rgba(245,158,11,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">En Progreso</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LISTADO DE CLÍNICAS / PASES REGISTRADOS -->
+                  <div class="section-box mt-3">
+                    <h4 class="box-title"><i class="fa-solid fa-ticket text-emerald"></i> Historial de Inscripciones & Pases QR Oficiales</h4>
+                    @if (selectedExpediente()!.clinicasInsignias && selectedExpediente()!.clinicasInsignias!.length > 0) {
+                      <div class="table-responsive">
+                        <table class="exp-fin-table">
+                          <thead>
+                            <tr>
+                              <th>Clínica Especializada</th>
+                              <th>Entrenador / Sede</th>
+                              <th>Plan</th>
+                              <th>Valor Pagado</th>
+                              <th>Pase QR Ticket</th>
+                              <th>Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (c of selectedExpediente()!.clinicasInsignias!; track c.id) {
+                              <tr>
+                                <td>
+                                  <div class="font-bold text-white">{{ c.servicio_titulo }}</div>
+                                  <small class="text-amber">{{ c.insignia_obtenida }}</small>
+                                </td>
+                                <td>
+                                  <div>{{ c.entrenador_nombre }}</div>
+                                  <small class="text-muted">{{ c.cancha_nombre }}</small>
+                                </td>
+                                <td><span class="badge badge-info">{{ c.tipo_plan }}</span></td>
+                                <td><strong>\${{ c.monto_pagado | number }}</strong></td>
+                                <td>
+                                  <span style="background:rgba(255,255,255,0.1); padding:0.2rem 0.5rem; border-radius:4px; font-family:monospace; font-size:0.8rem; color:#10b981;">
+                                    <i class="fa-solid fa-qrcode"></i> {{ c.codigo_qr_ticket?.substring(0, 12) }}...
+                                  </span>
+                                </td>
+                                <td>
+                                  <span class="badge badge-success">{{ c.estado_pago }}</span>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    } @else {
+                      <div class="empty-tab-state" style="padding:2rem; text-align:center; color:#94a3b8;">
+                        <i class="fa-solid fa-graduation-cap" style="font-size:2.5rem; margin-bottom:0.75rem; color:#64748b;"></i>
+                        <p>No registra inscripciones directas a clínicas este mes. Puedes inscribirlo desde el catálogo de Servicios.</p>
+                      </div>
                     }
                   </div>
                 </div>
@@ -2558,16 +2681,17 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
       background: var(--bg-card);
 
       .player-fut-card {
+        position: relative;
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-top: 4px solid #10B981;
+        border-top: 4px solid var(--color-primary);
         border-radius: var(--radius-lg);
         padding: 1.15rem;
         display: flex;
         flex-direction: column;
         gap: 0.85rem;
         box-shadow: var(--shadow-sm);
-        transition: all 0.25s ease;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 
         &:hover {
           transform: translateY(-3px);
@@ -2575,10 +2699,80 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
           border-color: rgba(16, 185, 129, 0.4);
         }
 
+        /* CARD ÉLITE / PROFESIONAL (ESTILO HOLOGRÁFICO CHAMPAGNE / FUT PRISMATIC) */
+        &.player-card-elite {
+          border: 1.5px solid #eab308 !important;
+          border-top: 4px solid #eab308 !important;
+          background: linear-gradient(135deg, rgba(254, 240, 138, 0.12) 0%, rgba(234, 179, 8, 0.06) 50%, var(--bg-surface) 100%) !important;
+          box-shadow: 0 4px 18px rgba(234, 179, 8, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+          overflow: hidden;
+
+          /* Capa Holográfica Prisma Suave */
+          &::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: linear-gradient(
+              115deg,
+              transparent 20%,
+              rgba(255, 182, 193, 0.1) 32%,
+              rgba(254, 240, 138, 0.18) 42%,
+              rgba(167, 243, 208, 0.14) 52%,
+              rgba(186, 230, 253, 0.18) 62%,
+              rgba(221, 214, 254, 0.12) 72%,
+              transparent 85%
+            );
+            transform: rotate(25deg);
+            pointer-events: none;
+            transition: transform 0.6s ease, opacity 0.4s ease;
+            opacity: 0.65;
+            background-size: 200% 200%;
+          }
+
+          &:hover {
+            box-shadow: 0 10px 28px rgba(234, 179, 8, 0.28), 0 0 15px rgba(250, 204, 21, 0.3) !important;
+            border-color: #ca8a04 !important;
+            transform: translateY(-4px);
+
+            &::before {
+              opacity: 1;
+              transform: rotate(25deg) translateY(-8%);
+            }
+          }
+
+          .pfc-name {
+            color: var(--text-heading) !important;
+            font-weight: 800;
+
+            &::before {
+              content: '⭐ ';
+              font-size: 0.75rem;
+              color: #eab308;
+            }
+          }
+
+          .pfc-dorsal-tag {
+            background: linear-gradient(135deg, #fef08a 0%, #facc15 50%, #eab308 100%) !important;
+            border: 1px solid #ca8a04 !important;
+            color: #713f12 !important;
+            font-weight: 900 !important;
+            box-shadow: 0 2px 6px rgba(202, 138, 4, 0.25);
+          }
+
+          .pfc-cat-badge {
+            color: #854d0e;
+            font-weight: 800;
+          }
+        }
+
         .pfc-top-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 0.5rem;
 
           .pfc-cat-badge {
             display: inline-flex;
@@ -2587,22 +2781,43 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
             font-size: 0.75rem;
             font-weight: 800;
             color: var(--text-heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
             .cat-dot {
               width: 7px;
               height: 7px;
               border-radius: 50%;
+              flex-shrink: 0;
             }
           }
 
-          .pfc-dorsal-tag {
-            font-size: 0.95rem;
-            font-weight: 900;
-            color: var(--color-primary);
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 0.15rem 0.55rem;
-            border-radius: var(--radius-sm);
+          .pfc-top-tags {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-shrink: 0;
+
+            .pfc-scholarship-tag {
+              font-size: 0.68rem;
+              font-weight: 800;
+              color: #f59e0b;
+              background: rgba(245, 158, 11, 0.12);
+              border: 1px solid rgba(245, 158, 11, 0.3);
+              padding: 0.12rem 0.45rem;
+              border-radius: var(--radius-xs);
+            }
+
+            .pfc-dorsal-tag {
+              font-size: 0.9rem;
+              font-weight: 900;
+              color: var(--color-primary);
+              background: rgba(16, 185, 129, 0.12);
+              border: 1px solid rgba(16, 185, 129, 0.3);
+              padding: 0.15rem 0.55rem;
+              border-radius: var(--radius-sm);
+            }
           }
         }
 
@@ -2612,8 +2827,8 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
           gap: 0.85rem;
 
           .pfc-avatar-wrap {
-            width: 52px;
-            height: 52px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             overflow: hidden;
             position: relative;
@@ -2621,6 +2836,12 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
             border: 2px solid var(--border-color);
             background: var(--bg-card);
             flex-shrink: 0;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+
+            &:hover {
+              transform: scale(1.05);
+              border-color: var(--color-primary);
+            }
 
             img {
               width: 100%;
@@ -2646,13 +2867,13 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
 
           .pfc-player-info {
             flex: 1;
-            overflow: hidden;
+            min-width: 0;
 
             .pfc-name {
               font-size: 0.95rem;
               font-weight: 800;
               color: var(--text-heading);
-              margin: 0 0 0.2rem 0;
+              margin: 0 0 0.15rem 0;
               cursor: pointer;
               white-space: nowrap;
               overflow: hidden;
@@ -2669,10 +2890,24 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
               color: var(--text-muted);
               font-weight: 600;
               display: flex;
-              gap: 0.25rem;
+              gap: 0.35rem;
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+            }
+
+            .pfc-eps-row {
+              font-size: 0.7rem;
+              color: var(--text-muted);
+              margin-top: 0.15rem;
+              display: flex;
+              align-items: center;
+              gap: 0.3rem;
+
+              i {
+                color: var(--color-primary);
+                font-size: 0.65rem;
+              }
             }
           }
         }
@@ -2686,13 +2921,26 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
           .pfc-pos-pill {
             background: rgba(59, 130, 246, 0.12);
             color: #3b82f6;
-            padding: 0.25rem 0.55rem;
+            padding: 0.22rem 0.55rem;
             border-radius: var(--radius-sm);
             font-size: 0.725rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
+          }
+
+          .pos-sec-badge {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--color-primary);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: var(--radius-xs);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
           }
 
           .pfc-foot-badge {
@@ -2786,6 +3034,30 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
             display: flex;
             align-items: center;
             gap: 0.25rem;
+
+            .action-btn {
+              width: 32px;
+              height: 32px;
+              padding: 0;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: var(--radius-sm);
+              border: 1px solid var(--border-color);
+              background: var(--bg-card);
+              color: var(--text-muted);
+              font-size: 0.8rem;
+              cursor: pointer;
+              transition: all 0.2s ease;
+
+              &:hover {
+                transform: translateY(-1px);
+              }
+
+              &.btn-bio:hover { color: #3b82f6; border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+              &.btn-edit:hover { color: #f59e0b; border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+              &.btn-delete:hover { color: #ef4444; border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+            }
           }
         }
       }
@@ -4042,7 +4314,7 @@ export class JugadoresComponent implements OnInit {
   // Expediente 360°
   showExpedienteModal = signal<boolean>(false);
   selectedExpediente = signal<JugadorExpediente360 | null>(null);
-  activeExpTab = signal<'DEPORTIVO' | 'FAMILIA' | 'BIOMETRIA' | 'FINANZAS'>('DEPORTIVO');
+  activeExpTab = signal<'DEPORTIVO' | 'FAMILIA' | 'BIOMETRIA' | 'FINANZAS' | 'SERVICIOS'>('DEPORTIVO');
 
   // Modal Inscribir Alumno (con Stepper de 3 Pasos)
   showCreateModal = signal<boolean>(false);

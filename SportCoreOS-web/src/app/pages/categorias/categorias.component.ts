@@ -34,19 +34,41 @@ import { ApiService } from '../../core/services/api.service';
       <!-- CARDS GRID -->
       <div class="cards-grid">
         @for (c of filteredCategorias(); track c.id) {
-          <div class="fut-card cat-card">
+          <div class="fut-card cat-card" [class.cat-card-elite]="c.nivel_competencia === 'ELITE' || c.codigo_categoria === 'PRO-SELECCION'">
+            @if (c.nivel_competencia === 'ELITE' || c.codigo_categoria === 'PRO-SELECCION') {
+              <div class="elite-ribbon">
+                <i class="fa-solid fa-crown"></i>
+                <span>ÉLITE PRO</span>
+                <i class="fa-solid fa-sparkles"></i>
+              </div>
+            }
+
             <div class="cat-header">
               <span class="cat-badge" [style.background-color]="c.color_distintivo || '#10b981'">{{ c.codigo_categoria }}</span>
-              <span class="badge" [class.badge-success]="c.rama === 'MASCULINO'" [class.badge-purple]="c.rama === 'FEMENINO'" [class.badge-blue]="c.rama === 'MIXTO'">
-                {{ c.rama }}
-              </span>
+              <div class="cat-header-badges">
+                @if (c.codigo_categoria === 'PRO-SELECCION') {
+                  <span class="badge badge-colombia">
+                    <span class="flag-dot">🇨🇴</span> PROFESIONAL
+                  </span>
+                }
+                <span class="badge" [class.badge-success]="c.rama === 'MASCULINO'" [class.badge-purple]="c.rama === 'FEMENINO'" [class.badge-blue]="c.rama === 'MIXTO'">
+                  {{ c.rama }}
+                </span>
+              </div>
             </div>
 
-            <h3 class="cat-name">{{ c.nombre }}</h3>
+            <h3 class="cat-name">
+              @if (c.nivel_competencia === 'ELITE' || c.codigo_categoria === 'PRO-SELECCION') {
+                <i class="fa-solid fa-star elite-star-icon"></i>
+              }
+              {{ c.nombre }}
+            </h3>
             <p class="cat-years">Años de nacimiento: {{ c.anio_nacimiento_min }} - {{ c.anio_nacimiento_max }}</p>
 
             <div class="cat-details-row">
-              <span class="level-pill"><i class="fa-solid fa-medal"></i> {{ c.nivel_competencia }}</span>
+              <span class="level-pill" [class.level-pill-elite]="c.nivel_competencia === 'ELITE' || c.codigo_categoria === 'PRO-SELECCION'">
+                <i class="fa-solid fa-medal"></i> {{ c.nivel_competencia }}
+              </span>
               <span class="quota-pill"><i class="fa-solid fa-users"></i> Cupo: {{ c.cupo_maximo || 25 }}</span>
             </div>
 
@@ -63,7 +85,7 @@ import { ApiService } from '../../core/services/api.service';
                 <button class="btn-secondary btn-sm btn-edit-cat" (click)="openEditModal(c)" title="Editar Categoría">
                   <i class="fa-solid fa-pen-to-square"></i> Editar
                 </button>
-                <button class="btn-secondary btn-sm" (click)="openPlantelModal(c)" title="Ver Plantel Oficial">
+                <button class="btn-secondary btn-sm" [class.btn-elite-action]="c.nivel_competencia === 'ELITE' || c.codigo_categoria === 'PRO-SELECCION'" (click)="openPlantelModal(c)" title="Ver Plantel Oficial">
                   <i class="fa-solid fa-users-rectangle"></i> Ver Plantel
                 </button>
                 <button class="btn-secondary btn-sm btn-icon-only btn-danger-hover" (click)="openDeleteModal(c)" title="Desactivar Categoría">
@@ -369,42 +391,50 @@ import { ApiService } from '../../core/services/api.service';
 
       <!-- MODAL CONFIRMAR ELIMINACIÓN/DESACTIVACIÓN CATEGORÍA -->
       @if (showDeleteModal() && categoryToDelete()) {
-        <div class="modal-overlay" (click)="closeDeleteModal()">
-          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
-            <div class="delete-confirm-header">
-              <div class="delete-confirm-icon-wrap">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+        <div class="modal-backdrop" (click)="closeDeleteModal()">
+          <div class="delete-confirm-modal-card modal-md" (click)="$event.stopPropagation()">
+            <div class="modal-header header-danger">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-danger-glow">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Desactivar Categoría Deportiva</h2>
+                  <p class="modal-subtitle">Estás a punto de deshabilitar la categoría <strong>{{ categoryToDelete()?.nombre }} ({{ categoryToDelete()?.codigo_categoria }})</strong> del catálogo de planteles del club</p>
+                </div>
               </div>
-              <div class="delete-confirm-title-wrap">
-                <h3>¿Desactivar Categoría Deportiva?</h3>
-                <p>Estás a punto de deshabilitar este grupo del catálogo de planteles del club</p>
-              </div>
-              <button class="btn-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+              <button class="modal-close-btn btn-close" (click)="closeDeleteModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="delete-confirm-body">
-              <div class="player-retire-preview">
+              <div class="player-retire-card">
                 <div class="cat-badge" [style.background-color]="categoryToDelete()?.color_distintivo || '#10b981'">
                   {{ categoryToDelete()?.codigo_categoria }}
                 </div>
-                <div class="player-retire-info">
-                  <span class="retire-player-name">{{ categoryToDelete()?.nombre }}</span>
-                  <div class="retire-player-tags">
+                <div class="retire-player-details">
+                  <div class="retire-name-row">
+                    <span class="retire-player-name">{{ categoryToDelete()?.nombre }}</span>
+                    <span class="status-badge" [class.badge-success]="categoryToDelete()?.activa">
+                      {{ categoryToDelete()?.activa ? 'ACTIVA' : 'INACTIVA' }}
+                    </span>
+                  </div>
+                  <div class="retire-meta-row">
                     <span class="meta-tag"><i class="fa-solid fa-venus-mars"></i> {{ categoryToDelete()?.rama }}</span>
                     <span class="meta-tag"><i class="fa-solid fa-users"></i> {{ categoryToDelete()?.total_jugadores || 0 }} jugadores</span>
                     <span class="meta-tag"><i class="fa-solid fa-calendar"></i> {{ categoryToDelete()?.anio_nacimiento_min }} - {{ categoryToDelete()?.anio_nacimiento_max }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-user-tie"></i> {{ categoryToDelete()?.dt_nombre || 'Sin DT' }}</span>
                   </div>
                 </div>
               </div>
 
               <div class="warning-callout">
-                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <i class="fa-solid fa-circle-exclamation warning-callout-icon"></i>
                 <div class="warning-callout-content">
                   <h4>Consecuencias de la Operación:</h4>
                   <ul>
-                    <li>La categoría no estará disponible para programar nuevos partidos oficiales.</li>
-                    <li>Los jugadores registrados permanecerán en el sistema y podrán ser reubicados.</li>
-                    <li>Podrás reactivar o consultar el historial en cualquier momento.</li>
+                    <li>La categoría no estará disponible para programar nuevos partidos oficiales ni entrenamientos.</li>
+                    <li>Los jugadores registrados permanecerán en el sistema y podrán ser reubicados a otra categoría.</li>
+                    <li>Podrás reactivar o consultar el historial deportivo de la división en cualquier momento.</li>
                   </ul>
                 </div>
               </div>
@@ -493,14 +523,92 @@ import { ApiService } from '../../core/services/api.service';
     }
 
     .cat-card {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+
+      /* CARD ÉLITE ESTILO FUT GOLD / CHAMPAGNE PRO */
+      &.cat-card-elite {
+        border: 2px solid #eab308 !important;
+        background: linear-gradient(135deg, rgba(234, 179, 8, 0.09) 0%, rgba(254, 240, 138, 0.06) 50%, var(--bg-card) 100%) !important;
+        box-shadow: 0 4px 20px rgba(234, 179, 8, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(
+            45deg,
+            transparent 35%,
+            rgba(255, 255, 255, 0.15) 45%,
+            rgba(250, 204, 21, 0.22) 50%,
+            rgba(255, 255, 255, 0.15) 55%,
+            transparent 65%
+          );
+          transform: rotate(30deg);
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+          opacity: 0.8;
+        }
+
+        &:hover {
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 10px 30px rgba(234, 179, 8, 0.28), 0 0 16px rgba(250, 204, 21, 0.35) !important;
+          border-color: #ca8a04 !important;
+        }
+
+        .cat-name {
+          color: var(--text-heading) !important;
+          font-weight: 800;
+        }
+
+        .elite-star-icon {
+          color: #eab308;
+          margin-right: 0.35rem;
+          font-size: 0.95rem;
+          filter: drop-shadow(0 0 4px #eab308);
+          animation: pulseGlow 2s infinite ease-in-out;
+        }
+      }
+
+      .elite-ribbon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #111827;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        padding: 0.22rem 0.85rem 0.22rem 1.25rem;
+        border-bottom-left-radius: 12px;
+        box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        z-index: 2;
+
+        i {
+          font-size: 0.7rem;
+        }
+      }
 
       .cat-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        .cat-header-badges {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
 
         .cat-badge {
           color: #FFFFFF;
@@ -508,6 +616,22 @@ import { ApiService } from '../../core/services/api.service';
           border-radius: 6px;
           font-weight: 800;
           font-size: 0.75rem;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .badge-colombia {
+          background: linear-gradient(135deg, rgba(254, 240, 138, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
+          border: 1px solid #facc15;
+          color: #fef08a;
+          font-weight: 800;
+          font-size: 0.7rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+
+          .flag-dot {
+            font-size: 0.85rem;
+          }
         }
       }
 
@@ -515,6 +639,8 @@ import { ApiService } from '../../core/services/api.service';
         font-size: 1.15rem;
         font-weight: 700;
         color: var(--text-heading);
+        display: flex;
+        align-items: center;
       }
 
       .cat-years {
@@ -533,6 +659,13 @@ import { ApiService } from '../../core/services/api.service';
           border: 1px solid var(--border-color);
           border-radius: 4px;
           color: var(--text-body);
+        }
+
+        .level-pill-elite {
+          background: rgba(245, 158, 11, 0.15) !important;
+          border-color: rgba(245, 158, 11, 0.4) !important;
+          color: #f59e0b !important;
+          font-weight: 800;
         }
       }
 
@@ -576,7 +709,25 @@ import { ApiService } from '../../core/services/api.service';
           padding: 0.4rem 0.75rem;
           font-size: 0.8rem;
         }
+
+        .btn-elite-action {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 179, 8, 0.25)) !important;
+          border-color: #f59e0b !important;
+          color: #fbbf24 !important;
+          font-weight: 700;
+
+          &:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            color: #111827 !important;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+          }
+        }
       }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 8px #fbbf24); }
     }
 
     .empty-state {

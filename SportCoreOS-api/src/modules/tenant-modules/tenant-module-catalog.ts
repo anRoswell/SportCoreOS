@@ -131,6 +131,16 @@ export const SPORTCORE_MODULE_CATALOG: TenantModuleDefinition[] = [
     icon: 'fa-user-shield',
   },
   {
+    code: 'SERVICIOS_ESPECIALIZADOS',
+    name: 'Servicios Especializados & Masterclasses',
+    description: 'Monetización de clínicas de alto rendimiento, masterclasses, neuro-agilidad y pases QR.',
+    category: 'Finanzas',
+    order: 85,
+    defaultEnabled: true,
+    defaultIndefinite: true,
+    icon: 'fa-graduation-cap',
+  },
+  {
     code: 'CONFIGURACION',
     name: 'Configuración & Seguridad',
     description: 'Parámetros del sistema, licencias de club, matriz de permisos RBAC y auditoría.',

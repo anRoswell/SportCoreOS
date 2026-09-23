@@ -332,11 +332,30 @@ export class JugadoresRepository {
     const totalPagado = cargos.reduce((acc: number, c: any) => acc + parseFloat(c.monto_pagado || 0), 0);
     const saldoPendiente = cargos.reduce((acc: number, c: any) => acc + parseFloat(c.saldo_pendiente || 0), 0);
 
+    // Clínicas Especializadas & Insignias Pro
+    let clinicasRes: any = { rows: [] };
+    try {
+      clinicasRes = await this.db.query(
+        `SELECT inc.*, s.titulo as servicio_titulo, s.categoria_servicio, s.icono, s.color_tema, s.insignia_obtenida, s.entrenador_nombre, s.cancha_nombre
+         FROM public.inscripciones_servicios inc
+         JOIN public.servicios_especializados s ON s.id = inc.servicio_id
+         WHERE inc.club_id = $1 AND (
+           inc.nombre_jugador ILIKE '%' || $2 || '%'
+           OR $3 ILIKE '%' || inc.nombre_jugador || '%'
+         )
+         ORDER BY inc.created_at DESC`,
+        [clubId, jugador.nombres, jugador.nombres + ' ' + jugador.apellidos],
+      );
+    } catch (e) {
+      clinicasRes = { rows: [] };
+    }
+
     return {
       jugador,
       acudientes: acudientesRes.rows,
       historialBiometrico: bioRes.rows,
       historialFinanciero: cargos,
+      clinicasInsignias: clinicasRes.rows,
       resumenFinanciero: {
         totalFacturado,
         totalPagado,

@@ -231,6 +231,18 @@ import { environment } from '../../../environments/environment';
             <i class="fa-solid fa-chevron-right arrow-icon"></i>
           </a>
 
+          <!-- Clínicas & Masterclasses Pro -->
+          <a routerLink="/servicios" class="module-card card-emerald">
+            <div class="module-icon-box">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="module-content">
+              <h4>Clínicas & Masterclasses</h4>
+              <p>Explosividad, regate y porteros</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
           <!-- Radar Biométrico & IA -->
           <a routerLink="/rendimiento" class="module-card card-rose">
             <div class="module-icon-box">

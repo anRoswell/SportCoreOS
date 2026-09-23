@@ -21,10 +21,10 @@
 - [x] Task: Comprobar inserción real y persistencia en PostgreSQL (`public.inscripciones_servicios`)
 - [x] Task: Phase Verification & Checkpoint (4/4 tests aprobados al 100% con 0 errores de consola)
 
-## Phase 4: Gamificación & Vinculación a Ficha 360° [checkpoint: pending]
-- [ ] Task: Vincular graduación de clínicas con desbloqueo de insignias doradas en `public.jugadores`
-- [ ] Task: Visualizar insignias obtenidas en el expediente 360° del futbolista y radar FIFA de scouting
-- [ ] Task: Phase Verification & Checkpoint
+## Phase 4: Gamificación & Vinculación a Ficha 360° [checkpoint: done]
+- [x] Task: Vincular graduación de clínicas con desbloqueo de insignias doradas en `public.jugadores`
+- [x] Task: Visualizar insignias obtenidas en el expediente 360° del futbolista y radar FIFA de scouting
+- [x] Task: Phase Verification & Checkpoint (Pestaña 5 en Ficha 360° verificada con Playwright E2E)
 
 ## Phase 5: Split-Payment Wompi & Dispersión Automática [checkpoint: pending]
 - [ ] Task: Configurar subcuentas de dispersión bancaria para abonar 97% a la academia y 3% a SECTIC S.A.S.
