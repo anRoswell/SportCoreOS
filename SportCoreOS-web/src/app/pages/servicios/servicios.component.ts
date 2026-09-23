@@ -120,9 +120,9 @@ export interface ServicioEspecializado {
             placeholder="Buscar por clínica, habilidad, entrenador o cancha..."
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
-            class="sport-input"
+            class="sport-input search-input"
           />
-          <button *ngIf="searchQuery()" class="btn-clear" (click)="searchQuery.set('')">
+          <button *ngIf="searchQuery()" class="btn-clear" (click)="searchQuery.set('')" aria-label="Limpiar búsqueda">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -183,7 +183,7 @@ export interface ServicioEspecializado {
         >
           <!-- CARD TOP BADGE -->
           <div class="card-top-bar">
-            <div class="cat-badge" [style.color]="s.color_tema" [style.background-color]="(s.color_tema || '#10b981') + '1a'">
+            <div class="cat-badge" [style.color]="s.color_tema || '#10b981'" [style.background-color]="(s.color_tema || '#10b981') + '1a'">
               <i class="fa-solid" [ngClass]="s.icono || 'fa-bolt'"></i>
               <span>{{ getCategoriaLabel(s.categoria_servicio) }}</span>
             </div>
@@ -319,19 +319,21 @@ export interface ServicioEspecializado {
       <!-- ============================================================ -->
       <!-- MODAL 1: INSCRIBIRSE & CHECKOUT PSE / WOMPI                   -->
       <!-- ============================================================ -->
-      <div class="modal-overlay" *ngIf="showInscribirModal()" (click)="closeInscribirModal()">
-        <div class="modal-dialog fut-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-overlay modal-backdrop" *ngIf="showInscribirModal()" (click)="closeInscribirModal()">
+        <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <div class="modal-title-group">
-              <div class="modal-badge-icon" [style.background-color]="selectedServicio()?.color_tema || '#10b981'">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge" [style.background]="(selectedServicio()?.color_tema || '#10b981') + '1a'" [style.color]="selectedServicio()?.color_tema || '#10b981'" [style.border-color]="(selectedServicio()?.color_tema || '#10b981') + '33'">
                 <i class="fa-solid" [ngClass]="selectedServicio()?.icono || 'fa-ticket'"></i>
               </div>
-              <div>
+              <div class="modal-title-text">
                 <h2 class="modal-title">Inscripción & Pase Digital</h2>
-                <p class="modal-sub">{{ selectedServicio()?.titulo }}</p>
+                <p class="modal-sub modal-subtitle">
+                  Clínica: <strong>{{ selectedServicio()?.titulo }}</strong> • Sede: <strong>{{ selectedServicio()?.cancha_nombre }}</strong>
+                </p>
               </div>
             </div>
-            <button class="btn-close-modal" (click)="closeInscribirModal()">
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeInscribirModal()" aria-label="Cerrar">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -346,27 +348,27 @@ export interface ServicioEspecializado {
               <div class="ticket-body">
                 <h3 class="ticket-title">{{ selectedServicio()?.titulo }}</h3>
                 <div class="ticket-meta-grid">
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Atleta / Alumno:</span>
                     <span class="t-val">{{ ticketData()?.nombre_jugador }}</span>
                   </div>
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Acudiente / Contacto:</span>
                     <span class="t-val">{{ ticketData()?.nombre_acudiente }} ({{ ticketData()?.telefono_acudiente }})</span>
                   </div>
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Plan Adquirido:</span>
-                    <span class="t-val">{{ ticketData()?.tipo_plan }}</span>
+                    <span class="t-val">{{ ticketData()?.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mensual Completo' : 'Sesión Individual' }}</span>
                   </div>
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Total Liquidado:</span>
                     <span class="t-val text-emerald font-bold">\${{ formatNumber(ticketData()?.monto_pagado) }}</span>
                   </div>
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Cancha / Sede Cartagena:</span>
                     <span class="t-val">{{ selectedServicio()?.cancha_nombre }}</span>
                   </div>
-                  <div>
+                  <div class="meta-cell">
                     <span class="t-label">Horario:</span>
                     <span class="t-val">{{ selectedServicio()?.dias_semana }} ({{ selectedServicio()?.horario_rango }})</span>
                   </div>
@@ -405,15 +407,19 @@ export interface ServicioEspecializado {
                   (click)="tipoPlan.set('PAQUETE_MENSUAL')"
                 >
                   <div class="plan-radio">
-                    <i class="fa-solid fa-circle-dot" *ngIf="tipoPlan() === 'PAQUETE_MENSUAL'"></i>
-                    <i class="fa-regular fa-circle" *ngIf="tipoPlan() !== 'PAQUETE_MENSUAL'"></i>
+                    <i class="fa-solid fa-circle-check text-emerald" *ngIf="tipoPlan() === 'PAQUETE_MENSUAL'"></i>
+                    <i class="fa-regular fa-circle text-muted" *ngIf="tipoPlan() !== 'PAQUETE_MENSUAL'"></i>
                   </div>
                   <div class="plan-details">
-                    <div class="plan-name">Paquete Mensual Completo (Recomendado)</div>
-                    <div class="plan-desc">Incluye todas las sesiones del mes + kit de seguimiento y evaluación final</div>
+                    <div class="plan-header-row">
+                      <span class="plan-name">Paquete Mensual Completo</span>
+                      <span class="plan-badge-popular"><i class="fa-solid fa-star"></i> Más Recomendado</span>
+                    </div>
+                    <div class="plan-desc">Incluye todas las sesiones del mes + kit de seguimiento, seguro y evaluación biomecánica final</div>
                   </div>
-                  <div class="plan-price">
-                    \${{ formatNumber(selectedServicio()?.precio_paquete_mensual) }}
+                  <div class="plan-price-wrap">
+                    <span class="plan-price">\${{ formatNumber(selectedServicio()?.precio_paquete_mensual) }}</span>
+                    <span class="plan-period">/ mes completo</span>
                   </div>
                 </div>
 
@@ -423,15 +429,18 @@ export interface ServicioEspecializado {
                   (click)="tipoPlan.set('SESION_INDIVIDUAL')"
                 >
                   <div class="plan-radio">
-                    <i class="fa-solid fa-circle-dot" *ngIf="tipoPlan() === 'SESION_INDIVIDUAL'"></i>
-                    <i class="fa-regular fa-circle" *ngIf="tipoPlan() !== 'SESION_INDIVIDUAL'"></i>
+                    <i class="fa-solid fa-circle-check text-emerald" *ngIf="tipoPlan() === 'SESION_INDIVIDUAL'"></i>
+                    <i class="fa-regular fa-circle text-muted" *ngIf="tipoPlan() !== 'SESION_INDIVIDUAL'"></i>
                   </div>
                   <div class="plan-details">
-                    <div class="plan-name">Sesión Individual de Prueba</div>
-                    <div class="plan-desc">Acceso a 1 sesión intensiva de 90 minutos</div>
+                    <div class="plan-header-row">
+                      <span class="plan-name">Sesión Individual de Prueba</span>
+                    </div>
+                    <div class="plan-desc">Acceso a 1 sesión intensiva de 90 minutos con test técnico</div>
                   </div>
-                  <div class="plan-price">
-                    \${{ formatNumber(selectedServicio()?.precio_sesion_individual) }}
+                  <div class="plan-price-wrap">
+                    <span class="plan-price">\${{ formatNumber(selectedServicio()?.precio_sesion_individual) }}</span>
+                    <span class="plan-period">/ sesión única</span>
                   </div>
                 </div>
               </div>
@@ -439,7 +448,9 @@ export interface ServicioEspecializado {
               <!-- FORM FIELDS -->
               <div class="form-grid">
                 <div class="form-group">
-                  <label class="sport-label">Nombre del Atleta / Niño:</label>
+                  <label class="sport-label">
+                    <i class="fa-solid fa-child-reaching text-emerald"></i> Nombre del Atleta / Niño <span class="required-star">*</span>
+                  </label>
                   <input
                     type="text"
                     [ngModel]="nombreJugador()"
@@ -450,7 +461,9 @@ export interface ServicioEspecializado {
                 </div>
 
                 <div class="form-group">
-                  <label class="sport-label">Nombre del Acudiente / Padre:</label>
+                  <label class="sport-label">
+                    <i class="fa-solid fa-user-shield text-cyan"></i> Nombre del Acudiente / Padre <span class="required-star">*</span>
+                  </label>
                   <input
                     type="text"
                     [ngModel]="nombreAcudiente()"
@@ -461,7 +474,9 @@ export interface ServicioEspecializado {
                 </div>
 
                 <div class="form-group">
-                  <label class="sport-label">Teléfono WhatsApp:</label>
+                  <label class="sport-label">
+                    <i class="fa-brands fa-whatsapp text-emerald"></i> Teléfono WhatsApp de Contacto <span class="required-star">*</span>
+                  </label>
                   <input
                     type="tel"
                     [ngModel]="telefonoAcudiente()"
@@ -472,7 +487,9 @@ export interface ServicioEspecializado {
                 </div>
 
                 <div class="form-group">
-                  <label class="sport-label">Correo Electrónico (Para envío de Ticket):</label>
+                  <label class="sport-label">
+                    <i class="fa-solid fa-envelope text-amber"></i> Correo Electrónico (Envío de Ticket QR) <span class="required-star">*</span>
+                  </label>
                   <input
                     type="email"
                     [ngModel]="emailAcudiente()"
@@ -484,52 +501,76 @@ export interface ServicioEspecializado {
               </div>
 
               <!-- BROTHER DISCOUNT TOGGLE -->
-              <div class="discount-toggle">
+              <div class="discount-toggle" [class.active]="aplicaDescuentoHermano()">
                 <label class="checkbox-label">
                   <input
                     type="checkbox"
                     [ngModel]="aplicaDescuentoHermano()"
                     (ngModelChange)="aplicaDescuentoHermano.set($event)"
                   />
-                  <span>Aplica descuento de 2do hermano (-{{ selectedServicio()?.descuento_hermanos_pct || 15 }}%)</span>
+                  <div class="discount-info">
+                    <div class="discount-title">
+                      <i class="fa-solid fa-people-roof text-amber"></i> ¿Inscribes a 2 o más hermanos?
+                      <span class="discount-pill">-{{ selectedServicio()?.descuento_hermanos_pct || 15 }}% DTO</span>
+                    </div>
+                    <p class="discount-desc">Activa el beneficio familiar SportCoreOS y obtén tarifa especial en el valor liquidado.</p>
+                  </div>
                 </label>
               </div>
 
               <!-- PAYMENT METHOD SELECTOR -->
               <div class="payment-method-section">
-                <label class="sport-label">Pasarela de Pago Instantáneo:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-lock text-emerald"></i> Pasarela de Pago Instantáneo Seguro:
+                </label>
                 <div class="pay-methods-grid">
                   <div
                     class="pay-method-card"
                     [class.active]="metodoPago() === 'WOMPI_PSE'"
                     (click)="metodoPago.set('WOMPI_PSE')"
                   >
-                    <i class="fa-solid fa-building-columns"></i>
-                    <span>PSE / Débito Bancario</span>
+                    <div class="pay-icon bg-emerald-glow"><i class="fa-solid fa-building-columns"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">PSE / Wompi</span>
+                      <span class="pay-sub">Débito bancario en línea</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'WOMPI_PSE'"></i>
                   </div>
                   <div
                     class="pay-method-card"
                     [class.active]="metodoPago() === 'NEQUI'"
                     (click)="metodoPago.set('NEQUI')"
                   >
-                    <i class="fa-solid fa-mobile-screen-button"></i>
-                    <span>Nequi</span>
+                    <div class="pay-icon bg-purple-glow"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">Nequi</span>
+                      <span class="pay-sub">Transferencia directa</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'NEQUI'"></i>
                   </div>
                   <div
                     class="pay-method-card"
                     [class.active]="metodoPago() === 'DAVIPLATA'"
                     (click)="metodoPago.set('DAVIPLATA')"
                   >
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>DaviPlata</span>
+                    <div class="pay-icon bg-amber-glow"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">DaviPlata</span>
+                      <span class="pay-sub">Billetera Davivienda</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'DAVIPLATA'"></i>
                   </div>
                   <div
                     class="pay-method-card"
                     [class.active]="metodoPago() === 'TARJETA_CREDITO'"
                     (click)="metodoPago.set('TARJETA_CREDITO')"
                   >
-                    <i class="fa-solid fa-credit-card"></i>
-                    <span>Tarjeta de Crédito</span>
+                    <div class="pay-icon bg-blue-glow"><i class="fa-solid fa-credit-card"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">Tarjeta de Crédito</span>
+                      <span class="pay-sub">Visa, Mastercard, Amex</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'TARJETA_CREDITO'"></i>
                   </div>
                 </div>
               </div>
@@ -538,7 +579,7 @@ export interface ServicioEspecializado {
               <div class="total-bar">
                 <div class="total-text">
                   <span class="total-label">Total a Liquidar:</span>
-                  <span class="total-sub">Sin costos ocultos • Incluye póliza de entrenamiento</span>
+                  <span class="total-sub"><i class="fa-solid fa-shield-halved text-emerald"></i> Sin costos ocultos • Incluye póliza de entrenamiento y ficha digital</span>
                 </div>
                 <div class="total-amount">
                   \${{ formatNumber(montoFinalCalculado()) }}
@@ -565,50 +606,63 @@ export interface ServicioEspecializado {
       <!-- ============================================================ -->
       <!-- MODAL 2: VER PARTICIPANTES INSCRITOS                         -->
       <!-- ============================================================ -->
-      <div class="modal-overlay" *ngIf="showParticipantesModal()" (click)="closeParticipantesModal()">
-        <div class="modal-dialog fut-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-overlay modal-backdrop" *ngIf="showParticipantesModal()" (click)="closeParticipantesModal()">
+        <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <div class="modal-title-group">
-              <div class="modal-badge-icon bg-blue-glow">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-blue-glow">
                 <i class="fa-solid fa-users"></i>
               </div>
-              <div>
+              <div class="modal-title-text">
                 <h2 class="modal-title">Participantes Inscritos</h2>
-                <p class="modal-sub">{{ selectedServicio()?.titulo }}</p>
+                <p class="modal-sub modal-subtitle">
+                  Clínica: <strong>{{ selectedServicio()?.titulo }}</strong> • <strong>{{ inscripcionesList().length }}</strong> inscritos confirmados
+                </p>
               </div>
             </div>
-            <button class="btn-close-modal" (click)="closeParticipantesModal()">
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeParticipantesModal()" aria-label="Cerrar">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 
           <div class="modal-body">
-            <div *ngIf="inscripcionesList().length > 0; else noInscritos" class="table-responsive">
-              <table class="sport-table">
+            <div *ngIf="inscripcionesList().length > 0; else noInscritos" class="fut-table-container">
+              <table class="fut-table">
                 <thead>
                   <tr>
                     <th>Atleta</th>
                     <th>Acudiente / Contacto</th>
                     <th>Plan</th>
                     <th>Monto Pagado</th>
-                    <th>Método</th>
-                    <th>Ticket / QR Pass</th>
+                    <th>Método de Pago</th>
+                    <th>Ticket / Pase QR</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let inc of inscripcionesList()">
-                    <td class="font-bold text-white">{{ inc.nombre_jugador }}</td>
                     <td>
-                      <div>{{ inc.nombre_acudiente }}</div>
-                      <small class="text-muted">{{ inc.telefono_acudiente }}</small>
+                      <div class="player-cell">
+                        <i class="fa-solid fa-circle-user text-emerald player-cell-icon"></i>
+                        <strong class="player-cell-name">{{ inc.nombre_jugador }}</strong>
+                      </div>
                     </td>
                     <td>
-                      <span class="badge-plan">{{ inc.tipo_plan }}</span>
+                      <div class="guardian-name">{{ inc.nombre_acudiente }}</div>
+                      <small class="text-muted"><i class="fa-brands fa-whatsapp text-emerald"></i> {{ inc.telefono_acudiente }}</small>
                     </td>
-                    <td class="text-emerald font-bold">\${{ formatNumber(inc.monto_pagado) }}</td>
-                    <td>{{ inc.metodo_pago }}</td>
                     <td>
-                      <span class="qr-token">{{ inc.codigo_qr_ticket?.substring(0, 14) }}...</span>
+                      <span class="badge-plan" [class.badge-plan-bundle]="inc.tipo_plan === 'PAQUETE_MENSUAL'">
+                        {{ inc.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mes' : 'Sesión Única' }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-emerald font-bold text-base">\${{ formatNumber(inc.monto_pagado) }}</span>
+                    </td>
+                    <td>
+                      <span class="badge-payment">{{ inc.metodo_pago }}</span>
+                    </td>
+                    <td>
+                      <span class="qr-token"><i class="fa-solid fa-qrcode"></i> {{ inc.codigo_qr_ticket?.substring(0, 14) }}...</span>
                     </td>
                   </tr>
                 </tbody>
@@ -616,8 +670,9 @@ export interface ServicioEspecializado {
             </div>
             <ng-template #noInscritos>
               <div class="empty-state-mini">
-                <i class="fa-solid fa-user-plus"></i>
-                <p>Aún no hay participantes registrados para esta clínica.</p>
+                <i class="fa-solid fa-user-plus empty-mini-icon"></i>
+                <h4>Aún no hay participantes registrados</h4>
+                <p>Comparte la clínica en WhatsApp para abrir las primeras inscripciones.</p>
               </div>
             </ng-template>
           </div>
@@ -631,19 +686,19 @@ export interface ServicioEspecializado {
       <!-- ============================================================ -->
       <!-- MODAL 3: CREAR NUEVA CLÍNICA O PROGRAMA                      -->
       <!-- ============================================================ -->
-      <div class="modal-overlay" *ngIf="showCrearModal()" (click)="closeCrearModal()">
-        <div class="modal-dialog fut-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-overlay modal-backdrop" *ngIf="showCrearModal()" (click)="closeCrearModal()">
+        <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <div class="modal-title-group">
-              <div class="modal-badge-icon bg-emerald-glow">
-                <i class="fa-solid fa-plus"></i>
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+                <i class="fa-solid fa-plus-circle"></i>
               </div>
-              <div>
+              <div class="modal-title-text">
                 <h2 class="modal-title">Crear Nueva Clínica Especializada</h2>
-                <p class="modal-sub">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
+                <p class="modal-sub modal-subtitle">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
               </div>
             </div>
-            <button class="btn-close-modal" (click)="closeCrearModal()">
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeCrearModal()" aria-label="Cerrar">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -651,7 +706,9 @@ export interface ServicioEspecializado {
           <div class="modal-body">
             <div class="form-grid">
               <div class="form-group full-width">
-                <label class="sport-label">Título del Programa / Masterclass *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-heading text-emerald"></i> Título del Programa / Masterclass <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevoTitulo()"
@@ -662,7 +719,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group full-width">
-                <label class="sport-label">Subtítulo / Objetivo Central *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-bullseye text-cyan"></i> Subtítulo / Objetivo Central <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevoSubtitulo()"
@@ -673,11 +732,13 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Categoría Especializada *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-layer-group text-amber"></i> Categoría Especializada <span class="required-star">*</span>
+                </label>
                 <select
                   [ngModel]="nuevaCategoria()"
                   (ngModelChange)="nuevaCategoria.set($event)"
-                  class="sport-input"
+                  class="sport-input sport-select"
                 >
                   <option value="VELOCIDAD_EXPLOSIVIDAD">⚡ Velocidad & Explosividad</option>
                   <option value="COORDINACION_AGILIDAD">🧠 Coordinación & Neuro-Motricidad</option>
@@ -689,7 +750,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Entrenador Responsable *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-chalkboard-user text-purple"></i> Entrenador Responsable <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevoEntrenador()"
@@ -700,7 +763,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Cancha / Escenario Cartagena *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-location-dot text-emerald"></i> Cancha / Escenario Cartagena <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevaCanchaNombre()"
@@ -711,7 +776,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Dirección en Cartagena *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-map-location-dot text-cyan"></i> Dirección en Cartagena <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevaCanchaDireccion()"
@@ -722,7 +789,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Días de Entrenamiento *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-calendar-days text-amber"></i> Días de Entrenamiento <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevosDias()"
@@ -733,7 +802,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Horario *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-clock text-pink"></i> Horario <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevoHorario()"
@@ -744,7 +815,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Cupos Máximos *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-users text-emerald"></i> Cupos Máximos <span class="required-star">*</span>
+                </label>
                 <input
                   type="number"
                   [ngModel]="nuevosCupos()"
@@ -755,7 +828,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Insignia Digital al Graduarse *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-award text-amber"></i> Insignia Digital al Graduarse <span class="required-star">*</span>
+                </label>
                 <input
                   type="text"
                   [ngModel]="nuevaInsignia()"
@@ -766,7 +841,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Precio Sesión Individual ($ COP) *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-tag text-cyan"></i> Precio Sesión Individual ($ COP) <span class="required-star">*</span>
+                </label>
                 <input
                   type="number"
                   [ngModel]="nuevoPrecioIndividual()"
@@ -777,7 +854,9 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group">
-                <label class="sport-label">Precio Paquete Mensual ($ COP) *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-box-archive text-emerald"></i> Precio Paquete Mensual ($ COP) <span class="required-star">*</span>
+                </label>
                 <input
                   type="number"
                   [ngModel]="nuevoPrecioMensual()"
@@ -788,13 +867,15 @@ export interface ServicioEspecializado {
               </div>
 
               <div class="form-group full-width">
-                <label class="sport-label">Descripción Detallada *:</label>
+                <label class="sport-label">
+                  <i class="fa-solid fa-align-left text-purple"></i> Descripción Detallada <span class="required-star">*</span>
+                </label>
                 <textarea
                   [ngModel]="nuevaDescripcion()"
                   (ngModelChange)="nuevaDescripcion.set($event)"
                   rows="3"
                   placeholder="Describe la metodología, tecnología a usar y dinámica de las sesiones..."
-                  class="sport-input"
+                  class="sport-input sport-textarea"
                 ></textarea>
               </div>
             </div>
@@ -821,7 +902,7 @@ export interface ServicioEspecializado {
       padding: 1.5rem;
       max-width: 1440px;
       margin: 0 auto;
-      color: var(--text-main, #f8fafc);
+      color: var(--text-main, #0f172a);
     }
 
     /* PROMO HERO */
@@ -844,7 +925,7 @@ export interface ServicioEspecializado {
       align-items: center;
       gap: 0.5rem;
       background: rgba(16, 185, 129, 0.2);
-      color: #10b981;
+      color: #059669;
       padding: 0.35rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.75rem;
@@ -853,17 +934,22 @@ export interface ServicioEspecializado {
       margin-bottom: 0.75rem;
     }
 
+    [data-theme="dark"] .hero-badge,
+    body.dark-theme .hero-badge {
+      color: #10b981;
+    }
+
     .page-title {
       font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       margin: 0 0 0.5rem 0;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
     }
 
     .page-subtitle {
       font-size: 0.95rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
       max-width: 800px;
       line-height: 1.5;
       margin: 0 0 1rem 0;
@@ -876,12 +962,14 @@ export interface ServicioEspecializado {
     }
 
     .hero-tag {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      color: var(--text-heading, #0f172a);
       padding: 0.35rem 0.75rem;
       border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
 
     .btn-create {
@@ -919,8 +1007,9 @@ export interface ServicioEspecializado {
       gap: 1.25rem;
       padding: 1.25rem;
       border-radius: 14px;
-      background: var(--bg-card, rgba(30, 41, 59, 0.7));
-      border: 1px solid var(--border-card, rgba(255, 255, 255, 0.06));
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
     }
 
     .kpi-icon {
@@ -941,25 +1030,26 @@ export interface ServicioEspecializado {
     .kpi-num {
       font-size: 1.4rem;
       font-weight: 800;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
     }
 
     .kpi-label {
       font-size: 0.8rem;
-      color: var(--text-muted, #94a3b8);
-      font-weight: 500;
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
     }
 
     /* FILTERS */
     .filters-container {
-      background: var(--bg-card, rgba(30, 41, 59, 0.7));
-      border: 1px solid var(--border-card, rgba(255, 255, 255, 0.06));
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
       border-radius: 14px;
       padding: 1.25rem;
       margin-bottom: 2rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
     }
 
     .search-box {
@@ -972,12 +1062,14 @@ export interface ServicioEspecializado {
       position: absolute;
       left: 1rem;
       color: var(--text-muted, #94a3b8);
+      pointer-events: none;
     }
 
-    .search-box input {
+    .search-box input.search-input {
       padding-left: 2.75rem;
       padding-right: 2.5rem;
       width: 100%;
+      height: 44px;
     }
 
     .btn-clear {
@@ -987,6 +1079,8 @@ export interface ServicioEspecializado {
       border: none;
       color: var(--text-muted, #94a3b8);
       cursor: pointer;
+      font-size: 1rem;
+      padding: 0.25rem;
     }
 
     .category-chips {
@@ -996,9 +1090,9 @@ export interface ServicioEspecializado {
     }
 
     .chip-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-muted, #94a3b8);
+      background: var(--bg-surface, #f1f5f9);
+      border: 1px solid var(--border-color, #e2e8f0);
+      color: var(--text-muted, #64748b);
       padding: 0.5rem 1rem;
       border-radius: 10px;
       font-size: 0.85rem;
@@ -1011,38 +1105,44 @@ export interface ServicioEspecializado {
     }
 
     .chip-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
+      background: var(--bg-card-hover, #e2e8f0);
+      color: var(--text-heading, #0f172a);
     }
 
     .chip-btn.active {
-      background: rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.15);
       border-color: #10b981;
+      color: #047857;
+      font-weight: 700;
+    }
+
+    [data-theme="dark"] .chip-btn.active,
+    body.dark-theme .chip-btn.active {
       color: #10b981;
     }
 
     .chip-btn.chip-cyan.active {
-      background: rgba(6, 182, 212, 0.2);
+      background: rgba(6, 182, 212, 0.15);
       border-color: #06b6d4;
-      color: #06b6d4;
+      color: #0e7490;
     }
 
     .chip-btn.chip-amber.active {
-      background: rgba(245, 158, 11, 0.2);
+      background: rgba(245, 158, 11, 0.15);
       border-color: #f59e0b;
-      color: #f59e0b;
+      color: #b45309;
     }
 
     .chip-btn.chip-pink.active {
-      background: rgba(236, 72, 153, 0.2);
+      background: rgba(236, 72, 153, 0.15);
       border-color: #ec4899;
-      color: #ec4899;
+      color: #be185d;
     }
 
     .chip-btn.chip-purple.active {
-      background: rgba(139, 92, 246, 0.2);
+      background: rgba(139, 92, 246, 0.15);
       border-color: #8b5cf6;
-      color: #8b5cf6;
+      color: #6d28d9;
     }
 
     /* SERVICIOS GRID */
@@ -1053,8 +1153,8 @@ export interface ServicioEspecializado {
     }
 
     .servicio-card {
-      background: var(--bg-card, rgba(30, 41, 59, 0.8));
-      border: 1px solid var(--border-card, rgba(255, 255, 255, 0.08));
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
       border-top: 4px solid #10b981;
       border-radius: 16px;
       padding: 1.5rem;
@@ -1062,11 +1162,12 @@ export interface ServicioEspecializado {
       flex-direction: column;
       gap: 1rem;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
     }
 
     .servicio-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
     }
 
     .card-top-bar {
@@ -1090,8 +1191,8 @@ export interface ServicioEspecializado {
     .badge-edad {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-muted, #94a3b8);
-      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted, #64748b);
+      background: var(--bg-surface, #f1f5f9);
       padding: 0.25rem 0.5rem;
       border-radius: 6px;
     }
@@ -1101,12 +1202,12 @@ export interface ServicioEspecializado {
       font-weight: 800;
       line-height: 1.3;
       margin: 0;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
     }
 
     .servicio-sub {
       font-size: 0.88rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
       line-height: 1.45;
       margin: 0;
     }
@@ -1116,9 +1217,10 @@ export interface ServicioEspecializado {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--bg-surface, #f8fafc);
       padding: 0.6rem 0.85rem;
       border-radius: 10px;
+      border: 1px solid var(--border-color, #e2e8f0);
     }
 
     .coach-avatar {
@@ -1126,18 +1228,18 @@ export interface ServicioEspecializado {
       height: 40px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(16, 185, 129, 0.3);
     }
 
     .coach-name {
       font-weight: 700;
       font-size: 0.9rem;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
     }
 
     .coach-badge {
       font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     /* VENUE */
@@ -1167,17 +1269,17 @@ export interface ServicioEspecializado {
 
     .venue-name {
       font-weight: 700;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
     }
 
     .venue-dir {
       font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     .btn-gps {
       background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
+      color: #059669;
       border: 1px solid rgba(16, 185, 129, 0.3);
       padding: 0.25rem 0.5rem;
       border-radius: 6px;
@@ -1189,14 +1291,19 @@ export interface ServicioEspecializado {
       gap: 0.3rem;
     }
 
+    [data-theme="dark"] .btn-gps,
+    body.dark-theme .btn-gps {
+      color: #10b981;
+    }
+
     .schedule-days {
       font-weight: 700;
-      color: var(--text-main, #ffffff);
+      color: var(--text-heading, #0f172a);
       margin-right: 0.4rem;
     }
 
     .schedule-time {
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     /* CUPOS */
@@ -1214,27 +1321,32 @@ export interface ServicioEspecializado {
     }
 
     .cupos-text {
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     .cupos-badge {
       background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
+      color: #047857;
       font-weight: 700;
       font-size: 0.72rem;
       padding: 0.15rem 0.45rem;
       border-radius: 4px;
     }
 
+    [data-theme="dark"] .cupos-badge,
+    body.dark-theme .cupos-badge {
+      color: #10b981;
+    }
+
     .cupos-badge.cupos-low {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
       animation: pulse 2s infinite;
     }
 
     .progress-track {
       height: 6px;
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--bg-surface, #e2e8f0);
       border-radius: 9999px;
       overflow: hidden;
     }
@@ -1248,20 +1360,25 @@ export interface ServicioEspecializado {
     /* REWARD */
     .reward-box {
       background: rgba(245, 158, 11, 0.08);
-      border: 1px dashed rgba(245, 158, 11, 0.3);
+      border: 1px dashed rgba(245, 158, 11, 0.35);
       padding: 0.6rem 0.85rem;
       border-radius: 8px;
     }
 
     .reward-title {
       font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
       margin-bottom: 0.25rem;
     }
 
     .reward-pill {
       font-weight: 700;
       font-size: 0.82rem;
+      color: #b45309;
+    }
+
+    [data-theme="dark"] .reward-pill,
+    body.dark-theme .reward-pill {
       color: #f59e0b;
     }
 
@@ -1274,7 +1391,7 @@ export interface ServicioEspecializado {
       flex-direction: column;
       gap: 0.35rem;
       font-size: 0.8rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     .benefits-list li {
@@ -1290,7 +1407,7 @@ export interface ServicioEspecializado {
       flex-direction: column;
       gap: 0.85rem;
       padding-top: 0.75rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid var(--border-color, #e2e8f0);
     }
 
     .pricing-box {
@@ -1303,7 +1420,7 @@ export interface ServicioEspecializado {
       display: flex;
       justify-content: space-between;
       font-size: 0.78rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
     }
 
     .price-bundle {
@@ -1313,7 +1430,8 @@ export interface ServicioEspecializado {
 
     .p-label {
       font-size: 0.78rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
+      font-weight: 500;
     }
 
     .p-val-big {
@@ -1324,8 +1442,8 @@ export interface ServicioEspecializado {
 
     .p-discount {
       font-size: 0.72rem;
-      color: #f59e0b;
-      font-weight: 600;
+      color: #d97706;
+      font-weight: 700;
     }
 
     .card-actions {
@@ -1348,23 +1466,25 @@ export interface ServicioEspecializado {
       justify-content: center;
       gap: 0.5rem;
       transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
     }
 
     .btn-inscribir:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
     }
 
     .btn-inscribir:disabled {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--bg-surface, #e2e8f0);
       color: var(--text-muted, #94a3b8);
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     .btn-participantes {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ffffff;
+      background: var(--bg-surface, #f1f5f9);
+      border: 1px solid var(--border-color, #cbd5e1);
+      color: var(--text-heading, #0f172a);
       padding: 0.75rem 0.9rem;
       border-radius: 10px;
       cursor: pointer;
@@ -1372,150 +1492,268 @@ export interface ServicioEspecializado {
     }
 
     .btn-participantes:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--bg-card-hover, #e2e8f0);
     }
 
-    /* MODAL */
-    .modal-overlay {
+    /* ============================================================ */
+    /* MODAL SYSTEM (LUXURY SPORTS SAAS HIGH-CONTRAST DESIGN)       */
+    /* ============================================================ */
+    .modal-overlay,
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(6px);
-      z-index: 1000;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem;
+      padding: 1rem;
     }
 
-    .modal-dialog {
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .modal-dialog,
+    .modal-card {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
       border-radius: 20px;
       width: 100%;
-      max-width: 650px;
+      max-width: 680px;
       max-height: 90vh;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      position: relative;
     }
 
     .modal-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.25rem 1.75rem;
+      background: var(--bg-surface, #f8fafc);
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
       display: flex;
       justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-title-group {
-      display: flex;
       align-items: center;
       gap: 1rem;
     }
 
-    .modal-badge-icon {
-      width: 44px;
-      height: 44px;
+    .modal-title-group,
+    .modal-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .modal-badge-icon,
+    .modal-icon-badge {
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
-      color: #ffffff;
+      font-size: 1.3rem;
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .modal-title-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+      flex: 1;
     }
 
     .modal-title {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 800;
       margin: 0;
-      color: #ffffff;
+      color: var(--text-heading, #0f172a);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
     }
 
-    .modal-sub {
+    .modal-sub,
+    .modal-subtitle {
       font-size: 0.85rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
       margin: 0;
+      font-weight: 500;
+      line-height: 1.35;
     }
 
-    .btn-close-modal {
-      background: none;
-      border: none;
-      color: var(--text-muted, #94a3b8);
-      font-size: 1.25rem;
+    .modal-sub strong,
+    .modal-subtitle strong {
+      color: var(--text-heading, #0f172a);
+      font-weight: 700;
+    }
+
+    .btn-close-modal,
+    .modal-close-btn {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 10px;
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      color: var(--text-muted, #64748b);
+      font-size: 1.1rem;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-close-modal:hover,
+    .modal-close-btn:hover {
+      background: var(--bg-card-hover, #f1f5f9);
+      color: var(--text-heading, #0f172a);
     }
 
     .modal-body {
-      padding: 1.5rem;
+      padding: 1.5rem 1.75rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.5rem;
+      background: var(--bg-card, #ffffff);
+      overflow-y: auto;
+      max-height: calc(85vh - 140px);
     }
 
     .modal-footer {
-      padding: 1.25rem 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.25rem 1.75rem;
+      background: var(--bg-surface, #f8fafc);
+      border-top: 1px solid var(--border-color, #e2e8f0);
       display: flex;
       justify-content: flex-end;
       gap: 0.75rem;
     }
 
-    /* PLAN SELECTOR */
+    /* ============================================================ */
+    /* PLAN SELECTOR (RADIO CARDS)                                  */
+    /* ============================================================ */
     .plan-selector {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.85rem;
     }
 
     .plan-option {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1.5px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 1rem;
+      background: var(--bg-surface, #f8fafc);
+      border: 2px solid var(--border-color, #e2e8f0);
+      border-radius: 14px;
+      padding: 1.15rem 1.35rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.15rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .plan-option:hover {
+      border-color: #10b981;
+      background: var(--bg-card, #ffffff);
+      transform: translateY(-1px);
     }
 
     .plan-option.selected {
-      background: rgba(16, 185, 129, 0.08);
+      background: rgba(16, 185, 129, 0.06);
       border-color: #10b981;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
     }
 
     .plan-radio {
-      font-size: 1.2rem;
-      color: #10b981;
+      font-size: 1.35rem;
+      display: flex;
+      align-items: center;
     }
 
     .plan-details {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .plan-header-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
     }
 
     .plan-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-heading, #0f172a);
+    }
+
+    .plan-badge-popular {
+      background: rgba(245, 158, 11, 0.15);
+      color: #b45309;
+      font-size: 0.72rem;
       font-weight: 700;
-      font-size: 0.95rem;
-      color: #ffffff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    [data-theme="dark"] .plan-badge-popular,
+    body.dark-theme .plan-badge-popular {
+      color: #f59e0b;
     }
 
     .plan-desc {
-      font-size: 0.78rem;
-      color: var(--text-muted, #94a3b8);
+      font-size: 0.82rem;
+      color: var(--text-muted, #64748b);
+      line-height: 1.4;
+    }
+
+    .plan-price-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
     }
 
     .plan-price {
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 1.35rem;
+      font-weight: 900;
       color: #10b981;
+      letter-spacing: -0.02em;
     }
 
-    /* FORM GRID */
+    .plan-period {
+      font-size: 0.72rem;
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
+    }
+
+    /* ============================================================ */
+    /* FORM GRID & CONTROLS                                         */
+    /* ============================================================ */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 1.15rem;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
     }
 
     .form-group.full-width {
@@ -1523,110 +1761,268 @@ export interface ServicioEspecializado {
     }
 
     .sport-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted, #94a3b8);
-      margin-bottom: 0.35rem;
-      display: block;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text-heading, #0f172a);
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .required-star {
+      color: #dc2626;
+      font-weight: 800;
     }
 
     .sport-input {
       width: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 0.65rem 0.85rem;
-      color: #ffffff;
-      font-size: 0.88rem;
+      height: 44px;
+      min-height: 44px;
+      background: var(--bg-input, #f8fafc);
+      border: 1.5px solid var(--border-color, #cbd5e1);
+      border-radius: 10px;
+      padding: 0.6rem 0.95rem;
+      color: var(--text-main, #0f172a);
+      font-size: 0.9rem;
+      font-weight: 500;
       outline: none;
-      transition: border-color 0.2s ease;
+      transition: all 0.2s ease;
       box-sizing: border-box;
+      display: block;
     }
 
     .sport-input:focus {
       border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      background: var(--bg-card, #ffffff);
     }
 
+    .sport-input::placeholder {
+      color: var(--text-dim, #94a3b8);
+      font-weight: 400;
+    }
+
+    .sport-select {
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 2.25rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.85rem center;
+      background-size: 1rem 1rem;
+    }
+
+    .sport-textarea {
+      height: auto;
+      min-height: 90px;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.45;
+    }
+
+    /* ============================================================ */
+    /* BROTHER DISCOUNT BANNER                                      */
+    /* ============================================================ */
     .discount-toggle {
       background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      padding: 0.9rem 1.15rem;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .discount-toggle.active {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: #f59e0b;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
     }
 
     .checkbox-label {
       display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #f59e0b;
+      align-items: flex-start;
+      gap: 0.85rem;
       cursor: pointer;
     }
 
-    /* PAYMENT METHODS */
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 0.2rem;
+      accent-color: #f59e0b;
+      cursor: pointer;
+    }
+
+    .discount-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .discount-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    [data-theme="dark"] .discount-title,
+    body.dark-theme .discount-title {
+      color: #fbbf24;
+    }
+
+    .discount-pill {
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .discount-desc {
+      font-size: 0.78rem;
+      color: #78350f;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    [data-theme="dark"] .discount-desc,
+    body.dark-theme .discount-desc {
+      color: #fcd34d;
+    }
+
+    /* ============================================================ */
+    /* PAYMENT METHODS GRID                                         */
+    /* ============================================================ */
+    .payment-method-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
     .pay-methods-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
     }
 
+    @media (max-width: 540px) {
+      .pay-methods-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .pay-method-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 0.75rem;
+      background: var(--bg-surface, #f8fafc);
+      border: 1.5px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.85rem;
       cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted, #94a3b8);
       transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .pay-method-card:hover {
+      border-color: #10b981;
+      background: var(--bg-card, #ffffff);
     }
 
     .pay-method-card.active {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.12);
       border-color: #10b981;
-      color: #10b981;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
     }
 
-    /* TOTAL BAR */
+    .pay-icon {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .pay-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pay-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-heading, #0f172a);
+    }
+
+    .pay-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted, #64748b);
+    }
+
+    .pay-check {
+      color: #10b981;
+      font-size: 1.1rem;
+    }
+
+    /* ============================================================ */
+    /* TOTAL BAR                                                    */
+    /* ============================================================ */
     .total-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 1rem 1.25rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-surface, #f8fafc);
+      padding: 1.15rem 1.4rem;
+      border-radius: 14px;
+      border: 1.5px solid var(--border-color, #e2e8f0);
+    }
+
+    .total-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
     .total-label {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #ffffff;
-      display: block;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-heading, #0f172a);
     }
 
     .total-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
+      font-size: 0.76rem;
+      color: var(--text-muted, #64748b);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     .total-amount {
-      font-size: 1.6rem;
-      font-weight: 800;
+      font-size: 1.75rem;
+      font-weight: 900;
       color: #10b981;
+      letter-spacing: -0.02em;
     }
 
-    /* BUTTONS */
+    /* ============================================================ */
+    /* BUTTONS                                                      */
+    /* ============================================================ */
     .btn-primary {
       background: linear-gradient(135deg, #10b981, #059669);
       color: #ffffff;
       border: none;
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem 1.4rem;
       border-radius: 10px;
       font-weight: 700;
       font-size: 0.9rem;
@@ -1634,24 +2030,45 @@ export interface ServicioEspecializado {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      padding: 0.75rem 1.25rem;
+      background: var(--bg-surface, #f1f5f9);
+      border: 1px solid var(--border-color, #cbd5e1);
+      color: var(--text-heading, #0f172a);
+      padding: 0.75rem 1.4rem;
       border-radius: 10px;
       font-weight: 600;
       font-size: 0.9rem;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover, #e2e8f0);
     }
 
     .btn-whatsapp {
       background: #25d366;
       color: #ffffff;
       border: none;
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem 1.4rem;
       border-radius: 10px;
       font-weight: 700;
       font-size: 0.9rem;
@@ -1659,157 +2076,258 @@ export interface ServicioEspecializado {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      transition: all 0.2s ease;
     }
 
-    /* DIGITAL PASS TICKET */
+    .btn-whatsapp:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+    }
+
+    /* ============================================================ */
+    /* DIGITAL PASS TICKET (SUCCESS STATE)                          */
+    /* ============================================================ */
     .ticket-pass-container {
       padding: 1.5rem;
     }
 
     .ticket-card {
-      background: #1e293b;
+      background: var(--bg-card, #ffffff);
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
     .ticket-header {
-      padding: 1rem 1.5rem;
+      padding: 1.15rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #ffffff;
-      font-weight: 700;
-      font-size: 0.85rem;
+      font-weight: 800;
+      font-size: 0.88rem;
     }
 
     .ticket-body {
       padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
     .ticket-title {
       font-size: 1.35rem;
       font-weight: 800;
-      margin: 0 0 1.25rem 0;
-      color: #ffffff;
+      margin: 0;
+      color: var(--text-heading, #0f172a);
     }
 
     .ticket-meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
-      margin-bottom: 1.5rem;
-      background: rgba(15, 23, 42, 0.5);
-      padding: 1rem;
+      background: var(--bg-surface, #f8fafc);
+      padding: 1.25rem;
       border-radius: 12px;
+      border: 1px solid var(--border-color, #e2e8f0);
+    }
+
+    .meta-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
     .t-label {
       font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
-      display: block;
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
     }
 
     .t-val {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-heading, #0f172a);
     }
 
     .qr-box {
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--bg-surface, #f8fafc);
       padding: 1.25rem;
       border-radius: 12px;
+      border: 1px dashed var(--border-color, #cbd5e1);
     }
 
     .qr-mock {
       width: 80px;
       height: 80px;
-      background: #ffffff;
-      color: #0f172a;
-      border-radius: 8px;
+      min-width: 80px;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
+      font-size: 2.8rem;
+    }
+
+    .qr-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
 
     .qr-code-text {
       font-family: monospace;
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #059669;
+    }
+
+    [data-theme="dark"] .qr-code-text,
+    body.dark-theme .qr-code-text {
       color: #10b981;
     }
 
     .qr-ref {
       font-size: 0.78rem;
-      color: var(--text-muted, #94a3b8);
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
     }
 
     .qr-note {
       font-size: 0.75rem;
-      color: var(--text-muted, #94a3b8);
-      margin: 0.4rem 0 0 0;
+      color: var(--text-muted, #64748b);
+      margin: 0.35rem 0 0 0;
     }
 
     .ticket-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.15rem 1.5rem;
+      background: var(--bg-surface, #f8fafc);
+      border-top: 1px solid var(--border-color, #e2e8f0);
       display: flex;
       justify-content: flex-end;
       gap: 0.75rem;
     }
 
-    /* TABLE */
-    .table-responsive {
+    /* ============================================================ */
+    /* PARTICIPANTS TABLE & LIST                                    */
+    /* ============================================================ */
+    .fut-table-container {
+      width: 100%;
       overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      background: var(--bg-card, #ffffff);
     }
 
-    .sport-table {
+    .fut-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    .sport-table th {
       text-align: left;
-      padding: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-muted, #94a3b8);
-      font-weight: 600;
+      font-size: 0.875rem;
     }
 
-    .sport-table td {
-      padding: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    .fut-table th {
+      background: var(--bg-surface, #f8fafc);
+      color: var(--text-muted, #64748b);
+      font-weight: 700;
+      padding: 0.85rem 1.15rem;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    .fut-table td {
+      padding: 0.95rem 1.15rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-main, #0f172a);
+      vertical-align: middle;
+    }
+
+    .fut-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .fut-table tbody tr:hover {
+      background: var(--bg-surface, #f8fafc);
+    }
+
+    .player-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .player-cell-icon {
+      font-size: 1.25rem;
+    }
+
+    .player-cell-name {
+      font-weight: 700;
+      color: var(--text-heading, #0f172a);
+    }
+
+    .guardian-name {
+      font-weight: 600;
+      color: var(--text-heading, #0f172a);
     }
 
     .badge-plan {
-      background: rgba(59, 130, 246, 0.15);
-      color: #3b82f6;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.12);
+      color: #2563eb;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 700;
+      display: inline-block;
+    }
+
+    .badge-plan-bundle {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+
+    .badge-payment {
+      background: var(--bg-surface, #f1f5f9);
+      border: 1px solid var(--border-color, #e2e8f0);
+      color: var(--text-muted, #64748b);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
 
     .qr-token {
       font-family: monospace;
-      font-size: 0.75rem;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--bg-surface, #f1f5f9);
+      color: #059669;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    [data-theme="dark"] .qr-token,
+    body.dark-theme .qr-token {
+      color: #10b981;
     }
 
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      background: var(--bg-card, rgba(30, 41, 59, 0.7));
+      background: var(--bg-card, #ffffff);
       border-radius: 16px;
+      border: 1px solid var(--border-color, #e2e8f0);
     }
 
     .empty-icon {
@@ -1820,8 +2338,31 @@ export interface ServicioEspecializado {
 
     .empty-state-mini {
       text-align: center;
-      padding: 2.5rem;
-      color: var(--text-muted, #94a3b8);
+      padding: 3rem 1.5rem;
+      color: var(--text-muted, #64748b);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .empty-mini-icon {
+      font-size: 2.5rem;
+      color: var(--text-dim, #94a3b8);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-mini h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text-heading, #0f172a);
+    }
+
+    .empty-state-mini p {
+      font-size: 0.85rem;
+      margin: 0;
+      max-width: 400px;
     }
 
     .text-emerald { color: #10b981; }
@@ -1829,7 +2370,7 @@ export interface ServicioEspecializado {
     .text-amber { color: #f59e0b; }
     .text-pink { color: #ec4899; }
     .text-purple { color: #8b5cf6; }
-    .text-muted { color: var(--text-muted, #94a3b8); }
+    .text-muted { color: var(--text-muted, #64748b); }
     .font-bold { font-weight: 700; }
   `]
 })
