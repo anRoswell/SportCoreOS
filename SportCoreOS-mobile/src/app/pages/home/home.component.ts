@@ -6,12 +6,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { MatchCardComponent } from '../../shared/components/match-card/match-card.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, RouterModule, MobileHeaderComponent, BottomNavComponent, MatchCardComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

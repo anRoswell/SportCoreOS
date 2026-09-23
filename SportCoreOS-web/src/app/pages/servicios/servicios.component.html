@@ -300,75 +300,28 @@
             </button>
           </div>
 
-          <!-- SUCCESS STATE: DIGITAL PASS TICKET -->
+          <!-- SUCCESS STATE: DIGITAL PASS TICKET (Componente Reutilizable) -->
           <div class="ticket-pass-container" *ngIf="ticketGenerated(); else formInscripcion">
-            <div class="ticket-card">
-              <div class="ticket-header" [style.background-color]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? '#d97706' : (selectedServicio()?.color_tema || '#10b981')">
-                <div class="ticket-brand">⚽ SportCoreOS • Pass Oficial</div>
-                <div class="ticket-status">
-                  <i class="fa-solid" [ngClass]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'fa-clock' : 'fa-circle-check'"></i>
-                  {{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'INSCRIPCIÓN REGISTRADA • PENDIENTE DE APROBACIÓN' : 'INSCRIPCIÓN CONFIRMADA Y PAGADA' }}
-                </div>
-              </div>
-
-              <div class="ticket-body">
-                <!-- PENDING BANNER IF NEQUI / VOUCHER -->
-                <div class="pending-approval-banner" *ngIf="ticketData()?.estado_pago === 'PENDIENTE_APROBACION'">
-                  <div class="pending-icon-wrap"><i class="fa-solid fa-vault"></i></div>
-                  <div class="pending-msg">
-                    <strong>Comprobante en Revisión de Tesorería:</strong>
-                    Tu cupo ha sido reservado. Tan pronto la tesorera valide el extracto bancario, el código QR se activará como pase definitivo.
-                  </div>
-                </div>
-
-                <h3 class="ticket-title">{{ selectedServicio()?.titulo }}</h3>
-                <div class="ticket-meta-grid">
-                  <div class="meta-cell">
-                    <span class="t-label">Atleta / Alumno:</span>
-                    <span class="t-val">{{ ticketData()?.nombre_jugador }}</span>
-                  </div>
-                  <div class="meta-cell">
-                    <span class="t-label">Acudiente / Contacto:</span>
-                    <span class="t-val">{{ ticketData()?.nombre_acudiente }} ({{ ticketData()?.telefono_acudiente }})</span>
-                  </div>
-                  <div class="meta-cell">
-                    <span class="t-label">Plan Adquirido:</span>
-                    <span class="t-val">{{ ticketData()?.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mensual Completo' : 'Sesión Individual' }}</span>
-                  </div>
-                  <div class="meta-cell">
-                    <span class="t-label">Total Liquidado:</span>
-                    <span class="t-val text-emerald font-bold">&#36;{{ formatNumber(ticketData()?.monto_pagado) }}</span>
-                  </div>
-                  <div class="meta-cell">
-                    <span class="t-label">Método de Pago:</span>
-                    <span class="t-val font-bold text-purple">{{ ticketData()?.metodo_pago }}</span>
-                  </div>
-                  <div class="meta-cell">
-                    <span class="t-label">Cancha / Sede:</span>
-                    <span class="t-val">{{ selectedServicio()?.cancha_nombre }}</span>
-                  </div>
-                </div>
-
-                <div class="qr-box">
-                  <div class="qr-mock">
-                    <i class="fa-solid fa-qrcode qr-large-icon"></i>
-                  </div>
-                  <div class="qr-info">
-                    <div class="qr-code-text">{{ ticketData()?.codigo_qr_ticket }}</div>
-                    <div class="qr-ref">Ref: {{ ticketData()?.referencia_transaccion }}</div>
-                    <p class="qr-note">Presenta este pase QR digital al profesor el primer día de entrenamiento.</p>
-                  </div>
-                </div>
-              </div>
-              <div class="ticket-footer">
-                <button class="btn-primary" (click)="closeInscribirModal()">
-                  <i class="fa-solid fa-check"></i> Finalizar
-                </button>
-                <button class="btn-whatsapp" (click)="shareWhatsApp()">
-                  <i class="fa-brands fa-whatsapp"></i> Compartir por WhatsApp
-                </button>
-              </div>
-            </div>
+            <app-digital-pass-ticket
+              [ticket]="{
+                title: selectedServicio()?.titulo,
+                category: selectedServicio()?.categoria_servicio,
+                athleteName: ticketData()?.nombre_jugador,
+                guardianName: ticketData()?.nombre_acudiente,
+                guardianPhone: ticketData()?.telefono_acudiente,
+                planName: ticketData()?.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mensual Completo' : 'Sesión Individual',
+                amountPaid: ticketData()?.monto_pagado,
+                paymentMethod: ticketData()?.metodo_pago,
+                paymentStatus: ticketData()?.estado_pago,
+                venueName: selectedServicio()?.cancha_nombre,
+                qrCodeToken: ticketData()?.codigo_qr_ticket,
+                referenceCode: ticketData()?.referencia_transaccion,
+                badgeName: selectedServicio()?.insignia_obtenida,
+                themeColor: selectedServicio()?.color_tema
+              }"
+              (finish)="closeInscribirModal()"
+              (shareWhatsApp)="shareWhatsApp()">
+            </app-digital-pass-ticket>
           </div>
 
           <!-- FORM INSCRIBIRSE -->

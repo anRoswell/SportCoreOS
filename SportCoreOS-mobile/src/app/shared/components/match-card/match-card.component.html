@@ -1,0 +1,181 @@
+@if (match) {
+  <!-- MODO 1: LIVE HERO (HOME DASHBOARD WIDGET) -->
+  @if (mode === 'live-hero') {
+    <div class="match-live-hero-card">
+      <div class="hero-strip">
+        <span class="cat-pill">⚽ {{ match.categoria_nombre || 'Categoría Oficial' }}</span>
+        <span class="countdown-badge">
+          <i class="fa-regular fa-clock"></i> {{ match.hora_partido }} (Cit: {{ match.hora_citacion || match.hora_partido }})
+        </span>
+      </div>
+
+      <div class="versus-pitch-board">
+        <div class="team-column">
+          <div class="crest-frame club">
+            <span class="crest-sigla">{{ auth.activeClub().sigla || 'SC' }}</span>
+          </div>
+          <span class="team-title">{{ auth.activeClub().nombre }}</span>
+          <span class="kit-badge">{{ match.indumentaria_kit || 'Uniforme Titular' }}</span>
+        </div>
+
+        <div class="versus-center">
+          <div class="vs-circle">VS</div>
+          <span class="match-date-badge">{{ match.fecha_partido }}</span>
+        </div>
+
+        <div class="team-column">
+          <div class="crest-frame rival">
+            <span class="rival-icon">⚔️</span>
+          </div>
+          <span class="team-title">{{ match.rival_nombre }}</span>
+          <span class="kit-badge rival-kit">{{ match.condicion_juego === 'LOCAL' ? 'Visitante' : 'Local' }}</span>
+        </div>
+      </div>
+
+      <div class="pitch-venue-bar">
+        <div class="venue-info">
+          <i class="fa-solid fa-location-dot text-emerald"></i>
+          <span>{{ match.sede_cancha }}</span>
+        </div>
+        <button class="btn-pitch-gps" (click)="onOpenGps($event)" title="Abrir ubicación en GPS">
+          <i class="fa-solid fa-map-location-dot"></i> GPS
+        </button>
+      </div>
+
+      @if (showActions) {
+        <div class="hero-action-footer">
+          <a [routerLink]="['/convocatorias']" [queryParams]="{ partidoId: match.id }" class="btn-convocatoria-hero">
+            <i class="fa-solid fa-clipboard-user"></i> Ver Convocatoria & Citación
+          </a>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- MODO 2: CALLOUT / PORTAL FAMILIAR (CON BOTONES DE CONFIRMACIÓN) -->
+  @else if (mode === 'callout') {
+    <div class="match-callout-card">
+      <div class="callout-header">
+        <div class="tag-live">⚽ PRÓXIMO ENCUENTRO OFICIAL</div>
+        @if (convocatoriaEstado) {
+          <span class="badge" [class.badge-success]="convocatoriaEstado === 'CONFIRMADO'" [class.badge-warning]="convocatoriaEstado === 'PENDIENTE'" [class.badge-danger]="convocatoriaEstado === 'EXCUSADO'">
+            {{ convocatoriaEstado === 'CONFIRMADO' ? '¡CONVOCADO CONFIRMADO!' : (convocatoriaEstado === 'EXCUSADO' ? 'EXCUSADO' : 'PENDIENTE CONFIRMACIÓN') }}
+          </span>
+        }
+      </div>
+
+      <div class="callout-versus-row">
+        <div class="match-title-wrap">
+          <span class="match-cat">{{ match.categoria_nombre }}</span>
+          <h3>VS {{ match.rival_nombre }}</h3>
+        </div>
+        <span class="cond-badge" [class.cond-local]="match.condicion_juego === 'LOCAL'">
+          {{ match.condicion_juego || 'LOCAL' }}
+        </span>
+      </div>
+
+      <div class="callout-meta-grid">
+        <div class="meta-item">
+          <i class="fa-regular fa-calendar text-emerald"></i>
+          <span>{{ match.fecha_partido }} • {{ match.hora_partido }}</span>
+        </div>
+        <div class="meta-item highlight">
+          <i class="fa-solid fa-stopwatch text-amber"></i>
+          <span><strong>Citación:</strong> {{ match.hora_citacion || match.hora_partido }}</span>
+        </div>
+        <div class="meta-item venue-item" (click)="onOpenGps($event)">
+          <i class="fa-solid fa-location-dot text-emerald"></i>
+          <span>{{ match.sede_cancha }}</span>
+          <i class="fa-solid fa-arrow-up-right-from-square gps-link-icon"></i>
+        </div>
+        <div class="meta-item">
+          <i class="fa-solid fa-shirt text-blue"></i>
+          <span>{{ match.indumentaria_kit || 'Kit Titular' }}</span>
+        </div>
+      </div>
+
+      @if (showActions) {
+        <div class="confirmation-actions-row">
+          <button class="btn-confirm-yes" (click)="onConfirm($event)">
+            <i class="fa-solid fa-circle-check"></i> Confirmar Asistencia
+          </button>
+          <button class="btn-confirm-no" (click)="onExcusar($event)">
+            <i class="fa-solid fa-circle-xmark"></i> Excusar Inasistencia
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- MODO 3: STANDARD CARD (FIXTURE & LISTADO) -->
+  @else {
+    <div class="match-item-card">
+      <div class="match-card-top">
+        <span class="badge-cat-tag">⚽ {{ match.categoria_nombre || 'Categoría Oficial' }}</span>
+        <span class="match-badge-cond" [class.badge-local]="match.condicion_juego === 'LOCAL'">
+          {{ match.condicion_juego || 'LOCAL' }}
+        </span>
+      </div>
+
+      <div class="match-versus-block">
+        <div class="team-club">
+          <div class="crest-small">{{ auth.activeClub().sigla || 'SC' }}</div>
+          <strong class="club-title">{{ auth.activeClub().nombre }}</strong>
+        </div>
+
+        <div class="versus-center">
+          @if (match.estado_partido === 'FINALIZADO') {
+            <div class="score-display">
+              <span>{{ match.goles_club !== null ? match.goles_club : 0 }}</span> - <span>{{ match.goles_rival !== null ? match.goles_rival : 0 }}</span>
+            </div>
+            <span class="match-status-label finalizado">Finalizado</span>
+          } @else if (match.estado_partido === 'EN_VIVO') {
+            <div class="score-display live">
+              <span>{{ match.goles_club !== null ? match.goles_club : 0 }}</span> - <span>{{ match.goles_rival !== null ? match.goles_rival : 0 }}</span>
+            </div>
+            <span class="match-status-label en-vivo"><span class="dot-live"></span> En Vivo</span>
+          } @else {
+            <div class="vs-label">VS</div>
+            <span class="match-status-label programado">Programado</span>
+          }
+        </div>
+
+        <div class="team-club team-rival">
+          <strong class="club-title">{{ match.rival_nombre }}</strong>
+          <div class="crest-small rival-small">⚔️</div>
+        </div>
+      </div>
+
+      <div class="match-details-strip">
+        <div class="detail-cell">
+          <i class="fa-regular fa-calendar text-emerald"></i>
+          <span>{{ match.fecha_partido }}</span>
+        </div>
+        <div class="detail-cell">
+          <i class="fa-regular fa-clock text-blue"></i>
+          <span>{{ match.hora_partido }}</span>
+        </div>
+        <div class="detail-cell citacion-cell">
+          <span class="cit-tag">Cit: {{ match.hora_citacion || match.hora_partido }}</span>
+        </div>
+      </div>
+
+      <div class="venue-cell">
+        <i class="fa-solid fa-location-dot text-amber"></i>
+        <span class="venue-text">{{ match.sede_cancha }}</span>
+      </div>
+
+      @if (showActions) {
+        <div class="match-card-footer">
+          <a [routerLink]="['/convocatorias']" [queryParams]="{ partidoId: match.id }" class="btn-convocar-match">
+            <i class="fa-solid fa-clipboard-user"></i>
+            <span>Ver Convocatoria & Citación</span>
+          </a>
+          <button class="btn-gps-action" (click)="onOpenGps($event)" title="Abrir en Google Maps">
+            <i class="fa-solid fa-diamond-turn-right"></i> GPS
+          </button>
+        </div>
+      }
+    </div>
+  }
+}

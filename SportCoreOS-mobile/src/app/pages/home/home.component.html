@@ -80,7 +80,7 @@
         </div>
       </section>
 
-      <!-- PRÓXIMO PARTIDO MATCHDAY CARD -->
+      <!-- PRÓXIMO PARTIDO MATCHDAY CARD (Componente Reutilizable) -->
       <section class="section-card-wrapper">
         <div class="section-header-row">
           <div class="header-left-title">
@@ -91,58 +91,7 @@
         </div>
 
         @if (proximoPartido()) {
-          <div class="match-live-card">
-            <!-- Header del Match -->
-            <div class="match-status-strip">
-              <span class="match-category-tag">⚽ {{ proximoPartido()?.categoria_nombre || 'Sub-15 Élite' }}</span>
-              <span class="countdown-badge">
-                <i class="fa-regular fa-clock"></i> {{ proximoPartido()?.hora_partido }} (Citación: {{ proximoPartido()?.hora_citacion }})
-              </span>
-            </div>
-
-            <!-- Versus Pitch -->
-            <div class="versus-pitch-board">
-              <div class="team-column">
-                <div class="crest-frame club">
-                  <span class="crest-sigla">{{ auth.activeClub().sigla }}</span>
-                </div>
-                <span class="team-title">{{ auth.activeClub().nombre }}</span>
-                <span class="kit-badge">Uniforme Titular</span>
-              </div>
-
-              <div class="versus-center">
-                <div class="vs-circle">VS</div>
-                <span class="match-date-badge">{{ proximoPartido()?.fecha_partido }}</span>
-              </div>
-
-              <div class="team-column">
-                <div class="crest-frame rival">
-                  <span class="rival-icon">⚔️</span>
-                </div>
-                <span class="team-title">{{ proximoPartido()?.rival_nombre }}</span>
-                <span class="kit-badge rival-kit">Visitante</span>
-              </div>
-            </div>
-
-            <!-- Location & Navigation Bar -->
-            <div class="pitch-venue-bar">
-              <div class="venue-info">
-                <i class="fa-solid fa-location-dot text-emerald"></i>
-                <span>{{ proximoPartido()?.sede_cancha }}</span>
-              </div>
-              <button class="btn-gps-route" (click)="openGps(proximoPartido()?.sede_cancha)" title="Abrir en Waze / Google Maps">
-                <i class="fa-solid fa-diamond-turn-right"></i> GPS
-              </button>
-            </div>
-
-            <!-- Botones de Acción Rápida de Partido -->
-            <div class="match-actions-grid">
-              <a routerLink="/convocatorias" [queryParams]="{ partidoId: proximoPartido()?.id }" class="btn-action-primary">
-                <i class="fa-solid fa-clipboard-user"></i>
-                <span>Ver Convocatoria (Titulares / Suplentes)</span>
-              </a>
-            </div>
-          </div>
+          <app-match-card [match]="proximoPartido()!" mode="live-hero"></app-match-card>
         }
       </section>
 

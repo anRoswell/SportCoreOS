@@ -35,10 +35,12 @@ export interface ServicioEspecializado {
   activo?: boolean;
 }
 
+import { DigitalPassTicketComponent } from '../../shared/components/digital-pass-ticket/digital-pass-ticket.component';
+
 @Component({
   selector: 'app-servicios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DigitalPassTicketComponent],
   templateUrl: './servicios.component.html',
   styleUrl: './servicios.component.scss'
 })

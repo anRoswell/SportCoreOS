@@ -14,33 +14,15 @@
         </div>
       </div>
 
-      <!-- ALERTA DE CONVOCATORIA A PARTIDO PRÓXIMO -->
+      <!-- ALERTA DE CONVOCATORIA A PARTIDO PRÓXIMO (Componente Reutilizable) -->
       @if (proximoPartido()) {
-        <div class="mobile-card match-callout">
-          <div class="callout-header">
-            <div class="tag-live">⚽ PRÓXIMO PARTIDO OFICIAL</div>
-            <span class="badge" [class.badge-success]="convocatoriaEstado() === 'CONFIRMADO'" [class.badge-warning]="convocatoriaEstado() === 'PENDIENTE'" [class.badge-danger]="convocatoriaEstado() === 'EXCUSADO'">
-              {{ convocatoriaEstado() === 'CONFIRMADO' ? '¡CONVOCADO CONFIRMADO!' : (convocatoriaEstado() === 'EXCUSADO' ? 'EXCUSADO' : 'PENDIENTE CONFIRMACIÓN') }}
-            </span>
-          </div>
-
-          <div class="match-details">
-            <h3>VS {{ proximoPartido()?.rival_nombre }}</h3>
-            <p class="match-time"><i class="fa-regular fa-clock"></i> {{ proximoPartido()?.fecha_partido }} • {{ proximoPartido()?.hora_partido }}</p>
-            <p class="warmup-time"><i class="fa-solid fa-stopwatch"></i> <strong>Hora de Citación:</strong> {{ proximoPartido()?.hora_citacion || proximoPartido()?.hora_partido }}</p>
-            <p class="match-location"><i class="fa-solid fa-location-dot"></i> {{ proximoPartido()?.sede_cancha }}</p>
-            <p class="uniform-info"><i class="fa-solid fa-shirt"></i> <strong>Indumentaria:</strong> {{ proximoPartido()?.indumentaria_kit || 'Kit Titular Verde Esmeralda' }}</p>
-          </div>
-
-          <div class="confirmation-actions">
-            <button class="btn-confirm-yes" (click)="confirmarAsistencia()">
-              <i class="fa-solid fa-circle-check"></i> Confirmar Asistencia
-            </button>
-            <button class="btn-confirm-no" (click)="excusarAsistencia()">
-              <i class="fa-solid fa-circle-xmark"></i> Excusar Inasistencia
-            </button>
-          </div>
-        </div>
+        <app-match-card 
+          [match]="proximoPartido()" 
+          mode="callout"
+          [convocatoriaEstado]="convocatoriaEstado() === 'CONFIRMADO' ? 'CONFIRMADO' : (convocatoriaEstado() === 'EXCUSADO' ? 'EXCUSADO' : 'PENDIENTE')"
+          (confirmAttendance)="confirmarAsistencia()"
+          (excuseAttendance)="excusarAsistencia()">
+        </app-match-card>
       }
 
       <!-- ESTADO FINANCIERO & PAGO PSE EN 1 CLIC -->

@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { MobileHeaderComponent } from '../../shared/components/mobile-header.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { MatchCardComponent } from '../../shared/components/match-card/match-card.component';
 import { environment } from '../../../environments/environment';
 
 export interface PartidoItem {
@@ -27,7 +28,7 @@ export interface PartidoItem {
 @Component({
   selector: 'app-partidos-mobile',
   standalone: true,
-  imports: [CommonModule, RouterModule, ScrollingModule, MobileHeaderComponent, BottomNavComponent],
+  imports: [CommonModule, RouterModule, ScrollingModule, MobileHeaderComponent, BottomNavComponent, MatchCardComponent],
   templateUrl: './partidos-mobile.component.html',
   styleUrl: './partidos-mobile.component.scss'
 })

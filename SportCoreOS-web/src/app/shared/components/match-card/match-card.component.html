@@ -1,0 +1,141 @@
+<!-- ========================================== -->
+<!-- MODO 1: CALLOUT (Portal Padres / Notificación de Convocatoria) -->
+<!-- ========================================== -->
+<div *ngIf="mode === 'callout'" class="match-card-callout">
+  <div class="callout-header">
+    <div class="tag-live">⚽ PRÓXIMO PARTIDO OFICIAL</div>
+    <span class="badge" 
+          [class.badge-success]="convocatoriaEstado === 'CONFIRMADO'" 
+          [class.badge-warning]="convocatoriaEstado === 'PENDIENTE'" 
+          [class.badge-danger]="convocatoriaEstado === 'EXCUSADO'">
+      {{ convocatoriaEstado === 'CONFIRMADO' ? '¡CONVOCADO CONFIRMADO!' : (convocatoriaEstado === 'EXCUSADO' ? 'EXCUSADO' : 'PENDIENTE CONFIRMACIÓN') }}
+    </span>
+  </div>
+
+  <div class="match-details">
+    <h3>VS {{ match.rival_nombre || 'Rival por definir' }}</h3>
+    <p class="match-time">
+      <i class="fa-regular fa-clock"></i> {{ match.fecha_partido }} • {{ match.hora_partido }}
+    </p>
+    <p class="warmup-time" *ngIf="match.hora_citacion">
+      <i class="fa-solid fa-stopwatch"></i> <strong>Hora de Citación:</strong> {{ match.hora_citacion }}
+    </p>
+    <div class="location-row">
+      <p class="match-location"><i class="fa-solid fa-location-dot"></i> {{ match.sede_cancha }}</p>
+      <button class="btn-mini-gps" (click)="openGps(match.sede_cancha)" title="Abrir GPS">
+        <i class="fa-solid fa-diamond-turn-right"></i> GPS
+      </button>
+    </div>
+    <p class="uniform-info" *ngIf="match.indumentaria_kit">
+      <i class="fa-solid fa-shirt"></i> <strong>Indumentaria:</strong> {{ match.indumentaria_kit }}
+    </p>
+  </div>
+
+  <div class="confirmation-actions">
+    <button class="btn-confirm-yes" (click)="onConfirm()">
+      <i class="fa-solid fa-circle-check"></i> Confirmar Asistencia
+    </button>
+    <button class="btn-confirm-no" (click)="onExcuse()">
+      <i class="fa-solid fa-circle-xmark"></i> Excusar Inasistencia
+    </button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODO 2: LIVE HERO (Dashboard / Home Principal) -->
+<!-- ========================================== -->
+<div *ngIf="mode === 'live-hero'" class="match-live-card">
+  <div class="match-status-strip">
+    <span class="match-category-tag">⚽ {{ match.categoria_nombre || 'Sub-15 Élite' }}</span>
+    <span class="countdown-badge">
+      <i class="fa-regular fa-clock"></i> {{ match.hora_partido }} (Citación: {{ match.hora_citacion || match.hora_partido }})
+    </span>
+  </div>
+
+  <div class="versus-pitch-board">
+    <div class="team-column">
+      <div class="crest-frame club">
+        <span class="crest-sigla">{{ clubSigla }}</span>
+      </div>
+      <span class="team-title">{{ clubName }}</span>
+      <span class="kit-badge">Uniforme Titular</span>
+    </div>
+
+    <div class="versus-center">
+      <div class="vs-circle">VS</div>
+      <span class="match-date-badge">{{ match.fecha_partido }}</span>
+    </div>
+
+    <div class="team-column">
+      <div class="crest-frame rival">
+        <span class="rival-icon">⚔️</span>
+      </div>
+      <span class="team-title">{{ match.rival_nombre }}</span>
+      <span class="kit-badge rival-kit">Visitante</span>
+    </div>
+  </div>
+
+  <div class="pitch-venue-bar">
+    <div class="venue-info">
+      <i class="fa-solid fa-location-dot text-emerald"></i>
+      <span>{{ match.sede_cancha }}</span>
+    </div>
+    <button class="btn-gps-route" (click)="openGps(match.sede_cancha)" title="Abrir en Waze / Google Maps">
+      <i class="fa-solid fa-diamond-turn-right"></i> GPS
+    </button>
+  </div>
+
+  <div class="match-actions-grid">
+    <a routerLink="/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-action-primary">
+      <i class="fa-solid fa-clipboard-user"></i>
+      <span>Ver Convocatoria (Titulares / Suplentes)</span>
+    </a>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODO 3: STANDARD (Listados / Fixture / Histórico) -->
+<!-- ========================================== -->
+<div *ngIf="mode === 'standard'" class="match-card-standard">
+  <div class="card-head">
+    <span class="cat-pill">⚽ {{ match.categoria_nombre }}</span>
+    <span class="status-pill" [ngClass]="match.estado?.toLowerCase() || 'programado'">
+      {{ match.estado || 'PROGRAMADO' }}
+    </span>
+  </div>
+
+  <div class="teams-versus">
+    <div class="team-box home">
+      <div class="badge-crest">{{ clubSigla }}</div>
+      <span class="t-name">{{ clubName }}</span>
+    </div>
+
+    <div class="score-box">
+      <span *ngIf="match.marcador_local !== null && match.marcador_local !== undefined" class="final-score">
+        {{ match.marcador_local }} - {{ match.marcador_visitante }}
+      </span>
+      <span *ngIf="match.marcador_local === null || match.marcador_local === undefined" class="vs-tag">VS</span>
+      <span class="match-date">{{ match.fecha_partido }} • {{ match.hora_partido }}</span>
+    </div>
+
+    <div class="team-box away">
+      <div class="badge-crest away-crest">⚔️</div>
+      <span class="t-name">{{ match.rival_nombre }}</span>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="venue-text">
+      <i class="fa-solid fa-location-dot text-emerald"></i>
+      <span>{{ match.sede_cancha }}</span>
+    </div>
+    <div class="actions-group">
+      <button class="btn-icon-gps" (click)="openGps(match.sede_cancha)" title="Abrir GPS">
+        <i class="fa-solid fa-diamond-turn-right"></i>
+      </button>
+      <a routerLink="/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-view-lineup">
+        Convocatoria <i class="fa-solid fa-chevron-right"></i>
+      </a>
+    </div>
+  </div>
+</div>

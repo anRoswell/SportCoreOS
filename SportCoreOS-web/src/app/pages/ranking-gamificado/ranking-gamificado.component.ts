@@ -40,10 +40,13 @@ export interface AlumnoRankItem {
   };
 }
 
+import { PaginationBarComponent } from '../../shared/components/pagination-bar/pagination-bar.component';
+import { FutPlayerCardComponent } from '../../shared/components/fut-player-card/fut-player-card.component';
+
 @Component({
   selector: 'app-ranking-gamificado',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationBarComponent, FutPlayerCardComponent],
   templateUrl: './ranking-gamificado.component.html',
   styleUrl: './ranking-gamificado.component.scss'
 })

@@ -544,59 +544,17 @@
           </table>
         </div>
 
-        <!-- BARRA DE PAGINACIÓN PROFESIONAL -->
-        @if (totalFilteredCount() > 0) {
-          <div class="pagination-bar">
-            <div class="pagination-info">
-              <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalFilteredCount() }}</strong> alumnos</span>
-              <div class="page-size-selector">
-                <label>Mostrar:</label>
-                <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
-                  <option [value]="5">5 por pág</option>
-                  <option [value]="8">8 por pág</option>
-                  <option [value]="15">15 por pág</option>
-                  <option [value]="25">25 por pág</option>
-                  <option [value]="50">50 por pág</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="pagination-controls">
-              <button 
-                class="page-nav-btn btn-prev" 
-                [disabled]="currentPage() <= 1" 
-                (click)="goToPage(currentPage() - 1)"
-                title="Página anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-                <span>Anterior</span>
-              </button>
-
-              <div class="page-numbers">
-                @for (p of visiblePages(); track p) {
-                  @if (p === -1) {
-                    <span class="page-ellipsis">...</span>
-                  } @else {
-                    <button 
-                      class="page-num-btn" 
-                      [class.active]="currentPage() === p"
-                      (click)="goToPage(p)">
-                      {{ p }}
-                    </button>
-                  }
-                }
-              </div>
-
-              <button 
-                class="page-nav-btn btn-next" 
-                [disabled]="currentPage() >= totalPages()" 
-                (click)="goToPage(currentPage() + 1)"
-                title="Página siguiente">
-                <span>Siguiente</span>
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-        }
+        <!-- BARRA DE PAGINACIÓN PROFESIONAL REUTILIZABLE -->
+        <app-pagination-bar 
+          [currentPage]="currentPage()" 
+          [totalPages]="totalPages()" 
+          [totalRecords]="totalFilteredCount()" 
+          [pageSize]="pageSize()" 
+          [loading]="isLoading()"
+          [pageSizeOptions]="[5, 8, 15, 25, 50]"
+          (pageChange)="goToPage($event)" 
+          (pageSizeChange)="setPageSize($event)">
+        </app-pagination-bar>
       </section>
     } <!-- Fin @if (activeMainTab() === 'LEADERBOARD') -->
 
@@ -914,54 +872,8 @@
             </div>
 
             <div class="drawer-body">
-              <!-- CARTA FUT 3D PRINCIPAL -->
-              <div class="fut-large-card" [ngClass]="'tier-' + alumnoSeleccionado()?.tier?.toLowerCase()">
-                <div class="card-glow-fx"></div>
-                
-                <div class="large-card-header">
-                  <div class="ovr-block">
-                    <span class="large-ovr">{{ alumnoSeleccionado()?.overallRating }}</span>
-                    <span class="large-pos">{{ alumnoSeleccionado()?.posicionCampo?.substring(0, 3)?.toUpperCase() }}</span>
-                    <span class="large-tier">{{ alumnoSeleccionado()?.tier }}</span>
-                  </div>
-                  <div class="large-avatar">
-                    <img [src]="alumnoSeleccionado()?.fotoUrl" [alt]="alumnoSeleccionado()?.nombres" />
-                  </div>
-                </div>
-
-                <div class="large-name-strip">
-                  <h4>{{ alumnoSeleccionado()?.nombres }} {{ alumnoSeleccionado()?.apellidos }}</h4>
-                  <span>SPORTCORE ACADEMY • {{ alumnoSeleccionado()?.categoriaNombre }}</span>
-                </div>
-
-                <!-- 6 ATRIBUTOS CLAVE FIFA / EA SPORTS -->
-                <div class="attributes-grid">
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.ritmo }}</span>
-                    <span class="attr-title">RIT (Ritmo)</span>
-                  </div>
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.tiro }}</span>
-                    <span class="attr-title">TIR (Tiro)</span>
-                  </div>
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.pase }}</span>
-                    <span class="attr-title">PAS (Pase)</span>
-                  </div>
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.regate }}</span>
-                    <span class="attr-title">REG (Regate)</span>
-                  </div>
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.defensa }}</span>
-                    <span class="attr-title">DEF (Defensa)</span>
-                  </div>
-                  <div class="attr-box">
-                    <span class="attr-score">{{ alumnoSeleccionado()?.stats?.fisico }}</span>
-                    <span class="attr-title">FIS (Físico)</span>
-                  </div>
-                </div>
-              </div>
+              <!-- CARTA FUT REUTILIZABLE -->
+              <app-fut-player-card [player]="alumnoSeleccionado()!"></app-fut-player-card>
 
               <!-- DESGLOSE HISTÓRICO DE XP -->
               <div class="xp-detailed-card">

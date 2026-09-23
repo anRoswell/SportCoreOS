@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 
+import { MatchCardComponent } from '../../shared/components/match-card/match-card.component';
+
 @Component({
   selector: 'app-portal-padres',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatchCardComponent],
   templateUrl: './portal-padres.component.html',
   styleUrl: './portal-padres.component.scss'
 })
