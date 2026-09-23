@@ -1,0 +1,213 @@
+<div class="idiomas-page">
+      <!-- HEADER DE LA PÁGINA -->
+      <div class="page-header">
+        <div class="header-titles">
+          <div class="header-badge">
+            <i class="fa-solid fa-globe"></i>
+            <span>{{ 'i18n.title' | translate }}</span>
+          </div>
+          <h1 class="page-title">{{ 'i18n.title' | translate }}</h1>
+          <p class="page-subtitle">
+            {{ 'i18n.subtitle' | translate }}
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI METRICS ROW -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon emerald"><i class="fa-solid fa-language"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ i18n.currentLanguageDetails().flag }} {{ i18n.currentLanguageDetails().label }}</span>
+            <span class="kpi-label">{{ 'i18n.activeLanguage' | translate }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-earth-americas"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ i18n.availableLanguages().length }}</span>
+            <span class="kpi-label">{{ 'i18n.supportedLanguages' | translate }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon amber"><i class="fa-solid fa-book-bookmark"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ allEntries().length }}</span>
+            <span class="kpi-label">{{ 'i18n.totalKeys' | translate }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon rose"><i class="fa-solid fa-shield-check"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">100%</span>
+            <span class="kpi-label">{{ 'i18n.coverage' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELECTOR DE IDIOMA ACTIVO -->
+      <div class="section-card fut-card">
+        <div class="card-header-clean">
+          <div class="header-title-wrap">
+            <i class="fa-solid fa-sliders text-emerald"></i>
+            <div>
+              <h3>{{ 'i18n.selectLanguage' | translate }}</h3>
+              <p>Cambia el idioma de la aplicación en tiempo real con persistencia automática en el navegador</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="languages-selection-grid">
+          @for (lang of i18n.availableLanguages(); track lang.code) {
+            <div 
+              class="lang-choice-card" 
+              [class.selected]="i18n.currentLang() === lang.code"
+              (click)="changeLanguage(lang.code)">
+              <div class="lang-flag-hero">{{ lang.flag }}</div>
+              <div class="lang-choice-info">
+                <h4>{{ lang.label }}</h4>
+                <p class="native-name">{{ lang.nativeName }}</p>
+                <span class="region-pill">{{ lang.region }}</span>
+              </div>
+              <div class="lang-status-indicator">
+                @if (i18n.currentLang() === lang.code) {
+                  <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Activo</span>
+                } @else {
+                  <button type="button" class="btn-select-lang">Activar</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- SANDBOX DE PREVISUALIZACIÓN EN VIVO -->
+      <div class="section-card fut-card">
+        <div class="card-header-clean">
+          <div class="header-title-wrap">
+            <i class="fa-solid fa-eye text-blue"></i>
+            <div>
+              <h3>{{ 'i18n.testSandbox' | translate }}</h3>
+              <p>Comprueba cómo se adaptan los componentes de la interfaz al idioma seleccionado</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sandbox-preview-container">
+          <!-- Botones de Acción -->
+          <div class="sandbox-row">
+            <span class="sandbox-label">Botones & Acciones:</span>
+            <div class="sandbox-elements">
+              <button class="btn-primary-preview"><i class="fa-solid fa-floppy-disk"></i> {{ 'action.save' | translate }}</button>
+              <button class="btn-secondary-preview"><i class="fa-solid fa-xmark"></i> {{ 'action.cancel' | translate }}</button>
+              <button class="btn-secondary-preview"><i class="fa-solid fa-pen-to-square"></i> {{ 'action.edit' | translate }}</button>
+              <button class="btn-danger-preview"><i class="fa-solid fa-trash-can"></i> {{ 'action.delete' | translate }}</button>
+              <button class="btn-primary-preview"><i class="fa-solid fa-credit-card"></i> {{ 'action.pay' | translate }}</button>
+            </div>
+          </div>
+
+          <!-- Badges de Estado -->
+          <div class="sandbox-row">
+            <span class="sandbox-label">Estados & Badges:</span>
+            <div class="sandbox-elements">
+              <span class="badge badge-success">{{ 'status.active' | translate }}</span>
+              <span class="badge badge-warning">{{ 'status.injured' | translate }}</span>
+              <span class="badge badge-blue">{{ 'status.scheduled' | translate }}</span>
+              <span class="badge badge-danger">{{ 'status.pending' | translate }}</span>
+              <span class="badge badge-purple">{{ 'status.signing' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPLORADOR DEL DICCIONARIO DE TRADUCCIÓN -->
+      <div class="section-card fut-card">
+        <div class="card-header-clean">
+          <div class="header-title-wrap">
+            <i class="fa-solid fa-book-open text-amber"></i>
+            <div>
+              <h3>{{ 'i18n.dictionaryExplorer' | translate }}</h3>
+              <p>Listado completo de claves y traducciones oficiales en español, inglés y portugués</p>
+            </div>
+          </div>
+
+          <div class="dictionary-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery" 
+              placeholder="Buscar clave o texto..." 
+              class="sport-input search-input" />
+          </div>
+        </div>
+
+        <div class="category-filters-pills">
+          <button 
+            class="pill" 
+            [class.active]="selectedCategory() === 'TODAS'"
+            (click)="selectedCategory.set('TODAS')">
+            Todas ({{ allEntries().length }})
+          </button>
+          @for (cat of categories(); track cat) {
+            <button 
+              class="pill" 
+              [class.active]="selectedCategory() === cat"
+              (click)="selectedCategory.set(cat)">
+              {{ cat }} ({{ countByCategory(cat) }})
+            </button>
+          }
+        </div>
+
+        <div class="fut-table-container">
+          <table class="fut-table">
+            <thead>
+              <tr>
+                <th style="width: 220px;">Clave (Key)</th>
+                <th style="width: 130px;">Categoría</th>
+                <th>🇪🇸 Español (es)</th>
+                <th>🇺🇸 English (en)</th>
+                <th>🇧🇷 Português (pt)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of filteredEntries(); track entry.key) {
+                <tr class="entry-row">
+                  <td>
+                    <code class="key-code font-mono">{{ entry.key }}</code>
+                  </td>
+                  <td>
+                    <span class="category-tag">{{ entry.category }}</span>
+                  </td>
+                  <td>
+                    <span class="text-es" [class.highlight]="i18n.currentLang() === 'es'">{{ entry.es }}</span>
+                  </td>
+                  <td>
+                    <span class="text-en" [class.highlight]="i18n.currentLang() === 'en'">{{ entry.en }}</span>
+                  </td>
+                  <td>
+                    <span class="text-pt" [class.highlight]="i18n.currentLang() === 'pt'">{{ entry.pt }}</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="empty-table-cell">
+                    <p>No se encontraron términos para la búsqueda.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TOAST DE NOTIFICACIÓN -->
+      @if (toastMsg()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMsg() }}</span>
+        </div>
+      }
+    </div>

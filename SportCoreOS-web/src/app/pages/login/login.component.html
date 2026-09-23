@@ -1,0 +1,250 @@
+<div class="login-wrapper">
+      <!-- Botón Flotante para cambiar Tema (Light / Dark) -->
+      <button 
+        class="theme-toggle-floating" 
+        (click)="themeService.toggleTheme()" 
+        [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+        @if (themeService.isDark()) {
+          <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
+          <span>Modo Claro</span>
+        } @else {
+          <i class="fa-solid fa-moon" style="color: #38bdf8;"></i>
+          <span>Modo Oscuro</span>
+        }
+      </button>
+
+      <div class="login-container">
+        <!-- COLUMNA IZQUIERDA: HERO SPORT BRANDING -->
+        <div class="login-hero">
+          <div class="hero-content">
+            <!-- Brand Badge -->
+            <div class="brand-badge-pill">
+              <span class="pulse-dot"></span>
+              <span>PLATAFORMA SAAS DEPORTIVA</span>
+            </div>
+
+            <h1 class="hero-title">
+              La Suite Integral para <span class="highlight">Academias de Fútbol</span> de Alto Rendimiento.
+            </h1>
+
+            <p class="hero-subtitle">
+              Automatiza la cobranza de pensiones vía PSE/Wompi, organiza convocatorias por WhatsApp en 1 toque, gestiona expedientes 360° y visualiza biometría y telemetría de tus futuras estrellas.
+            </p>
+
+            <!-- Grid de Métricas de Confianza -->
+            <div class="hero-stats-grid">
+              <div class="stat-card">
+                <div class="stat-number">+140</div>
+                <div class="stat-label">Clubes & Escuelas</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">$1.2B</div>
+                <div class="stat-label">Recaudo PSE / Mes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">98.6%</div>
+                <div class="stat-label">Asistencia Confirmada</div>
+              </div>
+            </div>
+
+            <!-- Features Highlights -->
+            <div class="features-list">
+              <div class="feature-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Gestión de Categorías Sub-7 a Sub-20 con control de dorsales únicos</span>
+              </div>
+              <div class="feature-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Portal Móvil para Padres con pago de mensualidades express</span>
+              </div>
+              <div class="feature-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Enrutamiento GPS a canchas deportivas con Waze y Google Maps</span>
+              </div>
+            </div>
+
+            <!-- Trust Footer -->
+            <div class="hero-trust-footer">
+              <span>Tecnología certificada:</span>
+              <div class="trust-badges">
+                <span class="trust-badge"><i class="fa-solid fa-shield-halved"></i> SSL 256-bit</span>
+                <span class="trust-badge"><i class="fa-solid fa-bolt"></i> Wompi / PSE</span>
+                <span class="trust-badge"><i class="fa-brands fa-whatsapp"></i> Meta API</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: FORMULARIO DE ACCESO & PERSONAS DEMO -->
+        <div class="login-form-panel">
+          <!-- Ambient Glow Shapes & Grid Texture -->
+          <div class="ambient-glow glow-top-right"></div>
+          <div class="ambient-glow glow-bottom-left"></div>
+          <div class="tactical-grid-pattern"></div>
+
+          <div class="form-wrapper">
+            <!-- Header del Formulario con Logotipo Oficial -->
+            <div class="form-header">
+              <div class="brand-header-row">
+                <div class="brand-logo">
+                  <div class="logo-image-wrap">
+                    <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS Logo" class="brand-logo-img" />
+                    <span class="logo-pulse-ring"></span>
+                  </div>
+                  <div class="logo-text">
+                    <div class="logo-title-wrap">
+                      <h2>SportCore<span class="badge-text">OS</span></h2>
+                      <span class="version-tag">v1.0</span>
+                    </div>
+                    <span class="tagline">Athletic Performance Cloud</span>
+                  </div>
+                </div>
+
+                <div class="saas-secure-badge">
+                  <span class="live-dot"></span>
+                  <span>Sistema Operativo Seguro</span>
+                </div>
+              </div>
+
+              <div class="welcome-row">
+                <h3 class="welcome-heading">Panel de Acceso Institucional</h3>
+                <p class="welcome-desc">Ingresa tus credenciales autorizadas o selecciona una credencial demo para explorar.</p>
+              </div>
+            </div>
+
+            <!-- Formulario Principal en 2 Columnas -->
+            <form (ngSubmit)="onSubmit()" class="login-form">
+              <div class="form-row-2col">
+                <!-- Campo Email -->
+                <div class="input-group">
+                  <label for="email">
+                    <span class="label-icon-badge"><i class="fa-solid fa-envelope"></i></span>
+                    <span>Correo Institucional</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <input 
+                      type="email" 
+                      id="email" 
+                      [(ngModel)]="email" 
+                      name="email" 
+                      placeholder="carlos.valderrama@sportcore.com" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div class="input-group">
+                  <div class="label-row">
+                    <label for="password">
+                      <span class="label-icon-badge"><i class="fa-solid fa-lock"></i></span>
+                      <span>Contraseña de Acceso</span>
+                    </label>
+                    <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">¿Olvidaste clave?</a>
+                  </div>
+                  <div class="input-wrapper">
+                    <input 
+                      [type]="showPassword() ? 'text' : 'password'" 
+                      id="password" 
+                      [(ngModel)]="password" 
+                      name="password" 
+                      placeholder="••••••••••••" 
+                      required 
+                      class="sport-input" />
+                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Mostrar/Ocultar contraseña">
+                      <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fila Submit y Recordar Sesión -->
+              <div class="form-actions-bar">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+                  <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  <span class="label-text">Mantener sesión activa en este dispositivo</span>
+                </label>
+
+                <button type="submit" class="btn-login" [disabled]="loading()">
+                  @if (loading()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Autenticando...</span>
+                  } @else {
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Ingresar al Sistema</span>
+                  }
+                </button>
+              </div>
+            </form>
+
+            <!-- Separador Estilizado -->
+            <div class="divider">
+              <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> O SELECCIONA UNA CREDENCIAL DEMO</span>
+            </div>
+
+            <!-- Indicador de Club Activo -->
+            <div class="demo-school-badge">
+              <div class="school-shield-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="school-text-wrap">
+                <span class="badge-label">Club / Escuela Activa:</span>
+                <strong class="school-title">Club Deportivo Futuros Cracks FC</strong>
+                <span class="badge-city">• Cartagena (Cantera Oficial)</span>
+              </div>
+            </div>
+
+            <!-- Personas Demo de Prueba -->
+            <div class="demo-personas-grid">
+              @for (persona of authService.demoPersonas; track persona.id) {
+                <button 
+                  type="button" 
+                  class="persona-btn" 
+                  [class]="'persona-' + persona.badgeColor"
+                  (click)="loginWithPersona(persona.id)"
+                  [title]="persona.descripcion">
+                  <div class="persona-avatar">
+                    <img [src]="persona.avatar" [alt]="persona.nombres" />
+                    <span class="role-indicator"></span>
+                  </div>
+                  <div class="persona-info">
+                    <span class="persona-label">{{ persona.label }}</span>
+                    <span class="persona-name">{{ persona.nombres }} {{ persona.apellidos }}</span>
+                    <span class="persona-desc">{{ persona.rolLabel }}</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right persona-arrow"></i>
+                </button>
+              }
+            </div>
+
+            <!-- Callout Informativo de Seguridad SaaS -->
+            <div class="saas-info-callout">
+              <div class="callout-icon">
+                <i class="fa-solid fa-shield-check"></i>
+              </div>
+              <div class="callout-content">
+                <strong class="callout-title">Acceso Institucional Centralizado</strong>
+                <span class="callout-desc">El registro de nuevas academias y la habilitación de módulos es administrado exclusivamente por el Super Administrador.</span>
+              </div>
+              <div class="callout-cert">
+                <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>
+              </div>
+            </div>
+
+            <!-- Toast / Feedback Message -->
+            @if (toastMessage()) {
+              <div class="toast-alert" [class.error]="isToastError()">
+                <i class="fa-solid" [class.fa-circle-exclamation]="isToastError()" [class.fa-circle-check]="!isToastError()"></i>
+                <span>{{ toastMessage() }}</span>
+              </div>
+            }
+
+            <!-- Footer de la Empresa -->
+            <div class="form-footer">
+              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Infraestructura Cloud Deportiva • Todos los derechos reservados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

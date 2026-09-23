@@ -1,0 +1,411 @@
+<div class="modulos-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-cubes text-emerald"></i> Módulos Habilitados por Escuela
+          </h1>
+          <p class="page-subtitle">
+            Gestión de licencias, activación modular y vigencia por suscripción para la academia
+          </p>
+        </div>
+        <div class="header-actions">
+          <div class="club-badge-active">
+            <i class="fa-solid fa-shield-halved text-emerald"></i>
+            <select 
+              class="club-header-select" 
+              [ngModel]="api.activeClub().id" 
+              (ngModelChange)="onClubSwitch($event)">
+              @for (c of api.availableClubs(); track c.id) {
+                <option [value]="c.id">{{ c.nombre }} ({{ c.ciudad }})</option>
+              }
+            </select>
+            <span class="badge-pill">{{ clubInfo()?.plan || api.activeClub().plan }}</span>
+          </div>
+          <button class="btn-secondary" (click)="enableAllModules(true)">
+            <i class="fa-solid fa-toggle-on text-emerald"></i> Habilitar Todos
+          </button>
+          <button class="btn-primary" (click)="saveBulkState()">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Configuración
+          </button>
+          <button class="btn-primary btn-create-school" (click)="openCreateSchoolModal()">
+            <i class="fa-solid fa-plus-circle"></i> Nueva Escuela
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-blue-glow">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ modulesList().length }}</div>
+            <div class="kpi-label">Total en Catálogo</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-emerald-glow">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ activeModulesCount() }}</div>
+            <div class="kpi-label">Módulos Activos</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-amber-glow">
+            <i class="fa-solid fa-circle-pause"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ inactiveModulesCount() }}</div>
+            <div class="kpi-label">Módulos Inactivos</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-purple-glow">
+            <i class="fa-solid fa-certificate"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ activePercentage() }}%</div>
+            <div class="kpi-label">Cobertura de Licencia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE FILTROS Y CATEGORÍAS -->
+      <div class="filters-bar fut-card">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Buscar módulo por nombre o descripción..."
+            class="sport-input"
+          />
+        </div>
+
+        <div class="category-chips">
+          <button
+            class="chip-btn"
+            [class.active]="selectedCategory() === 'TODOS'"
+            (click)="selectedCategory.set('TODOS')"
+          >
+            Todos ({{ modulesList().length }})
+          </button>
+          @for (cat of categories(); track cat) {
+            <button
+              class="chip-btn"
+              [class.active]="selectedCategory() === cat"
+              (click)="selectedCategory.set(cat)"
+            >
+              {{ cat }} ({{ countByCategory(cat) }})
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- LISTA DE MÓDULOS EN GRID DE TARJETAS -->
+      <div class="modules-grid">
+        @for (mod of filteredModules(); track mod.code) {
+          <div class="module-card fut-card" [class.module-inactive]="!mod.enabled">
+            <div class="module-card-header">
+              <div class="module-icon-wrap" [class.icon-active]="mod.enabled">
+                <i class="fa-solid" [ngClass]="mod.icon || 'fa-cubes'"></i>
+              </div>
+              <div class="module-title-wrap">
+                <div class="module-name-row">
+                  <h3 class="module-title">{{ mod.name }}</h3>
+                  <span class="module-code-badge">{{ mod.code }}</span>
+                </div>
+                <span class="module-category-pill">{{ mod.category }}</span>
+              </div>
+              <!-- SWITCH REACTIVO -->
+              <label class="switch-toggle" [title]="mod.enabled ? 'Deshabilitar módulo' : 'Habilitar módulo'">
+                <input
+                  type="checkbox"
+                  [checked]="mod.enabled"
+                  (change)="toggleModule(mod)"
+                />
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <p class="module-description">{{ mod.description }}</p>
+
+            <div class="module-footer">
+              <div class="vigencia-badge" [class.indefinido]="mod.isIndefinite">
+                <i class="fa-regular fa-clock"></i>
+                @if (mod.isIndefinite) {
+                  <span>Vigencia Indefinida</span>
+                } @else {
+                  <span>{{ mod.startDate || 'Inicio' }} ➔ {{ mod.endDate || 'Vence' }}</span>
+                }
+              </div>
+
+              <button
+                class="btn-edit-license"
+                (click)="openEditModal(mod)"
+                title="Configurar vigencia o fechas de licencia"
+              >
+                <i class="fa-solid fa-sliders"></i> Ajustar Licencia
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- MODAL DE EDICIÓN DE LICENCIA Y VIGENCIA -->
+      @if (showModal()) {
+        <div class="modal-backdrop" (click)="closeModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-sliders"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Configurar Licencia: {{ selectedModule()?.name }}</h2>
+                  <p class="modal-subtitle">Establece la vigencia y activación para la escuela actual</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="saveModuleConfig()" class="modal-form">
+              <div class="input-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="editForm.habilitado"
+                    name="habilitado"
+                  />
+                  <span class="custom-checkbox"></span>
+                  <span class="label-text"><strong>Módulo Habilitado</strong> (Permitir acceso a usuarios)</span>
+                </label>
+              </div>
+
+              <div class="input-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="editForm.esIndefinido"
+                    name="esIndefinido"
+                  />
+                  <span class="custom-checkbox"></span>
+                  <span class="label-text"><strong>Licencia Permanente / Indefinida</strong> (Sin fecha de caducidad)</span>
+                </label>
+              </div>
+
+              @if (!editForm.esIndefinido) {
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-calendar"></i> Fecha de Inicio</label>
+                    <input
+                      type="text"
+                      appFlatpickr
+                      placeholder="dd/mm/aaaa"
+                      [(ngModel)]="editForm.fechaInicio"
+                      name="fechaInicio"
+                      class="sport-input"
+                    />
+                  </div>
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-calendar-xmark"></i> Fecha de Expiración</label>
+                    <input
+                      type="text"
+                      appFlatpickr
+                      placeholder="dd/mm/aaaa"
+                      [(ngModel)]="editForm.fechaFin"
+                      name="fechaFin"
+                      class="sport-input"
+                    />
+                  </div>
+                </div>
+              }
+
+              <!-- BOTONES DE ACCIÓN -->
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary btn-cancel" (click)="closeModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary btn-submit" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                  } @else {
+                    <i class="fa-solid fa-check"></i> Aplicar Cambios
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CREAR NUEVA ESCUELA (EXCLUSIVO SUPER ADMIN) -->
+      @if (showCreateSchoolModal()) {
+        <div class="modal-backdrop" (click)="closeCreateSchoolModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Registrar Nueva Escuela de Fútbol</h2>
+                  <p class="modal-subtitle">Exclusivo Super Administrador • Alta multi-tenant y asignación de DT</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeCreateSchoolModal()" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form (ngSubmit)="submitCreateSchool()" class="modal-form">
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-building-flag"></i> 1. Información de la Academia</span>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Nombre de la Academia <span class="required-star">*</span></label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="newSchoolData.clubNombre" 
+                      name="clubNombre" 
+                      placeholder="ej. Academia Leones FC" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Sigla / Código Corto <span class="required-star">*</span></label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="newSchoolData.sigla" 
+                      name="sigla" 
+                      placeholder="ej. ALFC" 
+                      maxlength="10" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Ciudad Sede <span class="required-star">*</span></label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="newSchoolData.ciudad" 
+                      name="ciudad" 
+                      placeholder="ej. Bogotá D.C., Medellín..." 
+                      required 
+                      class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Plan de Suscripción</label>
+                    <select [(ngModel)]="newSchoolData.plan" name="plan" class="sport-select">
+                      <option value="Plan Club Élite Pro">Plan Club Élite Pro</option>
+                      <option value="Plan Semillero Oro">Plan Semillero Oro</option>
+                      <option value="Plan Élite Liga">Plan Élite Liga</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-user-tie"></i> 2. Director Deportivo Inicial</span>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Nombres <span class="required-star">*</span></label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="newSchoolData.adminNombre" 
+                      name="adminNombre" 
+                      placeholder="ej. Andrés" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Apellidos <span class="required-star">*</span></label>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="newSchoolData.adminApellido" 
+                      name="adminApellido" 
+                      placeholder="ej. Escobar" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Correo Electrónico del DT <span class="required-star">*</span></label>
+                    <input 
+                      type="email" 
+                      [(ngModel)]="newSchoolData.adminEmail" 
+                      name="adminEmail" 
+                      placeholder="ej. director@leonesfc.com" 
+                      required 
+                      class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Teléfono Móvil</label>
+                    <input 
+                      type="tel" 
+                      [(ngModel)]="newSchoolData.adminTelefono" 
+                      name="adminTelefono" 
+                      placeholder="+57 300 123 4567" 
+                      class="sport-input" />
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label>Contraseña Temporal <span class="required-star">*</span> (Mínimo 6 caracteres)</label>
+                  <input 
+                    type="password" 
+                    [(ngModel)]="newSchoolData.adminPassword" 
+                    name="adminPassword" 
+                    placeholder="••••••••••••" 
+                    minlength="6" 
+                    required 
+                    class="sport-input" />
+                </div>
+              </div>
+
+              <!-- Modal Actions -->
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary btn-cancel" (click)="closeCreateSchoolModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary btn-submit" [disabled]="creatingSchool()">
+                  @if (creatingSchool()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Creando Academia...</span>
+                  } @else {
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Crear Escuela Deportiva</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST FEEDBACK -->
+      @if (toastMessage()) {
+        <div class="toast-alert" [class.error]="isToastError()">
+          <i class="fa-solid" [class.fa-circle-check]="!isToastError()" [class.fa-circle-exclamation]="isToastError()"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

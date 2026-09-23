@@ -1,0 +1,123 @@
+<div class="portal-padres-container">
+      <!-- HEADER MOBILE PORTAL -->
+      <div class="mobile-card hero-parent">
+        <div class="parent-meta">
+          <span class="badge-hero">Acudiente Titular • Portal Familiar</span>
+          <span class="club-title">{{ api.activeClub().nombre }}</span>
+        </div>
+        <div class="player-header">
+          <div class="dorsal-circle">#{{ jugador()?.numero_dorsal || '7' }}</div>
+          <div class="player-info">
+            <h2>{{ jugador()?.nombres }} {{ jugador()?.apellidos }}</h2>
+            <p>Categoría: <strong>{{ jugador()?.categoria_nombre }}</strong> • {{ jugador()?.posicion_principal }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTA DE CONVOCATORIA A PARTIDO PRÓXIMO -->
+      @if (proximoPartido()) {
+        <div class="mobile-card match-callout">
+          <div class="callout-header">
+            <div class="tag-live">⚽ PRÓXIMO PARTIDO OFICIAL</div>
+            <span class="badge" [class.badge-success]="convocatoriaEstado() === 'CONFIRMADO'" [class.badge-warning]="convocatoriaEstado() === 'PENDIENTE'" [class.badge-danger]="convocatoriaEstado() === 'EXCUSADO'">
+              {{ convocatoriaEstado() === 'CONFIRMADO' ? '¡CONVOCADO CONFIRMADO!' : (convocatoriaEstado() === 'EXCUSADO' ? 'EXCUSADO' : 'PENDIENTE CONFIRMACIÓN') }}
+            </span>
+          </div>
+
+          <div class="match-details">
+            <h3>VS {{ proximoPartido()?.rival_nombre }}</h3>
+            <p class="match-time"><i class="fa-regular fa-clock"></i> {{ proximoPartido()?.fecha_partido }} • {{ proximoPartido()?.hora_partido }}</p>
+            <p class="warmup-time"><i class="fa-solid fa-stopwatch"></i> <strong>Hora de Citación:</strong> {{ proximoPartido()?.hora_citacion || proximoPartido()?.hora_partido }}</p>
+            <p class="match-location"><i class="fa-solid fa-location-dot"></i> {{ proximoPartido()?.sede_cancha }}</p>
+            <p class="uniform-info"><i class="fa-solid fa-shirt"></i> <strong>Indumentaria:</strong> {{ proximoPartido()?.indumentaria_kit || 'Kit Titular Verde Esmeralda' }}</p>
+          </div>
+
+          <div class="confirmation-actions">
+            <button class="btn-confirm-yes" (click)="confirmarAsistencia()">
+              <i class="fa-solid fa-circle-check"></i> Confirmar Asistencia
+            </button>
+            <button class="btn-confirm-no" (click)="excusarAsistencia()">
+              <i class="fa-solid fa-circle-xmark"></i> Excusar Inasistencia
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ESTADO FINANCIERO & PAGO PSE EN 1 CLIC -->
+      <div class="mobile-card finance-card">
+        <div class="card-title-row">
+          <i class="fa-solid fa-credit-card text-emerald"></i>
+          <h3>Estado de Cuenta & Mensualidad</h3>
+        </div>
+
+        @if (cargoPendiente()) {
+          <div class="finance-status-box" [class.mora]="cargoPendiente()?.saldo_pendiente > 0" [class.ok]="cargoPendiente()?.saldo_pendiente == 0">
+            <div class="status-left">
+              <span class="label">{{ cargoPendiente()?.concepto_nombre || 'Pensión Mensual Oficial' }}</span>
+              <span class="amount">$ {{ (cargoPendiente()?.saldo_pendiente || 180000) | number }} COP</span>
+            </div>
+            <span class="badge" [class.badge-success]="cargoPendiente()?.saldo_pendiente == 0" [class.badge-warning]="cargoPendiente()?.saldo_pendiente > 0">
+              {{ cargoPendiente()?.saldo_pendiente == 0 ? 'AL DÍA (PAGADO)' : 'PENDIENTE DE PAGO' }}
+            </span>
+          </div>
+
+          @if (cargoPendiente()?.saldo_pendiente > 0) {
+            <button class="btn-pse-full" (click)="pagarMensualidad()">
+              <i class="fa-solid fa-bolt"></i> Pagar Mensualidad vía PSE / Wompi
+            </button>
+          } @else {
+            <button class="btn-receipt-full" (click)="descargarRecibo()">
+              <i class="fa-solid fa-receipt"></i> Descargar Comprobante Oficial
+            </button>
+          }
+        } @else {
+          <div class="finance-status-box ok">
+            <div class="status-left">
+              <span class="label">MENSUALIDAD OFICIAL 2026</span>
+              <span class="amount">$ 180.000 COP</span>
+            </div>
+            <span class="badge badge-success">AL DÍA (PAGADO)</span>
+          </div>
+        }
+      </div>
+
+      <!-- BOLETÍN DE RENDIMIENTO DEPORTIVO & BIOMETRÍA -->
+      <div class="mobile-card bio-report-card">
+        <div class="card-title-row">
+          <i class="fa-solid fa-heart-pulse text-blue"></i>
+          <h3>Evolución Física & Radar de Aptitud</h3>
+        </div>
+
+        <div class="bio-stats-grid">
+          <div class="bio-stat">
+            <span class="bio-lbl">ESTATURA</span>
+            <span class="bio-val">{{ biometria()?.talla_cm || '168.5' }} cm</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-lbl">PESO</span>
+            <span class="bio-val">{{ biometria()?.peso_kg || '56.4' }} kg</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-lbl">IMC</span>
+            <span class="bio-val text-emerald">{{ biometria()?.imc || '19.9' }} (Óptimo)</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-lbl">TEST COOPER</span>
+            <span class="bio-val">{{ biometria()?.test_cooper_metros || '2.850' }} m</span>
+          </div>
+        </div>
+
+        <div class="coach-comment">
+          <strong>Comentario del Cuerpo Técnico:</strong>
+          <p>"Excelente respuesta física en los entrenamientos. Alta disciplina táctica y potencia aeróbica sobresaliente."</p>
+        </div>
+      </div>
+
+      <!-- TOAST -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

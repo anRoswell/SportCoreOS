@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Query,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { ServiciosService } from './servicios.service';
-import { CreateServicioDto, InscribirServicioDto } from './servicios.dto';
+import { CreateServicioDto, InscribirServicioDto, AprobarInscripcionDto } from './servicios.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -22,6 +23,13 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class ServiciosController {
   constructor(private readonly serviciosService: ServiciosService) {}
 
+  @Get('inscripciones/pendientes')
+  @ApiOperation({ summary: 'Listar inscripciones pendientes de validación por Tesorería' })
+  async getInscripcionesPendientes(@CurrentUser() user: any) {
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    return this.serviciosService.getInscripcionesPendientes(clubId);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar clínicas y servicios especializados del club' })
   @ApiQuery({ name: 'categoria', required: false, description: 'Categoría del servicio' })
@@ -31,7 +39,7 @@ export class ServiciosController {
     @Query('categoria') categoria?: string,
     @Query('search') search?: string,
   ) {
-    const clubId = user.clubId || 'c1000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
     return this.serviciosService.getServicios(clubId, {
       categoria,
       search,
@@ -41,7 +49,7 @@ export class ServiciosController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalle de una clínica especializada por ID' })
   async getServicioById(@Param('id') id: string, @CurrentUser() user: any) {
-    const clubId = user.clubId || 'c1000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
     return this.serviciosService.getServicioById(id, clubId);
   }
 
@@ -49,7 +57,7 @@ export class ServiciosController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear una nueva clínica deportiva o programa especializado' })
   async createServicio(@CurrentUser() user: any, @Body() dto: CreateServicioDto) {
-    const clubId = user.clubId || 'c1000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
     return this.serviciosService.createServicio(clubId, dto);
   }
 
@@ -61,14 +69,26 @@ export class ServiciosController {
     @CurrentUser() user: any,
     @Body() dto: InscribirServicioDto,
   ) {
-    const clubId = user.clubId || 'c1000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
     return this.serviciosService.inscribirServicio(clubId, id, dto);
+  }
+
+  @Patch('inscripciones/:id/aprobar')
+  @ApiOperation({ summary: 'Aprobar o rechazar el comprobante de pago por Tesorería' })
+  async aprobarInscripcion(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Body() dto: AprobarInscripcionDto,
+  ) {
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    return this.serviciosService.aprobarInscripcion(clubId, id, user, dto);
   }
 
   @Get(':id/inscripciones')
   @ApiOperation({ summary: 'Listar participantes inscritos en una clínica especializada' })
   async getInscripciones(@Param('id') id: string, @CurrentUser() user: any) {
-    const clubId = user.clubId || 'c1000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
     return this.serviciosService.getInscripciones(id, clubId);
   }
 }
+

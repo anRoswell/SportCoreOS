@@ -78,6 +78,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'juego-carrera',
+    loadComponent: () => import('./pages/juego-carrera/juego-carrera-mobile.component').then(m => m.JuegoCarreraMobileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'perfil',
     loadComponent: () => import('./pages/perfil/perfil-mobile.component').then(m => m.PerfilMobileComponent),
     canActivate: [authGuard]

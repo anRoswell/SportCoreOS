@@ -36,4 +36,18 @@ export class ServiciosService {
   async getInscripciones(servicioId: string, clubId: string) {
     return this.serviciosRepo.findInscripcionesByServicio(servicioId, clubId);
   }
+
+  async aprobarInscripcion(
+    clubId: string,
+    inscripcionId: string,
+    user: any,
+    dto: { estado: 'APROBADO' | 'RECHAZADO'; notas_tesoreria?: string; motivo_rechazo?: string },
+  ) {
+    return this.serviciosRepo.aprobarInscripcion(clubId, inscripcionId, user, dto);
+  }
+
+  async getInscripcionesPendientes(clubId: string) {
+    return this.serviciosRepo.findInscripcionesPendientes(clubId);
+  }
 }
+

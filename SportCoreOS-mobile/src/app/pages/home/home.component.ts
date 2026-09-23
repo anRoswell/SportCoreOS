@@ -243,6 +243,18 @@ import { environment } from '../../../environments/environment';
             <i class="fa-solid fa-chevron-right arrow-icon"></i>
           </a>
 
+          <!-- Modo Carrera / Evolution Card -->
+          <a routerLink="/juego-carrera" class="module-card card-gold">
+            <div class="module-icon-box">
+              <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <div class="module-content">
+              <h4>Modo Carrera: Evolution</h4>
+              <p>Sube de nivel tu carta FUT con XP</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </a>
+
           <!-- Radar Biométrico & IA -->
           <a routerLink="/rendimiento" class="module-card card-rose">
             <div class="module-icon-box">
@@ -855,6 +867,11 @@ import { environment } from '../../../environments/environment';
         &.card-amber {
           border-left: 3px solid #f59e0b;
           .module-icon-box { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        }
+        &.card-gold {
+          border-left: 3px solid #eab308;
+          background: linear-gradient(145deg, rgba(234, 179, 8, 0.08) 0%, #1e293b 100%);
+          .module-icon-box { background: rgba(234, 179, 8, 0.2); color: #facc15; }
         }
         &.card-rose {
           border-left: 3px solid #f43f5e;

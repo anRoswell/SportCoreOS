@@ -1,0 +1,542 @@
+<div class="biometria-page">
+      <!-- HEADER DE LA PÁGINA -->
+      <div class="page-header">
+        <div class="header-titles">
+          <div class="header-badge">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span>MÓDULO DE RENDIMIENTO & FISIOLOGÍA</span>
+          </div>
+          <h1 class="page-title">Biometría Deportiva & Test Físicos</h1>
+          <p class="page-subtitle">
+            Control antropométrico periódico, test de Cooper, velocidad anaeróbica y radar de aptitud atlética.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-primary" (click)="openCreateModal()">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nueva Medición Antropométrica</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TARJETAS DE KPIs RÁPIDOS -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon emerald"><i class="fa-solid fa-clipboard-check"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ totalEvaluaciones() }}</span>
+            <span class="kpi-label">Evaluaciones Registradas</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-users"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ atletasMonitoreadosCount() }}</span>
+            <span class="kpi-label">Deportistas Monitoreados</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><i class="fa-solid fa-gauge-high"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ promedioImc() }}</span>
+            <span class="kpi-label">IMC Promedio Plantel</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon amber"><i class="fa-solid fa-medal"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ sobresalientesCount() }}</span>
+            <span class="kpi-label">Nivel Sobresaliente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE FILTROS REACTIVOS & BÚSQUEDA -->
+      <div class="filters-card">
+        <div class="filters-top">
+          <!-- Buscador de texto -->
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input 
+              type="text" 
+              [ngModel]="searchQuery()" 
+              (ngModelChange)="onSearchChange($event)"
+              placeholder="Buscar por jugador, dorsal o notas del PF..." 
+              class="search-input" />
+            @if (searchQuery()) {
+              <button class="clear-search-btn" (click)="clearSearch()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            }
+          </div>
+
+          <!-- Filtro por Diagnóstico / Nivel -->
+          <div class="filter-select-wrap">
+            <select [ngModel]="selectedDiagnostico()" (ngModelChange)="onDiagnosticoChange($event)" class="filter-select">
+              <option value="TODOS">⚡ Todos los Diagnósticos</option>
+              <option value="SOBRESALIENTE">🌟 Sobresaliente (Cooper ≥ 2800m)</option>
+              <option value="OPTIMO">✅ Óptimo (Cooper ≥ 2400m)</option>
+              <option value="DESARROLLO">📈 En Desarrollo (Cooper < 2400m)</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+
+          <!-- Ordenamiento -->
+          <div class="filter-select-wrap">
+            <select [ngModel]="sortBy()" (ngModelChange)="onSortChange($event)" class="filter-select">
+              <option value="FECHA_DESC">📅 Más Recientes Primero</option>
+              <option value="FECHA_ASC">📅 Más Antiguas Primero</option>
+              <option value="COOPER_DESC">🏃 Mayor Test Cooper</option>
+              <option value="SALTO_DESC">🦘 Mayor Salto Vertical</option>
+              <option value="TALLA_DESC">📏 Mayor Estatura</option>
+              <option value="IMC_ASC">⚖️ Menor IMC</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+
+          <!-- Botón de Limpiar Filtros -->
+          @if (hasActiveFilters()) {
+            <button class="btn-clear-all-filters" (click)="resetAllFilters()" title="Restablecer todos los filtros">
+              <i class="fa-solid fa-filter-circle-xmark"></i>
+              <span>Restablecer</span>
+            </button>
+          }
+        </div>
+
+        <!-- Categorías Pills Bar -->
+        <div class="category-pills">
+          <button 
+            class="pill" 
+            [class.active]="selectedCategoriaId() === 'TODAS'"
+            (click)="selectCategoria('TODAS')">
+            <span>Todas las Categorías</span>
+            <span class="pill-count">({{ totalRecords() }})</span>
+          </button>
+          @for (cat of categorias(); track cat.id) {
+            <button 
+              class="pill" 
+              [class.active]="selectedCategoriaId() === cat.id"
+              (click)="selectCategoria(cat.id)">
+              <span class="cat-dot" [style.background-color]="cat.color_distintivo || '#10B981'"></span>
+              <span>{{ cat.nombre }}</span>
+              <span class="pill-count">({{ getCategoryCount(cat.id) }})</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- TABLA DE EVALUACIONES CON LAZY LOADING & PAGINACIÓN -->
+      <div class="fut-table-container">
+        @if (loading()) {
+          <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+            <p>Cargando evaluaciones antropométricas y físicas...</p>
+          </div>
+        } @else if (filteredMediciones().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <h3>No se encontraron evaluaciones</h3>
+            <p>No hay mediciones antropométricas que coincidan con los filtros seleccionados.</p>
+            <div class="empty-actions">
+              @if (hasActiveFilters()) {
+                <button class="btn-secondary" (click)="resetAllFilters()">
+                  <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
+                </button>
+              }
+              <button class="btn-primary" (click)="openCreateModal()">
+                <i class="fa-solid fa-plus"></i> Registrar Primera Medición
+              </button>
+            </div>
+          </div>
+        } @else {
+          <table class="fut-table">
+            <thead>
+              <tr>
+                <th>Deportista / Dorsal</th>
+                <th>Categoría</th>
+                <th>Fecha Medición</th>
+                <th>Estatura</th>
+                <th>Peso</th>
+                <th>IMC</th>
+                <th>Test Cooper</th>
+                <th>Sprint 30m</th>
+                <th>Salto Vertical</th>
+                <th>Diagnóstico</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of paginatedMediciones(); track b.id) {
+                <tr class="bio-row" (click)="openDetailModal(b)">
+                  <td>
+                    <div class="player-cell">
+                      <div class="player-avatar-mini">
+                        <img [src]="b.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'" [alt]="b.jugador_nombre" />
+                        @if (b.numero_dorsal) {
+                          <span class="dorsal-tag">#{{ b.numero_dorsal }}</span>
+                        }
+                      </div>
+                      <div class="player-text">
+                        <strong class="player-name">{{ b.jugador_nombre }}</strong>
+                        <small class="player-pos">{{ b.posicion_principal || 'Posición por asignar' }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-blue">
+                      {{ b.categoria_nombre || 'Categoría' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="date-cell">
+                      <i class="fa-regular fa-calendar"></i>
+                      <span>{{ b.fecha_evaluacion | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="measurement-val"><strong>{{ b.talla_cm }}</strong> <small>cm</small></span>
+                  </td>
+                  <td>
+                    <span class="measurement-val"><strong>{{ b.peso_kg }}</strong> <small>kg</small></span>
+                  </td>
+                  <td>
+                    <div class="imc-cell">
+                      <strong class="imc-number">{{ b.imc }}</strong>
+                      <span class="imc-status" [class]="getImcClass(b.imc)">{{ getImcLabel(b.imc) }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    @if (b.test_cooper_metros) {
+                      <span class="badge-cooper" [class.high]="b.test_cooper_metros >= 2800" [class.med]="b.test_cooper_metros >= 2400 && b.test_cooper_metros < 2800">
+                        <i class="fa-solid fa-person-running"></i>
+                        {{ b.test_cooper_metros }} m
+                      </span>
+                    } @else {
+                      <span class="text-muted-dash">-</span>
+                    }
+                  </td>
+                  <td>
+                    @if (b.velocidad_30m_seg) {
+                      <span class="metric-chip">
+                        <i class="fa-solid fa-bolt"></i>
+                        {{ b.velocidad_30m_seg }} s
+                      </span>
+                    } @else {
+                      <span class="text-muted-dash">-</span>
+                    }
+                  </td>
+                  <td>
+                    @if (b.salto_vertical_cm) {
+                      <span class="metric-chip">
+                        <i class="fa-solid fa-arrows-up-down"></i>
+                        {{ b.salto_vertical_cm }} cm
+                      </span>
+                    } @else {
+                      <span class="text-muted-dash">-</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="getDiagnostico(b).tipo === 'success'" [class.badge-blue]="getDiagnostico(b).tipo === 'blue'" [class.badge-warning]="getDiagnostico(b).tipo === 'warning'">
+                      {{ getDiagnostico(b).label }}
+                    </span>
+                  </td>
+                  <td class="text-right" (click)="$event.stopPropagation()">
+                    <div class="table-actions">
+                      <button class="action-btn btn-view" (click)="openDetailModal(b)" title="Ver Radar & Ficha Biométrica">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Radar</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- BARRA DE PAGINACIÓN COMPLETA -->
+          <div class="pagination-bar">
+            <div class="pagination-info">
+              <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalFilteredCount() }}</strong> evaluaciones</span>
+              <div class="page-size-selector">
+                <label>Por página:</label>
+                <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="20">20</option>
+                  <option [value]="50">50</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pagination-controls">
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === 1" 
+                (click)="setPage(1)" 
+                title="Primera Página">
+                <i class="fa-solid fa-angles-left"></i>
+              </button>
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === 1" 
+                (click)="prevPage()" 
+                title="Página Anterior">
+                <i class="fa-solid fa-angle-left"></i>
+                <span>Anterior</span>
+              </button>
+
+              <div class="page-numbers">
+                @for (p of getVisiblePages(); track p) {
+                  <button 
+                    class="page-btn num-btn" 
+                    [class.active]="currentPage() === p" 
+                    (click)="setPage(p)">
+                    {{ p }}
+                  </button>
+                }
+              </div>
+
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === totalPages()" 
+                (click)="nextPage()" 
+                title="Página Siguiente">
+                <span>Siguiente</span>
+                <i class="fa-solid fa-angle-right"></i>
+              </button>
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === totalPages()" 
+                (click)="setPage(totalPages())" 
+                title="Última Página">
+                <i class="fa-solid fa-angles-right"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- MODAL DETALLE / RADAR BIOMÉTRICO -->
+      @if (showDetailModal() && selectedMedicion()) {
+        <div class="modal-overlay" (click)="closeDetailModal()">
+          <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Ficha Antropométrica & Radar Físico</h2>
+                  <p class="modal-subtitle">
+                    {{ selectedMedicion()?.jugador_nombre }} • {{ selectedMedicion()?.categoria_nombre }}
+                  </p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeDetailModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body modal-body-detail">
+              <!-- Resumen del Atleta -->
+              <div class="detail-header-card">
+                <div class="athlete-badge-row">
+                  <div class="athlete-avatar-lg">
+                    <img [src]="selectedMedicion()?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'" alt="Avatar" />
+                  </div>
+                  <div class="athlete-info-col">
+                    <h3>{{ selectedMedicion()?.jugador_nombre }}</h3>
+                    <div class="tags-row">
+                      <span class="badge badge-blue">{{ selectedMedicion()?.categoria_nombre }}</span>
+                      <span class="badge badge-dark">#{{ selectedMedicion()?.numero_dorsal || '-' }} • {{ selectedMedicion()?.posicion_principal }}</span>
+                      <span class="badge" [class.badge-success]="getDiagnostico(selectedMedicion()).tipo === 'success'" [class.badge-blue]="getDiagnostico(selectedMedicion()).tipo === 'blue'" [class.badge-warning]="getDiagnostico(selectedMedicion()).tipo === 'warning'">
+                        {{ getDiagnostico(selectedMedicion()).label }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="eval-date-badge">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>Evaluado el {{ selectedMedicion()?.fecha_evaluacion | date:'dd MMMM yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Grid de Métricas Antropométricas y Rendimiento en 2 Columnas Widescreen -->
+              <div class="modal-form-grid-2col">
+                <!-- Tarjeta Antropometría -->
+                <div class="metric-box">
+                  <div class="metric-box-header">
+                    <i class="fa-solid fa-weight-scale"></i>
+                    <span>Composición Corporal</span>
+                  </div>
+                  <div class="metric-box-content">
+                    <div class="stat-row">
+                      <span class="stat-label">Estatura / Talla:</span>
+                      <strong class="stat-val">{{ selectedMedicion()?.talla_cm }} cm</strong>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Peso Corporal:</span>
+                      <strong class="stat-val">{{ selectedMedicion()?.peso_kg }} kg</strong>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Índice Masa Corporal:</span>
+                      <strong class="stat-val highlight">{{ selectedMedicion()?.imc }} ({{ getImcLabel(selectedMedicion()?.imc) }})</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tarjeta Batería de Tests -->
+                <div class="metric-box">
+                  <div class="metric-box-header">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>Pruebas Físicas & Tests</span>
+                  </div>
+                  <div class="metric-box-content">
+                    <div class="stat-row">
+                      <span class="stat-label">Test de Cooper:</span>
+                      <strong class="stat-val">{{ selectedMedicion()?.test_cooper_metros ? selectedMedicion()?.test_cooper_metros + ' m' : 'No registrado' }}</strong>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Velocidad Sprint 30m:</span>
+                      <strong class="stat-val">{{ selectedMedicion()?.velocidad_30m_seg ? selectedMedicion()?.velocidad_30m_seg + ' s' : 'No registrado' }}</strong>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Salto Vertical Pliométrico:</span>
+                      <strong class="stat-val">{{ selectedMedicion()?.salto_vertical_cm ? selectedMedicion()?.salto_vertical_cm + ' cm' : 'No registrado' }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Observaciones del Preparador Físico -->
+              <div class="detail-section">
+                <h4><i class="fa-solid fa-notes-medical"></i> Dictamen & Observaciones Fisiológicas</h4>
+                <div class="observations-box">
+                  <p>{{ selectedMedicion()?.observaciones || 'Sin observaciones adicionales registradas por el cuerpo técnico.' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-primary" (click)="closeDetailModal()">
+                <i class="fa-solid fa-check"></i> Entendido / Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL NUEVA MEDICIÓN -->
+      @if (showCreateModal()) {
+        <div class="modal-overlay" (click)="closeCreateModal()">
+          <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Nueva Evaluación Antropométrica & Test Físico</h2>
+                  <p class="modal-subtitle">Registro de somatotipo, antropometría y rendimiento atlético</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCreateModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form (ngSubmit)="submitCreateBio()" class="modal-form">
+              <div class="modal-form-grid-2col">
+                <!-- Columna Izquierda: Deportista + Antropometría Básica -->
+                <div class="modal-col">
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-user-tag"></i> 1. Datos del Deportista & Fecha</span>
+                    <div class="form-row g2">
+                      <div class="input-group">
+                        <app-player-selector
+                          [(selectedId)]="newBio.jugadorId"
+                          [players]="jugadores()"
+                          [label]="'Deportista / Jugador'"
+                          [required]="true"
+                          [placeholder]="'Buscar por nombre, documento, género...'"
+                        ></app-player-selector>
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-regular fa-calendar"></i> Fecha de Evaluación <span class="required-star">*</span></label>
+                        <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newBio.fechaEvaluacion" name="fechaEvaluacion" class="sport-input" required />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-weight-scale"></i> 2. Antropometría Básica</span>
+                    <div class="form-row g3">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-weight-hanging"></i> Peso (kg) <span class="required-star">*</span></label>
+                        <input type="number" step="0.1" [(ngModel)]="newBio.pesoKg" (ngModelChange)="calcularImc()" name="pesoKg" placeholder="ej. 58.5" class="sport-input" required />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-ruler-vertical"></i> Talla (cm) <span class="required-star">*</span></label>
+                        <input type="number" step="0.5" [(ngModel)]="newBio.tallaCm" (ngModelChange)="calcularImc()" name="tallaCm" placeholder="ej. 170.0" class="sport-input" required />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-calculator"></i> IMC Calculado</label>
+                        <input type="text" [value]="calculatedImc()" class="sport-input readonly-input" readonly />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Columna Derecha: Batería de Pruebas Físicas + Observaciones -->
+                <div class="modal-col">
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-gauge-high"></i> 3. Batería de Pruebas Físicas</span>
+                    <div class="form-row g3">
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-person-running"></i> Test Cooper (m)</label>
+                        <input type="number" [(ngModel)]="newBio.testCooperMetros" name="testCooperMetros" placeholder="ej. 2800" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-bolt"></i> Sprint 30m (s)</label>
+                        <input type="number" step="0.01" [(ngModel)]="newBio.velocidad30mSeg" name="velocidad30mSeg" placeholder="ej. 4.15" class="sport-input" />
+                      </div>
+                      <div class="input-group">
+                        <label><i class="fa-solid fa-arrows-up-down"></i> Salto Vert. (cm)</label>
+                        <input type="number" step="0.5" [(ngModel)]="newBio.saltoVerticalCm" name="saltoVerticalCm" placeholder="ej. 45.0" class="sport-input" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="modal-section">
+                    <span class="modal-section-title"><i class="fa-solid fa-clipboard-user"></i> 4. Observaciones & Diagnóstico</span>
+                    <div class="input-group">
+                      <label><i class="fa-solid fa-comment-medical"></i> Observaciones del Preparador Físico</label>
+                      <textarea [(ngModel)]="newBio.observaciones" name="observaciones" rows="2" placeholder="ej. Excelente respuesta cardiovascular y potencia muscular" class="sport-input textarea-input"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Guardando...</span>
+                  } @else {
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Guardar Evaluación</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

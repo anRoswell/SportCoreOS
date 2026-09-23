@@ -154,5 +154,33 @@ export class InscribirServicioDto {
   @ApiProperty({ example: 'WOMPI_PSE' })
   @IsString()
   @IsNotEmpty()
-  metodo_pago: string; // WOMPI_PSE, NEQUI, DAVIPLATA, TARJETA_CREDITO
+  metodo_pago: string; // WOMPI_PSE, NEQUI, DAVIPLATA, TRANSFERENCIA_BANCARIA, EFECTIVO_SEDE
+
+  @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-comprobante-nequi.jpg' })
+  @IsString()
+  @IsOptional()
+  comprobante_url?: string;
+
+  @ApiPropertyOptional({ example: 'NQ-849201' })
+  @IsString()
+  @IsOptional()
+  referencia_transaccion?: string;
 }
+
+export class AprobarInscripcionDto {
+  @ApiProperty({ example: 'APROBADO', enum: ['APROBADO', 'RECHAZADO'] })
+  @IsString()
+  @IsNotEmpty()
+  estado: 'APROBADO' | 'RECHAZADO';
+
+  @ApiPropertyOptional({ example: 'Transferencia validada en extracto Nequi / Bancolombia' })
+  @IsString()
+  @IsOptional()
+  notas_tesoreria?: string;
+
+  @ApiPropertyOptional({ example: 'Comprobante ilegible o monto incompleto' })
+  @IsString()
+  @IsOptional()
+  motivo_rechazo?: string;
+}
+

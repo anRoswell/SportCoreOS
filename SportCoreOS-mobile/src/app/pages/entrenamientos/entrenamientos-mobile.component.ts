@@ -16,6 +16,7 @@ export interface JugadorAsistencia {
   dorsal: number;
   posicion: string;
   estado: 'PRESENTE' | 'RETRASO' | 'EXCUSA' | 'FALTA';
+  calificacionRendimiento?: 'DESTACADO' | 'CUMPLIO' | 'BAJA_INTENSIDAD';
   observacion?: string;
   avatar?: string;
 }
@@ -49,7 +50,14 @@ export interface CategoriaDeportivaItem {
         </div>
       </div>
       <div class="subbar-right">
-        <span class="count-badge">{{ jugadores().length }} Jugadores</span>
+        <button class="btn-voice-dictation" (click)="abrirModalDictadoVoz()" title="Dictar Novedades por Voz">
+          <i class="fa-solid fa-microphone"></i>
+          <span>Dictar</span>
+        </button>
+        <button class="btn-qr-scan" (click)="abrirModalEscanerQR()" title="Escanear QR de Cancha">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>QR</span>
+        </button>
         <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarAsistencia()" title="Actualizar">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
@@ -136,6 +144,17 @@ export interface CategoriaDeportivaItem {
             <span class="pill-name"><i class="fa-solid fa-xmark"></i> Faltas</span>
           </div>
         </div>
+        <!-- Banner de Delegación de Asistente / Capitán -->
+        <div class="delegation-strip">
+          <div class="delegation-left">
+            <i class="fa-solid fa-user-shield text-blue"></i>
+            <span>Pase delegado: <strong>Capitán Mateo Gómez (#10)</strong></span>
+          </div>
+          <button class="btn-delegated-toggle" (click)="toggleModoDelegado()">
+            <i class="fa-solid" [class.fa-toggle-on]="modoDelegadoActivo()" [class.fa-toggle-off]="!modoDelegadoActivo()"></i>
+            <span>{{ modoDelegadoActivo() ? 'Modo Capitán' : 'Delegar' }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- BARRA DE ACCIÓN RÁPIDA -->
@@ -143,69 +162,107 @@ export interface CategoriaDeportivaItem {
         <button class="btn-quick-all" (click)="marcarTodos('PRESENTE')">
           <i class="fa-solid fa-check-double"></i> Todos Presentes
         </button>
+        <button class="btn-show-pitch-qr" (click)="abrirModalGeneradorQR()">
+          <i class="fa-solid fa-display"></i> Mostrar QR de Cancha
+        </button>
         <span class="roster-pct">
           Efectividad: <strong>{{ porcentajeAsistencia() }}%</strong>
         </span>
       </div>
 
-      <!-- LISTA DE JUGADORES (CARDS CON BOTONERA TÁCTIL) -->
+      <!-- LISTA DE JUGADORES (CARDS CON BOTONERA TÁCTIL & CALIFICACIÓN RÁPIDA) -->
       <div class="players-list">
         @for (j of jugadoresFiltrados(); track j.id) {
           <div class="player-row-card" [class]="'border-' + j.estado.toLowerCase()">
-            <div class="player-left">
-              <div class="player-dorsal">#{{ j.dorsal }}</div>
-              <div class="player-details">
-                <div class="player-name-line">
-                  <span class="player-name">{{ j.nombres }} {{ j.apellidos }}</span>
-                  <span class="status-indicator" [class]="'tag-' + j.estado.toLowerCase()">
-                    {{ j.estado }}
-                  </span>
+            <div class="player-top-main">
+              <div class="player-left">
+                <div class="player-dorsal">#{{ j.dorsal }}</div>
+                <div class="player-details">
+                  <div class="player-name-line">
+                    <span class="player-name">{{ j.nombres }} {{ j.apellidos }}</span>
+                    <span class="status-indicator" [class]="'tag-' + j.estado.toLowerCase()">
+                      {{ j.estado }}
+                    </span>
+                  </div>
+                  <span class="player-pos">{{ j.posicion }}</span>
+                  @if (j.observacion) {
+                    <span class="player-obs"><i class="fa-solid fa-note-sticky"></i> {{ j.observacion }}</span>
+                  }
                 </div>
-                <span class="player-pos">{{ j.posicion }}</span>
-                @if (j.observacion) {
-                  <span class="player-obs"><i class="fa-solid fa-note-sticky"></i> {{ j.observacion }}</span>
-                }
+              </div>
+
+              <!-- Botonera de 4 Estados Táctiles Ultra-Optimizada -->
+              <div class="status-toggle-group">
+                <button 
+                  type="button" 
+                  class="btn-status status-presente" 
+                  [class.active]="j.estado === 'PRESENTE'"
+                  (click)="cambiarEstado(j.id, 'PRESENTE')"
+                  title="Presente">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-retraso" 
+                  [class.active]="j.estado === 'RETRASO'"
+                  (click)="abrirDialogoObservacion(j, 'RETRASO')"
+                  title="Retraso">
+                  <i class="fa-solid fa-clock"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-excusa" 
+                  [class.active]="j.estado === 'EXCUSA'"
+                  (click)="abrirDialogoObservacion(j, 'EXCUSA')"
+                  title="Excusa médica">
+                  <i class="fa-solid fa-file-medical"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-falta" 
+                  [class.active]="j.estado === 'FALTA'"
+                  (click)="cambiarEstado(j.id, 'FALTA')"
+                  title="Falta injustificada">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
               </div>
             </div>
 
-            <!-- Botonera de 4 Estados Táctiles Ultra-Optimizada -->
-            <div class="status-toggle-group">
-              <button 
-                type="button" 
-                class="btn-status status-presente" 
-                [class.active]="j.estado === 'PRESENTE'"
-                (click)="cambiarEstado(j.id, 'PRESENTE')"
-                title="Presente">
-                <i class="fa-solid fa-check"></i>
-              </button>
-
-              <button 
-                type="button" 
-                class="btn-status status-retraso" 
-                [class.active]="j.estado === 'RETRASO'"
-                (click)="abrirDialogoObservacion(j, 'RETRASO')"
-                title="Retraso">
-                <i class="fa-solid fa-clock"></i>
-              </button>
-
-              <button 
-                type="button" 
-                class="btn-status status-excusa" 
-                [class.active]="j.estado === 'EXCUSA'"
-                (click)="abrirDialogoObservacion(j, 'EXCUSA')"
-                title="Excusa médica">
-                <i class="fa-solid fa-file-medical"></i>
-              </button>
-
-              <button 
-                type="button" 
-                class="btn-status status-falta" 
-                [class.active]="j.estado === 'FALTA'"
-                (click)="cambiarEstado(j.id, 'FALTA')"
-                title="Falta injustificada">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
+            <!-- FILA DE CALIFICACIÓN RÁPIDA DE RENDIMIENTO/ACTITUD (1 TOQUE) -->
+            @if (j.estado === 'PRESENTE' || j.estado === 'RETRASO') {
+              <div class="performance-fast-rating-row">
+                <span class="rating-strip-label"><i class="fa-solid fa-gauge-high"></i> Intensidad DT:</span>
+                <div class="rating-buttons-group">
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-destacado" 
+                    [class.active]="j.calificacionRendimiento === 'DESTACADO'"
+                    (click)="calificarJugador(j.id, 'DESTACADO')"
+                    title="Sobresaliente (+100 XP)">
+                    ⚡ Destacado (+100 XP)
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-cumplio" 
+                    [class.active]="j.calificacionRendimiento === 'CUMPLIO'"
+                    (click)="calificarJugador(j.id, 'CUMPLIO')"
+                    title="Normal (+50 XP)">
+                    👍 Cumplió (+50 XP)
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-baja" 
+                    [class.active]="j.calificacionRendimiento === 'BAJA_INTENSIDAD'"
+                    (click)="calificarJugador(j.id, 'BAJA_INTENSIDAD')"
+                    title="Baja Intensidad (+20 XP)">
+                    ⚠️ Baja (+20 XP)
+                  </button>
+                </div>
+              </div>
+            }
           </div>
         } @empty {
           <div class="empty-state">
@@ -216,14 +273,304 @@ export interface CategoriaDeportivaItem {
         }
       </div>
 
-      <!-- BOTÓN DE GUARDADO DEFINITIVO -->
+      <!-- PANEL DE CONFIRMACIÓN OFICIAL POR EL DIRECTOR TÉCNICO (DT) -->
+      <div class="coach-signature-card" [class.confirmed]="asistenciaConfirmadaPorDT()">
+        <div class="coach-card-header">
+          <div class="coach-badge-info">
+            <div class="coach-avatar-ring">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <div class="coach-meta-text">
+              <span class="coach-role-title">VALIDACIÓN DEL CUERPO TÉCNICO</span>
+              <h4 class="coach-name">{{ auth.currentUser()?.nombres }} {{ auth.currentUser()?.apellidos || 'Director Técnico' }}</h4>
+            </div>
+          </div>
+          <div class="dt-status-pill" [class.verified]="asistenciaConfirmadaPorDT()">
+            <i class="fa-solid" [class.fa-circle-check]="asistenciaConfirmadaPorDT()" [class.fa-clock]="!asistenciaConfirmadaPorDT()"></i>
+            <span>{{ asistenciaConfirmadaPorDT() ? 'PLANILLA AVALADA' : 'PENDIENTE FIRMA DT' }}</span>
+          </div>
+        </div>
+
+        @if (asistenciaConfirmadaPorDT()) {
+          <div class="coach-confirmed-details">
+            <p><i class="fa-solid fa-shield-check text-emerald"></i> Asistencia certificada oficialmente para el cálculo de XP y convocatorias.</p>
+            <span class="time-stamp-confirmed">Avalado Hoy a las {{ horaConfirmacionDT() }} • Registro Inmutable</span>
+          </div>
+        } @else {
+          <p class="coach-hint-text">
+            Como Director Técnico responsable de la categoría <strong>{{ categoriaSeleccionada()?.nombre }}</strong>, confirma la asistencia para validar los puntos XP de los jugadores y el reporte oficial de cantera.
+          </p>
+        }
+      </div>
+
+      <!-- BOTÓN DE CONFIRMACIÓN Y GUARDADO DEFINITIVO -->
       <div class="save-footer">
-        <button class="btn-primary btn-save" (click)="guardarAsistencia()">
-          <i class="fa-solid fa-floppy-disk"></i>
-          <span>Guardar Asistencia de Sesión</span>
+        <button 
+          class="btn-primary btn-save" 
+          [class.btn-confirmed-style]="asistenciaConfirmadaPorDT()"
+          (click)="abrirModalConfirmacionDT()">
+          <i class="fa-solid" [class.fa-circle-check]="asistenciaConfirmadaPorDT()" [class.fa-signature]="!asistenciaConfirmadaPorDT()"></i>
+          <span>{{ asistenciaConfirmadaPorDT() ? 'Re-validar Planilla DT' : 'Confirmar & Avalar Asistencia como DT' }}</span>
         </button>
       </div>
     </main>
+
+    <!-- MODAL DE FIRMA Y CONFIRMACIÓN OFICIAL DEL TÉCNICO -->
+    @if (mostrarModalConfirmacionDT()) {
+      <div class="modal-backdrop" (click)="mostrarModalConfirmacionDT.set(false)">
+        <div class="modal-sheet dt-confirm-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-clipboard-check text-emerald"></i>
+              <div>
+                <h3>Aval Oficial de Asistencia DT</h3>
+                <p class="sheet-subtitle">{{ categoriaSeleccionada()?.nombre }} • {{ jugadores().length }} Jugadores en Planilla</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="mostrarModalConfirmacionDT.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body dt-confirm-body">
+            <!-- Resumen de Planilla -->
+            <div class="dt-summary-box">
+              <div class="sum-item text-emerald">
+                <strong>{{ contarPorEstado('PRESENTE') }}</strong>
+                <span>Presentes (+50 XP)</span>
+              </div>
+              <div class="sum-item text-amber">
+                <strong>{{ contarPorEstado('RETRASO') }}</strong>
+                <span>Retrasos (+25 XP)</span>
+              </div>
+              <div class="sum-item text-blue">
+                <strong>{{ contarPorEstado('EXCUSA') }}</strong>
+                <span>Excusas (0 XP)</span>
+              </div>
+              <div class="sum-item text-rose">
+                <strong>{{ contarPorEstado('FALTA') }}</strong>
+                <span>Faltas (-30 XP)</span>
+              </div>
+            </div>
+
+            <!-- Declaración de Responsabilidad DT -->
+            <div class="dt-declaration-box">
+              <i class="fa-solid fa-fingerprint"></i>
+              <p>
+                Yo, <strong>{{ auth.currentUser()?.nombres }} {{ auth.currentUser()?.apellidos }}</strong>, en calidad de Director Técnico / Entrenador, certifico la exactitud del pase de lista en campo y autorizo la asignación de experiencia deportiva (<strong>+50 XP</strong> presentes / <strong>-30 XP penalización</strong> por inasistencia injustificada).
+              </p>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking btn-confirm-dt-action" (click)="ejecutarConfirmacionDT()">
+              <i class="fa-solid fa-check-double"></i> Avalar & Guardar Planilla
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 1: GENERADOR DE QR DINÁMICO DE CANCHA (PANTALLA DT / SEDE) -->
+    @if (mostrarModalGeneradorQR()) {
+      <div class="modal-backdrop" (click)="mostrarModalGeneradorQR.set(false)">
+        <div class="modal-sheet qr-display-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-qrcode text-emerald"></i>
+              <div>
+                <h3>Código QR de Cancha en Vivo</h3>
+                <p class="sheet-subtitle">{{ categoriaSeleccionada()?.nombre }} • {{ categoriaSeleccionada()?.cancha }}</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="mostrarModalGeneradorQR.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body qr-display-body">
+            <!-- Dynamic Token Box -->
+            <div class="qr-token-countdown">
+              <span class="token-pulse-dot"></span>
+              <span>TOKEN DINÁMICO • EXPIRA EN: <strong>{{ qrTiempoRestante() }}s</strong></span>
+            </div>
+
+            <!-- SVG QR Visual Interactivo -->
+            <div class="qr-visual-frame">
+              <div class="qr-code-svg-wrap">
+                <svg viewBox="0 0 200 200" class="qr-svg-matrix">
+                  <!-- Posicionadores Esquinas QR -->
+                  <rect x="10" y="10" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="22" y="22" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <rect x="140" y="10" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="152" y="22" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <rect x="10" y="140" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="22" y="152" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <!-- Matriz de Puntos Aleatorios Dinámicos -->
+                  @for (dot of qrMatrixDots(); track $index) {
+                    <rect [attr.x]="dot.x" [attr.y]="dot.y" width="10" height="10" fill="#f8fafc" rx="2" opacity="0.9" />
+                  }
+
+                  <!-- Isotipo Central -->
+                  <circle cx="100" cy="100" r="22" fill="#0b0f19" stroke="#10b981" stroke-width="3" />
+                  <text x="100" y="106" font-size="16" text-anchor="middle" fill="#34d399">⚽</text>
+                </svg>
+              </div>
+              <div class="qr-code-label">
+                <code>{{ qrTokenActual() }}</code>
+              </div>
+            </div>
+
+            <p class="qr-instructions">
+              Los muchachos escanean este código con la App móvil al pisar la cancha para marcar <strong>PRESENTE</strong> de forma instantánea y ganar <strong>+50 XP</strong>.
+            </p>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking" (click)="regenerarTokenQR()">
+              <i class="fa-solid fa-arrows-rotate"></i> Regenerar Token QR
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 2: ESCÁNER QR DE CANCHA (CÁMARA DEL JUGADOR) -->
+    @if (mostrarModalEscanerQR()) {
+      <div class="modal-backdrop" (click)="cerrarModalEscanerQR()">
+        <div class="modal-sheet qr-scanner-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-camera text-emerald"></i>
+              <div>
+                <h3>Escanear QR de Cancha</h3>
+                <p class="sheet-subtitle">Apunta la cámara al código mostrado por tu DT</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="cerrarModalEscanerQR()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body qr-scanner-body">
+            <!-- Simulación de Viewport de Cámara con Retícula -->
+            <div class="scanner-camera-viewport">
+              <div class="scan-laser-line"></div>
+              <div class="scan-target-frame">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+              </div>
+              <div class="scanner-camera-bg">
+                <i class="fa-solid fa-qrcode bg-ghost-qr"></i>
+              </div>
+            </div>
+
+            <!-- Selector de Jugador para Check-in Simulado -->
+            <div class="scanner-player-select">
+              <label><i class="fa-solid fa-user-check text-emerald"></i> Jugador que realiza Check-in:</label>
+              <select [(ngModel)]="jugadorSeleccionadoScanId" class="form-input">
+                @for (j of jugadores(); track j.id) {
+                  <option [value]="j.id">#{{ j.dorsal }} {{ j.nombres }} {{ j.apellidos }} ({{ j.posicion }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking btn-scan-simulate" [disabled]="escaneando()" (click)="procesarEscaneoQR()">
+              <i class="fa-solid" [class.fa-bolt]="!escaneando()" [class.fa-spinner]="escaneando()" [class.fa-spin]="escaneando()"></i>
+              <span>{{ escaneando() ? 'Validando Token con Servidor...' : 'Simular Escaneo Exitoso' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 3: DICTADO POR VOZ INTELIGENTE (SPEECH-TO-TEXT ASISTIDO POR IA) -->
+    @if (mostrarModalDictadoVoz()) {
+      <div class="modal-backdrop" (click)="cerrarModalDictadoVoz()">
+        <div class="modal-sheet voice-dictation-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-microphone-lines text-rose"></i>
+              <div>
+                <h3>Dictado de Novedades por Voz</h3>
+                <p class="sheet-subtitle">Habla libremente: la IA procesará estados y observaciones</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="cerrarModalDictadoVoz()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body voice-dictation-body">
+            <!-- Botón de Grabación con Onda Animada -->
+            <div class="voice-mic-container">
+              <button 
+                type="button" 
+                class="btn-voice-mic-main" 
+                [class.recording]="grabandoVoz()"
+                (click)="toggleGrabacionVoz()">
+                <i class="fa-solid fa-microphone"></i>
+                <div class="mic-wave-ring" *ngIf="grabandoVoz()"></div>
+              </button>
+              <span class="mic-status-label">
+                {{ grabandoVoz() ? 'Escuchando al DT... (Toca para detener)' : 'Toca el micrófono para dictar' }}
+              </span>
+            </div>
+
+            <!-- Transcripción en Tiempo Real -->
+            <div class="transcription-preview-box">
+              <div class="transcription-header">
+                <span class="lbl"><i class="fa-solid fa-wand-magic-sparkles"></i> Transcripción IA:</span>
+                <button class="btn-sample-voice" *ngIf="!textoDictadoTranscrito" (click)="usarEjemploDictado()">
+                  <i class="fa-solid fa-bolt"></i> Cargar Frase de Ejemplo
+                </button>
+              </div>
+              <p class="transcription-text" [class.placeholder]="!textoDictadoTranscrito">
+                "{{ textoDictadoTranscrito || 'Ej: Samuel Díaz destacado en velocidad, Mateo Gómez retraso por tráfico, Carlos Londoño falta...' }}"
+              </p>
+            </div>
+
+            <!-- Acciones Rápidas Detectadas -->
+            @if (novedadesDetectadasVoz().length > 0) {
+              <div class="detected-actions-box">
+                <span class="actions-header-title">Novedades Listas para Aplicar ({{ novedadesDetectadasVoz().length }}):</span>
+                <div class="detected-chips-list">
+                  @for (nov of novedadesDetectadasVoz(); track $index) {
+                    <div class="detected-chip">
+                      <span class="chip-player">{{ nov.jugadorNombre }}</span>
+                      <span class="chip-badge" [class]="'tag-' + nov.estado.toLowerCase()">{{ nov.estado }}</span>
+                      @if (nov.rating) {
+                        <span class="chip-rating">⚡ {{ nov.rating }}</span>
+                      }
+                      @if (nov.obs) {
+                        <span class="chip-obs">"{{ nov.obs }}"</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="sheet-footer">
+            <button 
+              class="btn-submit-booking btn-apply-voice" 
+              [disabled]="!textoDictadoTranscrito || procesandoVoz()" 
+              (click)="aplicarNovedadesDictado()">
+              <i class="fa-solid" [class.fa-check]="!procesandoVoz()" [class.fa-spinner]="procesandoVoz()" [class.fa-spin]="procesandoVoz()"></i>
+              <span>{{ procesandoVoz() ? 'Aplicando a Planilla...' : 'Aplicar Novedades a Planilla' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- MODAL OBSERVACIÓN RÁPIDA (RETRASO O EXCUSA) -->
     @if (jugadorEditandoObs()) {
@@ -366,7 +713,47 @@ export interface CategoriaDeportivaItem {
       .subbar-right {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.4rem;
+
+        .btn-voice-dictation {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(244, 63, 94, 0.2);
+          border: 1px solid #f43f5e;
+          color: #fb7185;
+          font-size: 0.7rem;
+          font-weight: 800;
+          padding: 0.35rem 0.6rem;
+          border-radius: 20px;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(244, 63, 94, 0.25);
+          transition: all 0.2s ease;
+
+          &:active {
+            transform: scale(0.96);
+          }
+        }
+
+        .btn-qr-scan {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid #10b981;
+          color: #34d399;
+          font-size: 0.7rem;
+          font-weight: 800;
+          padding: 0.35rem 0.6rem;
+          border-radius: 20px;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+          transition: all 0.2s ease;
+
+          &:active {
+            transform: scale(0.96);
+          }
+        }
 
         .count-badge {
           font-size: 0.65rem;
@@ -615,6 +1002,54 @@ export interface CategoriaDeportivaItem {
       }
     }
 
+    /* FRANJA DE DELEGACIÓN (MODO CAPITÁN / ASISTENTE) */
+    .delegation-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 0.45rem 0.75rem;
+      border-radius: 10px;
+      margin-top: 0.25rem;
+
+      .delegation-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.7rem;
+        color: #94a3b8;
+
+        i {
+          color: #60a5fa;
+          font-size: 0.85rem;
+        }
+
+        strong {
+          color: #f8fafc;
+        }
+      }
+
+      .btn-delegated-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid #3b82f6;
+        color: #93c5fd;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 0.25rem 0.55rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    }
+
     /* BARRA DE ACCIONES RÁPIDAS */
     .quick-actions-bar {
       display: flex;
@@ -641,6 +1076,26 @@ export interface CategoriaDeportivaItem {
         }
       }
 
+      .btn-show-pitch-qr {
+        background: rgba(56, 189, 248, 0.15);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 8px;
+        padding: 0.4rem 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #38bdf8;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+
+        &:active {
+          transform: scale(0.96);
+          background: rgba(56, 189, 248, 0.25);
+        }
+      }
+
       .roster-pct {
         font-size: 0.72rem;
         color: #94a3b8;
@@ -663,8 +1118,7 @@ export interface CategoriaDeportivaItem {
       border-radius: 12px;
       padding: 0.6rem 0.75rem;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       gap: 0.5rem;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       transition: all 0.15s ease;
@@ -673,6 +1127,93 @@ export interface CategoriaDeportivaItem {
       &.border-retraso { border-left: 4px solid #f59e0b; }
       &.border-excusa { border-left: 4px solid #3b82f6; }
       &.border-falta { border-left: 4px solid #ef4444; }
+
+      .player-top-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .performance-fast-rating-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-top: 0.45rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.08);
+
+        .rating-strip-label {
+          font-size: 0.65rem;
+          font-weight: 700;
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          white-space: nowrap;
+        }
+
+        .rating-buttons-group {
+          display: flex;
+          gap: 0.35rem;
+          overflow-x: auto;
+
+          .btn-rating {
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+
+            &.rate-destacado {
+              background: rgba(234, 179, 8, 0.12);
+              color: #facc15;
+              border-color: rgba(234, 179, 8, 0.3);
+
+              &.active {
+                background: #facc15;
+                color: #422006;
+                font-weight: 900;
+                box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+              }
+            }
+
+            &.rate-cumplio {
+              background: rgba(16, 185, 129, 0.12);
+              color: #34d399;
+              border-color: rgba(16, 185, 129, 0.3);
+
+              &.active {
+                background: #10b981;
+                color: #022c22;
+                font-weight: 900;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+              }
+            }
+
+            &.rate-baja {
+              background: rgba(244, 63, 94, 0.12);
+              color: #fb7185;
+              border-color: rgba(244, 63, 94, 0.3);
+
+              &.active {
+                background: #f43f5e;
+                color: #4c0519;
+                font-weight: 900;
+                box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+              }
+            }
+
+            &:active {
+              transform: scale(0.95);
+            }
+          }
+        }
+      }
     }
 
     .player-left {
@@ -857,9 +1398,184 @@ export interface CategoriaDeportivaItem {
         box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
         cursor: pointer;
 
+        &.btn-confirmed-style {
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          border: 1px solid #10b981;
+        }
+
         &:active {
           transform: scale(0.98);
         }
+      }
+    }
+
+    /* COACH SIGNATURE & VALIDATION CARD */
+    .coach-signature-card {
+      background: linear-gradient(145deg, #111e19 0%, #0b1510 100%);
+      border: 1.5px dashed rgba(16, 185, 129, 0.4);
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      transition: all 0.3s ease;
+
+      &.confirmed {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, #0b1510 100%);
+        border: 1.5px solid #10b981;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+      }
+
+      .coach-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .coach-badge-info {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+
+          .coach-avatar-ring {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+          }
+
+          .coach-meta-text {
+            display: flex;
+            flex-direction: column;
+
+            .coach-role-title {
+              font-size: 0.6rem;
+              font-weight: 800;
+              color: #34d399;
+              letter-spacing: 0.05em;
+            }
+
+            .coach-name {
+              font-size: 0.85rem;
+              font-weight: 900;
+              color: #f8fafc;
+              margin: 0;
+            }
+          }
+        }
+
+        .dt-status-pill {
+          font-size: 0.62rem;
+          font-weight: 900;
+          padding: 0.25rem 0.6rem;
+          border-radius: 20px;
+          background: rgba(245, 158, 11, 0.15);
+          color: #fbbf24;
+          border: 1px solid rgba(245, 158, 11, 0.3);
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+
+          &.verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-color: #10b981;
+          }
+        }
+      }
+
+      .coach-confirmed-details {
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+
+        p {
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #e2e8f0;
+          margin: 0 0 0.25rem 0;
+        }
+
+        .time-stamp-confirmed {
+          font-size: 0.62rem;
+          font-weight: 800;
+          color: #34d399;
+        }
+      }
+
+      .coach-hint-text {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        line-height: 1.35;
+        margin: 0;
+      }
+    }
+
+    /* DT CONFIRMATION MODAL */
+    .dt-confirm-sheet {
+      .dt-sheet-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        i { font-size: 1.3rem; }
+      }
+
+      .dt-confirm-body {
+        gap: 1.15rem;
+
+        .dt-summary-box {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 14px;
+          padding: 0.75rem 0.5rem;
+          text-align: center;
+
+          .sum-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+
+            strong { font-size: 1.15rem; font-weight: 900; }
+            span { font-size: 0.58rem; font-weight: 800; }
+          }
+        }
+
+        .dt-declaration-box {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          border-radius: 14px;
+          padding: 0.85rem;
+
+          i {
+            font-size: 1.4rem;
+            color: #34d399;
+            flex-shrink: 0;
+            margin-top: 2px;
+          }
+
+          p {
+            font-size: 0.72rem;
+            color: #e2e8f0;
+            line-height: 1.4;
+            margin: 0;
+            strong { color: #34d399; }
+          }
+        }
+      }
+
+      .btn-confirm-dt-action {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
       }
     }
 
@@ -962,6 +1678,343 @@ export interface CategoriaDeportivaItem {
       }
     }
 
+    /* QR DISPLAY SHEET (PANTALLA DT) */
+    .qr-display-sheet {
+      .qr-display-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        text-align: center;
+
+        .qr-token-countdown {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(234, 179, 8, 0.15);
+          border: 1px solid rgba(234, 179, 8, 0.35);
+          padding: 0.35rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: #facc15;
+
+          .token-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #facc15;
+            animation: pulseDot 1.2s infinite;
+          }
+        }
+
+        .qr-visual-frame {
+          background: #ffffff;
+          padding: 1.25rem;
+          border-radius: 1.5rem;
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 3px #10b981;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+
+          .qr-code-svg-wrap {
+            width: 170px;
+            height: 170px;
+            .qr-svg-matrix {
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+          .qr-code-label code {
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.1em;
+            background: #f1f5f9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+          }
+        }
+
+        .qr-instructions {
+          font-size: 0.72rem;
+          color: #94a3b8;
+          line-height: 1.4;
+          margin: 0;
+          strong { color: #34d399; }
+        }
+      }
+    }
+
+    /* QR SCANNER SHEET (CÁMARA DEL JUGADOR) */
+    .qr-scanner-sheet {
+      .qr-scanner-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .scanner-camera-viewport {
+          position: relative;
+          width: 100%;
+          height: 190px;
+          background: #000;
+          border-radius: 16px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid rgba(16, 185, 129, 0.4);
+
+          .scanner-camera-bg {
+            opacity: 0.15;
+            font-size: 5rem;
+            color: #34d399;
+          }
+
+          .scan-target-frame {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+
+            .corner {
+              position: absolute;
+              width: 18px;
+              height: 18px;
+              border-color: #34d399;
+              border-style: solid;
+
+              &.tl { top: 0; left: 0; border-width: 3px 0 0 3px; }
+              &.tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
+              &.bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+              &.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+            }
+          }
+
+          .scan-laser-line {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, transparent);
+            box-shadow: 0 0 8px #ef4444;
+            animation: scanLaser 2s infinite ease-in-out;
+            z-index: 10;
+          }
+        }
+
+        .scanner-player-select {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+
+          label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+        }
+      }
+
+      .btn-scan-simulate {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      }
+    }
+
+    /* VOICE DICTATION SHEET (SPEECH-TO-TEXT ASISTIDO POR IA) */
+    .voice-dictation-sheet {
+      .voice-dictation-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1.15rem;
+
+        .voice-mic-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.65rem;
+          padding: 0.5rem 0;
+
+          .btn-voice-mic-main {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+            color: #fff;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(244, 63, 94, 0.4);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            &:active {
+              transform: scale(0.92);
+            }
+
+            &.recording {
+              background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+              box-shadow: 0 0 30px rgba(239, 68, 68, 0.7);
+
+              .mic-wave-ring {
+                position: absolute;
+                inset: -8px;
+                border-radius: 50%;
+                border: 2px solid #ef4444;
+                animation: micPulseWave 1.4s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+              }
+            }
+          }
+
+          .mic-status-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-align: center;
+          }
+        }
+
+        .transcription-preview-box {
+          background: rgba(15, 23, 42, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 0.85rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.45rem;
+
+          .transcription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .lbl {
+              font-size: 0.68rem;
+              font-weight: 800;
+              color: #fb7185;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+
+            .btn-sample-voice {
+              background: rgba(244, 63, 94, 0.15);
+              border: 1px solid rgba(244, 63, 94, 0.35);
+              color: #fb7185;
+              font-size: 0.65rem;
+              font-weight: 800;
+              padding: 0.2rem 0.5rem;
+              border-radius: 6px;
+              cursor: pointer;
+            }
+          }
+
+          .transcription-text {
+            font-size: 0.82rem;
+            line-height: 1.4;
+            color: #f8fafc;
+            margin: 0;
+            font-style: italic;
+
+            &.placeholder {
+              color: #64748b;
+            }
+          }
+        }
+
+        .detected-actions-box {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .actions-header-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #34d399;
+          }
+
+          .detected-chips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            max-height: 140px;
+            overflow-y: auto;
+
+            .detected-chip {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              background: rgba(30, 41, 59, 0.8);
+              border: 1px solid rgba(255, 255, 255, 0.08);
+              padding: 0.35rem 0.6rem;
+              border-radius: 8px;
+              font-size: 0.7rem;
+
+              .chip-player {
+                font-weight: 800;
+                color: #f8fafc;
+              }
+
+              .chip-badge {
+                font-size: 0.58rem;
+                font-weight: 800;
+                padding: 1px 4px;
+                border-radius: 4px;
+                text-transform: uppercase;
+
+                &.tag-presente { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+                &.tag-retraso { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+                &.tag-excusa { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+                &.tag-falta { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+              }
+
+              .chip-rating {
+                color: #facc15;
+                font-weight: 800;
+                font-size: 0.65rem;
+              }
+
+              .chip-obs {
+                color: #94a3b8;
+                font-style: italic;
+                font-size: 0.65rem;
+              }
+            }
+          }
+        }
+      }
+
+      .btn-apply-voice {
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+        box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);
+      }
+    }
+
+    @keyframes micPulseWave {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    @keyframes scanLaser {
+      0%, 100% { top: 30px; opacity: 0.4; }
+      50% { top: 160px; opacity: 1; }
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.4); opacity: 1; }
+    }
+
     /* DIALOG CONTINUAR O CERRAR */
     .dialog-card {
       background: #1e293b;
@@ -1033,7 +2086,51 @@ export class EntrenamientosMobileComponent implements OnInit {
 
   isRefreshing = signal<boolean>(false);
   mostrarDialogoGuardado = signal<boolean>(false);
+  mostrarModalConfirmacionDT = signal<boolean>(false);
+  asistenciaConfirmadaPorDT = signal<boolean>(false);
+  horaConfirmacionDT = signal<string>('16:45 PM');
   filtroEstado = signal<'TODOS' | 'PRESENTE' | 'RETRASO' | 'EXCUSA' | 'FALTA'>('TODOS');
+
+  // ESTRATEGIA 3: MODO DELEGADO (CAPITÁN DE CAMPO / ASISTENTE)
+  modoDelegadoActivo = signal<boolean>(false);
+
+  // ESTRATEGIA 2: DICTADO POR VOZ ASISTIDO POR IA (SPEECH-TO-TEXT)
+  mostrarModalDictadoVoz = signal<boolean>(false);
+  grabandoVoz = signal<boolean>(false);
+  procesandoVoz = signal<boolean>(false);
+  textoDictadoTranscrito = '';
+  novedadesDetectadasVoz = signal<{ jugadorNombre: string; estado: 'PRESENTE' | 'RETRASO' | 'EXCUSA' | 'FALTA'; rating?: string; obs?: string }[]>([]);
+
+  // Estado del Código QR Dinámico de Cancha
+  mostrarModalGeneradorQR = signal<boolean>(false);
+  mostrarModalEscanerQR = signal<boolean>(false);
+  qrTokenActual = signal<string>('SC-PITCH-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  qrTiempoRestante = signal<number>(45);
+  escaneando = signal<boolean>(false);
+  jugadorSeleccionadoScanId = '';
+  private timerQRInterval: any = null;
+
+  qrMatrixDots = computed(() => {
+    const dots: { x: number; y: number }[] = [];
+    const seed = this.qrTokenActual();
+    for (let r = 2; r <= 17; r++) {
+      for (let c = 2; c <= 17; c++) {
+        // Excluir esquinas
+        const inTopLeft = r <= 7 && c <= 7;
+        const inTopRight = r <= 7 && c >= 12;
+        const inBottomLeft = r >= 12 && c <= 7;
+        const inCenter = r >= 8 && r <= 11 && c >= 8 && c <= 11;
+
+        if (!inTopLeft && !inTopRight && !inBottomLeft && !inCenter) {
+          const charCode = seed.charCodeAt((r * c) % seed.length);
+          if (charCode % 2 === 0 || (r + c) % 3 === 0) {
+            dots.push({ x: c * 10, y: r * 10 });
+          }
+        }
+      }
+    }
+    return dots;
+  });
 
   // Categorías Asignadas y Selección
   categoriasAsignadas = signal<CategoriaDeportivaItem[]>([
@@ -1181,11 +2278,19 @@ export class EntrenamientosMobileComponent implements OnInit {
         return { 
           ...j, 
           estado: nuevoEstado,
+          calificacionRendimiento: nuevoEstado === 'FALTA' || nuevoEstado === 'EXCUSA' ? undefined : j.calificacionRendimiento,
           observacion: (nuevoEstado === 'PRESENTE' || nuevoEstado === 'FALTA') ? undefined : j.observacion 
         };
       }
       return j;
     }));
+
+    const jugador = this.jugadores().find(j => j.id === id);
+    if (nuevoEstado === 'FALTA') {
+      this.alertService.error(`${jugador?.nombres || 'Jugador'}: Inasistencia sin justificación (-30 XP de penalización).`);
+    } else if (nuevoEstado === 'PRESENTE') {
+      this.alertService.success(`${jugador?.nombres || 'Jugador'}: Marcado Presente (+50 XP).`);
+    }
   }
 
   abrirDialogoObservacion(jugador: JugadorAsistencia, estado: 'RETRASO' | 'EXCUSA'): void {
@@ -1221,7 +2326,183 @@ export class EntrenamientosMobileComponent implements OnInit {
 
   marcarTodos(estado: 'PRESENTE'): void {
     this.jugadores.update(list => list.map(j => ({ ...j, estado, observacion: undefined })));
-    this.alertService.success('Todos los jugadores marcados como PRESENTES.');
+    this.alertService.success('Todos los jugadores marcados como PRESENTES (+50 XP).');
+  }
+
+  abrirModalConfirmacionDT(): void {
+    this.mostrarModalConfirmacionDT.set(true);
+  }
+
+  ejecutarConfirmacionDT(): void {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    this.horaConfirmacionDT.set(formattedTime);
+    this.asistenciaConfirmadaPorDT.set(true);
+    this.mostrarModalConfirmacionDT.set(false);
+
+    // Otorgar XP a los muchachos por asistencia y aplicar descuento por inasistencia injustificada
+    const presentesCount = this.contarPorEstado('PRESENTE');
+    const faltasCount = this.contarPorEstado('FALTA');
+    
+    let msg = `Planilla avalada por DT. ¡+50 XP asignados a ${presentesCount} jugadores!`;
+    if (faltasCount > 0) {
+      msg += ` (${faltasCount} jugadores con penalización de -30 XP por inasistencia)`;
+    }
+    this.alertService.success(msg);
+  }
+
+  // Métodos para el Código QR Dinámico
+  abrirModalGeneradorQR(): void {
+    this.mostrarModalGeneradorQR.set(true);
+    this.iniciarTemporizadorQR();
+  }
+
+  regenerarTokenQR(): void {
+    const randomCode = 'SC-PITCH-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    this.qrTokenActual.set(randomCode);
+    this.qrTiempoRestante.set(45);
+    this.alertService.info('Nuevo Token QR generado para la cancha.');
+  }
+
+  private iniciarTemporizadorQR(): void {
+    if (this.timerQRInterval) clearInterval(this.timerQRInterval);
+    this.qrTiempoRestante.set(45);
+    this.timerQRInterval = setInterval(() => {
+      if (this.qrTiempoRestante() > 1) {
+        this.qrTiempoRestante.update(t => t - 1);
+      } else {
+        this.regenerarTokenQR();
+      }
+    }, 1000);
+  }
+
+  abrirModalEscanerQR(): void {
+    if (this.jugadores().length > 0 && !this.jugadorSeleccionadoScanId) {
+      this.jugadorSeleccionadoScanId = this.jugadores()[0].id;
+    }
+    this.mostrarModalEscanerQR.set(true);
+  }
+
+  cerrarModalEscanerQR(): void {
+    this.mostrarModalEscanerQR.set(false);
+    this.escaneando.set(false);
+  }
+
+  procesarEscaneoQR(): void {
+    if (this.escaneando()) return;
+    this.escaneando.set(true);
+
+    setTimeout(() => {
+      const id = this.jugadorSeleccionadoScanId || (this.jugadores().length > 0 ? this.jugadores()[0].id : null);
+      if (id) {
+        this.cambiarEstado(id, 'PRESENTE');
+        const jugador = this.jugadores().find(j => j.id === id);
+        this.alertService.success(`¡Check-in exitoso vía QR para ${jugador?.nombres || 'Jugador'}! Marcado PRESENTE (+50 XP).`);
+      }
+      this.cerrarModalEscanerQR();
+    }, 1200);
+  }
+
+  // --- ESTRATEGIA 1: CALIFICACIÓN RÁPIDA DE RENDIMIENTO/ACTITUD (1 TOQUE) ---
+  calificarJugador(id: string, rating: 'DESTACADO' | 'CUMPLIO' | 'BAJA_INTENSIDAD'): void {
+    this.jugadores.update(list => list.map(j => {
+      if (j.id === id) {
+        const nuevoRating = j.calificacionRendimiento === rating ? undefined : rating;
+        return { ...j, calificacionRendimiento: nuevoRating };
+      }
+      return j;
+    }));
+
+    const jug = this.jugadores().find(j => j.id === id);
+    const xpBonus = rating === 'DESTACADO' ? '+100 XP (Destacado)' : rating === 'CUMPLIO' ? '+50 XP (Cumplió)' : '+20 XP (Baja Intensidad)';
+    this.alertService.info(`${jug?.nombres || 'Jugador'}: ${xpBonus}`);
+  }
+
+  // --- ESTRATEGIA 3: DELEGACIÓN AL CAPITÁN / ASISTENTE ---
+  toggleModoDelegado(): void {
+    const nuevo = !this.modoDelegadoActivo();
+    this.modoDelegadoActivo.set(nuevo);
+    if (nuevo) {
+      this.alertService.success('Pase delegado activado: Mateo Gómez (#10) puede registrar presentes. El DT mantiene la firma oficial.');
+    } else {
+      this.alertService.info('Modo DT exclusivo restaurado.');
+    }
+  }
+
+  // --- ESTRATEGIA 2: DICTADO POR VOZ ASISTIDO POR IA ---
+  abrirModalDictadoVoz(): void {
+    this.mostrarModalDictadoVoz.set(true);
+    this.textoDictadoTranscrito = '';
+    this.novedadesDetectadasVoz.set([]);
+    this.grabandoVoz.set(false);
+    this.procesandoVoz.set(false);
+  }
+
+  cerrarModalDictadoVoz(): void {
+    this.mostrarModalDictadoVoz.set(false);
+    this.grabandoVoz.set(false);
+    this.procesandoVoz.set(false);
+  }
+
+  toggleGrabacionVoz(): void {
+    if (this.grabandoVoz()) {
+      // Detener grabación y simular interpretación IA
+      this.grabandoVoz.set(false);
+      if (!this.textoDictadoTranscrito) {
+        this.usarEjemploDictado();
+      }
+    } else {
+      this.grabandoVoz.set(true);
+      this.textoDictadoTranscrito = '';
+      this.novedadesDetectadasVoz.set([]);
+
+      // Simular dictado en vivo tras 2.5s
+      setTimeout(() => {
+        if (this.grabandoVoz()) {
+          this.grabandoVoz.set(false);
+          this.usarEjemploDictado();
+        }
+      }, 2500);
+    }
+  }
+
+  usarEjemploDictado(): void {
+    this.textoDictadoTranscrito = 'Mateo Gómez destacado en remates, Nicolás Zapata retraso por tráfico, Carlos Londoño excusa médica y Samuel Vásquez falta.';
+    
+    // IA detecta entidades y las parsea automáticamente
+    this.novedadesDetectadasVoz.set([
+      { jugadorNombre: 'Mateo Gómez (#10)', estado: 'PRESENTE', rating: 'DESTACADO', obs: 'Destacado en remates (+100 XP)' },
+      { jugadorNombre: 'Nicolás Zapata (#4)', estado: 'RETRASO', obs: 'Tráfico vía Las Palmas' },
+      { jugadorNombre: 'Carlos Londoño (#9)', estado: 'EXCUSA', obs: 'Cita médica / fisioterapia' },
+      { jugadorNombre: 'Samuel Vásquez (#3)', estado: 'FALTA', obs: 'Inasistencia injustificada' }
+    ]);
+  }
+
+  aplicarNovedadesDictado(): void {
+    this.procesandoVoz.set(true);
+
+    setTimeout(() => {
+      // Aplicar las novedades directamente al listado de jugadores
+      this.jugadores.update(list => list.map(j => {
+        if (j.nombres.includes('Mateo') || j.dorsal === 10) {
+          return { ...j, estado: 'PRESENTE', calificacionRendimiento: 'DESTACADO' };
+        }
+        if (j.nombres.includes('Nicolás') || j.dorsal === 4) {
+          return { ...j, estado: 'RETRASO', observacion: 'Tráfico vía Las Palmas' };
+        }
+        if (j.nombres.includes('Carlos') || j.dorsal === 9) {
+          return { ...j, estado: 'EXCUSA', observacion: 'Cita médica / fisioterapia' };
+        }
+        if (j.nombres.includes('Samuel') || j.dorsal === 3) {
+          return { ...j, estado: 'FALTA' };
+        }
+        return j;
+      }));
+
+      this.procesandoVoz.set(false);
+      this.cerrarModalDictadoVoz();
+      this.alertService.success('¡Novedades por voz aplicadas exitosamente a la planilla!');
+    }, 600);
   }
 
   guardarAsistencia(): void {

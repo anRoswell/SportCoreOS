@@ -1,0 +1,1240 @@
+<div class="servicios-page">
+      <!-- HEADER & PROMO HERO -->
+      <div class="page-hero">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+            <span>PROGRAMAS DE ALTO RENDIMIENTO & UPSKILLING</span>
+          </div>
+          <h1 class="page-title">Clínicas Especializadas & Masterclasses Pro</h1>
+          <p class="page-subtitle">
+            Entrenamientos intensivos de micro-habilidades con metodologías de cantera europea, tecnología láser Doppler,
+            neuro-motricidad y entrenadores certificados. Cupos limitados por grupo.
+          </p>
+          <div class="hero-tags">
+            <span class="hero-tag"><i class="fa-solid fa-bolt text-emerald"></i> Explosividad 5m</span>
+            <span class="hero-tag"><i class="fa-solid fa-brain text-cyan"></i> Neuro-Agilidad Fitlight</span>
+            <span class="hero-tag"><i class="fa-solid fa-wand-magic-sparkles text-amber"></i> Regate 1v1 Vinicius</span>
+            <span class="hero-tag"><i class="fa-solid fa-mitten text-pink"></i> Guante de Oro</span>
+            <span class="hero-tag"><i class="fa-solid fa-bullseye text-purple"></i> Tiros Libres Messi</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-tesoreria" (click)="openTesoreriaModal()" title="Bandeja de comprobantes Nequi por validar">
+            <i class="fa-solid fa-vault"></i> Aprobaciones Tesorería
+            <span class="badge-pendientes-count" *ngIf="totalPendientes() > 0">{{ totalPendientes() }}</span>
+          </button>
+          <button class="btn-create" (click)="openCrearModal()">
+            <i class="fa-solid fa-plus-circle"></i> Crear Nueva Clínica
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIS ROW -->
+      <div class="kpi-grid">
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon bg-emerald-glow">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-num">{{ servicios().length }}</div>
+            <div class="kpi-label">Clínicas Especializadas Activas</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon bg-amber-glow">
+            <i class="fa-solid fa-user-group"></i>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-num">{{ totalCuposOcupados() }} / {{ totalCuposDisponibles() }}</div>
+            <div class="kpi-label">Cupos Ocupados ({{ porcentajeOcupacion() }}%)</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon bg-purple-glow">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-num">{{ totalPendientes() }}</div>
+            <div class="kpi-label">Pagos Nequi Pendientes Tesorería</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon bg-cyan-glow">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-num">100% Digital</div>
+            <div class="kpi-label">Pases QR & Recaudo Nequi / PSE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filters-container fut-card">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="text"
+            placeholder="Buscar por clínica, habilidad, entrenador o cancha..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            class="sport-input search-input"
+          />
+          <button *ngIf="searchQuery()" class="btn-clear" (click)="searchQuery.set('')" aria-label="Limpiar búsqueda">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- CATEGORY CHIPS -->
+        <div class="category-chips">
+          <button
+            class="chip-btn"
+            [class.active]="selectedCategoria() === 'TODAS'"
+            (click)="selectedCategoria.set('TODAS')"
+          >
+            <i class="fa-solid fa-grid-2"></i> Todas ({{ servicios().length }})
+          </button>
+          <button
+            class="chip-btn chip-emerald"
+            [class.active]="selectedCategoria() === 'VELOCIDAD_EXPLOSIVIDAD'"
+            (click)="selectedCategoria.set('VELOCIDAD_EXPLOSIVIDAD')"
+          >
+            <i class="fa-solid fa-bolt"></i> ⚡ Explosividad & Sprint
+          </button>
+          <button
+            class="chip-btn chip-cyan"
+            [class.active]="selectedCategoria() === 'COORDINACION_AGILIDAD'"
+            (click)="selectedCategoria.set('COORDINACION_AGILIDAD')"
+          >
+            <i class="fa-solid fa-brain"></i> 🧠 Neuro-Motricidad
+          </button>
+          <button
+            class="chip-btn chip-amber"
+            [class.active]="selectedCategoria() === 'TECNICA_REGATE'"
+            (click)="selectedCategoria.set('TECNICA_REGATE')"
+          >
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 🪄 Regate 1v1 Pro
+          </button>
+          <button
+            class="chip-btn chip-pink"
+            [class.active]="selectedCategoria() === 'ARQUEROS_ELITE'"
+            (click)="selectedCategoria.set('ARQUEROS_ELITE')"
+          >
+            <i class="fa-solid fa-mitten"></i> 🧤 Guante de Oro
+          </button>
+          <button
+            class="chip-btn chip-purple"
+            [class.active]="selectedCategoria() === 'DEFINICION_TIRO'"
+            (click)="selectedCategoria.set('DEFINICION_TIRO')"
+          >
+            <i class="fa-solid fa-bullseye"></i> 🎯 Definición Quirúrgica
+          </button>
+        </div>
+      </div>
+
+      <!-- SERVICIOS GRID -->
+      <div class="servicios-grid" *ngIf="filteredServicios().length > 0; else noServicios">
+        <div
+          *ngFor="let s of filteredServicios()"
+          class="servicio-card fut-card"
+          [style.border-top-color]="s.color_tema || '#10b981'"
+        >
+          <!-- CARD TOP BADGE -->
+          <div class="card-top-bar">
+            <div class="cat-badge" [style.color]="s.color_tema || '#10b981'" [style.background-color]="(s.color_tema || '#10b981') + '1a'">
+              <i class="fa-solid" [ngClass]="s.icono || 'fa-bolt'"></i>
+              <span>{{ getCategoriaLabel(s.categoria_servicio) }}</span>
+            </div>
+            <div class="badge-edad">
+              <i class="fa-solid fa-user-tag"></i> {{ s.edad_min }}-{{ s.edad_max }} Años
+            </div>
+          </div>
+
+          <!-- TITLE & SUBTITLE -->
+          <h3 class="servicio-title">{{ s.titulo }}</h3>
+          <p class="servicio-sub">{{ s.subtitulo }}</p>
+
+          <!-- COACH PROFILE -->
+          <div class="coach-box">
+            <img [src]="s.entrenador_avatar || defaultAvatar" [alt]="s.entrenador_nombre" class="coach-avatar" />
+            <div class="coach-details">
+              <div class="coach-name">{{ s.entrenador_nombre }}</div>
+              <div class="coach-badge">
+                <i class="fa-solid fa-certificate"></i> {{ s.entrenador_badge || 'Entrenador Certificado' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- VENUE & SCHEDULE -->
+          <div class="venue-info">
+            <div class="venue-item">
+              <i class="fa-solid fa-location-dot venue-icon text-emerald"></i>
+              <div class="venue-text">
+                <span class="venue-name">{{ s.cancha_nombre }}</span>
+                <span class="venue-dir">{{ s.cancha_direccion }}</span>
+              </div>
+              <a
+                *ngIf="s.cancha_gps_url"
+                [href]="s.cancha_gps_url"
+                target="_blank"
+                rel="noopener"
+                class="btn-gps"
+                title="Abrir ubicación en Google Maps / Waze"
+              >
+                <i class="fa-solid fa-diamond-turn-right"></i> GPS
+              </a>
+            </div>
+
+            <div class="schedule-item">
+              <i class="fa-solid fa-clock schedule-icon text-amber"></i>
+              <div>
+                <span class="schedule-days">{{ s.dias_semana }}</span>
+                <span class="schedule-time">{{ s.horario_rango }} ({{ s.duracion_minutos }} min)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CUPOS PROGRESS -->
+          <div class="cupos-section">
+            <div class="cupos-header">
+              <span class="cupos-text">
+                <strong>{{ s.cupos_ocupados }}</strong> de {{ s.cupos_totales }} cupos inscritos
+              </span>
+              <span
+                class="cupos-badge"
+                [class.cupos-low]="(s.cupos_totales - s.cupos_ocupados) <= 3"
+              >
+                {{ (s.cupos_totales - s.cupos_ocupados) === 0 ? '¡AGOTADO!' : '¡Solo ' + (s.cupos_totales - s.cupos_ocupados) + ' cupos!' }}
+              </span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="(s.cupos_ocupados / s.cupos_totales) * 100"
+                [style.background-color]="s.color_tema || '#10b981'"
+              ></div>
+            </div>
+          </div>
+
+          <!-- INSIGNIA BADGE REWARD -->
+          <div class="reward-box">
+            <div class="reward-title">
+              <i class="fa-solid fa-award text-amber"></i> Desbloquea en Ficha 360°:
+            </div>
+            <div class="reward-pill">{{ s.insignia_obtenida }}</div>
+          </div>
+
+          <!-- BENEFITS LIST -->
+          <ul class="benefits-list" *ngIf="s.beneficios && s.beneficios.length > 0">
+            <li *ngFor="let b of s.beneficios | slice:0:3">
+              <i class="fa-solid fa-check-circle text-emerald"></i> {{ b }}
+            </li>
+          </ul>
+
+          <!-- PRICING & CTA -->
+          <div class="card-footer">
+            <div class="pricing-box">
+              <div class="price-single">
+                <span class="p-label">Sesión Individual:</span>
+                <span class="p-val">&#36;{{ formatNumber(s.precio_sesion_individual) }}</span>
+              </div>
+              <div class="price-bundle">
+                <span class="p-label">Paquete Mensual (Mes Completo):</span>
+                <span class="p-val-big">&#36;{{ formatNumber(s.precio_paquete_mensual) }}</span>
+                <span class="p-discount" *ngIf="s.descuento_hermanos_pct">
+                  -{{ s.descuento_hermanos_pct }}% dto 2do hermano
+                </span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button
+                class="btn-inscribir"
+                [disabled]="s.cupos_ocupados >= s.cupos_totales"
+                (click)="openInscribirModal(s)"
+              >
+                <i class="fa-solid fa-ticket"></i>
+                {{ s.cupos_ocupados >= s.cupos_totales ? 'Cupos Agotados' : 'Inscribirse / Pago PSE o Nequi' }}
+              </button>
+              <button class="btn-participantes" (click)="openParticipantesModal(s)" title="Ver inscritos y validar pagos">
+                <i class="fa-solid fa-users"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <ng-template #noServicios>
+        <div class="empty-state fut-card">
+          <i class="fa-solid fa-graduation-cap empty-icon"></i>
+          <h3>No se encontraron clínicas o servicios</h3>
+          <p>Prueba cambiando los filtros o el término de búsqueda.</p>
+          <button class="btn-secondary" (click)="resetFilters()">Restablecer Filtros</button>
+        </div>
+      </ng-template>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 1: INSCRIBIRSE & CHECKOUT PSE / NEQUI / VOUCHER        -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showInscribirModal()" (click)="closeInscribirModal()">
+        <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge" [style.background]="(selectedServicio()?.color_tema || '#10b981') + '1a'" [style.color]="selectedServicio()?.color_tema || '#10b981'" [style.border-color]="(selectedServicio()?.color_tema || '#10b981') + '33'">
+                <i class="fa-solid" [ngClass]="selectedServicio()?.icono || 'fa-ticket'"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Inscripción & Pase Digital</h2>
+                <p class="modal-sub modal-subtitle">
+                  Clínica: <strong>{{ selectedServicio()?.titulo }}</strong> • Sede: <strong>{{ selectedServicio()?.cancha_nombre }}</strong>
+                </p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeInscribirModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- SUCCESS STATE: DIGITAL PASS TICKET -->
+          <div class="ticket-pass-container" *ngIf="ticketGenerated(); else formInscripcion">
+            <div class="ticket-card">
+              <div class="ticket-header" [style.background-color]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? '#d97706' : (selectedServicio()?.color_tema || '#10b981')">
+                <div class="ticket-brand">⚽ SportCoreOS • Pass Oficial</div>
+                <div class="ticket-status">
+                  <i class="fa-solid" [ngClass]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'fa-clock' : 'fa-circle-check'"></i>
+                  {{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'INSCRIPCIÓN REGISTRADA • PENDIENTE DE APROBACIÓN' : 'INSCRIPCIÓN CONFIRMADA Y PAGADA' }}
+                </div>
+              </div>
+
+              <div class="ticket-body">
+                <!-- PENDING BANNER IF NEQUI / VOUCHER -->
+                <div class="pending-approval-banner" *ngIf="ticketData()?.estado_pago === 'PENDIENTE_APROBACION'">
+                  <div class="pending-icon-wrap"><i class="fa-solid fa-vault"></i></div>
+                  <div class="pending-msg">
+                    <strong>Comprobante en Revisión de Tesorería:</strong>
+                    Tu cupo ha sido reservado. Tan pronto la tesorera valide el extracto bancario, el código QR se activará como pase definitivo.
+                  </div>
+                </div>
+
+                <h3 class="ticket-title">{{ selectedServicio()?.titulo }}</h3>
+                <div class="ticket-meta-grid">
+                  <div class="meta-cell">
+                    <span class="t-label">Atleta / Alumno:</span>
+                    <span class="t-val">{{ ticketData()?.nombre_jugador }}</span>
+                  </div>
+                  <div class="meta-cell">
+                    <span class="t-label">Acudiente / Contacto:</span>
+                    <span class="t-val">{{ ticketData()?.nombre_acudiente }} ({{ ticketData()?.telefono_acudiente }})</span>
+                  </div>
+                  <div class="meta-cell">
+                    <span class="t-label">Plan Adquirido:</span>
+                    <span class="t-val">{{ ticketData()?.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mensual Completo' : 'Sesión Individual' }}</span>
+                  </div>
+                  <div class="meta-cell">
+                    <span class="t-label">Total Liquidado:</span>
+                    <span class="t-val text-emerald font-bold">&#36;{{ formatNumber(ticketData()?.monto_pagado) }}</span>
+                  </div>
+                  <div class="meta-cell">
+                    <span class="t-label">Método de Pago:</span>
+                    <span class="t-val font-bold text-purple">{{ ticketData()?.metodo_pago }}</span>
+                  </div>
+                  <div class="meta-cell">
+                    <span class="t-label">Cancha / Sede:</span>
+                    <span class="t-val">{{ selectedServicio()?.cancha_nombre }}</span>
+                  </div>
+                </div>
+
+                <div class="qr-box">
+                  <div class="qr-mock">
+                    <i class="fa-solid fa-qrcode qr-large-icon"></i>
+                  </div>
+                  <div class="qr-info">
+                    <div class="qr-code-text">{{ ticketData()?.codigo_qr_ticket }}</div>
+                    <div class="qr-ref">Ref: {{ ticketData()?.referencia_transaccion }}</div>
+                    <p class="qr-note">Presenta este pase QR digital al profesor el primer día de entrenamiento.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="ticket-footer">
+                <button class="btn-primary" (click)="closeInscribirModal()">
+                  <i class="fa-solid fa-check"></i> Finalizar
+                </button>
+                <button class="btn-whatsapp" (click)="shareWhatsApp()">
+                  <i class="fa-brands fa-whatsapp"></i> Compartir por WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM INSCRIBIRSE -->
+          <ng-template #formInscripcion>
+            <div class="modal-body">
+              <!-- PLAN SELECTOR -->
+              <div class="plan-selector">
+                <div
+                  class="plan-option"
+                  [class.selected]="tipoPlan() === 'PAQUETE_MENSUAL'"
+                  (click)="tipoPlan.set('PAQUETE_MENSUAL')"
+                >
+                  <div class="plan-radio">
+                    <i class="fa-solid fa-circle-check text-emerald" *ngIf="tipoPlan() === 'PAQUETE_MENSUAL'"></i>
+                    <i class="fa-regular fa-circle text-muted" *ngIf="tipoPlan() !== 'PAQUETE_MENSUAL'"></i>
+                  </div>
+                  <div class="plan-details">
+                    <div class="plan-header-row">
+                      <span class="plan-name">Paquete Mensual Completo</span>
+                      <span class="plan-badge-popular"><i class="fa-solid fa-star"></i> Más Recomendado</span>
+                    </div>
+                    <div class="plan-desc">Incluye todas las sesiones del mes + kit de seguimiento, seguro y evaluación biomecánica final</div>
+                  </div>
+                  <div class="plan-price-wrap">
+                    <span class="plan-price">&#36;{{ formatNumber(selectedServicio()?.precio_paquete_mensual) }}</span>
+                    <span class="plan-period">/ mes completo</span>
+                  </div>
+                </div>
+
+                <div
+                  class="plan-option"
+                  [class.selected]="tipoPlan() === 'SESION_INDIVIDUAL'"
+                  (click)="tipoPlan.set('SESION_INDIVIDUAL')"
+                >
+                  <div class="plan-radio">
+                    <i class="fa-solid fa-circle-check text-emerald" *ngIf="tipoPlan() === 'SESION_INDIVIDUAL'"></i>
+                    <i class="fa-regular fa-circle text-muted" *ngIf="tipoPlan() !== 'SESION_INDIVIDUAL'"></i>
+                  </div>
+                  <div class="plan-details">
+                    <div class="plan-header-row">
+                      <span class="plan-name">Sesión Individual de Prueba</span>
+                    </div>
+                    <div class="plan-desc">Acceso a 1 sesión intensiva de 90 minutos con test técnico</div>
+                  </div>
+                  <div class="plan-price-wrap">
+                    <span class="plan-price">&#36;{{ formatNumber(selectedServicio()?.precio_sesion_individual) }}</span>
+                    <span class="plan-period">/ sesión única</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FORM FIELDS -->
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="sport-label">
+                    <i class="fa-solid fa-child-reaching text-emerald"></i> Nombre del Atleta / Niño <span class="required-star">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    [ngModel]="nombreJugador()"
+                    (ngModelChange)="nombreJugador.set($event)"
+                    placeholder="ej. Mateo Valderrama"
+                    class="sport-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="sport-label">
+                    <i class="fa-solid fa-user-shield text-cyan"></i> Nombre del Acudiente / Padre <span class="required-star">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    [ngModel]="nombreAcudiente()"
+                    (ngModelChange)="nombreAcudiente.set($event)"
+                    placeholder="ej. Carlos Valderrama"
+                    class="sport-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="sport-label">
+                    <i class="fa-brands fa-whatsapp text-emerald"></i> Teléfono WhatsApp de Contacto <span class="required-star">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    [ngModel]="telefonoAcudiente()"
+                    (ngModelChange)="telefonoAcudiente.set($event)"
+                    placeholder="ej. +57 300 123 4567"
+                    class="sport-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="sport-label">
+                    <i class="fa-solid fa-envelope text-amber"></i> Correo Electrónico (Envío de Ticket QR) <span class="required-star">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    [ngModel]="emailAcudiente()"
+                    (ngModelChange)="emailAcudiente.set($event)"
+                    placeholder="ej. carlos.valderrama@gmail.com"
+                    class="sport-input"
+                  />
+                </div>
+              </div>
+
+              <!-- BROTHER DISCOUNT TOGGLE -->
+              <div class="discount-toggle" [class.active]="aplicaDescuentoHermano()">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [ngModel]="aplicaDescuentoHermano()"
+                    (ngModelChange)="aplicaDescuentoHermano.set($event)"
+                  />
+                  <div class="discount-info">
+                    <div class="discount-title">
+                      <i class="fa-solid fa-people-roof text-amber"></i> ¿Inscribes a 2 o más hermanos?
+                      <span class="discount-pill">-{{ selectedServicio()?.descuento_hermanos_pct || 15 }}% DTO</span>
+                    </div>
+                    <p class="discount-desc">Activa el beneficio familiar SportCoreOS y obtén tarifa especial en el valor liquidado.</p>
+                  </div>
+                </label>
+              </div>
+
+              <!-- PAYMENT METHOD SELECTOR -->
+              <div class="payment-method-section">
+                <label class="sport-label">
+                  <i class="fa-solid fa-lock text-emerald"></i> Selecciona el Medio de Pago:
+                </label>
+                <div class="pay-methods-grid">
+                  <div
+                    class="pay-method-card"
+                    [class.active]="metodoPago() === 'WOMPI_PSE'"
+                    (click)="metodoPago.set('WOMPI_PSE')"
+                  >
+                    <div class="pay-icon bg-emerald-glow"><i class="fa-solid fa-building-columns"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">PSE / Wompi</span>
+                      <span class="pay-sub">Aprobación automática inmediata</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'WOMPI_PSE'"></i>
+                  </div>
+
+                  <div
+                    class="pay-method-card"
+                    [class.active]="metodoPago() === 'NEQUI'"
+                    (click)="metodoPago.set('NEQUI')"
+                  >
+                    <div class="pay-icon bg-purple-glow"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">Nequi</span>
+                      <span class="pay-sub">Transferencia + Subir Comprobante</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'NEQUI'"></i>
+                  </div>
+
+                  <div
+                    class="pay-method-card"
+                    [class.active]="metodoPago() === 'DAVIPLATA'"
+                    (click)="metodoPago.set('DAVIPLATA')"
+                  >
+                    <div class="pay-icon bg-amber-glow"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">DaviPlata</span>
+                      <span class="pay-sub">Transferencia + Subir Soporte</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'DAVIPLATA'"></i>
+                  </div>
+
+                  <div
+                    class="pay-method-card"
+                    [class.active]="metodoPago() === 'TRANSFERENCIA_BANCARIA'"
+                    (click)="metodoPago.set('TRANSFERENCIA_BANCARIA')"
+                  >
+                    <div class="pay-icon bg-blue-glow"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="pay-text">
+                      <span class="pay-title">Bancolombia</span>
+                      <span class="pay-sub">Transferencia cuenta de ahorros</span>
+                    </div>
+                    <i class="fa-solid fa-circle-check pay-check" *ngIf="metodoPago() === 'TRANSFERENCIA_BANCARIA'"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NEQUI & BANCOLOMBIA ACCOUNT DETAILS & VOUCHER DROPZONE -->
+              <div class="nequi-voucher-box" *ngIf="metodoPago() === 'NEQUI' || metodoPago() === 'DAVIPLATA' || metodoPago() === 'TRANSFERENCIA_BANCARIA'">
+                <div class="accounts-header">
+                  <div class="acc-badge"><i class="fa-solid fa-building-columns"></i> Cuentas Oficiales para Transferir</div>
+                  <span class="acc-note">Realiza la transferencia por <strong>&#36;{{ formatNumber(montoFinalCalculado()) }}</strong> y adjunta el soporte</span>
+                </div>
+
+                <div class="bank-accounts-grid">
+                  <div class="bank-card bank-card-nequi" *ngIf="metodoPago() === 'NEQUI' || metodoPago() === 'DAVIPLATA'">
+                    <div class="b-icon-holder"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div class="b-info">
+                      <span class="b-brand">Nequi / DaviPlata</span>
+                      <span class="b-number">310 987 6543</span>
+                      <span class="b-holder">SportCore Academy SAS • NIT 901.458.772-1</span>
+                    </div>
+                    <button type="button" class="btn-copy-acc" (click)="copiarTexto('3109876543')" title="Copiar número Nequi">
+                      <i class="fa-solid fa-copy"></i> Copiar
+                    </button>
+                  </div>
+
+                  <div class="bank-card bank-card-banco" *ngIf="metodoPago() === 'TRANSFERENCIA_BANCARIA' || metodoPago() === 'NEQUI'">
+                    <div class="b-icon-holder"><i class="fa-solid fa-building-columns"></i></div>
+                    <div class="b-info">
+                      <span class="b-brand">Bancolombia • Ahorros</span>
+                      <span class="b-number">245-098765-12</span>
+                      <span class="b-holder">SportCore Academy SAS • NIT 901.458.772-1</span>
+                    </div>
+                    <button type="button" class="btn-copy-acc" (click)="copiarTexto('24509876512')" title="Copiar cuenta Bancolombia">
+                      <i class="fa-solid fa-copy"></i> Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- VOUCHER UPLOAD DROPZONE -->
+                <div class="voucher-upload-section">
+                  <label class="sport-label">
+                    <i class="fa-solid fa-receipt text-emerald"></i> Adjuntar Comprobante de Pago <span class="required-star">*</span>
+                  </label>
+                  
+                  <div class="voucher-dropzone" [class.has-file]="comprobanteUrl()">
+                    <input
+                      type="file"
+                      id="comprobanteFileInput"
+                      accept="image/*,.pdf"
+                      class="file-input-hidden"
+                      (change)="onFileSelected($event)"
+                    />
+                    
+                    <div *ngIf="!comprobanteUrl()" class="dropzone-empty">
+                      <div class="dropzone-icon-wrap">
+                        <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                      </div>
+                      <h4 class="dropzone-title">Sube tu comprobante de Nequi o transferencia</h4>
+                      <p class="dropzone-sub">Formatos soportados: JPG, PNG, PDF o captura de pantalla</p>
+                      
+                      <div class="dropzone-actions">
+                        <button type="button" class="btn-dropzone-upload" (click)="triggerFileInput()">
+                          <i class="fa-solid fa-file-arrow-up"></i> Seleccionar Archivo
+                        </button>
+                        <button type="button" class="btn-dropzone-demo" (click)="usarComprobanteDemo()">
+                          <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Comprobante Demo
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="comprobanteUrl()" class="dropzone-preview">
+                      <div class="preview-thumb-box">
+                        <img [src]="comprobanteUrl()" alt="Soporte Nequi" class="preview-thumb-img" />
+                      </div>
+                      <div class="preview-info-box">
+                        <span class="preview-filename"><i class="fa-solid fa-file-invoice"></i> {{ comprobanteNombreArchivo() || 'comprobante_transferencia.png' }}</span>
+                        <span class="preview-status"><i class="fa-solid fa-circle-check text-emerald"></i> Soporte adjuntado para revisión de Tesorería</span>
+                      </div>
+                      <button type="button" class="btn-remove-voucher" (click)="quitarComprobante()" title="Quitar comprobante">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group mt-3">
+                    <label class="sport-label">
+                      <i class="fa-solid fa-hashtag text-cyan"></i> Número de Aprobación / Referencia (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      [ngModel]="referenciaManual()"
+                      (ngModelChange)="referenciaManual.set($event)"
+                      placeholder="ej. NQ-849201 o número de transacción"
+                      class="sport-input"
+                    />
+                  </div>
+
+                  <div class="treasury-info-pill">
+                    <i class="fa-solid fa-shield-halved text-amber"></i>
+                    <span><strong>Proceso de Aprobación:</strong> El pago quedará en estado <em>PENDIENTE DE APROBACIÓN</em>. La tesorera validará el depósito y tu pase QR digital quedará activo automáticamente.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TOTAL SUMMARY -->
+              <div class="total-bar">
+                <div class="total-text">
+                  <span class="total-label">Total a Liquidar:</span>
+                  <span class="total-sub"><i class="fa-solid fa-shield-halved text-emerald"></i> Sin costos ocultos • Incluye póliza de entrenamiento y ficha digital</span>
+                </div>
+                <div class="total-amount">
+                  &#36;{{ formatNumber(montoFinalCalculado()) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn-secondary" (click)="closeInscribirModal()">Cancelar</button>
+              <button
+                class="btn-primary"
+                [disabled]="isSubmitting() || !nombreJugador() || !nombreAcudiente() || !telefonoAcudiente() || ((metodoPago() === 'NEQUI' || metodoPago() === 'DAVIPLATA') && !comprobanteUrl())"
+                (click)="submitInscripcion()"
+              >
+                <i class="fa-solid fa-shield-check" *ngIf="!isSubmitting()"></i>
+                <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting()"></i>
+                {{ isSubmitting() ? 'Procesando Inscripción...' : (metodoPago() === 'WOMPI_PSE' ? 'Pagar $' + formatNumber(montoFinalCalculado()) + ' (PSE)' : 'Confirmar & Enviar Soporte') }}
+              </button>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 2: VER PARTICIPANTES INSCRITOS & APROBACIÓN TESORERÍA  -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showParticipantesModal()" (click)="closeParticipantesModal()">
+        <div class="modal-dialog modal-card fut-card modal-xl" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-blue-glow">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Participantes & Control Financiero</h2>
+                <p class="modal-sub modal-subtitle">
+                  Clínica: <strong>{{ selectedServicio()?.titulo }}</strong> • <strong>{{ inscripcionesList().length }}</strong> inscripciones registradas
+                </p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeParticipantesModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- TABS DE ESTADO DE PAGO -->
+            <div class="status-filter-tabs">
+              <button
+                class="tab-filter-btn"
+                [class.active]="filtroEstadoInscripciones() === 'TODOS'"
+                (click)="filtroEstadoInscripciones.set('TODOS')"
+              >
+                <i class="fa-solid fa-list"></i> Todos ({{ inscripcionesList().length }})
+              </button>
+              <button
+                class="tab-filter-btn tab-pending"
+                [class.active]="filtroEstadoInscripciones() === 'PENDIENTE_APROBACION'"
+                (click)="filtroEstadoInscripciones.set('PENDIENTE_APROBACION')"
+              >
+                <i class="fa-solid fa-clock-rotate-left"></i> Pendientes de Aprobación ({{ pendientesCountModal() }})
+              </button>
+              <button
+                class="tab-filter-btn tab-approved"
+                [class.active]="filtroEstadoInscripciones() === 'APROBADO'"
+                (click)="filtroEstadoInscripciones.set('APROBADO')"
+              >
+                <i class="fa-solid fa-circle-check"></i> Aprobados
+              </button>
+              <button
+                class="tab-filter-btn tab-rejected"
+                [class.active]="filtroEstadoInscripciones() === 'RECHAZADO'"
+                (click)="filtroEstadoInscripciones.set('RECHAZADO')"
+              >
+                <i class="fa-solid fa-ban"></i> Rechazados
+              </button>
+            </div>
+
+            <div *ngIf="filteredInscripcionesList().length > 0; else noInscritos" class="fut-table-container">
+              <table class="fut-table">
+                <thead>
+                  <tr>
+                    <th>Atleta</th>
+                    <th>Acudiente / Contacto</th>
+                    <th>Plan & Monto</th>
+                    <th>Método & Estado</th>
+                    <th>Soporte / Comprobante</th>
+                    <th>Ticket / Pase QR</th>
+                    <th>Acciones Tesorería</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inc of filteredInscripcionesList()">
+                    <td>
+                      <div class="player-cell">
+                        <i class="fa-solid fa-circle-user text-emerald player-cell-icon"></i>
+                        <strong class="player-cell-name">{{ inc.nombre_jugador }}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="guardian-name">{{ inc.nombre_acudiente }}</div>
+                      <small class="text-muted"><i class="fa-brands fa-whatsapp text-emerald"></i> {{ inc.telefono_acudiente }}</small>
+                    </td>
+                    <td>
+                      <div class="plan-cell">
+                        <span class="badge-plan" [class.badge-plan-bundle]="inc.tipo_plan === 'PAQUETE_MENSUAL'">
+                          {{ inc.tipo_plan === 'PAQUETE_MENSUAL' ? 'Paquete Mes' : 'Sesión Única' }}
+                        </span>
+                        <span class="text-emerald font-bold text-base">&#36;{{ formatNumber(inc.monto_pagado) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="status-cell">
+                        <span class="badge-payment">{{ inc.metodo_pago }}</span>
+                        <span *ngIf="inc.estado_pago === 'APROBADO'" class="status-badge status-approved">
+                          <i class="fa-solid fa-circle-check"></i> Aprobado
+                        </span>
+                        <span *ngIf="inc.estado_pago === 'PENDIENTE_APROBACION'" class="status-badge status-pending-pulse">
+                          <i class="fa-solid fa-clock"></i> Pendiente
+                        </span>
+                        <span *ngIf="inc.estado_pago === 'RECHAZADO'" class="status-badge status-rejected" [title]="inc.motivo_rechazo || 'Rechazado'">
+                          <i class="fa-solid fa-circle-xmark"></i> Rechazado
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div *ngIf="inc.comprobante_url; else noVoucher" class="voucher-cell">
+                        <button class="btn-view-voucher" (click)="openComprobanteModal(inc)">
+                          <i class="fa-solid fa-image"></i> Ver Soporte
+                        </button>
+                      </div>
+                      <ng-template #noVoucher>
+                        <span class="text-muted text-xs"><i class="fa-solid fa-minus"></i> PSE Directo</span>
+                      </ng-template>
+                    </td>
+                    <td>
+                      <span class="qr-token"><i class="fa-solid fa-qrcode"></i> {{ inc.codigo_qr_ticket?.substring(0, 14) }}...</span>
+                    </td>
+                    <td>
+                      <div class="treasury-actions" *ngIf="inc.estado_pago === 'PENDIENTE_APROBACION'">
+                        <button class="btn-approve-sm" [disabled]="isApproving()" (click)="aprobarPago(inc.id)">
+                          <i class="fa-solid fa-check"></i> Aprobar
+                        </button>
+                        <button class="btn-reject-sm" [disabled]="isApproving()" (click)="solicitarRechazo(inc)">
+                          <i class="fa-solid fa-xmark"></i> Rechazar
+                        </button>
+                      </div>
+                      <div *ngIf="inc.estado_pago === 'APROBADO'" class="auditor-stamp">
+                        <small class="text-emerald"><i class="fa-solid fa-user-check"></i> {{ inc.aprobado_por_nombre || 'Tesorera' }}</small>
+                      </div>
+                      <div *ngIf="inc.estado_pago === 'RECHAZADO'" class="rejected-stamp">
+                        <small class="text-rose"><i class="fa-solid fa-circle-xmark"></i> {{ inc.motivo_rechazo || 'Rechazado' }}</small>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noInscritos>
+              <div class="empty-state-mini">
+                <i class="fa-solid fa-user-plus empty-mini-icon"></i>
+                <h4>No se encontraron inscripciones con el filtro seleccionado</h4>
+                <p>Modifica el filtro de estado para visualizar otros participantes.</p>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeParticipantesModal()">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 3: BANDEJA GLOBAL DE TESORERÍA & APROBACIONES          -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showTesoreriaModal()" (click)="closeTesoreriaModal()">
+        <div class="modal-dialog modal-card fut-card modal-xl" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-purple-glow">
+                <i class="fa-solid fa-vault"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Bandeja de Tesorería & Aprobación de Pagos</h2>
+                <p class="modal-sub modal-subtitle">
+                  Valida extractos bancarios y autoriza inscripciones pagadas por Nequi o Transferencia
+                </p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeTesoreriaModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div *ngIf="inscripcionesPendientes().length > 0; else noPendientesGlobal" class="fut-table-container">
+              <table class="fut-table">
+                <thead>
+                  <tr>
+                    <th>Clínica Especializada</th>
+                    <th>Atleta</th>
+                    <th>Acudiente / Teléfono</th>
+                    <th>Monto</th>
+                    <th>Método / Ref</th>
+                    <th>Comprobante</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of inscripcionesPendientes()">
+                    <td>
+                      <div class="service-cell-mini">
+                        <strong class="service-name-text">{{ item.servicio_titulo }}</strong>
+                        <small class="text-muted"><i class="fa-solid fa-location-dot"></i> {{ item.cancha_nombre }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <strong>{{ item.nombre_jugador }}</strong>
+                    </td>
+                    <td>
+                      <div>{{ item.nombre_acudiente }}</div>
+                      <small class="text-muted"><i class="fa-brands fa-whatsapp text-emerald"></i> {{ item.telefono_acudiente }}</small>
+                    </td>
+                    <td>
+                      <strong class="text-emerald text-base">&#36;{{ formatNumber(item.monto_pagado) }}</strong>
+                    </td>
+                    <td>
+                      <span class="badge-payment">{{ item.metodo_pago }}</span>
+                      <div class="ref-mini" *ngIf="item.referencia_transaccion">Ref: {{ item.referencia_transaccion }}</div>
+                    </td>
+                    <td>
+                      <button *ngIf="item.comprobante_url" class="btn-view-voucher" (click)="openComprobanteModal(item)">
+                        <i class="fa-solid fa-image"></i> Ver Soporte
+                      </button>
+                      <span *ngIf="!item.comprobante_url" class="text-muted text-xs">Sin imagen</span>
+                    </td>
+                    <td>
+                      <div class="treasury-actions">
+                        <button class="btn-approve-sm" [disabled]="isApproving()" (click)="aprobarPago(item.id)">
+                          <i class="fa-solid fa-check"></i> Aprobar
+                        </button>
+                        <button class="btn-reject-sm" [disabled]="isApproving()" (click)="solicitarRechazo(item)">
+                          <i class="fa-solid fa-xmark"></i> Rechazar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <ng-template #noPendientesGlobal>
+              <div class="empty-state-mini">
+                <i class="fa-solid fa-circle-check empty-mini-icon text-emerald"></i>
+                <h4>¡Todo al día en Tesorería!</h4>
+                <p>No hay comprobantes pendientes de aprobación en este momento.</p>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeTesoreriaModal()">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 4: LIGHTBOX PREVIEW COMPROBANTE DE PAGO                -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showComprobanteModal()" (click)="closeComprobanteModal()">
+        <div class="modal-dialog modal-card fut-card modal-md" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+                <i class="fa-solid fa-receipt"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Soporte de Transferencia Nequi</h2>
+                <p class="modal-sub modal-subtitle">
+                  Atleta: <strong>{{ comprobanteModalData()?.nombre_jugador }}</strong> • Monto: <strong>&#36;{{ formatNumber(comprobanteModalData()?.monto_pagado) }}</strong>
+                </p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeComprobanteModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body text-center">
+            <div class="lightbox-img-container">
+              <img [src]="comprobanteModalData()?.comprobante_url" alt="Comprobante Nequi" class="lightbox-img" />
+            </div>
+
+            <div class="lightbox-meta-grid">
+              <div class="meta-row">
+                <span class="k">Método:</span>
+                <span class="v">{{ comprobanteModalData()?.metodo_pago }}</span>
+              </div>
+              <div class="meta-row">
+                <span class="k">Referencia:</span>
+                <span class="v font-mono">{{ comprobanteModalData()?.referencia_transaccion || 'No especificada' }}</span>
+              </div>
+              <div class="meta-row">
+                <span class="k">Acudiente:</span>
+                <span class="v">{{ comprobanteModalData()?.nombre_acudiente }} ({{ comprobanteModalData()?.telefono_acudiente }})</span>
+              </div>
+              <div class="meta-row">
+                <span class="k">Estado Actual:</span>
+                <span class="v font-bold" [ngClass]="comprobanteModalData()?.estado_pago === 'APROBADO' ? 'text-emerald' : 'text-amber'">
+                  {{ comprobanteModalData()?.estado_pago || 'PENDIENTE_APROBACION' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeComprobanteModal()">Cerrar</button>
+            <ng-container *ngIf="comprobanteModalData()?.estado_pago === 'PENDIENTE_APROBACION'">
+              <button class="btn-danger-sm" [disabled]="isApproving()" (click)="solicitarRechazo(comprobanteModalData())">
+                <i class="fa-solid fa-xmark"></i> Rechazar Soporte
+              </button>
+              <button class="btn-primary" [disabled]="isApproving()" (click)="aprobarPago(comprobanteModalData()?.id)">
+                <i class="fa-solid fa-check"></i> Aprobar Pago en Tesorería
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 5: MOTIVO DE RECHAZO                                    -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showRechazoDialog()" (click)="showRechazoDialog.set(false)">
+        <div class="modal-dialog modal-card fut-card modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-rose-glow">
+                <i class="fa-solid fa-ban"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Rechazar Comprobante</h2>
+                <p class="modal-sub modal-subtitle">Especifica el motivo de rechazo</p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="showRechazoDialog.set(false)" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="sport-label">Motivo de Rechazo:</label>
+              <select class="sport-input mb-2" [ngModel]="motivoRechazoInput()" (ngModelChange)="motivoRechazoInput.set($event)">
+                <option value="">-- Seleccionar motivo común --</option>
+                <option value="Comprobante ilegible o borroso">Comprobante ilegible o borroso</option>
+                <option value="Monto transferido no coincide con la tarifa">Monto transferido no coincide con la tarifa</option>
+                <option value="Pago no reflejado en extracto bancario">Pago no reflejado en extracto bancario</option>
+                <option value="Número de cuenta o destinatario incorrecto">Número de cuenta o destinatario incorrecto</option>
+                <option value="Comprobante duplicado ya utilizado">Comprobante duplicado ya utilizado</option>
+              </select>
+              <textarea
+                class="sport-input textarea-field"
+                rows="3"
+                [ngModel]="motivoRechazoInput()"
+                (ngModelChange)="motivoRechazoInput.set($event)"
+                placeholder="Escribe el motivo detallado para notificar al acudiente..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="showRechazoDialog.set(false)">Cancelar</button>
+            <button class="btn-danger-confirm" [disabled]="isApproving() || !motivoRechazoInput()" (click)="confirmarRechazo()">
+              <i class="fa-solid fa-ban"></i> Confirmar Rechazo y Liberar Cupo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- MODAL 6: CREAR NUEVA CLÍNICA O PROGRAMA                      -->
+      <!-- ============================================================ -->
+      <div class="modal-overlay modal-backdrop" *ngIf="showCrearModal()" (click)="closeCrearModal()">
+        <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-title-group modal-title-wrap">
+              <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+                <i class="fa-solid fa-plus-circle"></i>
+              </div>
+              <div class="modal-title-text">
+                <h2 class="modal-title">Crear Nueva Clínica Especializada</h2>
+                <p class="modal-sub modal-subtitle">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
+              </div>
+            </div>
+            <button class="btn-close-modal modal-close-btn btn-close" (click)="closeCrearModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label class="sport-label">
+                  <i class="fa-solid fa-heading text-emerald"></i> Título del Programa / Masterclass <span class="required-star">*</span>
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevoTitulo()"
+                  (ngModelChange)="nuevoTitulo.set($event)"
+                  placeholder="ej. Potencia de Salto & Cabezazo Defensivo"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group full-width">
+                <label class="sport-label">
+                  <i class="fa-solid fa-align-left text-cyan"></i> Subtítulo / Propósito Principal
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevoSubtitulo()"
+                  (ngModelChange)="nuevoSubtitulo.set($event)"
+                  placeholder="ej. Máxima elevación vertical, timing aéreo y despeje bajo presión"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-layer-group text-amber"></i> Categoría de Habilidad <span class="required-star">*</span>
+                </label>
+                <select
+                  [ngModel]="nuevaCategoria()"
+                  (ngModelChange)="nuevaCategoria.set($event)"
+                  class="sport-input"
+                >
+                  <option value="VELOCIDAD_EXPLOSIVIDAD">⚡ Velocidad & Sprint</option>
+                  <option value="COORDINACION_AGILIDAD">🧠 Neuro-Motricidad & Luces</option>
+                  <option value="TECNICA_REGATE">🪄 Regate 1v1 & Dribbling</option>
+                  <option value="ARQUEROS_ELITE">🧤 Guante de Oro / Porteros</option>
+                  <option value="DEFINICION_TIRO">🎯 Definición Quirúrgica & Tiros Libres</option>
+                  <option value="PREVENCION_FISICA">🛡️ Fuerza Funcional & Prevención</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-user-tie text-emerald"></i> Entrenador Responsable <span class="required-star">*</span>
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevoEntrenador()"
+                  (ngModelChange)="nuevoEntrenador.set($event)"
+                  placeholder="ej. Prof. Walter Restrepo"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-location-dot text-emerald"></i> Nombre de la Cancha / Sede <span class="required-star">*</span>
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevaCanchaNombre()"
+                  (ngModelChange)="nuevaCanchaNombre.set($event)"
+                  placeholder="Cancha Sintética Pie de la Popa"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-map-pin text-cyan"></i> Dirección en Cartagena
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevaCanchaDireccion()"
+                  (ngModelChange)="nuevaCanchaDireccion.set($event)"
+                  placeholder="Calle 30 con Carrera 21, Cartagena"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-calendar-days text-amber"></i> Días de Entrenamiento
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevosDias()"
+                  (ngModelChange)="nuevosDias.set($event)"
+                  placeholder="ej. Martes y Jueves"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-clock text-amber"></i> Horario
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevoHorario()"
+                  (ngModelChange)="nuevoHorario.set($event)"
+                  placeholder="ej. 05:00 PM - 06:30 PM"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-ticket text-emerald"></i> Cupos Totales Máximos <span class="required-star">*</span>
+                </label>
+                <input
+                  type="number"
+                  [ngModel]="nuevosCupos()"
+                  (ngModelChange)="nuevosCupos.set($event)"
+                  min="1"
+                  max="50"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-award text-amber"></i> Insignia Desbloqueable Ficha 360°
+                </label>
+                <input
+                  type="text"
+                  [ngModel]="nuevaInsignia()"
+                  (ngModelChange)="nuevaInsignia.set($event)"
+                  placeholder="ej. 🚀 Misil Aéreo Pro"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-tag text-emerald"></i> Precio Sesión Individual ($)
+                </label>
+                <input
+                  type="number"
+                  [ngModel]="nuevoPrecioIndividual()"
+                  (ngModelChange)="nuevoPrecioIndividual.set($event)"
+                  step="1000"
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="sport-label">
+                  <i class="fa-solid fa-tags text-emerald"></i> Precio Paquete Mensual ($)
+                </label>
+                <input
+                  type="number"
+                  [ngModel]="nuevoPrecioMensual()"
+                  (ngModelChange)="nuevoPrecioMensual.set($event)"
+                  step="1000"
+                  class="sport-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeCrearModal()">Cancelar</button>
+            <button
+              class="btn-primary"
+              [disabled]="isSaving() || !nuevoTitulo() || !nuevoEntrenador() || !nuevaCanchaNombre()"
+              (click)="submitCrearServicio()"
+            >
+              <i class="fa-solid fa-check" *ngIf="!isSaving()"></i>
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving()"></i>
+              {{ isSaving() ? 'Publicando...' : 'Publicar Clínica' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>

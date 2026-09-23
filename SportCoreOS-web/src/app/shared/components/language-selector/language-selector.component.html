@@ -1,0 +1,40 @@
+<div class="lang-selector-container">
+      <button 
+        type="button" 
+        class="lang-current-btn" 
+        (click)="toggleDropdown()" 
+        [title]="'Idioma actual: ' + i18n.currentLanguageDetails().label"
+        aria-haspopup="true"
+        [attr.aria-expanded]="isOpen()">
+        <span class="lang-flag">{{ i18n.currentLanguageDetails().flag }}</span>
+        <span class="lang-code">{{ i18n.currentLang().toUpperCase() }}</span>
+        <i class="fa-solid fa-chevron-down lang-chevron" [class.rotated]="isOpen()"></i>
+      </button>
+
+      @if (isOpen()) {
+        <div class="lang-dropdown-card">
+          <div class="dropdown-header">
+            <span class="dropdown-title"><i class="fa-solid fa-globe"></i> Idioma / Language</span>
+          </div>
+
+          <div class="dropdown-options">
+            @for (lang of i18n.availableLanguages(); track lang.code) {
+              <button 
+                type="button"
+                class="lang-option-btn" 
+                [class.active]="i18n.currentLang() === lang.code"
+                (click)="selectLanguage(lang.code)">
+                <span class="opt-flag">{{ lang.flag }}</span>
+                <div class="opt-info">
+                  <strong class="opt-label">{{ lang.label }}</strong>
+                  <small class="opt-sub">{{ lang.region }}</small>
+                </div>
+                @if (i18n.currentLang() === lang.code) {
+                  <i class="fa-solid fa-check check-icon"></i>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>

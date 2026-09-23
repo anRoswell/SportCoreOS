@@ -1,0 +1,93 @@
+@if (profileService.isProfileModalOpen()) {
+      <div class="modal-overlay" (click)="profileService.closeProfileModal()">
+        <div class="modal-dialog fut-card" (click)="$event.stopPropagation()">
+          <!-- Header -->
+          <div class="modal-header">
+            <div class="modal-title-wrap">
+              <div class="modal-icon-badge">
+                <i class="fa-regular fa-id-badge"></i>
+              </div>
+              <div class="modal-title-text">
+                <h3>Mi Perfil Deportivo & Cuenta</h3>
+                <p class="modal-subtitle">Gestiona tus credenciales, datos de contacto y avatar de acceso</p>
+              </div>
+            </div>
+            <button class="modal-close-btn btn-close" (click)="profileService.closeProfileModal()" aria-label="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <form (ngSubmit)="onSave()" class="modal-form">
+            <!-- User Info Card -->
+            <div class="user-summary-box">
+              <img [src]="formData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'" alt="Avatar" class="avatar-preview" />
+              <div class="summary-details">
+                <span class="role-badge">{{ profileService.userProfile()?.rolLabel }}</span>
+                <h4 class="name-heading">{{ profileService.userProfile()?.nombres }} {{ profileService.userProfile()?.apellidos }}</h4>
+                <span class="email-sub"><i class="fa-regular fa-envelope"></i> {{ profileService.userProfile()?.email }}</span>
+              </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="modal-section">
+              <span class="modal-section-title"><i class="fa-solid fa-user-pen"></i> Datos Personales</span>
+              <div class="form-row g2">
+                <div class="input-group">
+                  <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
+                  <input type="text" [(ngModel)]="formData.nombres" name="nombres" required class="sport-input" />
+                </div>
+
+                <div class="input-group">
+                  <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
+                  <input type="text" [(ngModel)]="formData.apellidos" name="apellidos" required class="sport-input" />
+                </div>
+              </div>
+
+              <div class="form-row g2">
+                <div class="input-group">
+                  <label><i class="fa-brands fa-whatsapp"></i> Teléfono / WhatsApp</label>
+                  <input type="tel" [(ngModel)]="formData.telefono" name="telefono" placeholder="+57 310 123 4567" class="sport-input" />
+                </div>
+
+                <div class="input-group">
+                  <label><i class="fa-solid fa-image"></i> URL Avatar</label>
+                  <input type="url" [(ngModel)]="formData.avatar" name="avatar" class="sport-input" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Password Accordion -->
+            <div class="modal-section">
+              <span class="modal-section-title"><i class="fa-solid fa-lock"></i> Seguridad & Contraseña (Opcional)</span>
+              <div class="password-box">
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-key"></i> Nueva Contraseña</label>
+                    <input type="password" [(ngModel)]="formData.passwordNuevo" name="passwordNuevo" placeholder="••••••••••••" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-shield-halved"></i> Contraseña Actual</label>
+                    <input type="password" [(ngModel)]="formData.passwordActual" name="passwordActual" placeholder="••••••••••••" class="sport-input" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="profileService.closeProfileModal()">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+              </button>
+              <button type="submit" class="btn-primary" [disabled]="profileService.isSaving()">
+                @if (profileService.isSaving()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Guardar Cambios
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }

@@ -47,11 +47,17 @@ CREATE TABLE IF NOT EXISTS public.inscripciones_servicios (
     email_acudiente VARCHAR(100),
     tipo_plan VARCHAR(30) NOT NULL DEFAULT 'PAQUETE_MENSUAL', -- SESION_INDIVIDUAL, PAQUETE_MENSUAL, BOOTCAMP_INTENSIVO
     monto_pagado NUMERIC(12, 2) NOT NULL,
-    metodo_pago VARCHAR(40) NOT NULL DEFAULT 'WOMPI_PSE', -- WOMPI_PSE, NEQUI, DAVIPLATA, TARJETA_CREDITO, EFECTIVO_SEDE
+    metodo_pago VARCHAR(40) NOT NULL DEFAULT 'WOMPI_PSE', -- WOMPI_PSE, NEQUI, DAVIPLATA, TRANSFERENCIA_BANCARIA, EFECTIVO_SEDE
     referencia_transaccion VARCHAR(100) NOT NULL,
     codigo_qr_ticket VARCHAR(100) NOT NULL,
-    estado_pago VARCHAR(30) DEFAULT 'APROBADO', -- APROBADO, PENDIENTE, RECHAZADO
-    fecha_inscripcion TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    comprobante_url TEXT,
+    estado_pago VARCHAR(30) DEFAULT 'APROBADO', -- APROBADO, PENDIENTE_APROBACION, RECHAZADO
+    fecha_inscripcion TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    fecha_aprobacion TIMESTAMP WITH TIME ZONE,
+    aprobado_por_user_id UUID,
+    aprobado_por_nombre VARCHAR(120),
+    motivo_rechazo TEXT,
+    notas_tesoreria TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_servicios_club ON public.servicios_especializados(club_id);

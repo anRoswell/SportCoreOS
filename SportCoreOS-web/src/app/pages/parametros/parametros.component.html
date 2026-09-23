@@ -1,0 +1,475 @@
+<div class="parametros-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-sliders text-emerald"></i> Parámetros del Sistema
+          </h1>
+          <p class="page-subtitle">
+            Configuración global y específica de la academia: monedas, tolerancias de mora, pasarelas de pago y umbrales ACWR
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-primary" (click)="openCreateModal()">
+            <i class="fa-solid fa-plus-circle"></i> Nuevo Parámetro
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-blue-glow">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ parametrosList().length }}</div>
+            <div class="kpi-label">Parámetros Registrados</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-emerald-glow">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ activeParamsCount() }}</div>
+            <div class="kpi-label">Parámetros Activos</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-purple-glow">
+            <i class="fa-solid fa-cubes-stacked"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ modulesCount() }}</div>
+            <div class="kpi-label">Módulos Parametrizados</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-amber-glow">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ modifiedCount() }}</div>
+            <div class="kpi-label">Cambios Pendientes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE FILTROS & TABS -->
+      <div class="filters-bar fut-card">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Buscar por clave, título o descripción..."
+            class="sport-input"
+          />
+        </div>
+
+        <div class="module-tabs">
+          <button
+            class="tab-btn"
+            [class.active]="selectedModulo() === 'TODOS'"
+            (click)="selectedModulo.set('TODOS')"
+          >
+            Todos ({{ parametrosList().length }})
+          </button>
+          @for (mod of modulos(); track mod) {
+            <button
+              class="tab-btn"
+              [class.active]="selectedModulo() === mod"
+              (click)="selectedModulo.set(mod)"
+            >
+              {{ mod }} ({{ countByModulo(mod) }})
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- TABLA DE PARÁMETROS -->
+      <div class="table-container fut-card">
+        <table class="fut-table">
+          <thead>
+            <tr>
+              <th>Módulo / Clave</th>
+              <th>Título & Descripción</th>
+              <th>Tipo</th>
+              <th style="min-width: 260px;">Valor Configurado</th>
+              <th>Estado</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filteredParametros(); track p.id) {
+              <tr [class.row-modified]="p.isModified">
+                <!-- Módulo & Clave -->
+                <td>
+                  <div class="param-clave-wrap">
+                    <span class="module-badge">{{ p.modulo }}</span>
+                    <strong class="param-key">{{ p.clave }}</strong>
+                  </div>
+                </td>
+
+                <!-- Título & Descripción -->
+                <td>
+                  <div class="param-info-wrap">
+                    <span class="param-title-text">{{ p.titulo }}</span>
+                    @if (p.descripcion) {
+                      <small class="param-desc-text">{{ p.descripcion }}</small>
+                    }
+                  </div>
+                </td>
+
+                <!-- Tipo de Valor -->
+                <td>
+                  <span class="type-pill" [class]="'type-' + p.tipo_valor.toLowerCase()">
+                    {{ p.tipo_valor }}
+                  </span>
+                </td>
+
+                <!-- Input Dinámico de Valor -->
+                <td>
+                  <!-- BOOLEAN: Switch -->
+                  @if (p.tipo_valor === 'BOOLEAN') {
+                    <div class="switch-row">
+                      <label class="switch-toggle">
+                        <input
+                          type="checkbox"
+                          [checked]="p.editValor === 'true'"
+                          (change)="onBooleanChange(p, $event)"
+                          [disabled]="!p.es_editable"
+                        />
+                        <span class="slider round"></span>
+                      </label>
+                      <span class="switch-label-text">
+                        {{ p.editValor === 'true' ? 'Activado (True)' : 'Desactivado (False)' }}
+                      </span>
+                    </div>
+                  } @else if (p.tipo_valor === 'NUMBER') {
+                    <!-- NUMBER: Input Number -->
+                    <div class="input-inline-wrap">
+                      <input
+                        type="number"
+                        [(ngModel)]="p.editValor"
+                        (ngModelChange)="onValueChange(p)"
+                        [disabled]="!p.es_editable"
+                        class="sport-input input-sm"
+                      />
+                    </div>
+                  } @else if (p.tipo_valor === 'JSON') {
+                    <!-- JSON: Textarea -->
+                    <div class="input-inline-wrap">
+                      <textarea
+                        [(ngModel)]="p.editValor"
+                        (ngModelChange)="onValueChange(p)"
+                        [disabled]="!p.es_editable"
+                        rows="2"
+                        class="sport-input input-sm font-mono"
+                      ></textarea>
+                    </div>
+                  } @else {
+                    <!-- STRING: Text Input -->
+                    <div class="input-inline-wrap">
+                      <input
+                        type="text"
+                        [(ngModel)]="p.editValor"
+                        (ngModelChange)="onValueChange(p)"
+                        [disabled]="!p.es_editable"
+                        class="sport-input input-sm"
+                      />
+                    </div>
+                  }
+                </td>
+
+                <!-- Estado -->
+                <td>
+                  <span class="status-badge" [class.active]="p.estado">
+                    <i class="fa-solid" [class.fa-circle-check]="p.estado" [class.fa-circle-xmark]="!p.estado"></i>
+                    {{ p.estado ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+
+                <!-- Acciones -->
+                <td style="text-align: right;">
+                  <div class="actions-row">
+                    @if (p.isModified) {
+                      <button
+                        class="btn-save-inline"
+                        (click)="saveParametro(p)"
+                        title="Guardar cambios"
+                      >
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                      </button>
+                    }
+                    <button
+                      class="btn-icon-action"
+                      (click)="openEditDetailsModal(p)"
+                      title="Editar detalles"
+                    >
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    @if (p.es_editable) {
+                      <button
+                        class="btn-icon-action text-rose"
+                        (click)="confirmDelete(p)"
+                        title="Eliminar parámetro"
+                      >
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MODAL CREAR NUEVO PARÁMETRO -->
+      @if (showCreateModal()) {
+        <div class="modal-backdrop" (click)="closeCreateModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-plus"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Registrar Nuevo Parámetro</h2>
+                  <p class="modal-subtitle">Agrega una variable de configuración para el sistema</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeCreateModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="submitCreate()" class="modal-form">
+              <div class="form-row g2">
+                <div class="input-group">
+                  <label><i class="fa-solid fa-cubes"></i> Módulo Funcional <span class="required-star">*</span></label>
+                  <select [(ngModel)]="newParam.modulo" name="modulo" required class="sport-select">
+                    <option value="GENERAL">GENERAL</option>
+                    <option value="FINANZAS">FINANZAS</option>
+                    <option value="DEPORTIVO">DEPORTIVO</option>
+                    <option value="INTEGRACIONES">INTEGRACIONES</option>
+                    <option value="NOTIFICACIONES">NOTIFICACIONES</option>
+                    <option value="IA">IA</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label><i class="fa-solid fa-code"></i> Tipo de Dato <span class="required-star">*</span></label>
+                  <select [(ngModel)]="newParam.tipoValor" name="tipoValor" required class="sport-select">
+                    <option value="STRING">STRING (Texto)</option>
+                    <option value="NUMBER">NUMBER (Numérico)</option>
+                    <option value="BOOLEAN">BOOLEAN (Verdadero/Falso)</option>
+                    <option value="JSON">JSON (Estructura)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-key"></i> Clave del Parámetro (Mayúsculas sin espacios) <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="newParam.clave"
+                  name="clave"
+                  placeholder="ej. LIMITE_RESERVAS_POR_SEMANA"
+                  required
+                  class="sport-input font-mono"
+                />
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-heading"></i> Título Legible <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="newParam.titulo"
+                  name="titulo"
+                  placeholder="ej. Límite de Reservas de Cancha por Semana"
+                  required
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-align-left"></i> Valor Inicial <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="newParam.valor"
+                  name="valor"
+                  placeholder="ej. 3 o true o $ COP"
+                  required
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-paragraph"></i> Descripción Explicativa</label>
+                <textarea
+                  [(ngModel)]="newParam.descripcion"
+                  name="descripcion"
+                  rows="2"
+                  placeholder="Explica qué controla esta variable y su impacto en la plataforma..."
+                  class="sport-input"
+                ></textarea>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary btn-cancel" (click)="closeCreateModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary btn-submit" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                  } @else {
+                    <i class="fa-solid fa-check-circle"></i> Crear Parámetro
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL EDITAR DETALLES -->
+      @if (showEditModal()) {
+        <div class="modal-backdrop" (click)="closeEditModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Editar Parámetro: {{ selectedParam()?.clave }}</h2>
+                  <p class="modal-subtitle">Modifica título, descripción o valor de la variable</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeEditModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="submitEditDetails()" class="modal-form">
+              <div class="input-group">
+                <label><i class="fa-solid fa-heading"></i> Título Legible</label>
+                <input
+                  type="text"
+                  [(ngModel)]="editDetailsForm.titulo"
+                  name="titulo"
+                  required
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-align-left"></i> Valor Actual</label>
+                <input
+                  type="text"
+                  [(ngModel)]="editDetailsForm.valor"
+                  name="valor"
+                  required
+                  class="sport-input"
+                />
+              </div>
+
+              <div class="input-group">
+                <label><i class="fa-solid fa-paragraph"></i> Descripción</label>
+                <textarea
+                  [(ngModel)]="editDetailsForm.descripcion"
+                  name="descripcion"
+                  rows="2"
+                  class="sport-input"
+                ></textarea>
+              </div>
+
+              <div class="input-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="editDetailsForm.estado"
+                    name="estado"
+                  />
+                  <span class="custom-checkbox"></span>
+                  <span class="label-text">Parámetro Activo en el Sistema</span>
+                </label>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary btn-cancel" (click)="closeEditModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary btn-submit" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                  } @else {
+                    <i class="fa-solid fa-check"></i> Actualizar Parámetro
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMACIÓN DE ELIMINACIÓN -->
+      @if (showDeleteModal()) {
+        <div class="modal-backdrop" (click)="closeDeleteModal()">
+          <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge bg-rose-glow text-rose">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Confirmar Eliminación</h2>
+                  <p class="modal-subtitle">Acción irreversible</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeDeleteModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="modal-body-delete">
+              <p>
+                ¿Estás seguro de que deseas eliminar permanentemente el parámetro
+                <strong class="text-rose">{{ selectedParam()?.clave }}</strong>?
+              </p>
+              <div class="warning-callout">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Los módulos que dependan de esta variable pasarán a usar los valores por defecto del sistema.</span>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary btn-cancel" (click)="closeDeleteModal()">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+              </button>
+              <button type="button" class="btn-danger btn-submit" (click)="executeDelete()" [disabled]="saving()">
+                @if (saving()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Eliminando...
+                } @else {
+                  <i class="fa-solid fa-trash-can"></i> Eliminar Parámetro
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST FEEDBACK -->
+      @if (toastMessage()) {
+        <div class="toast-alert" [class.error]="isToastError()">
+          <i class="fa-solid" [class.fa-circle-check]="!isToastError()" [class.fa-circle-exclamation]="isToastError()"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

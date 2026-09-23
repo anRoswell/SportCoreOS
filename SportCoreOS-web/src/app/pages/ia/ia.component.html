@@ -1,0 +1,284 @@
+<div class="ia-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-wand-magic-sparkles text-emerald"></i> SportCore AI • Copiloto Deportivo
+          </h1>
+          <p class="page-subtitle">Inteligencia artificial táctica Gemini para Directores Técnicos, generación de boletines y prevención de fatiga</p>
+        </div>
+        <div class="header-actions">
+          <div class="filter-tabs">
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'chat'"
+              (click)="activeTab.set('chat')"
+            >
+              <i class="fa-solid fa-comments"></i> Copiloto Táctico DT
+            </button>
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'boletin'"
+              (click)="activeTab.set('boletin')"
+            >
+              <i class="fa-solid fa-file-invoice"></i> Generador de Boletines
+            </button>
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'fatiga'"
+              (click)="activeTab.set('fatiga')"
+            >
+              <i class="fa-solid fa-heart-pulse"></i> Prevención de Fatiga (ACWR)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: COPILOTO TÁCTICO GEMINI -->
+      @if (activeTab() === 'chat') {
+        <div class="chat-tactico-container fut-card">
+          <!-- SUGERENCIAS RÁPIDAS -->
+          <div class="quick-tactics-bar">
+            <span class="quick-title"><i class="fa-solid fa-lightbulb"></i> Consultas Tácticas Rápidas:</span>
+            <button class="quick-chip" (click)="setPresetPrompt('Planteamiento 4-3-3 ofensivo para superar un bloque bajo 5-4-1')">
+              ⚽ Superar Bloque Bajo (4-3-3)
+            </button>
+            <button class="quick-chip" (click)="setPresetPrompt('Estrategia de repliegue y contraataque rápido para defender un 1-0 en los últimos 20 minutos')">
+              🛡️ Defender Resultado (1-0)
+            </button>
+            <button class="quick-chip" (click)="setPresetPrompt('Ejercicios de rondos de presión tras pérdida con superioridad numérica 4v4 + 3 comodines')">
+              🔄 Presión tras Pérdida
+            </button>
+          </div>
+
+          <!-- MENSAJES DEL CHAT -->
+          <div class="chat-messages-area" #chatScroll>
+            @for (msg of chatMessages(); track $index) {
+              <div class="chat-message-bubble" [class.user-bubble]="msg.sender === 'user'" [class.ai-bubble]="msg.sender === 'ai'">
+                <div class="bubble-avatar">
+                  @if (msg.sender === 'ai') {
+                    <i class="fa-solid fa-robot text-emerald"></i>
+                  } @else {
+                    <i class="fa-solid fa-user-tie"></i>
+                  }
+                </div>
+                <div class="bubble-content">
+                  <div class="bubble-header">
+                    <strong>{{ msg.sender === 'ai' ? 'SportCore AI (Gemini Táctico)' : 'Director Técnico' }}</strong>
+                    <span class="bubble-time">{{ msg.timestamp }}</span>
+                  </div>
+                  @if (msg.tacticalBadge) {
+                    <span class="tactical-badge">{{ msg.tacticalBadge }}</span>
+                  }
+                  <div class="bubble-text" [innerHTML]="formatMessageText(msg.text)"></div>
+                </div>
+              </div>
+            }
+
+            @if (isLoadingChat()) {
+              <div class="chat-message-bubble ai-bubble loading-bubble">
+                <div class="bubble-avatar">
+                  <i class="fa-solid fa-robot text-emerald fa-spin"></i>
+                </div>
+                <div class="bubble-content">
+                  <div class="ai-typing-indicator">
+                    <span></span><span></span><span></span>
+                    <em>Analizando variables tácticas y patrones deportivos con Gemini...</em>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- INPUT DE CONSULTA TÁCTICA -->
+          <form (ngSubmit)="sendChatMessage()" class="chat-input-form">
+            <div class="input-controls-row">
+              <div class="sport-select-wrapper tactical-select">
+                <select [(ngModel)]="tacticalFormation" name="formation" class="sport-input">
+                  <option value="4-3-3">Esquema: 4-3-3 Ofensivo</option>
+                  <option value="4-4-2">Esquema: 4-4-2 Tradicional</option>
+                  <option value="3-5-2">Esquema: 3-5-2 Carrileros</option>
+                  <option value="4-2-3-1">Esquema: 4-2-3-1 Posesión</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+
+              <input
+                type="text"
+                [(ngModel)]="currentPrompt"
+                name="prompt"
+                placeholder="Escribe tu consulta táctica o situación de partido..."
+                class="sport-input chat-text-input"
+                required
+              />
+
+              <button type="submit" class="btn-primary btn-send" [disabled]="!currentPrompt || isLoadingChat()">
+                <i class="fa-solid fa-paper-plane"></i> Consultar
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- TAB 2: GENERADOR DE BOLETINES DE ALUMNOS CON IA -->
+      @if (activeTab() === 'boletin') {
+        <div class="boletin-generator-grid">
+          <div class="generator-card fut-card">
+            <div class="card-header-clean">
+              <i class="fa-solid fa-file-pen text-emerald"></i>
+              <div>
+                <h2>Parámetros del Boletín Formativo</h2>
+                <p>Genera un informe integral redactado por IA para los padres de familia</p>
+              </div>
+            </div>
+
+            <form (ngSubmit)="generarBoletin()" class="generator-form">
+              <div class="input-group">
+                <app-player-selector
+                  [(selectedId)]="boletinForm.jugador_id"
+                  [players]="jugadoresList()"
+                  [label]="'Seleccionar Jugador / Alumno'"
+                  [required]="true"
+                  [placeholder]="'Buscar alumno por nombre, documento o género...'"
+                ></app-player-selector>
+              </div>
+
+              <div class="input-group">
+                <label>Periodo / Mes a Evaluar <span class="required-star">*</span></label>
+                <div class="sport-select-wrapper">
+                  <select [(ngModel)]="boletinForm.mes_periodo" name="mesPeriodo" class="sport-input" required>
+                    <option value="Marzo 2026">Marzo 2026</option>
+                    <option value="Febrero 2026">Febrero 2026</option>
+                    <option value="Enero 2026">Enero 2026</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Notas y Observaciones del Cuerpo Técnico</label>
+                <textarea
+                  [(ngModel)]="boletinForm.observaciones_dt"
+                  name="observacionesDt"
+                  placeholder="ej. Excelente compromiso en entrenamientos, gran actitud defensiva, debe reforzar pie no hábil..."
+                  class="sport-input"
+                  rows="4"
+                ></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary btn-full" [disabled]="!boletinForm.jugador_id || isLoadingBoletin()">
+                  @if (isLoadingBoletin()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Redactando Boletín con IA...
+                  } @else {
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Redactar Boletín Formativo
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- VISTA PREVIA DEL BOLETÍN GENERADO -->
+          <div class="boletin-preview-card fut-card">
+            @if (boletinResultado()) {
+              <div class="boletin-sheet">
+                <div class="sheet-header">
+                  <div class="sheet-badge">BOLETÍN OFICIAL DE DESEMPEÑO</div>
+                  <h3>{{ boletinResultado()?.jugador_nombre || 'Boletín del Alumno' }}</h3>
+                  <span class="sheet-period">{{ boletinForm.mes_periodo }} • SportCore Academy</span>
+                </div>
+
+                <div class="sheet-body">
+                  <div class="report-content" [innerHTML]="formatMessageText(boletinResultado()?.contenido || boletinResultado()?.boletin_texto)"></div>
+                </div>
+
+                <div class="sheet-footer">
+                  <button class="btn-secondary btn-sm" (click)="copiarBoletin()">
+                    <i class="fa-solid fa-copy"></i> Copiar Texto
+                  </button>
+                  <button class="btn-primary btn-sm" (click)="imprimirBoletin()">
+                    <i class="fa-solid fa-print"></i> Imprimir / Descargar PDF
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-preview">
+                <i class="fa-solid fa-file-invoice text-muted"></i>
+                <p>Configura los datos del alumno y presiona <strong>Redactar Boletín Formativo</strong> para previsualizar el informe redactado por la IA.</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- TAB 3: PREVENCIÓN DE FATIGA & ACWR -->
+      @if (activeTab() === 'fatiga') {
+        <div class="fatiga-container fut-card">
+          <div class="fatiga-header">
+            <div>
+              <h2>Semáforo de Carga Aguda:Crónica (ACWR) & Riesgo de Lesión</h2>
+              <p>Monitoreo inteligente del índice de fatiga para optimizar minutos de juego y prevenir sobrecargas musculares</p>
+            </div>
+            <div class="player-select-wrap" style="min-width: 320px;">
+              <app-player-selector
+                [selectedId]="selectedFatigaJugadorId()"
+                (selectedIdChange)="onFatigaJugadorChange($event)"
+                [players]="jugadoresList()"
+                [placeholder]="'Buscar por nombre, documento (TI/CC), género o dorsal...'"
+              ></app-player-selector>
+            </div>
+          </div>
+
+          @if (fatigaData()) {
+            <div class="fatiga-dashboard-grid">
+              <!-- KPI RATIO ACWR -->
+              <div class="acwr-gauge-card">
+                <span class="card-subtitle">Índice ACWR (Ratio Agudo:Crónico)</span>
+                <div class="acwr-value-display" [class.text-success]="fatigaData()?.nivel_riesgo === 'BAJO'" [class.text-warning]="fatigaData()?.nivel_riesgo === 'MODERADO'" [class.text-danger]="fatigaData()?.nivel_riesgo === 'ALTO'">
+                  {{ fatigaData()?.ratio_acwr || '1.15' }}
+                </div>
+                <div class="risk-badge-pill" [class.risk-low]="fatigaData()?.nivel_riesgo === 'BAJO'" [class.risk-mod]="fatigaData()?.nivel_riesgo === 'MODERADO'" [class.risk-high]="fatigaData()?.nivel_riesgo === 'ALTO'">
+                  <i class="fa-solid fa-shield-heart"></i> Riesgo: {{ fatigaData()?.nivel_riesgo || 'Óptimo' }}
+                </div>
+                <p class="acwr-hint">Zona Segura de Rendimiento: <strong>0.80 - 1.30</strong></p>
+              </div>
+
+              <!-- RECOMENDACIÓN DE MINUTOS -->
+              <div class="minutes-recommendation-card">
+                <span class="card-subtitle">Límite Recomendado Próximo Partido</span>
+                <div class="minutes-display">
+                  <strong>{{ fatigaData()?.minutos_recomendados || 70 }}</strong>
+                  <span>minutos máx.</span>
+                </div>
+                <div class="metric-progress-bar">
+                  <div class="progress-fill" [style.width.%]="((fatigaData()?.minutos_recomendados || 70) / 90) * 100"></div>
+                </div>
+                <p class="minutes-note">{{ fatigaData()?.recomendacion_rotacion || 'Recomendable rotación o sustitución en el segundo tiempo para control de carga.' }}</p>
+              </div>
+
+              <!-- DIAGNÓSTICO DETALLADO POR IA -->
+              <div class="ai-diagnosis-card">
+                <div class="diagnosis-header">
+                  <i class="fa-solid fa-microchip text-emerald"></i>
+                  <strong>Diagnóstico de Rendimiento Físico</strong>
+                </div>
+                <p class="diagnosis-text">{{ fatigaData()?.diagnostico_ia || 'El deportista mantiene una carga de trabajo progresiva y adecuada. Buena respuesta cardiovascular en las últimas semanas.' }}</p>
+              </div>
+            </div>
+          } @else {
+            <div class="loading-state-center">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              <p>Calculando métricas de fatiga...</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- TOAST -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

@@ -1027,7 +1027,21 @@ export class ApiService {
       catchError(() => of([]))
     );
   }
+
+  getInscripcionesPendientes(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/servicios/inscripciones/pendientes`).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  aprobarInscripcion(inscripcionId: string, dto: { estado: 'APROBADO' | 'RECHAZADO'; notas_tesoreria?: string; motivo_rechazo?: string }): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/servicios/inscripciones/${inscripcionId}/aprobar`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
 }
+
 
 
 

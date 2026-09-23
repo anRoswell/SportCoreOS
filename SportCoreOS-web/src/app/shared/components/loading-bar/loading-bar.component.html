@@ -1,0 +1,115 @@
+<!-- Barra Superior Ultra-Rápida (Peticiones Micro) -->
+    @if (loadingService.isLoading()) {
+      <div class="global-loading-container">
+        <div class="loading-bar-track">
+          <div 
+            class="loading-bar-pulse"
+            [style.background]="'linear-gradient(90deg, ' + currentQuote().accentColor + ' 0%, ' + currentQuote().secondaryColor + ' 100%)'"
+            [style.boxShadow]="'0 0 12px ' + currentQuote().accentColor">
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Overlay Transversal Temático (Fútbol / Anime / Leyendas) -->
+    @if (loadingService.isOverlayVisible()) {
+      <div class="loading-overlay-backdrop" [attr.data-theme]="currentQuote().theme">
+        <!-- Partículas y Resplandor Ambiental -->
+        <div class="ambient-energy-glow" [style.background]="'radial-gradient(circle, ' + currentQuote().glowColor + ' 0%, transparent 70%)'"></div>
+
+        <div class="loading-hud-card">
+          <!-- Ribbon de Identidad Élite -->
+          <div class="hud-top-badge" [style.borderColor]="currentQuote().accentColor" [style.color]="currentQuote().accentColor">
+            <i class="fa-solid" [class]="currentQuote().icon"></i>
+            <span>{{ currentQuote().badge }}</span>
+          </div>
+
+          <!-- Escenario Central: Balón Cinético 3D con Aura Anime -->
+          <div class="soccer-kinetic-stage">
+            <!-- Radar Táctico de Fondo (Spatial Grid) -->
+            <div class="tactical-radar-ring" [style.borderColor]="currentQuote().accentColor"></div>
+            <div class="tactical-radar-ring outer" [style.borderColor]="currentQuote().secondaryColor"></div>
+            
+            <!-- Destellos de Velocidad / Speed Streaks -->
+            <div class="speed-streak-left" [style.background]="currentQuote().accentColor"></div>
+            <div class="speed-streak-right" [style.background]="currentQuote().secondaryColor"></div>
+
+            <!-- Balón de Fútbol Animado SVG con Rotación y Destellos -->
+            <div class="soccer-ball-wrap">
+              <svg class="soccer-ball-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Base Esfera -->
+                <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#0f172a" stroke-width="3" />
+                
+                <!-- Pentágono Central -->
+                <polygon points="50,32 63,42 58,57 42,57 37,42" fill="#0f172a" />
+                
+                <!-- Costuras y Paneles Perimetrales -->
+                <path d="M 50 32 L 50 12" stroke="#0f172a" stroke-width="2.5" />
+                <path d="M 63 42 L 82 36" stroke="#0f172a" stroke-width="2.5" />
+                <path d="M 58 57 L 72 74" stroke="#0f172a" stroke-width="2.5" />
+                <path d="M 42 57 L 28 74" stroke="#0f172a" stroke-width="2.5" />
+                <path d="M 37 42 L 18 36" stroke="#0f172a" stroke-width="2.5" />
+
+                <polygon points="50,12 36,4 24,14 30,26 50,12" fill="#1e293b" opacity="0.9" />
+                <polygon points="82,36 94,44 92,60 78,58 63,42" fill="#1e293b" opacity="0.9" />
+                <polygon points="72,74 76,90 60,96 52,84 58,57" fill="#1e293b" opacity="0.9" />
+                <polygon points="28,74 24,90 40,96 48,84 42,57" fill="#1e293b" opacity="0.9" />
+                <polygon points="18,36 6,44 8,60 22,58 37,42" fill="#1e293b" opacity="0.9" />
+
+                <!-- Reflejo Especular -->
+                <ellipse cx="38" cy="28" rx="14" ry="7" transform="rotate(-30 38 28)" fill="white" opacity="0.6" />
+              </svg>
+
+              <!-- Aura de Fuego / Ego / Rayos según Leyenda -->
+              <div class="aura-pulse-glow" [style.boxShadow]="'0 0 35px ' + currentQuote().accentColor"></div>
+            </div>
+          </div>
+
+          <!-- Información de la Leyenda y Cita Inspiracional -->
+          <div class="legend-content">
+            <h3 class="legend-speaker">
+              <span class="speaker-name">{{ currentQuote().character }}</span>
+              <span class="legend-tagline" [style.color]="currentQuote().accentColor">{{ currentQuote().title }}</span>
+            </h3>
+            
+            <p class="legend-quote">
+              {{ currentQuote().quote }}
+            </p>
+
+            <!-- Estado de Operación / Mensaje Dinámico -->
+            <div class="hud-status-line">
+              <div class="loading-spin-ring" [style.borderTopColor]="currentQuote().accentColor"></div>
+              <span class="status-text">
+                {{ loadingService.message() || currentQuote().actionText }}
+              </span>
+            </div>
+
+            <!-- Barra de Potencia Cinética -->
+            <div class="kinetic-power-meter">
+              <div 
+                class="meter-fill" 
+                [style.background]="'linear-gradient(90deg, ' + currentQuote().accentColor + ', ' + currentQuote().secondaryColor + ')'">
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector Rápido de Temas de Leyenda (Interactive Footer) -->
+          <div class="theme-selector-pills">
+            <span class="selector-label"><i class="fa-solid fa-bolt"></i> Modo Leyenda:</span>
+            <div class="pills-track">
+              @for (q of loadingService.allQuotes; track q.theme) {
+                <button 
+                  type="button" 
+                  class="theme-pill-btn" 
+                  [class.active]="currentQuote().theme === q.theme"
+                  (click)="selectTheme(q.theme)"
+                  [title]="q.title">
+                  <i class="fa-solid" [class]="q.icon" [style.color]="q.accentColor"></i>
+                  <span>{{ getShortThemeName(q.theme) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }

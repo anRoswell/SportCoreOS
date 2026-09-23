@@ -121,6 +121,17 @@ export const rendimientoRoutes: Routes = [
       title: 'Scouting, Visorías & Captación'
     },
   },
+  {
+    path: 'ranking',
+    loadComponent: () =>
+      import('./pages/ranking-gamificado/ranking-gamificado.component').then((m) => m.RankingGamificadoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'RENDIMIENTO_RANKING_GAMIFICADO',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'SUPER_ADMIN', 'ADMIN_FINANCIERO'],
+      title: 'Leaderboard & Ranking Gamificado XP'
+    },
+  },
 ];
 
 /* =============================================================================

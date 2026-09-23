@@ -1,0 +1,144 @@
+<aside class="sidebar" [class.collapsed]="api.sidebarCollapsed()">
+      <!-- Logo de la Plataforma -->
+      <div class="brand">
+        <div class="logo-icon">
+          <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS" class="brand-logo-img" />
+        </div>
+        <div class="brand-text" *ngIf="!api.sidebarCollapsed()">
+          <span class="brand-name">SportCore<span class="brand-badge">OS</span></span>
+          <span class="brand-sub">SECTIC S.A.S.</span>
+        </div>
+      </div>
+
+      <!-- Club Activo Multi-Tenant -->
+      <div class="active-club-badge" [title]="api.activeClub().nombre">
+        <div class="club-avatar">{{ api.activeClub().sigla }}</div>
+        <div class="club-info" *ngIf="!api.sidebarCollapsed()">
+          <p class="club-name">{{ api.activeClub().nombre }}</p>
+          <span class="club-plan">{{ api.activeClub().plan }}</span>
+        </div>
+      </div>
+
+      <!-- Menú de Navegación -->
+      <nav class="nav-menu">
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">GESTIÓN PRINCIPAL</div>
+        
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Dashboard & KPIs' : ''">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Dashboard & KPIs</span>
+        </a>
+
+        <a routerLink="/jugadores" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Jugadores & Fichas' : ''">
+          <i class="fa-solid fa-users"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Jugadores & Fichas</span>
+          <span class="nav-pill" *ngIf="!api.sidebarCollapsed()">142</span>
+        </a>
+
+        <a routerLink="/categorias" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Categorías' : ''">
+          <i class="fa-solid fa-layer-group"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Categorías (Sub-7..20)</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">COMPETICIÓN & FIXTURE</div>
+
+        <a routerLink="/partidos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Partidos & Fixture' : ''">
+          <i class="fa-solid fa-futbol"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Partidos & Fixture</span>
+          <span class="nav-pill-dot" *ngIf="!api.sidebarCollapsed()" title="2 Partidos esta semana"></span>
+        </a>
+
+        <a routerLink="/convocatorias" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Convocatorias' : ''">
+          <i class="fa-solid fa-clipboard-user"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Convocatorias</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">CIENCIAS DEL DEPORTE & RENDIMIENTO</div>
+
+        <a routerLink="/biometria" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Biometría & Tests' : ''">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Biometría & Tests</span>
+        </a>
+
+        <a routerLink="/telemetria" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Telemetría GPS & Heatmaps' : ''">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Telemetría GPS & Carga</span>
+        </a>
+
+        <a routerLink="/scouting" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Scouting & Visorías' : ''">
+          <i class="fa-solid fa-binoculars"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Scouting & Captación</span>
+        </a>
+
+        <a routerLink="/ranking" routerLinkActive="active" class="nav-item ranking-nav-item" [title]="api.sidebarCollapsed() ? 'Ranking & Leaderboard XP' : ''">
+          <i class="fa-solid fa-trophy text-amber"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Ranking & Gamificación XP</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#f59e0b,#d97706);" *ngIf="!api.sidebarCollapsed()">FUT</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">INTELIGENCIA ARTIFICIAL</div>
+
+        <a routerLink="/ia" routerLinkActive="active" class="nav-item ai-nav-item" [title]="api.sidebarCollapsed() ? 'SportCore AI (Gemini)' : ''">
+          <i class="fa-solid fa-wand-magic-sparkles text-emerald"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Copiloto Táctico AI</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#10b981,#059669);" *ngIf="!api.sidebarCollapsed()">Gemini</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">FINANZAS & COMERCIO</div>
+
+        <a routerLink="/finanzas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Cobros PSE / Cartera' : ''">
+          <i class="fa-solid fa-credit-card"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Cobros PSE / Cartera</span>
+        </a>
+
+        <a routerLink="/canchas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Alquiler de Canchas' : ''">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Alquiler Canchas & Sedes</span>
+        </a>
+
+        <a routerLink="/tienda" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Tienda & Indumentaria' : ''">
+          <i class="fa-solid fa-shirt"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Tienda & Kits Oficiales</span>
+        </a>
+
+        <a routerLink="/servicios" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Clínicas & Masterclasses' : ''">
+          <i class="fa-solid fa-graduation-cap text-amber"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Servicios & Clínicas</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#f59e0b,#d97706);" *ngIf="!api.sidebarCollapsed()">Nuevo</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">PORTAL FAMILIAR</div>
+
+        <a routerLink="/portal-padres" routerLinkActive="active" class="nav-item parent-portal-link" [title]="api.sidebarCollapsed() ? 'Portal Móvil Padres' : ''">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Portal Móvil Padres</span>
+          <span class="badge-app" *ngIf="!api.sidebarCollapsed()">App</span>
+        </a>
+
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">CONFIGURACIÓN & SAAS</div>
+
+        <a routerLink="/modulos-escuela" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Módulos Escuela' : ''">
+          <i class="fa-solid fa-cubes"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Módulos Escuela</span>
+        </a>
+
+        <a routerLink="/parametros" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Parámetros Sistema' : ''">
+          <i class="fa-solid fa-sliders"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Parámetros Sistema</span>
+        </a>
+
+        <a routerLink="/roles-permisos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Roles & Permisos' : ''">
+          <i class="fa-solid fa-user-shield"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Roles & Permisos</span>
+        </a>
+
+        <a routerLink="/idiomas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Idiomas & i18n' : ''">
+          <i class="fa-solid fa-globe"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Idiomas & i18n</span>
+        </a>
+      </nav>
+
+      <!-- Footer Version -->
+      <div class="sidebar-footer" *ngIf="!api.sidebarCollapsed()">
+        <p class="version">v1.0.0 Pro • Clean & Multi-Tenant</p>
+      </div>
+    </aside>

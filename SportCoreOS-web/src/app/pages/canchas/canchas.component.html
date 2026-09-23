@@ -1,0 +1,621 @@
+<div class="canchas-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Alquiler de Canchas & Escenarios Deportivos</h1>
+          <p class="page-subtitle">Matriz de disponibilidad horaria, control de iluminación y liquidación de turnos</p>
+        </div>
+        <div class="header-actions">
+          <div class="date-picker-wrap">
+            <label class="date-label"><i class="fa-regular fa-calendar"></i> Fecha:</label>
+            <input
+              type="text"
+              appFlatpickr
+              placeholder="dd/mm/aaaa"
+              [ngModel]="selectedFecha()"
+              (ngModelChange)="onFechaChange($event)"
+              class="sport-input date-input"
+            />
+          </div>
+          <button class="btn-secondary" (click)="openCanchasListModal()">
+            <i class="fa-solid fa-list-check"></i> Gestionar Canchas
+          </button>
+          <button class="btn-primary" (click)="openNuevaReservaModal()">
+            <i class="fa-solid fa-plus"></i> Nueva Reserva
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-emerald-glow">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ disponibilidadData()?.porcentaje_ocupacion || 0 }}%</div>
+            <div class="kpi-label">Ocupación del Día</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-blue-glow">
+            <i class="fa-solid fa-futbol"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ canchasList().length }}</div>
+            <div class="kpi-label">Canchas Habilitadas</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-amber-glow">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <div>
+            <div class="kpi-val">{{ disponibilidadData()?.slots_ocupados || 0 }} / {{ disponibilidadData()?.total_slots || 0 }}</div>
+            <div class="kpi-label">Turnos Ocupados Hoy</div>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card">
+          <div class="kpi-icon-wrap bg-purple-glow">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <div class="kpi-val">18:00 - 23:00</div>
+            <div class="kpi-label">Tarifa Nocturna Activa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MATRIZ HORARIA DE CANCHAS -->
+      <div class="matriz-container fut-card">
+        <div class="matriz-header">
+          <div class="matriz-title">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Cuadrícula de Horarios • {{ selectedFecha() }}</span>
+          </div>
+          <div class="legend-wrap">
+            <span class="legend-item"><span class="dot dot-disponible"></span> Disponible</span>
+            <span class="legend-item"><span class="dot dot-club"></span> Bloqueo Formativo / Club</span>
+            <span class="legend-item"><span class="dot dot-alquiler"></span> Alquiler Particular</span>
+            <span class="legend-item"><span class="dot dot-mantenimiento"></span> Mantenimiento</span>
+          </div>
+        </div>
+
+        @if (disponibilidadData()?.canchas && disponibilidadData()!.canchas.length > 0) {
+          <div class="grid-table-scroll">
+            <table class="matriz-table">
+              <thead>
+                <tr>
+                  <th class="th-hora">Franja Horaria</th>
+                  @for (c of disponibilidadData()!.canchas; track c.id) {
+                    <th class="th-cancha">
+                      <div class="cancha-title-th">
+                        <strong>{{ c.nombre }}</strong>
+                        <span class="badge-surface">{{ formatSuperficie(c.tipo_superficie) }}</span>
+                      </div>
+                      <div class="cancha-prices-th">
+                        <span>☀️ Diurna: \${{ c.precio_hora_diurna | number }}</span>
+                        <span>🌙 Noct: \${{ c.precio_hora_nocturna | number }}</span>
+                      </div>
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (h of horasSlots; track h.inicio) {
+                  <tr>
+                    <td class="td-hora">
+                      <strong>{{ h.inicio }} - {{ h.fin }}</strong>
+                      @if (h.esNocturno) {
+                        <span class="luz-tag"><i class="fa-solid fa-lightbulb"></i> Nocturno</span>
+                      }
+                    </td>
+                    @for (c of disponibilidadData()!.canchas; track c.id) {
+                      @let slot = getSlotForCancha(c, h.inicio);
+                      <td class="td-slot">
+                        @if (slot) {
+                          <div
+                            class="slot-card"
+                            [class.slot-disponible]="slot.estado === 'disponible'"
+                            [class.slot-club]="slot.estado === 'bloqueado_club'"
+                            [class.slot-alquiler]="slot.estado === 'ocupado_particular'"
+                            [class.slot-mantenimiento]="slot.estado === 'mantenimiento'"
+                            (click)="onSlotClick(c, slot)"
+                          >
+                            <div class="slot-header">
+                              <span class="slot-badge">{{ getSlotBadgeText(slot.estado) }}</span>
+                              @if (slot.estado === 'disponible') {
+                                <span class="slot-price">\${{ slot.tarifa | number }}</span>
+                              }
+                            </div>
+                            <div class="slot-main-text">
+                              {{ slot.estado_label }}
+                            </div>
+                            @if (slot.estado === 'ocupado_particular') {
+                              <div class="slot-footer-info">
+                                <span class="badge-pago" [class.pago-completo]="slot.estado_pago === 'completado'" [class.pago-parcial]="slot.estado_pago === 'parcial'">
+                                  {{ slot.estado_pago | uppercase }}
+                                </span>
+                                @if (slot.estado_pago !== 'completado') {
+                                  <button class="btn-xs-pay" (click)="openPagoCajaModal(slot, $event)" title="Pagar en Recepción">
+                                    <i class="fa-solid fa-cash-register"></i> Cobrar
+                                  </button>
+                                }
+                                <button class="btn-xs-cancel" (click)="cancelarReserva(slot, $event)" title="Cancelar Reserva">
+                                  <i class="fa-solid fa-ban"></i>
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="fa-solid fa-futbol"></i>
+            <p>No se encontraron escenarios deportivos registrados para este club.</p>
+            <button class="btn-primary btn-sm" (click)="openCreateCanchaModal()">Crear Primera Cancha</button>
+          </div>
+        }
+      </div>
+
+      <!-- MODAL NUEVA RESERVA -->
+      @if (showReservaModal()) {
+        <div class="modal-overlay" (click)="closeReservaModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-calendar-plus"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Nueva Reserva de Escenario</h2>
+                  <p class="modal-subtitle">Aparta un turno para alquiler particular, entrenamiento o mantenimiento</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeReservaModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form (ngSubmit)="submitReserva()" class="modal-form">
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> Escenario & Horario</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Cancha / Escenario <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.cancha_id" name="cancha_id" class="sport-input" required>
+                        @for (c of canchasList(); track c.id) {
+                          <option [value]="c.id">{{ c.nombre }} ({{ formatSuperficie(c.tipo_superficie) }})</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label>Fecha de Turno <span class="required-star">*</span></label>
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="reservaForm.fecha_reserva" name="fecha_reserva" class="sport-input" required />
+                  </div>
+                </div>
+
+                <div class="form-row g3">
+                  <div class="input-group">
+                    <label>Hora Inicio <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.hora_inicio" name="hora_inicio" class="sport-input" required>
+                        @for (h of horasSlots; track h.inicio) {
+                          <option [value]="h.inicio">{{ h.inicio }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label>Hora Fin <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.hora_fin" name="hora_fin" class="sport-input" required>
+                        @for (h of horasSlots; track h.fin) {
+                          <option [value]="h.fin">{{ h.fin }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label>Tipo de Reserva <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.tipo_reserva" name="tipo_reserva" class="sport-input" required>
+                        <option value="alquiler_particular">Alquiler Particular</option>
+                        <option value="entrenamiento_club">Entrenamiento Club (Exonerado)</option>
+                        <option value="partido_oficial">Partido Oficial Liga</option>
+                        <option value="mantenimiento">Mantenimiento de Césped/Luz</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-user"></i> Datos del Cliente & Abono</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Nombre del Cliente / Empresa</label>
+                    <input type="text" [(ngModel)]="reservaForm.cliente_nombre" name="cliente_nombre" placeholder="ej. Andrés Pérez" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>WhatsApp de Contacto</label>
+                    <input type="text" [(ngModel)]="reservaForm.cliente_telefono" name="cliente_telefono" placeholder="+57 310..." class="sport-input" />
+                  </div>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Seña / Anticipo Abonado ($ COP)</label>
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="reservaForm.monto_anticipo" name="monto_anticipo" min="0" class="sport-input" placeholder="0" />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-money-bill-wave"></i> {{ formatCurrency(reservaForm.monto_anticipo) }} COP
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label>Medio de Pago <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="reservaForm.metodo_pago" name="metodo_pago" class="sport-input" required>
+                        <option value="WOMPI_PSE">Pasarela Wompi / PSE</option>
+                        <option value="EFECTIVO_CAJA">Efectivo en Caja</option>
+                        <option value="TRANSFERENCIA">Transferencia Bancolombia/Nequi</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeReservaModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> Confirmar Reserva
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL COBRO EN CAJA -->
+      @if (showPagoModal() && selectedSlotForPay()) {
+        <div class="modal-overlay" (click)="closePagoModal()">
+          <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-emerald">
+                  <i class="fa-solid fa-cash-register"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Cobro en Recepción</h2>
+                  <p class="modal-subtitle">{{ selectedSlotForPay()?.estado_label }}</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closePagoModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="pago-details-card">
+              <div class="pago-row">
+                <span>Valor Total Turno:</span>
+                <strong>\${{ selectedSlotForPay()?.monto_total | number }}</strong>
+              </div>
+              <div class="pago-row">
+                <span>Anticipo Previo:</span>
+                <span class="text-success">-\${{ selectedSlotForPay()?.monto_anticipo | number }}</span>
+              </div>
+              <div class="pago-row total-highlight">
+                <span>Saldo Pendiente:</span>
+                <strong>\${{ (selectedSlotForPay()?.monto_total - selectedSlotForPay()?.monto_anticipo) | number }}</strong>
+              </div>
+            </div>
+
+            <form (ngSubmit)="submitPagoCaja()" class="modal-form">
+              <div class="input-group">
+                <label>Monto a Recibir ($ COP) <span class="required-star">*</span></label>
+                <div class="currency-input-wrap">
+                  <span class="currency-prefix">$</span>
+                  <input type="number" [(ngModel)]="pagoCajaMonto" name="pagoMonto" min="0" class="sport-input" required placeholder="0" />
+                </div>
+                <div class="currency-preview-badge">
+                  <i class="fa-solid fa-receipt"></i> {{ formatCurrency(pagoCajaMonto) }} COP
+                </div>
+              </div>
+              <div class="input-group">
+                <label>Método de Pago <span class="required-star">*</span></label>
+                <div class="sport-select-wrapper">
+                  <select [(ngModel)]="pagoCajaMetodo" name="pagoMetodo" class="sport-input">
+                    <option value="EFECTIVO_CAJA">Efectivo (Caja)</option>
+                    <option value="DATAFONO">Datáfono / Tarjeta</option>
+                    <option value="TRANSFERENCIA">Nequi / Daviplata</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closePagoModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-receipt"></i> Registrar Cobro
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL GESTIÓN DE CANCHAS -->
+      @if (showCanchasListModal()) {
+        <div class="modal-overlay" (click)="closeCanchasListModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-blue">
+                  <i class="fa-solid fa-gear"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Configuración de Escenarios Deportivos</h2>
+                  <p class="modal-subtitle">Administra los predios, tipos de superficie y tarifas horarias</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCanchasListModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="canchas-crud-table-wrap">
+              <table class="fut-table">
+                <thead>
+                  <tr>
+                    <th>Escenario</th>
+                    <th>Superficie</th>
+                    <th>Tarifa Diurna</th>
+                    <th>Tarifa Nocturna (Luz)</th>
+                    <th>Horario Operativo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of canchasList(); track c.id) {
+                    <tr>
+                      <td><strong>{{ c.nombre }}</strong></td>
+                      <td><span class="badge badge-blue">{{ formatSuperficie(c.tipo_superficie) }}</span></td>
+                      <td>\${{ c.precio_hora_diurna | number }}</td>
+                      <td>\${{ c.precio_hora_nocturna | number }}</td>
+                      <td>{{ c.hora_apertura }} - {{ c.hora_cierre }}</td>
+                      <td><span class="badge badge-success">Activa</span></td>
+                      <td>
+                        <div style="display:flex;gap:0.4rem;">
+                          <button class="btn-secondary btn-sm" (click)="openEditCanchaModal(c)">
+                            <i class="fa-solid fa-pen-to-square"></i> Editar
+                          </button>
+                          <button class="btn-secondary btn-sm" style="color:#ef4444;" (click)="openDeleteCanchaModal(c)" title="Desactivar Cancha">
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn-secondary" (click)="closeCanchasListModal()">Cerrar</button>
+              <button class="btn-primary" (click)="openCreateCanchaModal()">
+                <i class="fa-solid fa-plus"></i> Añadir Nueva Cancha
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CREAR / EDITAR CANCHA -->
+      @if (showCreateCanchaModal() || showEditCanchaModal()) {
+        <div class="modal-overlay" (click)="closeCanchaFormModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-emerald">
+                  <i class="fa-solid" [class.fa-plus]="!isEditingCancha" [class.fa-pen-to-square]="isEditingCancha"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>{{ isEditingCancha ? 'Editar Cancha / Escenario' : 'Nueva Cancha / Escenario' }}</h2>
+                  <p class="modal-subtitle">Parametriza los valores por hora y características de la superficie</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCanchaFormModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form (ngSubmit)="submitCanchaForm()" class="modal-form">
+              <div class="modal-section">
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Nombre de la Cancha <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="canchaForm.nombre" name="cNombre" placeholder="ej. Cancha Sintética 8 Norte" class="sport-input" required />
+                  </div>
+                  <div class="input-group">
+                    <label>Tipo de Superficie <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="canchaForm.tipo_superficie" name="cSuperficie" class="sport-input" required>
+                        @for (sup of tiposSuperficie(); track sup.codigo) {
+                          <option [value]="sup.codigo">{{ sup.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Tarifa Hora Diurna ($ COP) <span class="required-star">*</span></label>
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="canchaForm.precio_hora_diurna" name="cDiurna" min="0" class="sport-input" required />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-sun"></i> {{ formatCurrency(canchaForm.precio_hora_diurna) }} / hora
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label>Tarifa Hora Nocturna con Luz ($ COP) <span class="required-star">*</span></label>
+                    <div class="currency-input-wrap">
+                      <span class="currency-prefix">$</span>
+                      <input type="number" [(ngModel)]="canchaForm.precio_hora_nocturna" name="cNocturna" min="0" class="sport-input" required />
+                    </div>
+                    <div class="currency-preview-badge">
+                      <i class="fa-solid fa-moon"></i> {{ formatCurrency(canchaForm.precio_hora_nocturna) }} / hora
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeCanchaFormModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">{{ isEditingCancha ? 'Actualizar Cancha' : 'Guardar Cancha' }}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR CANCELACIÓN DE RESERVA -->
+      @if (showCancelConfirmModal() && slotToCancel()) {
+        <div class="modal-overlay" (click)="closeCancelConfirmModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header header-danger">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-danger-glow">
+                  <i class="fa-solid fa-ban"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Cancelar Reserva de Turno</h2>
+                  <p class="modal-subtitle">Liberación de franja horaria y anulación del turno</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCancelConfirmModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-card">
+                <div class="retire-avatar-wrap" style="display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,0.1);">
+                  <i class="fa-solid fa-futbol" style="font-size:1.5rem;color:#ef4444;"></i>
+                </div>
+                <div class="retire-player-details">
+                  <div class="retire-name-row">
+                    <span class="retire-player-name">{{ slotToCancel()?.estado_label || 'Turno Reservado' }}</span>
+                  </div>
+                  <div class="retire-meta-row">
+                    <span class="meta-tag"><i class="fa-solid fa-clock"></i> {{ slotToCancel()?.hora_inicio }} - {{ slotToCancel()?.hora_fin }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-dollar-sign"></i> Total: \${{ slotToCancel()?.monto_total | number }}</span>
+                    @if (slotToCancel()?.monto_anticipo > 0) {
+                      <span class="meta-tag"><i class="fa-solid fa-receipt"></i> Abono: \${{ slotToCancel()?.monto_anticipo | number }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Cancelación:</h4>
+                  <ul>
+                    <li>El turno pasará de inmediato a estado <strong>Disponible</strong> en la cuadrícula.</li>
+                    <li>Cualquier abono o seña registrada deberá ser gestionada o transferida en caja.</li>
+                    <li>Esta acción se registrará en la auditoría del sistema de reservas.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeCancelConfirmModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Turno
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmarCancelarReserva()">
+                <i class="fa-solid fa-ban"></i> Sí, Cancelar Turno
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR ELIMINACIÓN DE CANCHA -->
+      @if (showDeleteCanchaModal() && canchaToDelete()) {
+        <div class="modal-overlay" (click)="closeDeleteCanchaModal()">
+          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+            <div class="delete-confirm-header">
+              <div class="delete-confirm-icon-wrap">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="delete-confirm-title-wrap">
+                <h3>¿Desactivar Escenario Deportivo?</h3>
+                <p>Estás a punto de deshabilitar esta cancha del catálogo de alquileres</p>
+              </div>
+              <button class="btn-close" (click)="closeDeleteCanchaModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="delete-confirm-body">
+              <div class="player-retire-preview">
+                <div class="cancha-type-tag" style="background:rgba(16,185,129,0.12);color:#10b981;padding:0.75rem;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-futbol" style="font-size:1.5rem;"></i>
+                </div>
+                <div class="player-retire-info">
+                  <span class="retire-player-name">{{ canchaToDelete()?.nombre }}</span>
+                  <div class="retire-player-tags">
+                    <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ formatSuperficie(canchaToDelete()?.tipo_superficie) }}</span>
+                    <span class="meta-tag"><i class="fa-regular fa-clock"></i> {{ canchaToDelete()?.hora_apertura }} - {{ canchaToDelete()?.hora_cierre }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-tag"></i> Diurna: \${{ canchaToDelete()?.precio_hora_diurna | number }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="warning-callout">
+                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+                <div class="warning-callout-content">
+                  <h4>Consecuencias de la Operación:</h4>
+                  <ul>
+                    <li>La cancha no aparecerá disponible para nuevos turnos ni reservas públicas.</li>
+                    <li>Las reservas pasadas y facturación histórica se mantendrán intactas en auditoría.</li>
+                    <li>Podrás reactivar este escenario en cualquier momento modificando su estado.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeDeleteCanchaModal()">
+                <i class="fa-solid fa-arrow-left"></i> Conservar Cancha
+              </button>
+              <button type="button" class="btn-confirm-delete" (click)="confirmDeleteCancha()">
+                <i class="fa-solid fa-trash-can"></i> Sí, Desactivar Cancha
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

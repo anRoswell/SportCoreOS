@@ -117,7 +117,16 @@ export class ServiciosRepository {
       throw new BadRequestException('Lo sentimos, los cupos para esta clínica especializada se han agotado.');
     }
 
-    const referencia = `WOMPI-SPORT-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    const isDirectInstant = dto.metodo_pago === 'WOMPI_PSE';
+    const estadoPago = isDirectInstant && !dto.comprobante_url ? 'APROBADO' : 'PENDIENTE_APROBACION';
+
+    const prefix = dto.metodo_pago.includes('NEQUI')
+      ? 'NEQUI-SPORT'
+      : dto.metodo_pago.includes('TRANSFERENCIA')
+      ? 'TRANSF-SPORT'
+      : 'WOMPI-SPORT';
+
+    const referencia = dto.referencia_transaccion || `${prefix}-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
     const codigoQr = `SPORT-PASS-${crypto.randomUUID().toUpperCase()}`;
 
     const res = await this.db.query(
@@ -125,8 +134,8 @@ export class ServiciosRepository {
         servicio_id, club_id, jugador_id,
         nombre_jugador, nombre_acudiente, telefono_acudiente, email_acudiente,
         tipo_plan, monto_pagado, metodo_pago, referencia_transaccion, codigo_qr_ticket,
-        estado_pago, fecha_inscripcion
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'APROBADO', NOW())
+        comprobante_url, estado_pago, fecha_inscripcion
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
       RETURNING *`,
       [
         servicioId,
@@ -141,10 +150,12 @@ export class ServiciosRepository {
         dto.metodo_pago,
         referencia,
         codigoQr,
+        dto.comprobante_url || null,
+        estadoPago,
       ],
     );
 
-    // Incrementar cupos_ocupados
+    // Incrementar cupos_ocupados para reservar el lugar del atleta
     await this.db.query(
       `UPDATE public.servicios_especializados
        SET cupos_ocupados = cupos_ocupados + 1, updated_at = NOW()
@@ -152,21 +163,109 @@ export class ServiciosRepository {
       [servicioId],
     );
 
+    const mensaje = estadoPago === 'APROBADO'
+      ? `¡Inscripción exitosa a la clínica "${servicio.titulo}"! Pase digital activo.`
+      : `Comprobante de pago Nequi/Transferencia recibido. Tu Pase QR quedará activo tan pronto Tesorería valide el soporte.`;
+
     return {
       inscripcion: res.rows[0],
       servicio,
-      mensaje: `¡Inscripción exitosa a la clínica "${servicio.titulo}"! Pase digital generado.`,
+      mensaje,
     };
+  }
+
+  async aprobarInscripcion(
+    clubId: string,
+    inscripcionId: string,
+    user: any,
+    dto: { estado: 'APROBADO' | 'RECHAZADO'; notas_tesoreria?: string; motivo_rechazo?: string },
+  ) {
+    const inscripcionRes = await this.db.query(
+      `SELECT * FROM public.inscripciones_servicios WHERE id = $1 AND club_id = $2`,
+      [inscripcionId, clubId],
+    );
+
+    const inscripcion = inscripcionRes.rows[0];
+    if (!inscripcion) {
+      throw new NotFoundException('Inscripción no encontrada en este club');
+    }
+
+    const userName = user?.nombre ? `${user.nombre} (Tesorería)` : 'Tesorería / Admin Financiero';
+    const userId = user?.sub || user?.id || null;
+
+    if (dto.estado === 'APROBADO') {
+      const res = await this.db.query(
+        `UPDATE public.inscripciones_servicios
+         SET estado_pago = 'APROBADO',
+             fecha_aprobacion = NOW(),
+             aprobado_por_user_id = $1,
+             aprobado_por_nombre = $2,
+             notas_tesoreria = $3,
+             motivo_rechazo = NULL
+         WHERE id = $4
+         RETURNING *`,
+        [userId, userName, dto.notas_tesoreria || 'Comprobante verificado con éxito', inscripcionId],
+      );
+      return {
+        inscripcion: res.rows[0],
+        mensaje: `Pago aprobado por Tesorería. Pase digital activado para el atleta ${inscripcion.nombre_jugador}.`,
+      };
+    } else {
+      // Si se rechaza y estaba previamente ocupando cupo, liberar el cupo
+      if (inscripcion.estado_pago !== 'RECHAZADO') {
+        await this.db.query(
+          `UPDATE public.servicios_especializados
+           SET cupos_ocupados = GREATEST(cupos_ocupados - 1, 0), updated_at = NOW()
+           WHERE id = $1`,
+          [inscripcion.servicio_id],
+        );
+      }
+
+      const res = await this.db.query(
+        `UPDATE public.inscripciones_servicios
+         SET estado_pago = 'RECHAZADO',
+             fecha_aprobacion = NOW(),
+             aprobado_por_user_id = $1,
+             aprobado_por_nombre = $2,
+             motivo_rechazo = $3,
+             notas_tesoreria = $4
+         WHERE id = $5
+         RETURNING *`,
+        [
+          userId,
+          userName,
+          dto.motivo_rechazo || 'Comprobante ilegible o valor no coincide',
+          dto.notas_tesoreria || null,
+          inscripcionId,
+        ],
+      );
+      return {
+        inscripcion: res.rows[0],
+        mensaje: `Inscripción rechazada. El cupo ha sido liberado para otros atletas.`,
+      };
+    }
   }
 
   async findInscripcionesByServicio(servicioId: string, clubId: string) {
     const res = await this.db.query(
-      `SELECT i.*, s.titulo as servicio_titulo, s.icono, s.color_tema, s.horario_rango, s.dias_semana
+      `SELECT i.*, s.titulo as servicio_titulo, s.icono, s.color_tema, s.horario_rango, s.dias_semana, s.cancha_nombre
        FROM public.inscripciones_servicios i
        JOIN public.servicios_especializados s ON s.id = i.servicio_id
        WHERE i.servicio_id = $1 AND i.club_id = $2
        ORDER BY i.fecha_inscripcion DESC`,
       [servicioId, clubId],
+    );
+    return res.rows;
+  }
+
+  async findInscripcionesPendientes(clubId: string) {
+    const res = await this.db.query(
+      `SELECT i.*, s.titulo as servicio_titulo, s.icono, s.color_tema, s.horario_rango, s.dias_semana, s.cancha_nombre
+       FROM public.inscripciones_servicios i
+       JOIN public.servicios_especializados s ON s.id = i.servicio_id
+       WHERE i.club_id = $1 AND i.estado_pago = 'PENDIENTE_APROBACION'
+       ORDER BY i.fecha_inscripcion DESC`,
+      [clubId],
     );
     return res.rows;
   }

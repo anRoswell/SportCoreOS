@@ -1,0 +1,59 @@
+/* Profile Modal (inherits from global _modals.scss) */
+    .user-summary-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+
+      .avatar-preview {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--color-primary);
+        box-shadow: 0 0 10px var(--color-primary-glow);
+      }
+
+      .summary-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        .role-badge {
+          font-size: 0.68rem;
+          font-weight: 800;
+          background: rgba(16, 185, 129, 0.15);
+          color: var(--color-primary);
+          padding: 0.2rem 0.6rem;
+          border-radius: var(--radius-full);
+          width: fit-content;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .name-heading {
+          margin: 0;
+          font-size: 1.1rem;
+          font-weight: 800;
+          color: var(--text-heading);
+        }
+
+        .email-sub {
+          font-size: 0.78rem;
+          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+      }
+    }
+
+    .password-box {
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }

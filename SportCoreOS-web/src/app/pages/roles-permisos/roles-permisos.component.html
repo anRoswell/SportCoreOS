@@ -1,0 +1,360 @@
+<div class="roles-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-user-shield text-emerald"></i> Roles, Perfiles & Permisos (RBAC)
+          </h1>
+          <p class="page-subtitle">
+            Matriz de control de acceso basada en roles, permisos por módulo y asignación a miembros del club
+          </p>
+        </div>
+        <div class="header-actions">
+          <div class="main-tabs">
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'matriz'"
+              (click)="activeTab.set('matriz')"
+            >
+              <i class="fa-solid fa-table-cells"></i> Matriz de Permisos
+            </button>
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'usuarios'"
+              (click)="activeTab.set('usuarios')"
+            >
+              <i class="fa-solid fa-users"></i> Usuarios & Asignación
+            </button>
+            <button
+              class="tab-btn"
+              [class.active]="activeTab() === 'catalogo'"
+              (click)="activeTab.set('catalogo')"
+            >
+              <i class="fa-solid fa-id-badge"></i> Catálogo de Roles
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================================
+           TAB 1: MATRIZ DE PERMISOS RBAC
+           ========================================================================= -->
+      @if (activeTab() === 'matriz') {
+        <!-- KPI METRICS ROW -->
+        <div class="kpi-row">
+          <div class="kpi-card fut-card">
+            <div class="kpi-icon-wrap bg-blue-glow">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <div class="kpi-val">{{ selectedRoleLabel() }}</div>
+              <div class="kpi-label">Rol en Edición</div>
+            </div>
+          </div>
+
+          <div class="kpi-card fut-card">
+            <div class="kpi-icon-wrap bg-emerald-glow">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+              <div class="kpi-val">{{ currentRolePermittedCount() }} / {{ matrixRows().length }}</div>
+              <div class="kpi-label">Acciones Habilitadas</div>
+            </div>
+          </div>
+
+          <div class="kpi-card fut-card">
+            <div class="kpi-icon-wrap bg-purple-glow">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+              <div class="kpi-val">{{ modulosCount() }} Módulos</div>
+              <div class="kpi-label">Alcance de Seguridad</div>
+            </div>
+          </div>
+
+          <div class="kpi-card fut-card">
+            <div class="kpi-icon-wrap bg-amber-glow">
+              <i class="fa-solid fa-users-gear"></i>
+            </div>
+            <div>
+              <div class="kpi-val">{{ usersCountWithSelectedRole() }}</div>
+              <div class="kpi-label">Usuarios con este Rol</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE SELECCIÓN DE ROL Y FILTROS -->
+        <div class="filters-bar fut-card">
+          <div class="role-selector-row">
+            <div class="role-dropdown-wrap">
+              <label><i class="fa-solid fa-user-tag"></i> Seleccionar Rol Objetivo:</label>
+              <select
+                [ngModel]="selectedRole()"
+                (ngModelChange)="onRoleSelect($event)"
+                class="sport-select select-role"
+              >
+                @for (r of rolesCatalog(); track r.code) {
+                  <option [value]="r.code">{{ r.label }} ({{ r.code }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="actions-inline">
+              <button class="btn-secondary" (click)="toggleAllForCurrentRole(true)">
+                <i class="fa-solid fa-check-double text-emerald"></i> Permitir Todo
+              </button>
+              <button class="btn-secondary" (click)="confirmResetRole()">
+                <i class="fa-solid fa-rotate-left"></i> Restablecer Defecto
+              </button>
+              <button class="btn-primary" (click)="saveCurrentRoleMatrix()" [disabled]="saving()">
+                @if (saving()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                } @else {
+                  <i class="fa-solid fa-floppy-disk"></i> Guardar Permisos
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="search-and-module-row">
+            <div class="search-input-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+                placeholder="Buscar por módulo, acción o descripción..."
+                class="sport-input"
+              />
+            </div>
+
+            <div class="category-chips">
+              <button
+                class="chip-btn"
+                [class.active]="selectedModulo() === 'TODOS'"
+                (click)="selectedModulo.set('TODOS')"
+              >
+                Todos ({{ matrixRows().length }})
+              </button>
+              @for (mod of modulos(); track mod) {
+                <button
+                  class="chip-btn"
+                  [class.active]="selectedModulo() === mod"
+                  (click)="selectedModulo.set(mod)"
+                >
+                  {{ mod }} ({{ countByModulo(mod) }})
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA DE MATRIZ DE PERMISOS -->
+        <div class="table-container fut-card">
+          <table class="fut-table">
+            <thead>
+              <tr>
+                <th style="width: 140px;">Módulo</th>
+                <th style="width: 220px;">Acción del Sistema</th>
+                <th>Descripción Funcional</th>
+                <th style="width: 130px; text-align: center;">Permitido</th>
+                <th style="width: 180px;">Nivel de Acceso</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of filteredMatrix(); track row.modulo + row.accion) {
+                <tr [class.row-forbidden]="!getRolePerm(row).permitido">
+                  <td>
+                    <span class="module-badge">{{ row.modulo }}</span>
+                  </td>
+                  <td>
+                    <strong class="action-key font-mono">{{ row.accion }}</strong>
+                  </td>
+                  <td>
+                    <span class="action-desc">{{ row.descripcion }}</span>
+                  </td>
+                  <td style="text-align: center;">
+                    <label class="switch-toggle">
+                      <input
+                        type="checkbox"
+                        [checked]="getRolePerm(row).permitido"
+                        (change)="togglePermission(row)"
+                      />
+                      <span class="slider round"></span>
+                    </label>
+                  </td>
+                  <td>
+                    <select
+                      [(ngModel)]="getRolePerm(row).nivelAcceso"
+                      [disabled]="!getRolePerm(row).permitido"
+                      class="sport-select select-sm font-mono"
+                    >
+                      <option value="ALL">ALL (Total)</option>
+                      <option value="RO">RO (Read Only)</option>
+                      <option value="OWN">OWN (Propios)</option>
+                      <option value="NONE">NONE (Sin acceso)</option>
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB 2: USUARIOS & ASIGNACIÓN DE ROLES
+           ========================================================================= -->
+      @if (activeTab() === 'usuarios') {
+        <div class="users-tab-panel fut-card">
+          <div class="users-header">
+            <div>
+              <h2 class="panel-title">Directorio de Usuarios de la Escuela</h2>
+              <p class="panel-subtitle">Asigna y actualiza instantáneamente el rol y nivel de privilegio de cada colaborador</p>
+            </div>
+            <div class="user-stats">
+              <span class="stat-pill"><i class="fa-solid fa-users"></i> {{ usersList().length }} Usuarios</span>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="fut-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Correo Electrónico</th>
+                  <th>Teléfono</th>
+                  <th>Rol Asignado</th>
+                  <th>Miembro Desde</th>
+                  <th style="text-align: right;">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of usersList(); track u.id) {
+                  <tr>
+                    <td>
+                      <div class="user-cell">
+                        <img
+                          [src]="u.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80'"
+                          [alt]="u.nombre"
+                          class="user-avatar-sm"
+                        />
+                        <div>
+                          <strong class="user-name">{{ u.nombre }} {{ u.apellido }}</strong>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="font-mono text-muted">{{ u.email }}</span>
+                    </td>
+                    <td>
+                      <span>{{ u.telefono || 'Sin registrar' }}</span>
+                    </td>
+                    <td>
+                      <select
+                        [(ngModel)]="u.rol_club"
+                        (change)="onUserRoleChange(u)"
+                        class="sport-select select-sm font-mono"
+                      >
+                        @for (r of rolesCatalog(); track r.code) {
+                          <option [value]="r.code">{{ r.label }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ u.miembro_desde ? (u.miembro_desde | date:'mediumDate') : 'Activo' }}</small>
+                    </td>
+                    <td style="text-align: right;">
+                      <button
+                        class="btn-icon-action"
+                        (click)="saveUserRole(u)"
+                        title="Guardar asignación de rol"
+                      >
+                        <i class="fa-solid fa-floppy-disk"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB 3: CATÁLOGO DE ROLES Y PERFILES
+           ========================================================================= -->
+      @if (activeTab() === 'catalogo') {
+        <div class="roles-catalog-grid">
+          @for (role of rolesCatalog(); track role.code) {
+            <div class="role-card fut-card" (click)="selectRoleFromCatalog(role.code)">
+              <div class="role-card-header">
+                <div class="role-icon-wrap">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <h3 class="role-card-title">{{ role.label }}</h3>
+                  <span class="role-card-code font-mono">{{ role.code }}</span>
+                </div>
+              </div>
+              <p class="role-card-desc">{{ role.description }}</p>
+              <div class="role-card-footer">
+                <button class="btn-role-action">
+                  <i class="fa-solid fa-sliders"></i> Ver Matriz de Permisos
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- MODAL CONFIRMAR RESET -->
+      @if (showResetModal()) {
+        <div class="modal-backdrop" (click)="closeResetModal()">
+          <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge bg-amber-glow text-amber">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Restablecer Permisos</h2>
+                  <p class="modal-subtitle">Rol: {{ selectedRoleLabel() }}</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeResetModal()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="modal-body-delete">
+              <p>
+                ¿Deseas restablecer los permisos del rol
+                <strong>{{ selectedRoleLabel() }}</strong> a la plantilla predeterminada del sistema?
+              </p>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary btn-cancel" (click)="closeResetModal()">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+              </button>
+              <button type="button" class="btn-primary btn-submit" (click)="executeResetRole()" [disabled]="saving()">
+                @if (saving()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Restableciendo...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Confirmar Restablecimiento
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST FEEDBACK -->
+      @if (toastMessage()) {
+        <div class="toast-alert" [class.error]="isToastError()">
+          <i class="fa-solid" [class.fa-circle-check]="!isToastError()" [class.fa-circle-exclamation]="isToastError()"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

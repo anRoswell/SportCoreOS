@@ -1,0 +1,25 @@
+<div class="toast-wrapper">
+      @for (toast of notificationService.toasts(); track toast.id) {
+        <div class="toast-item" [class]="'toast-' + toast.type" role="alert">
+          <div class="toast-icon">
+            @switch (toast.type) {
+              @case ('success') { <i class="fa-solid fa-circle-check"></i> }
+              @case ('error') { <i class="fa-solid fa-circle-xmark"></i> }
+              @case ('warning') { <i class="fa-solid fa-triangle-exclamation"></i> }
+              @case ('info') { <i class="fa-solid fa-circle-info"></i> }
+            }
+          </div>
+
+          <div class="toast-content">
+            @if (toast.title) {
+              <strong class="toast-title">{{ toast.title }}</strong>
+            }
+            <p class="toast-message">{{ toast.message }}</p>
+          </div>
+
+          <button class="toast-close-btn" (click)="notificationService.remove(toast.id)" aria-label="Cerrar notificación">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      }
+    </div>

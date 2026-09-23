@@ -33,7 +33,7 @@ test.describe('MÓDULO 11: SERVICIOS ESPECIALIZADOS, CLÍNICAS PRO & PASES QR - 
     await expect(kpiCards).toHaveCount(4);
     await expect(page.locator('.kpi-label', { hasText: 'Clínicas Especializadas Activas' })).toBeVisible();
     await expect(page.locator('.kpi-label', { hasText: 'Cupos Ocupados' })).toBeVisible();
-    await expect(page.locator('.kpi-label', { hasText: 'Sedes con GPS' })).toBeVisible();
+    await expect(page.locator('.kpi-label', { hasText: 'Pagos Nequi' })).toBeVisible();
     await expect(page.locator('.kpi-label', { hasText: 'Pases QR & Recaudo' })).toBeVisible();
 
     // Validar tarjetas de clínicas cargadas
@@ -176,7 +176,7 @@ test.describe('MÓDULO 11: SERVICIOS ESPECIALIZADOS, CLÍNICAS PRO & PASES QR - 
     // Validar modal de participantes
     const modalDialog = page.locator('.modal-dialog');
     await expect(modalDialog).toBeVisible();
-    await expect(modalDialog.locator('.modal-title')).toContainText('Participantes Inscritos');
+    await expect(modalDialog.locator('.modal-title')).toContainText('Participantes');
 
     // Cerrar modal
     const btnCerrar = modalDialog.locator('.modal-footer .btn-secondary');

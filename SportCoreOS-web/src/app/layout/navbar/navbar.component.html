@@ -1,0 +1,194 @@
+<header class="navbar">
+      <!-- Sección Izquierda: Toggle Sidebar + Búsqueda -->
+      <div class="navbar-left">
+        <button class="toggle-sidebar-btn" (click)="api.toggleSidebar()" title="Colapsar / Expandir Menú">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Buscar jugador, dorsal, categoría, partido..." />
+          <span class="search-kbd">⌘K</span>
+        </div>
+      </div>
+
+      <!-- Sección Derecha: Selector Club, Multiidioma, Theme Switcher, Notificaciones, Acciones, Perfil -->
+      <div class="navbar-actions">
+        <!-- Selector Multi-Tenant de Escuelas y Clubes (Dropdown Rico + Fallback Select) -->
+        <div class="club-selector-container">
+          <button 
+            type="button" 
+            class="club-trigger-btn" 
+            (click)="toggleClubDropdown($event)"
+            [title]="'Escuela activa: ' + api.activeClub().nombre + ' (' + api.activeClub().ciudad + ')'"
+            aria-haspopup="true"
+            [attr.aria-expanded]="isOpenClubDropdown()">
+            <div class="club-icon-wrap">
+              <i class="fa-solid fa-shield-halved club-icon"></i>
+            </div>
+            <div class="club-info-wrap">
+              <span class="club-name">{{ api.activeClub().nombre }}</span>
+              <span class="club-meta">{{ api.activeClub().ciudad }} • {{ api.activeClub().sigla }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-down caret-arrow" [class.rotated]="isOpenClubDropdown()"></i>
+          </button>
+
+          <!-- Select nativo accesible para sincronización y pruebas automatizadas E2E -->
+          <select 
+            class="club-select visually-hidden-for-tests" 
+            [ngModel]="api.activeClub().id" 
+            (ngModelChange)="onClubChange($event)">
+            @for (club of api.availableClubs(); track club.id) {
+              <option [value]="club.id">
+                {{ club.nombre }} ({{ club.ciudad }})
+              </option>
+            }
+          </select>
+
+          <!-- Dropdown Popup de Escuelas Disponibles -->
+          @if (isOpenClubDropdown()) {
+            <div class="club-dropdown-card">
+              <div class="dropdown-header">
+                <div class="header-title-row">
+                  <span class="dropdown-title">
+                    <i class="fa-solid fa-school text-emerald"></i> Academias & Escuelas ({{ api.availableClubs().length }})
+                  </span>
+                  <button type="button" class="btn-refresh-clubs" (click)="refreshClubs($event)" title="Actualizar lista de escuelas">
+                    <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isRefreshing()"></i>
+                  </button>
+                </div>
+                
+                <!-- Buscador de Escuelas en Vivo -->
+                <div class="club-search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input 
+                    type="text" 
+                    [ngModel]="searchClubQuery()" 
+                    (ngModelChange)="searchClubQuery.set($event)"
+                    placeholder="Filtrar por nombre o ciudad..." 
+                    class="club-filter-input" 
+                    (click)="$event.stopPropagation()" />
+                </div>
+              </div>
+
+              <div class="dropdown-club-list">
+                @for (club of filteredClubs(); track club.id) {
+                  <button 
+                    type="button" 
+                    class="club-option-item" 
+                    [class.is-active]="club.id === api.activeClub().id"
+                    (click)="selectClubFromDropdown(club.id)">
+                    <div class="club-opt-avatar">
+                      @if (club.logo) {
+                        <img [src]="club.logo" [alt]="club.nombre" />
+                      } @else {
+                        <i class="fa-solid fa-shield-halved"></i>
+                      }
+                    </div>
+                    <div class="club-opt-details">
+                      <div class="club-opt-name-row">
+                        <strong class="club-opt-name">{{ club.nombre }}</strong>
+                        <span class="club-sigla-pill">{{ club.sigla }}</span>
+                      </div>
+                      <div class="club-opt-sub">
+                        <span><i class="fa-solid fa-location-dot"></i> {{ club.ciudad }}</span>
+                        <span class="plan-tag">{{ club.plan }}</span>
+                      </div>
+                    </div>
+                    @if (club.id === api.activeClub().id) {
+                      <div class="active-indicator">
+                        <i class="fa-solid fa-circle-check check-icon"></i>
+                      </div>
+                    }
+                  </button>
+                } @empty {
+                  <div class="empty-clubs">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>No se encontraron escuelas con '{{ searchClubQuery() }}'</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Footer de Acciones Super Admin -->
+              <div class="dropdown-footer">
+                <button type="button" class="btn-manage-schools" (click)="goToSchoolManagement($event)">
+                  <i class="fa-solid fa-cubes"></i>
+                  <span>Administrar Módulos & Licencias</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Selector Multiidioma (i18n) -->
+        <app-language-selector></app-language-selector>
+
+        <!-- Botón Selector de Tema (Light / Dark Mode) -->
+        <button 
+          class="theme-toggle-btn" 
+          (click)="themeService.toggleTheme()" 
+          [attr.aria-label]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'"
+          [title]="themeService.isDark() ? 'Cambiar a Modo Claro (Limpio)' : 'Cambiar a Modo Oscuro (Dark Sport)'">
+          <div class="theme-icon-wrap" [class.is-dark]="themeService.isDark()">
+            @if (themeService.isDark()) {
+              <i class="fa-solid fa-sun sun-icon"></i>
+              <span class="theme-label">Modo Claro</span>
+            } @else {
+              <i class="fa-solid fa-moon moon-icon"></i>
+              <span class="theme-label">Modo Oscuro</span>
+            }
+          </div>
+        </button>
+
+        <!-- Notificaciones -->
+        <button class="icon-btn" title="Notificaciones del Sistema">
+          <i class="fa-regular fa-bell"></i>
+          <span class="dot"></span>
+        </button>
+
+        <!-- Menú de Usuario con Dropdown & Logout -->
+        <div class="user-menu-container">
+          <button class="user-profile-btn" (click)="toggleUserDropdown()">
+            <img [src]="authService.currentUser()?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'" alt="Avatar" class="avatar" />
+            <div class="user-details">
+              <span class="user-name">{{ authService.currentUser()?.nombres }}</span>
+              <span class="user-role">{{ authService.currentUser()?.rolLabel }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-down caret-icon"></i>
+          </button>
+
+          <!-- Dropdown Popup -->
+          @if (showDropdown()) {
+            <div class="user-dropdown-card">
+              <div class="dropdown-header">
+                <div class="user-full-info">
+                  <strong>{{ authService.currentUser()?.nombres }} {{ authService.currentUser()?.apellidos }}</strong>
+                  <span class="email-sub">{{ authService.currentUser()?.email }}</span>
+                </div>
+                <span class="role-pill" [class.is-super-admin]="authService.currentUser()?.rol === 'SUPER_ADMIN'">
+                  {{ authService.currentUser()?.rol }}
+                </span>
+              </div>
+
+              <div class="dropdown-divider"></div>
+
+              <div class="dropdown-actions">
+                <button class="dropdown-item" (click)="onOpenProfile()">
+                  <i class="fa-regular fa-id-badge"></i> Mi Perfil Deportivo
+                </button>
+                <button class="dropdown-item" (click)="goToSchoolManagement($event)">
+                  <i class="fa-solid fa-sliders"></i> Ajustes de la Escuela
+                </button>
+              </div>
+
+              <div class="dropdown-divider"></div>
+
+              <button class="dropdown-logout-btn" (click)="onLogout()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>

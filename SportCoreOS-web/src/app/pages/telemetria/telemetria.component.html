@@ -1,0 +1,569 @@
+<div class="telemetria-page">
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-satellite-dish text-emerald"></i> Telemetría GPS, Mapas de Calor & Carga Física
+          </h1>
+          <p class="page-subtitle">Monitoreo cinemático de alto rendimiento, PlayerLoad, sprints y mapas de calor 2D sobre la cancha</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-primary" (click)="openCreateSesionModal()">
+            <i class="fa-solid fa-file-arrow-up"></i> Ingesta Sesión GPS (GPX/CSV)
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS ROW PRO -->
+      <div class="kpi-row telemetria-kpis">
+        <div class="kpi-card fut-card kpi-pro-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap bg-blue-glow">
+              <i class="fa-solid fa-person-running"></i>
+            </div>
+            <span class="kpi-chip chip-blue"><i class="fa-solid fa-circle-check"></i> Activos</span>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ selectedSesion()?.metricas?.length || 18 }}</div>
+            <div class="kpi-label">Jugadores Monitoreados</div>
+          </div>
+          <div class="kpi-footer-metric">
+            <div class="metric-progress-wrap">
+              <div class="metric-progress-bar" style="width: 100%; background: #3b82f6;"></div>
+            </div>
+            <span class="kpi-subtext">Plantel completo con GPS Catapult</span>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card kpi-pro-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap bg-emerald-glow">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <span class="kpi-chip chip-emerald"><i class="fa-solid fa-arrow-trend-up"></i> +1.2 km vs media</span>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ getAverageDistance() }} <span class="kpi-unit">km</span></div>
+            <div class="kpi-label">Distancia Media / Jugador</div>
+          </div>
+          <div class="kpi-footer-metric">
+            <div class="metric-progress-wrap">
+              <div class="metric-progress-bar" [style.width.%]="getProgressDistance()" style="background: #10b981;"></div>
+            </div>
+            <span class="kpi-subtext">Meta 10.5 km ({{ getProgressDistance() }}% alcanzado)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card kpi-pro-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap bg-amber-glow">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+            <span class="kpi-chip chip-amber"><i class="fa-solid fa-bolt"></i> Sprint Peak</span>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ getTopSpeed() }} <span class="kpi-unit">km/h</span></div>
+            <div class="kpi-label">Velocidad Punta Máxima</div>
+          </div>
+          <div class="kpi-footer-metric">
+            <div class="metric-progress-wrap">
+              <div class="metric-progress-bar" [style.width.%]="(getTopSpeedNum() / 36) * 100" style="background: #f59e0b;"></div>
+            </div>
+            <span class="kpi-subtext">Top: {{ getTopSpeedPlayer() }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card fut-card kpi-pro-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap bg-purple-glow">
+              <i class="fa-solid fa-fire"></i>
+            </div>
+            <span class="kpi-chip chip-purple"><i class="fa-solid fa-chart-line"></i> ACWR Óptimo</span>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ getAveragePlayerLoad() }} <span class="kpi-unit">AU</span></div>
+            <div class="kpi-label">PlayerLoad Promedio</div>
+          </div>
+          <div class="kpi-footer-metric">
+            <div class="metric-progress-wrap">
+              <div class="metric-progress-bar" [style.width.%]="(getAveragePlayerLoadNum() / 800) * 100" style="background: #a855f7;"></div>
+            </div>
+            <span class="kpi-subtext">Carga neuromuscular controlada</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELECTOR DE SESIÓN Y VISTA PRINCIPAL -->
+      <div class="telemetria-content-grid">
+        <!-- LISTA LATERAL DE SESIONES -->
+        <div class="sesiones-sidebar fut-card">
+          <div class="sidebar-header">
+            <div class="sidebar-title-wrap">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <h3>Sesiones de Telemetría</h3>
+            </div>
+            <span class="badge badge-primary">{{ sesionesList().length }}</span>
+          </div>
+
+          <div class="sesiones-list">
+            @for (s of sesionesList(); track s.id) {
+              <div
+                class="sesion-item-card"
+                [class.active]="selectedSesion()?.id === s.id"
+                (click)="selectSesion(s)"
+              >
+                <div class="sesion-item-top">
+                  <strong class="sesion-name">{{ s.nombre_sesion }}</strong>
+                  <span class="badge" [class.badge-primary]="s.tipo_sesion === 'partido'" [class.badge-success]="s.tipo_sesion === 'entrenamiento'">
+                    {{ s.tipo_sesion === 'partido' ? 'Partido' : 'Entreno' }}
+                  </span>
+                </div>
+                <div class="sesion-item-sub">
+                  <span><i class="fa-regular fa-calendar"></i> {{ s.fecha_sesion }}</span>
+                  <span><i class="fa-solid fa-stopwatch"></i> {{ s.duracion_minutos || 90 }} min</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state-sm">
+                <i class="fa-solid fa-satellite"></i>
+                <p>No hay sesiones registradas.</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- PANEL CENTRAL: MAPA DE CALOR 2D + MÉTRICAS CINEMÁTICAS + WIDGETS PRO -->
+        <div class="telemetria-main-panel">
+          <!-- SECCIÓN DE CANCHA 2D CON MAPA DE CALOR Y PANEL TÁCTICO -->
+          <div class="heatmap-section fut-card">
+            <div class="heatmap-header">
+              <div class="player-focus-info">
+                <div class="pitch-badge-icon">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <div>
+                  <h3>Mapa de Calor 2D & Tracking Táctico</h3>
+                  <p>Influencia espacial de: <strong class="text-emerald">{{ activeHeatmapPlayer()?.jugador_nombre || activeHeatmapPlayer()?.nombres || 'Plantel Completo' }}</strong></p>
+                </div>
+              </div>
+
+              <div class="heatmap-controls">
+                <label><i class="fa-solid fa-user-check"></i> Jugador Activo:</label>
+                <div class="sport-select-wrapper player-heat-select">
+                  <select [ngModel]="activeHeatmapPlayer()?.id" (ngModelChange)="onHeatmapPlayerChange($event)" class="sport-input">
+                    @for (m of activeMetricas(); track m.id) {
+                      <option [value]="m.id">{{ m.jugador_nombre || m.nombres }} ({{ formatPosicion(m.posicion) }})</option>
+                    }
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- CANCHA DE FÚTBOL INTERACTIVA 2D CON ZONAS DE CALOR Y OVERLAYS -->
+            <div class="soccer-pitch-container">
+              <div class="soccer-pitch">
+                <!-- PATRÓN DE CÉSPED PROFESIONAL -->
+                <div class="pitch-stripes"></div>
+
+                <!-- LÍNEAS DE LA CANCHA -->
+                <div class="pitch-line pitch-border"></div>
+                <div class="pitch-line pitch-halfway"></div>
+                <div class="pitch-line pitch-center-circle"></div>
+                <div class="pitch-line pitch-center-spot"></div>
+                <div class="pitch-line penalty-box-left"></div>
+                <div class="pitch-line penalty-box-right"></div>
+                <div class="pitch-line goal-box-left"></div>
+                <div class="pitch-line goal-box-right"></div>
+                <div class="pitch-line corner-top-left"></div>
+                <div class="pitch-line corner-bottom-left"></div>
+                <div class="pitch-line corner-top-right"></div>
+                <div class="pitch-line corner-bottom-right"></div>
+
+                <!-- HEATMAP GLOW SPOTS DINÁMICOS -->
+                @if (getHeatZones().length > 0) {
+                  @for (zone of getHeatZones(); track $index) {
+                    <div
+                      class="heat-spot"
+                      [style.left.%]="zone.x"
+                      [style.top.%]="zone.y"
+                      [style.width.px]="zone.size"
+                      [style.height.px]="zone.size"
+                      [style.opacity]="zone.opacity"
+                    ></div>
+                  }
+                }
+
+                <!-- FLOATING PLAYER BADGE SOBRE LA CANCHA -->
+                <div class="pitch-player-marker" [style.left.%]="getPlayerSpotCoordinates().x" [style.top.%]="getPlayerSpotCoordinates().y">
+                  <div class="player-pulse-ring"></div>
+                  <div class="player-dot">
+                    <i class="fa-solid fa-futbol"></i>
+                  </div>
+                  <span class="player-marker-label">{{ activeHeatmapPlayer()?.jugador_nombre || 'Jugador' }}</span>
+                </div>
+              </div>
+
+              <!-- LEYENDA DEL MAPA DE CALOR & METADATOS TÁCTICOS -->
+              <div class="pitch-footer-bar">
+                <div class="pitch-legend">
+                  <span class="legend-item"><span class="heat-dot dot-low"></span> Zona de Transición (< 14 km/h)</span>
+                  <span class="legend-item"><span class="heat-dot dot-med"></span> Media Intensidad (14 - 21 km/h)</span>
+                  <span class="legend-item"><span class="heat-dot dot-high"></span> Sprint / Alta Intensidad (> 21 km/h)</span>
+                </div>
+                <div class="pitch-telemetry-tag">
+                  <i class="fa-solid fa-satellite"></i>
+                  <span>Muestreo GPS: <strong>10 Hz</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WIDGETS AVANZADOS DE CARGA FÍSICA Y BIOMECÁNICA -->
+          <div class="telemetry-widgets-grid">
+            <!-- WIDGET 1: VELOCÍMETRO Y PICOS CINEMÁTICOS -->
+            <div class="widget-card fut-card">
+              <div class="widget-header">
+                <div class="widget-title">
+                  <i class="fa-solid fa-gauge-simple-high text-amber"></i>
+                  <h4>Picos de Velocidad & Sprints</h4>
+                </div>
+                <span class="badge badge-amber">{{ activeHeatmapPlayer()?.sprints_alta_intensidad || 18 }} Sprints</span>
+              </div>
+              <div class="speed-gauge-wrap">
+                <div class="speed-circle">
+                  <span class="speed-val">{{ activeHeatmapPlayer()?.velocidad_maxima_kmh || '31.8' }}</span>
+                  <span class="speed-unit">km/h máx</span>
+                </div>
+                <div class="speed-metrics-details">
+                  <div class="speed-stat-item">
+                    <span class="stat-lbl"><i class="fa-solid fa-bolt"></i> Aceleraciones (>3 m/s²):</span>
+                    <span class="stat-num text-emerald">28</span>
+                  </div>
+                  <div class="speed-stat-item">
+                    <span class="stat-lbl"><i class="fa-solid fa-hand"></i> Desaceleraciones:</span>
+                    <span class="stat-num text-amber">22</span>
+                  </div>
+                  <div class="speed-stat-item">
+                    <span class="stat-lbl"><i class="fa-solid fa-stopwatch"></i> Tiempo >21 km/h:</span>
+                    <span class="stat-num">4 min 12s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WIDGET 2: DESGLOSE DE ZONAS DE VELOCIDAD METABÓLICA -->
+            <div class="widget-card fut-card">
+              <div class="widget-header">
+                <div class="widget-title">
+                  <i class="fa-solid fa-chart-column text-emerald"></i>
+                  <h4>Zonas de Intensidad de Carrera</h4>
+                </div>
+                <span class="badge badge-success">{{ activeHeatmapPlayer()?.distancia_total_km || '9.4' }} km</span>
+              </div>
+              <div class="intensity-zones-bars">
+                <div class="zone-row">
+                  <div class="zone-info">
+                    <span>Zona 1: Caminata (< 7.2 km/h)</span>
+                    <strong>3.2 km (34%)</strong>
+                  </div>
+                  <div class="zone-track">
+                    <div class="zone-fill fill-z1" style="width: 34%;"></div>
+                  </div>
+                </div>
+
+                <div class="zone-row">
+                  <div class="zone-info">
+                    <span>Zona 2: Trote Ligero (7.2 - 14.3 km/h)</span>
+                    <strong>3.8 km (40%)</strong>
+                  </div>
+                  <div class="zone-track">
+                    <div class="zone-fill fill-z2" style="width: 40%;"></div>
+                  </div>
+                </div>
+
+                <div class="zone-row">
+                  <div class="zone-info">
+                    <span>Zona 3: Carrera Alta (14.4 - 21.0 km/h)</span>
+                    <strong>1.6 km (18%)</strong>
+                  </div>
+                  <div class="zone-track">
+                    <div class="zone-fill fill-z3" style="width: 18%;"></div>
+                  </div>
+                </div>
+
+                <div class="zone-row">
+                  <div class="zone-info">
+                    <span>Zona 4: Sprint Pro (> 21.0 km/h)</span>
+                    <strong class="text-rose">0.8 km (8%)</strong>
+                  </div>
+                  <div class="zone-track">
+                    <div class="zone-fill fill-z4" style="width: 8%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WIDGET 3: MONITOR DE CARGA CARDIOVASCULAR & FRECUENCIA -->
+            <div class="widget-card fut-card">
+              <div class="widget-header">
+                <div class="widget-title">
+                  <i class="fa-solid fa-heart-pulse text-rose"></i>
+                  <h4>Frecuencia Cardíaca & PlayerLoad</h4>
+                </div>
+                <span class="badge badge-purple">{{ activeHeatmapPlayer()?.player_load || 540 }} AU</span>
+              </div>
+              <div class="cardio-status-box">
+                <div class="cardio-kpis">
+                  <div class="cardio-item">
+                    <span class="cardio-title">FC Máxima</span>
+                    <span class="cardio-num text-rose">{{ activeHeatmapPlayer()?.frecuencia_cardiaca_max || '188' }} <small>bpm</small></span>
+                  </div>
+                  <div class="cardio-item">
+                    <span class="cardio-title">FC Media</span>
+                    <span class="cardio-num text-emerald">{{ getAvgHeartRate() }} <small>bpm</small></span>
+                  </div>
+                  <div class="cardio-item">
+                    <span class="cardio-title">Riesgo Fatiga</span>
+                    <span class="cardio-num text-amber">Bajo (0.92)</span>
+                  </div>
+                </div>
+
+                <div class="cardio-advice">
+                  <i class="fa-solid fa-circle-check text-emerald"></i>
+                  <span>Índice neuromuscular dentro de rango competitivo seguro.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLA DE MÉTRICAS CINEMÁTICAS INDIVIDUALES -->
+          <div class="metricas-table-card fut-card">
+            <div class="table-header-clean">
+              <div class="table-title">
+                <div class="icon-sq bg-blue-glow">
+                  <i class="fa-solid fa-chart-simple"></i>
+                </div>
+                <div>
+                  <h3>Rendimiento Cinemático Individual</h3>
+                  <p class="table-sub">Desglose biométrico por jugador registrado en la sesión</p>
+                </div>
+              </div>
+              <button class="btn-secondary btn-sm" (click)="openAddMetricaModal()">
+                <i class="fa-solid fa-plus"></i> Ingesta Métrica Individual
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="fut-table">
+                <thead>
+                  <tr>
+                    <th>Jugador</th>
+                    <th>Posición</th>
+                    <th>Distancia Total</th>
+                    <th>Vel. Máxima</th>
+                    <th>Sprints (>21km/h)</th>
+                    <th>PlayerLoad (AU)</th>
+                    <th>FC Máx</th>
+                    <th>Carga / Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of activeMetricas(); track m.id) {
+                    <tr [class.highlight-row]="activeHeatmapPlayer()?.id === m.id">
+                      <td>
+                        <div class="player-table-cell">
+                          <div class="player-avatar-circle">
+                            <i class="fa-solid fa-user"></i>
+                          </div>
+                          <strong>{{ m.jugador_nombre || m.nombres }}</strong>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-blue">{{ formatPosicion(m.posicion) }}</span></td>
+                      <td><strong>{{ m.distancia_total_km || '9.4' }}</strong> km</td>
+                      <td><span class="text-emerald font-bold">{{ m.velocidad_maxima_kmh || '31.8' }}</span> km/h</td>
+                      <td><span class="badge badge-amber">{{ m.sprints_alta_intensidad || 18 }}</span></td>
+                      <td><strong>{{ m.player_load || '540' }}</strong></td>
+                      <td>{{ m.frecuencia_cardiaca_max || '188' }} bpm</td>
+                      <td>
+                        <span class="badge" [class.badge-success]="Number(m.player_load || 500) < 650" [class.badge-warning]="Number(m.player_load || 500) >= 650">
+                          {{ Number(m.player_load || 500) < 650 ? 'ÓPTIMO' : 'ALTA CARGA' }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn-secondary btn-sm btn-view-heat" (click)="selectHeatmapPlayer(m)" title="Ver Mapa de Calor">
+                          <i class="fa-solid fa-fire text-amber"></i> Heatmap
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="9" class="text-center py-4">No hay métricas registradas en esta sesión.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL NUEVA SESIÓN GPS -->
+      @if (showCreateModal()) {
+        <div class="modal-overlay" (click)="closeCreateModal()">
+          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-satellite-dish"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Registrar Nueva Sesión de Telemetría GPS</h2>
+                  <p class="modal-subtitle">Carga de archivos de sensores deportivos (GPX, CSV, FIT) y metadatos</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form (ngSubmit)="submitSesionForm()" class="modal-form">
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-circle-info"></i> Información de la Sesión</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Nombre de la Sesión <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="sesionForm.nombre_sesion" name="sNombre" placeholder="ej. Partido vs Millonarios Sub-17" class="sport-input" required />
+                  </div>
+                  <div class="input-group">
+                    <label>Tipo de Sesión <span class="required-star">*</span></label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="sesionForm.tipo_sesion" name="sTipo" class="sport-input" required>
+                        <option value="partido">Partido Oficial</option>
+                        <option value="entrenamiento">Entrenamiento / Amistoso</option>
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row g3">
+                  <div class="input-group">
+                    <label>Fecha de la Sesión <span class="required-star">*</span></label>
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="sesionForm.fecha_sesion" name="sFecha" class="sport-input" required />
+                  </div>
+                  <div class="input-group">
+                    <label>Duración (Minutos)</label>
+                    <input type="number" [(ngModel)]="sesionForm.duracion_minutos" name="sDur" min="1" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Dispositivo / Marca Sensor GPS</label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="sesionForm.dispositivo_marca" name="sDispositivo" class="sport-input">
+                        @for (d of dispositivosGps(); track d.codigo) {
+                          <option [value]="d.codigo">{{ d.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="input-group">
+                    <label>Condiciones Climáticas / Temperatura</label>
+                    <input type="text" [(ngModel)]="sesionForm.clima" name="sClima" placeholder="ej. 24°C Soleado" class="sport-input" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARGA DE ARCHIVO RAW GPS -->
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-file-arrow-up"></i> Archivo Sensor GPS / Wearable</span>
+                <div class="input-group">
+                  <label>Adjuntar Archivo de Ingesta (.GPX, .CSV, .JSON, .FIT)</label>
+                  <input type="file" (change)="onFileSelected($event)" class="sport-input" accept=".gpx,.csv,.json,.fit" />
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> Guardar e Ingerir Sesión
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- MODAL AÑADIR MÉTRICA INDIVIDUAL -->
+      @if (showAddMetricaModal()) {
+        <div class="modal-overlay" (click)="closeAddMetricaModal()">
+          <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-blue">
+                  <i class="fa-solid fa-person-running"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h2>Registrar Métrica Cinemática</h2>
+                  <p class="modal-subtitle">Datos de rendimiento para {{ selectedSesion()?.nombre_sesion }}</p>
+                </div>
+              </div>
+              <button class="btn-close" (click)="closeAddMetricaModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form (ngSubmit)="submitMetricaForm()" class="modal-form">
+              <div class="modal-section">
+                <div class="input-group">
+                  <app-player-selector
+                    [(selectedId)]="metricaForm.jugador_id"
+                    [players]="jugadoresList()"
+                    [label]="'Seleccionar Jugador a Vincular'"
+                    [required]="true"
+                    [placeholder]="'Buscar por nombre, documento (TI/CC), género o dorsal...'"
+                  ></app-player-selector>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Distancia Total (km) <span class="required-star">*</span></label>
+                    <input type="number" [(ngModel)]="metricaForm.distancia_total_km" name="mDist" step="0.1" class="sport-input" required />
+                  </div>
+                  <div class="input-group">
+                    <label>Velocidad Máxima (km/h) <span class="required-star">*</span></label>
+                    <input type="number" [(ngModel)]="metricaForm.velocidad_maxima_kmh" name="mVel" step="0.1" class="sport-input" required />
+                  </div>
+                </div>
+
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label>Sprints Alta Intensidad (>21 km/h)</label>
+                    <input type="number" [(ngModel)]="metricaForm.sprints_alta_intensidad" name="mSpr" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>PlayerLoad (Índice Carga)</label>
+                    <input type="number" [(ngModel)]="metricaForm.player_load" name="mLoad" class="sport-input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeAddMetricaModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-check"></i> Guardar Métrica
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

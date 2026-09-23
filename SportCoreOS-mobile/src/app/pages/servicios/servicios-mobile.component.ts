@@ -248,11 +248,17 @@ export interface ServicioMobile {
           <!-- SUCCESS TICKET STATE -->
           @if (ticketGenerado()) {
             <div class="ticket-view">
-              <div class="ticket-header-success" [style.background]="selectedServicio()?.color_tema || '#10b981'">
-                <i class="fa-solid fa-circle-check"></i>
-                <h3>¡Inscripción Exitosa!</h3>
-                <span>Pase QR Digital Oficial SportCoreOS</span>
+              <div class="ticket-header-success" [style.background]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? '#d97706' : (selectedServicio()?.color_tema || '#10b981')">
+                <i class="fa-solid" [ngClass]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'fa-clock' : 'fa-circle-check'"></i>
+                <h3>{{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'Inscripción en Revisión' : '¡Inscripción Exitosa!' }}</h3>
+                <span>{{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'Comprobante Nequi enviado a Tesorería' : 'Pase QR Digital Oficial SportCoreOS' }}</span>
               </div>
+              @if (ticketData()?.estado_pago === 'PENDIENTE_APROBACION') {
+                <div class="mobile-pending-banner">
+                  <i class="fa-solid fa-vault"></i>
+                  <span>Cupo reservado. Tu pase QR definitivo se activará cuando la tesorera valide el abono.</span>
+                </div>
+              }
               <div class="ticket-details">
                 <h4 class="ticket-program">{{ selectedServicio()?.titulo }}</h4>
                 <div class="t-row">
@@ -365,7 +371,7 @@ export interface ServicioMobile {
 
               <!-- MÉTODO DE PAGO -->
               <div class="pay-selector">
-                <label>Método de Pago Instantáneo:</label>
+                <label>Método de Pago:</label>
                 <div class="pay-chips">
                   <button
                     class="pay-btn"
@@ -391,13 +397,40 @@ export interface ServicioMobile {
                 </div>
               </div>
 
+              @if (metodoPago() === 'NEQUI' || metodoPago() === 'DAVIPLATA') {
+                <div class="nequi-card-mobile">
+                  <div class="nequi-top">
+                    <span class="n-title"><i class="fa-solid fa-mobile-screen-button"></i> Transferir a Nequi / DaviPlata</span>
+                    <button type="button" class="btn-copy-mini" (click)="copiarNumero('3109876543')">Copiar</button>
+                  </div>
+                  <div class="n-acc">310 987 6543</div>
+                  <div class="n-holder">SportCore Academy SAS • NIT 901.458.772-1</div>
+
+                  <div class="voucher-box-mobile">
+                    <label class="lbl-voucher"><i class="fa-solid fa-receipt text-emerald"></i> Comprobante de Pago:</label>
+                    <div class="voucher-actions-row">
+                      <button type="button" class="btn-attach-voucher" (click)="usarComprobanteDemoMobile()">
+                        <i class="fa-solid" [ngClass]="comprobanteUrl() ? 'fa-check text-emerald' : 'fa-wand-magic-sparkles'"></i>
+                        {{ comprobanteUrl() ? 'Soporte Adjuntado ✓' : 'Adjuntar Soporte Demo' }}
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      [(ngModel)]="referenciaTransaccion"
+                      placeholder="Ref / # Aprobación (ej. NQ-918231)"
+                      class="ref-input-mobile"
+                    />
+                  </div>
+                </div>
+              }
+
               <!-- TOTAL BAR -->
               <div class="total-strip">
                 <div>
                   <span class="tot-label">Total a Pagar:</span>
                   <span class="tot-note">Sin cobros adicionales</span>
                 </div>
-                <div class="tot-val">\${{ formatNumber(montoCalculado()) }}</div>
+                <div class="tot-val">&#36;{{ formatNumber(montoCalculado()) }}</div>
               </div>
 
               <!-- ACTION -->
@@ -409,7 +442,7 @@ export interface ServicioMobile {
                 >
                   <i class="fa-solid fa-shield-check" *ngIf="!isSubmitting()"></i>
                   <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting()"></i>
-                  {{ isSubmitting() ? 'Procesando...' : 'Pagar $' + formatNumber(montoCalculado()) + ' (Wompi PSE)' }}
+                  {{ isSubmitting() ? 'Procesando...' : (metodoPago() === 'WOMPI_PSE' ? 'Pagar $' + formatNumber(montoCalculado()) + ' (PSE)' : 'Confirmar & Enviar Soporte') }}
                 </button>
               </div>
             </div>
@@ -435,7 +468,7 @@ export interface ServicioMobile {
               <div class="pase-item">
                 <div class="pase-item-top">
                   <span class="pase-title">{{ p.servicio_titulo || p.titulo }}</span>
-                  <span class="pase-badge">ACTIVO</span>
+                  <span class="pase-badge" [class.pase-pending]="p.estado_pago === 'PENDIENTE_APROBACION'">{{ p.estado_pago === 'PENDIENTE_APROBACION' ? 'EN REVISIÓN' : 'ACTIVO' }}</span>
                 </div>
                 <div class="pase-meta">
                   <span><i class="fa-solid fa-user"></i> {{ p.nombre_jugador }}</span>
@@ -1318,6 +1351,116 @@ export interface ServicioMobile {
     .text-pink { color: #ec4899; }
     .text-purple { color: #8b5cf6; }
     .font-bold { font-weight: 700; }
+
+    .mobile-pending-banner {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 1rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.75rem;
+      color: #fde68a;
+    }
+
+    .mobile-pending-banner i {
+      font-size: 1.2rem;
+      color: #f59e0b;
+      flex-shrink: 0;
+    }
+
+    .nequi-card-mobile {
+      background: #1e1b4b;
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      border-radius: 12px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .nequi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .n-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+
+    .btn-copy-mini {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #ffffff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .n-acc {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #ffffff;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .n-holder {
+      font-size: 0.68rem;
+      color: #94a3b8;
+    }
+
+    .voucher-box-mobile {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.5rem;
+    }
+
+    .lbl-voucher {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .btn-attach-voucher {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px dashed rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      padding: 0.5rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .ref-input-mobile {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.78rem;
+      color: #ffffff;
+      outline: none;
+    }
+
+    .pase-badge.pase-pending {
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+    }
   `]
 })
 export class ServiciosMobileComponent implements OnInit {
@@ -1347,6 +1490,8 @@ export class ServiciosMobileComponent implements OnInit {
   telefonoAcudiente = '+57 310 987 6543';
   aplicaDescuentoHermano = false;
   metodoPago = signal<string>('WOMPI_PSE');
+  comprobanteUrl = signal<string>('');
+  referenciaTransaccion = 'NQ-849201';
   isSubmitting = signal<boolean>(false);
   ticketGenerado = signal<boolean>(false);
   ticketData = signal<any>(null);
@@ -1425,11 +1570,27 @@ export class ServiciosMobileComponent implements OnInit {
     this.searchQuery.set('');
   }
 
+  usarComprobanteDemoMobile() {
+    this.comprobanteUrl.set('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80');
+    if (!this.referenciaTransaccion) {
+      this.referenciaTransaccion = 'NQ-' + Math.floor(100000 + Math.random() * 900000);
+    }
+    this.alert.info('Comprobante Nequi adjuntado correctamente');
+  }
+
+  copiarNumero(num: string) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(num);
+      this.alert.success(`Número ${num} copiado`);
+    }
+  }
+
   abrirModalInscripcion(servicio: ServicioMobile) {
     this.selectedServicio.set(servicio);
     this.tipoPlan.set('PAQUETE_MENSUAL');
     this.ticketGenerado.set(false);
     this.ticketData.set(null);
+    this.comprobanteUrl.set('');
     this.modalInscripcion.set(true);
   }
 
@@ -1438,6 +1599,7 @@ export class ServiciosMobileComponent implements OnInit {
     this.selectedServicio.set(null);
     this.ticketGenerado.set(false);
     this.ticketData.set(null);
+    this.comprobanteUrl.set('');
   }
 
   confirmarInscripcion() {
@@ -1446,13 +1608,15 @@ export class ServiciosMobileComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    const dto = {
+    const dto: any = {
       nombre_jugador: this.nombreJugador,
       nombre_acudiente: this.nombreAcudiente,
       telefono_acudiente: this.telefonoAcudiente,
       tipo_plan: this.tipoPlan(),
       monto_pagado: this.montoCalculado(),
       metodo_pago: this.metodoPago(),
+      comprobante_url: (this.metodoPago() === 'NEQUI' || this.metodoPago() === 'DAVIPLATA' || this.metodoPago() === 'TRANSFERENCIA') ? (this.comprobanteUrl() || undefined) : undefined,
+      referencia_transaccion: this.referenciaTransaccion || undefined
     };
 
     this.http.post<any>(`${this.apiUrl}/servicios/${s.id}/inscribir`, dto).subscribe({

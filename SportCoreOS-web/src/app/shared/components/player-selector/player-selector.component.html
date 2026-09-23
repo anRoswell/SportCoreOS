@@ -1,0 +1,251 @@
+<div class="player-selector-container" [class.is-open]="isOpen()" [class.is-disabled]="disabled()">
+      <!-- LABEL SI EXISTE -->
+      @if (label()) {
+        <label class="selector-label">
+          <i class="fa-solid fa-user-ninja"></i>
+          <span>{{ label() }}</span>
+          @if (required()) {
+            <span class="required-star">*</span>
+          }
+        </label>
+      }
+
+      <!-- TRIGGER VIEW -->
+      @if (selectedPlayerObj(); as p) {
+        <!-- JUGADOR SELECCIONADO CARD -->
+        <div class="selected-player-box" (click)="toggleDropdown()">
+          <div class="player-avatar-wrap">
+            <img [src]="resolvePhoto(p.foto_url)" [alt]="p.nombres" />
+            @if (p.numero_dorsal) {
+              <span class="dorsal-tag">#{{ p.numero_dorsal }}</span>
+            }
+          </div>
+
+          <div class="player-summary-info">
+            <div class="name-row">
+              <strong class="player-full-name">{{ p.apellidos ? p.apellidos + ', ' + p.nombres : p.nombres }}</strong>
+              @if (p.genero) {
+                <span class="gender-pill" [class.male]="p.genero === 'MASCULINO'" [class.female]="p.genero === 'FEMENINO'">
+                  <i class="fa-solid" [class.fa-mars]="p.genero === 'MASCULINO'" [class.fa-venus]="p.genero === 'FEMENINO'"></i>
+                  {{ p.genero === 'MASCULINO' ? 'Masc' : 'Fem' }}
+                </span>
+              }
+            </div>
+
+            <div class="meta-row">
+              @if (p.numero_documento) {
+                <span class="doc-badge" title="Documento de Identificación">
+                  <i class="fa-solid fa-id-card"></i>
+                  {{ p.tipo_documento || 'DOC' }}: {{ p.numero_documento }}
+                </span>
+              }
+              @if (p.categoria_nombre) {
+                <span class="cat-badge" [style.background-color]="p.color_distintivo ? p.color_distintivo + '22' : 'rgba(16,185,129,0.15)'" [style.color]="p.color_distintivo || '#10B981'">
+                  <span class="cat-dot" [style.background-color]="p.color_distintivo || '#10B981'"></span>
+                  {{ p.categoria_nombre }}
+                </span>
+              }
+              @if (p.posicion_principal) {
+                <span class="pos-badge">{{ p.posicion_principal }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="trigger-actions" (click)="$event.stopPropagation()">
+            <button type="button" class="btn-action-search" (click)="openDropdown()" title="Buscar otro jugador">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Cambiar</span>
+            </button>
+            <button type="button" class="btn-action-clear" (click)="clearSelection()" title="Quitar selección">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      } @else {
+        <!-- PLACEHOLDER TRIGGER CON LUPA -->
+        <div class="empty-trigger-box" (click)="toggleDropdown()" [class.has-error]="required() && hasInteracted() && !selectedId()">
+          <div class="trigger-left">
+            <div class="search-lens-icon">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <span class="placeholder-text">{{ placeholder() }}</span>
+          </div>
+          <div class="trigger-right">
+            <span class="quick-badge"><i class="fa-solid fa-id-card"></i> Doc / Nombre / Género</span>
+            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+          </div>
+        </div>
+      }
+
+      <!-- DROPDOWN SEARCH & FILTER PANEL -->
+      @if (isOpen()) {
+        <div class="search-dropdown-panel" (click)="$event.stopPropagation()">
+          <!-- PANEL HEADER CON LUPA Y BUSCADOR -->
+          <div class="panel-search-bar">
+            <div class="search-input-wrap">
+              <i class="fa-solid fa-magnifying-glass search-bar-lens"></i>
+              <input
+                #searchInputEl
+                type="text"
+                class="search-input-field"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="onSearchChange($event)"
+                placeholder="Escribe nombre, apellido, cédula, tarjeta de identidad, dorsal..."
+              />
+              @if (searchQuery()) {
+                <button type="button" class="btn-clear-input" (click)="clearSearchQuery()">
+                  <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+              }
+            </div>
+            <button type="button" class="btn-close-panel" (click)="closeDropdown()" title="Cerrar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- QUICK FILTERS: GÉNERO, CATEGORÍA & POSICIÓN -->
+          <div class="panel-filters-row">
+            <!-- FILTRO DE GÉNERO -->
+            <div class="gender-filter-pills">
+              <span class="filter-mini-label"><i class="fa-solid fa-venus-mars"></i> Género:</span>
+              <button
+                type="button"
+                class="pill-btn"
+                [class.active]="selectedGender() === 'TODOS'"
+                (click)="selectedGender.set('TODOS')"
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                class="pill-btn"
+                [class.active]="selectedGender() === 'MASCULINO'"
+                (click)="selectedGender.set('MASCULINO')"
+              >
+                <i class="fa-solid fa-mars text-blue"></i> Masc
+              </button>
+              <button
+                type="button"
+                class="pill-btn"
+                [class.active]="selectedGender() === 'FEMENINO'"
+                (click)="selectedGender.set('FEMENINO')"
+              >
+                <i class="fa-solid fa-venus text-pink"></i> Fem
+              </button>
+            </div>
+
+            <!-- FILTRO DE CATEGORÍA -->
+            <div class="select-filter-wrap">
+              <select [ngModel]="selectedCatId()" (ngModelChange)="selectedCatId.set($event)" class="panel-filter-select">
+                <option value="TODAS">📁 Todas las Categorías</option>
+                @for (cat of categoriesList(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- FILTRO DE POSICIÓN -->
+            <div class="select-filter-wrap">
+              <select [ngModel]="selectedPos()" (ngModelChange)="selectedPos.set($event)" class="panel-filter-select">
+                <option value="TODAS">⚽ Todas las Posiciones</option>
+                <option value="Portero">🧤 Portero</option>
+                <option value="Defensa">🛡️ Defensa</option>
+                <option value="Volante">⚡ Mediocampista / Volante</option>
+                <option value="Delantero">🎯 Delantero / Extremo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STATS BAR -->
+          <div class="results-stats-bar">
+            <span class="count-text">
+              <i class="fa-solid fa-users"></i>
+              Mostrando <strong>{{ filteredPlayers().length }}</strong> deportista(s)
+            </span>
+            @if (hasActiveSearchOrFilters()) {
+              <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+                <i class="fa-solid fa-rotate-left"></i> Limpiar Filtros
+              </button>
+            }
+          </div>
+
+          <!-- LISTA DE JUGADORES FILTRADOS -->
+          <div class="players-scroll-list">
+            @if (loadingPlayers()) {
+              <div class="list-loading-state">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <p>Buscando deportistas...</p>
+              </div>
+            } @else if (filteredPlayers().length === 0) {
+              <div class="list-empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-user-slash"></i></div>
+                <p class="empty-title">No se encontraron deportistas</p>
+                <small class="empty-sub">Intenta con otro nombre, número de documento o cambia los filtros de género/categoría.</small>
+                <button type="button" class="btn-empty-reset" (click)="resetFilters()">
+                  <i class="fa-solid fa-magnifying-glass"></i> Ver Todos los Jugadores
+                </button>
+              </div>
+            } @else {
+              @for (j of filteredPlayers(); track j.id) {
+                <div
+                  class="player-option-item"
+                  [class.is-selected]="selectedId() === j.id"
+                  (click)="onSelectPlayer(j)"
+                >
+                  <div class="item-avatar-col">
+                    <img [src]="resolvePhoto(j.foto_url)" [alt]="j.nombres" />
+                    @if (j.numero_dorsal) {
+                      <span class="item-dorsal">#{{ j.numero_dorsal }}</span>
+                    }
+                  </div>
+
+                  <div class="item-main-col">
+                    <div class="item-top-row">
+                      <span class="item-name">
+                        {{ j.apellidos ? j.apellidos + ', ' + j.nombres : j.nombres }}
+                      </span>
+                      @if (j.genero) {
+                        <span class="gender-mini-tag" [class.male]="j.genero === 'MASCULINO'" [class.female]="j.genero === 'FEMENINO'">
+                          <i class="fa-solid" [class.fa-mars]="j.genero === 'MASCULINO'" [class.fa-venus]="j.genero === 'FEMENINO'"></i>
+                          {{ j.genero === 'MASCULINO' ? 'Masc' : 'Fem' }}
+                        </span>
+                      }
+                    </div>
+
+                    <div class="item-details-row">
+                      @if (j.numero_documento) {
+                        <span class="doc-tag" title="Documento de Identificación">
+                          <i class="fa-solid fa-id-card"></i>
+                          {{ j.tipo_documento || 'DOC' }}: <strong>{{ j.numero_documento }}</strong>
+                        </span>
+                      }
+                      @if (j.categoria_nombre) {
+                        <span class="cat-pill" [style.color]="j.color_distintivo || '#10B981'">
+                          <span class="cat-dot-sm" [style.background-color]="j.color_distintivo || '#10B981'"></span>
+                          {{ j.categoria_nombre }}
+                        </span>
+                      }
+                      @if (j.posicion_principal) {
+                        <span class="pos-tag">{{ j.posicion_principal }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="item-select-col">
+                    @if (selectedId() === j.id) {
+                      <span class="selected-check-badge">
+                        <i class="fa-solid fa-check"></i> Seleccionado
+                      </span>
+                    } @else {
+                      <span class="btn-choose-pill">
+                        <i class="fa-solid fa-hand-pointer"></i> Elegir
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>

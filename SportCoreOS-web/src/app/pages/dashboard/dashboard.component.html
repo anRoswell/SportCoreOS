@@ -1,0 +1,528 @@
+<div class="dashboard-page">
+      <!-- HEADER DE BIENVENIDA CON BRANDING DEPORTIVO -->
+      <div class="dashboard-hero-header">
+        <div class="hero-left-wrapper">
+          <div class="hero-brand-emblem">
+            <img src="assets/branding/sportcore_icon.jpg" alt="SportCoreOS Logo Oficial" class="hero-official-logo" />
+            <div class="emblem-pulse-ring"></div>
+          </div>
+          <div class="hero-left">
+            <div class="club-badge-row">
+              <span class="season-badge">TEMPORADA OFICIAL 2026</span>
+              <span class="tenant-badge"><i class="fa-solid fa-shield-halved"></i> {{ api.activeClub().nombre }}</span>
+              <span class="platform-badge">
+                <i class="fa-solid fa-circle-check"></i> SportCore<strong>OS</strong> PRO
+              </span>
+            </div>
+            <h1 class="hero-greeting">
+              ¡Hola, {{ authService.currentUser()?.nombres || 'Director' }}!
+            </h1>
+            <p class="hero-subtext">
+              Panel de Control Estratégico • Visión 360° en tiempo real de plantilla, finanzas PSE y fixture.
+            </p>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn-secondary" (click)="onExportReport()">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Exportar Informe 360°</span>
+          </button>
+          <button class="btn-primary" (click)="openScheduleModal()">
+            <i class="fa-solid fa-calendar-plus"></i>
+            <span>Programar Partido</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 KPIS DEPORTIVOS & FINANCIEROS ULTRA PRO -->
+      <div class="kpi-grid">
+        <!-- KPI 1: Jugadores & Cantera -->
+        <div class="fut-card kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-box bg-emerald">
+              <i class="fa-solid fa-user-ninja"></i>
+            </div>
+            <span class="badge badge-success">+12% Mes</span>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">JUGADORES ACTIVOS</span>
+            <div class="kpi-value-row">
+              <span class="kpi-number">{{ stats()?.jugadoresActivos || 0 }}</span>
+              <span class="kpi-unit">alumnos</span>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-emerald" style="width: 88%;"></div>
+            </div>
+            <div class="kpi-footer-detail">
+              <span><strong>{{ stats()?.jugadoresActivos || 0 }}</strong> matriculados</span>
+              <span><strong>{{ stats()?.jugadoresLesionados || 0 }}</strong> en recuperación</span>
+              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> categorías</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 2: Recaudo PSE / Wompi -->
+        <div class="fut-card kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-box bg-blue">
+              <i class="fa-solid fa-sack-dollar"></i>
+            </div>
+            <span class="badge badge-blue">{{ stats()?.finanzas?.porcentajeRecaudo || 0 }}% Efectivo</span>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">RECAUDO MES (PENSIONES)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-number">$ {{ (stats()?.finanzas?.recaudadoMes || 0) | number }}</span>
+              <span class="kpi-unit">COP</span>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-blue" [style.width.%]="stats()?.finanzas?.porcentajeRecaudo || 0"></div>
+            </div>
+            <div class="kpi-footer-detail">
+              <span>Facturado: <strong>$ {{ (stats()?.finanzas?.facturadoMes || 0) | number }}</strong></span>
+              <span>Vía: <strong>PSE / Wompi</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 3: Cartera Morosa & Cobranza -->
+        <div class="fut-card kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-box bg-amber">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <button class="badge-action-btn" (click)="onSendBulkReminders()" title="Enviar recordatorio WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i> Cobrar
+            </button>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">CARTERA EN MORA</span>
+            <div class="kpi-value-row">
+              <span class="kpi-number text-amber">$ {{ (stats()?.finanzas?.carteraMora || 0) | number }}</span>
+              <span class="kpi-unit">COP</span>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-amber" style="width: 15%;"></div>
+            </div>
+            <div class="kpi-footer-detail">
+              <span>Cobranza: <strong>WhatsApp PSE</strong></span>
+              <span><strong>Auto-recordatorio:</strong> ON</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 4: Convocatorias & Asistencia -->
+        <div class="fut-card kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon-box bg-purple">
+              <i class="fa-solid fa-trophy"></i>
+            </div>
+            <span class="badge badge-success">Fixture Oficial</span>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">EFICACIA & CITACIONES</span>
+            <div class="kpi-value-row">
+              <span class="kpi-number">{{ matches().length }}</span>
+              <span class="kpi-unit">partidos programados</span>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-purple" style="width: 96.4%;"></div>
+            </div>
+            <div class="kpi-footer-detail">
+              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> categorías activas</span>
+              <span><strong>100%</strong> monitoreado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS NAVEGABLES DEL DASHBOARD -->
+      <div class="dashboard-tabs-section">
+        <div class="tabs-header">
+          <div class="tabs-buttons">
+            <button 
+              class="tab-btn" 
+              [class.active]="activeTab() === 'partidos'" 
+              (click)="setTab('partidos')">
+              <i class="fa-solid fa-futbol"></i>
+              <span>Próximos Partidos & GPS</span>
+              <span class="tab-badge">2</span>
+            </button>
+
+            <button 
+              class="tab-btn" 
+              [class.active]="activeTab() === 'convocatoria'" 
+              (click)="setTab('convocatoria')">
+              <i class="fa-solid fa-clipboard-user"></i>
+              <span>Pizarra Táctica Express</span>
+            </button>
+
+            <button 
+              class="tab-btn" 
+              [class.active]="activeTab() === 'recaudo'" 
+              (click)="setTab('recaudo')">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Monitor Recaudo PSE en Vivo</span>
+              <span class="tab-badge-live">LIVE</span>
+            </button>
+
+            <button 
+              class="tab-btn" 
+              [class.active]="activeTab() === 'biometria'" 
+              (click)="setTab('biometria')">
+              <i class="fa-solid fa-heart-pulse"></i>
+              <span>Radar Físico & Médica</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTENIDO TAB 1: PRÓXIMOS PARTIDOS & SEDE GPS -->
+        @if (activeTab() === 'partidos') {
+          <div class="tab-content-pane">
+            <div class="matches-grid">
+              @for (match of matches(); track match.id) {
+                <div class="fut-card match-card">
+                  <!-- Match Header -->
+                  <div class="match-card-top">
+                    <div class="category-pill">{{ match.categoria_nombre }}</div>
+                    <span class="badge" [class.badge-blue]="match.condicion_juego === 'LOCAL'" [class.badge-warning]="match.condicion_juego === 'VISITANTE'">
+                      {{ match.condicion_juego }}
+                    </span>
+                  </div>
+
+                  <!-- Rivals vs -->
+                  <div class="match-versus">
+                    <div class="team team-club">
+                      <div class="team-crest">{{ api.activeClub().sigla }}</div>
+                      <span class="team-name">{{ api.activeClub().nombre }}</span>
+                    </div>
+
+                    <div class="versus-divider">
+                      <span class="vs-text">VS</span>
+                      <span class="match-time-badge">{{ match.hora_partido }}</span>
+                    </div>
+
+                    <div class="team team-rival">
+                      <div class="team-crest rival-crest">⚔️</div>
+                      <span class="team-name">{{ match.rival_nombre }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Details & GPS Info -->
+                  <div class="match-details-box">
+                    <div class="detail-row">
+                      <i class="fa-regular fa-calendar text-emerald"></i>
+                      <span><strong>Fecha:</strong> {{ match.fecha_partido }} (Citación: {{ match.hora_citacion }})</span>
+                    </div>
+                    <div class="detail-row">
+                      <i class="fa-solid fa-location-dot text-amber"></i>
+                      <span><strong>Sede:</strong> {{ match.sede_cancha }}</span>
+                    </div>
+                    <div class="detail-row">
+                      <i class="fa-solid fa-shirt text-blue"></i>
+                      <span><strong>Kit:</strong> {{ match.indumentaria }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Progress of attendance -->
+                  <div class="match-attendance-status">
+                    <div class="attendance-label-row">
+                      <span>Confirmación de Nómina:</span>
+                      <strong>{{ match.confirmados_count }} / {{ match.total_convocados }} Jugadores</strong>
+                    </div>
+                    <div class="kpi-progress-bar">
+                      <div class="progress-fill fill-emerald" [style.width.%]="(match.confirmados_count / match.total_convocados) * 100"></div>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="match-actions">
+                    <button class="btn-gps" (click)="openGpsRoute(match)">
+                      <i class="fa-solid fa-route"></i>
+                      <span>Ruta GPS (Waze / Maps)</span>
+                    </button>
+                    <button class="btn-roster" (click)="setTab('convocatoria')">
+                      <i class="fa-solid fa-users-viewfinder"></i>
+                      <span>Ver Nómina</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- CONTENIDO TAB 2: PIZARRA TÁCTICA EXPRESS -->
+        @if (activeTab() === 'convocatoria') {
+          <div class="tab-content-pane">
+            <div class="fut-card tactic-panel">
+              <div class="tactic-header">
+                <div>
+                  <h3>Convocatoria Sub-15 Élite 2011 • vs Santa Fe D.C.</h3>
+                  <p class="subtext">Alineación táctica 4-3-3 • Estado de confirmación móvil en tiempo real</p>
+                </div>
+                <button class="btn-primary btn-sm" (click)="onSendWhatsAppCitacion()">
+                  <i class="fa-brands fa-whatsapp"></i> Enviar Citaciones a Padres
+                </button>
+              </div>
+
+              <div class="roster-table-container">
+                <table class="fut-table">
+                  <thead>
+                    <tr>
+                      <th>Dorsal</th>
+                      <th>Jugador</th>
+                      <th>Posición</th>
+                      <th>Pierna</th>
+                      <th>Biometría</th>
+                      <th>Estado Citación</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (jugador of tacticRoster(); track jugador.id) {
+                      <tr>
+                        <td>
+                          <span class="dorsal-badge">#{{ jugador.dorsal }}</span>
+                        </td>
+                        <td>
+                          <div class="player-cell">
+                            <img [src]="jugador.avatar" [alt]="jugador.nombre" class="player-avatar" />
+                            <div>
+                              <strong>{{ jugador.nombre }}</strong>
+                              <span class="player-sub">{{ jugador.rolTactic }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td><span class="pos-badge">{{ jugador.posicion }}</span></td>
+                        <td>{{ jugador.pierna }}</td>
+                        <td>{{ jugador.peso_kg }} kg • {{ jugador.talla_cm }} cm</td>
+                        <td>
+                          @if (jugador.estado === 'CONFIRMADO') {
+                            <span class="badge badge-success"><i class="fa-solid fa-check"></i> Confirmado</span>
+                          } @else if (jugador.estado === 'PENDIENTE') {
+                            <span class="badge badge-warning"><i class="fa-regular fa-clock"></i> Pendiente</span>
+                          } @else {
+                            <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Excusado</span>
+                          }
+                        </td>
+                        <td>
+                          <button class="btn-toggle-status" (click)="togglePlayerStatus(jugador)" title="Cambiar Estado">
+                            <i class="fa-solid fa-rotate"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- CONTENIDO TAB 3: MONITOR DE RECAUDO PSE EN VIVO -->
+        @if (activeTab() === 'recaudo') {
+          <div class="tab-content-pane">
+            <div class="fut-card finance-panel">
+              <div class="finance-header">
+                <div>
+                  <h3>Flujo de Transacciones PSE / Wompi Recientes</h3>
+                  <p class="subtext">Conciliación bancaria automática con expedición instantánea de recibos de caja</p>
+                </div>
+                <div class="finance-kpis-mini">
+                  <div class="mini-kpi">
+                    <span>Hoy Recaudado:</span>
+                    <strong>$1,850,000 COP</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fut-table-container">
+                <table class="fut-table">
+                  <thead>
+                    <tr>
+                      <th>Ref. Wompi</th>
+                      <th>Fecha</th>
+                      <th>Alumno / Acudiente</th>
+                      <th>Categoría</th>
+                      <th>Medio de Pago</th>
+                      <th>Valor COP</th>
+                      <th>Estado</th>
+                      <th>Recibo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (tx of transactions(); track tx.id) {
+                      <tr>
+                        <td><code>{{ tx.codigo_transaccion }}</code></td>
+                        <td>{{ tx.fecha }}</td>
+                        <td><strong>{{ tx.jugador_nombre }}</strong></td>
+                        <td>{{ tx.categoria }}</td>
+                        <td><span class="payment-method-badge"><i class="fa-solid fa-building-columns"></i> {{ tx.metodo }}</span></td>
+                        <td><strong>\${{ tx.monto | number:'1.0-0' }}</strong></td>
+                        <td>
+                          <span class="badge" [class.badge-success]="tx.estado === 'APROBADA'" [class.badge-warning]="tx.estado === 'PENDIENTE'">
+                            {{ tx.estado }}
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn-receipt" (click)="onDownloadReceipt(tx)">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- CONTENIDO TAB 4: RADAR FÍSICO & MÉDICA -->
+        @if (activeTab() === 'biometria') {
+          <div class="tab-content-pane">
+            <div class="biometria-grid">
+              @for (player of topPlayers(); track player.id) {
+                <div class="fut-card player-radar-card">
+                  <div class="player-top">
+                    <img [src]="player.avatar" [alt]="player.nombre" class="radar-avatar" />
+                    <div class="player-meta">
+                      <h4>{{ player.nombre }}</h4>
+                      <span class="meta-sub">#{{ player.dorsal }} • {{ player.posicion }} • {{ player.categoria }}</span>
+                    </div>
+                    <span class="badge" [class.badge-success]="player.estado_medico === 'APTO'" [class.badge-warning]="player.estado_medico === 'EN_OBSERVACION'">
+                      {{ player.estado_medico }}
+                    </span>
+                  </div>
+
+                  <div class="radar-kpi-row">
+                    <div class="radar-stat">
+                      <span class="stat-num text-emerald">{{ player.score_rendimiento }}</span>
+                      <span class="stat-lbl">Radar Score</span>
+                    </div>
+                    <div class="radar-stat">
+                      <span class="stat-num">{{ player.cooper_metros }}m</span>
+                      <span class="stat-lbl">Test Cooper</span>
+                    </div>
+                    <div class="radar-stat">
+                      <span class="stat-num text-blue">{{ player.velocidad_max }} km/h</span>
+                      <span class="stat-lbl">Velocidad Pico</span>
+                    </div>
+                  </div>
+
+                  <div class="asistencia-bar-wrap">
+                    <div class="bar-labels">
+                      <span>Asistencia Entrenamientos:</span>
+                      <strong>{{ player.asistencia_pct }}%</strong>
+                    </div>
+                    <div class="kpi-progress-bar">
+                      <div class="progress-fill fill-emerald" [style.width.%]="player.asistencia_pct"></div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- MODAL: PROGRAMAR NUEVO PARTIDO -->
+      @if (showScheduleModal()) {
+        <div class="modal-overlay" (click)="closeScheduleModal()">
+          <div class="modal-dialog modal-card fut-card" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge">
+                  <i class="fa-solid fa-calendar-plus"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h3>Programar Nuevo Partido Oficial</h3>
+                  <p class="modal-subtitle">Configura el encuentro, categoría y genera la convocatoria táctica</p>
+                </div>
+              </div>
+              <button class="modal-close-btn" (click)="closeScheduleModal()" aria-label="Cerrar modal">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="submitScheduleForm()" class="modal-form">
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Datos del Encuentro</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-users"></i> Categoría Competitiva <span class="required-star">*</span></label>
+                    <select [(ngModel)]="newMatch.categoriaId" name="categoriaId" class="sport-input" required>
+                      @for (cat of categorias(); track cat.id) {
+                        <option [value]="cat.id">{{ cat.nombre }} ({{ cat.codigo_categoria }})</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-shield-cat"></i> Equipo Rival <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="newMatch.rivalNombre" name="rivalNombre" placeholder="ej. Santa Fe D.C." class="sport-input" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Horarios & Citación</span>
+                <div class="form-row g3">
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-calendar"></i> Fecha de Juego <span class="required-star">*</span></label>
+                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newMatch.fecha" name="fecha" class="sport-input" required />
+                  </div>
+
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-clock"></i> Hora Partido <span class="required-star">*</span></label>
+                    <input type="time" [(ngModel)]="newMatch.horaPartido" name="horaPartido" class="sport-input" required />
+                  </div>
+
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-stopwatch"></i> Hora Citación <span class="required-star">*</span></label>
+                    <input type="time" [(ngModel)]="newMatch.horaCitacion" name="horaCitacion" class="sport-input" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Ubicación & Condición</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-map-pin"></i> Sede / Cancha Deportiva <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="newMatch.sedeCancha" name="sedeCancha" placeholder="ej. Sede Arrayanes - Cancha 1" class="sport-input" required />
+                  </div>
+
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condición</label>
+                    <select [(ngModel)]="newMatch.condicion" name="condicion" class="sport-input">
+                      <option value="LOCAL">LOCAL</option>
+                      <option value="VISITANTE">VISITANTE</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeScheduleModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-calendar-check"></i> Guardar y Crear Convocatoria
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- TOAST NOTIFICATION FLOTANTE -->
+      @if (toastMessage()) {
+        <div class="toast-floating-alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ toastMessage() }}</span>
+        </div>
+      }
+    </div>

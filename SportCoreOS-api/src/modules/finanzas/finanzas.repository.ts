@@ -46,9 +46,10 @@ export class FinanzasRepository extends BaseRepository {
       search = optionsOrCatId.search;
       estadoPago = optionsOrCatId.estadoPago;
       page = Math.max(1, Number(optionsOrCatId.page) || 1);
-      limit = Math.min(100, Math.max(1, Number(optionsOrCatId.limit) || 10));
+      limit = Math.min(500, Math.max(1, Number(optionsOrCatId.limit) || 100));
     } else {
       categoriaId = typeof optionsOrCatId === 'string' ? optionsOrCatId : undefined;
+      limit = 100;
     }
 
     const offset = (page - 1) * limit;
@@ -80,7 +81,7 @@ export class FinanzasRepository extends BaseRepository {
       `SELECT COUNT(*) as count
        FROM finanzas.cargos_jugador cj
        JOIN deportivo.jugadores j ON j.id = cj.jugador_id
-       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       LEFT JOIN deportivo.categorias c ON c.id = j.categoria_id
        JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
        WHERE ${whereParts.join(' AND ')}`,
       params,
@@ -90,11 +91,12 @@ export class FinanzasRepository extends BaseRepository {
     const queryParams = [...params, limit, offset];
     const dataRes = await this.db.query(
       `SELECT cj.*, 
+              j.categoria_id as categoria_id,
               CONCAT(j.nombres, ' ', j.apellidos) as jugador_nombre, j.numero_documento,
-              c.nombre as categoria_nombre, fc.nombre as concepto_nombre, fc.tipo as concepto_tipo
+              COALESCE(c.nombre, 'Sin Categoría') as categoria_nombre, fc.nombre as concepto_nombre, fc.tipo as concepto_tipo
        FROM finanzas.cargos_jugador cj
        JOIN deportivo.jugadores j ON j.id = cj.jugador_id
-       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       LEFT JOIN deportivo.categorias c ON c.id = j.categoria_id
        JOIN finanzas.conceptos fc ON fc.id = cj.concepto_id
        WHERE ${whereParts.join(' AND ')}
        ORDER BY cj.fecha_limite_pago ASC, j.apellidos ASC

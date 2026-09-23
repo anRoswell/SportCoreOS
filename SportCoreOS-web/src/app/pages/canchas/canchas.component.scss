@@ -1,0 +1,371 @@
+.canchas-page {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      .page-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text-heading);
+      }
+
+      .page-subtitle {
+        color: var(--text-body);
+        font-size: 0.85rem;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .date-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-md);
+
+      .date-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .date-input {
+        border: none;
+        background: transparent;
+        padding: 0.35rem 0;
+        font-weight: 700;
+        color: var(--text-main);
+        outline: none;
+      }
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .kpi-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem;
+
+      .kpi-icon-wrap {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+      }
+
+      .bg-emerald-glow { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+      .bg-blue-glow { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+      .bg-amber-glow { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+      .bg-purple-glow { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
+      .kpi-val {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--text-heading);
+      }
+
+      .kpi-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+    }
+
+    .matriz-container {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .matriz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      .matriz-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-heading);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        i { color: var(--color-primary); }
+      }
+
+      .legend-wrap {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        .legend-item {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--text-body);
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
+
+        .dot-disponible { background: #10b981; }
+        .dot-club { background: #3b82f6; }
+        .dot-alquiler { background: #f59e0b; }
+        .dot-mantenimiento { background: #ef4444; }
+      }
+    }
+
+    .grid-table-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    .matriz-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 0.85rem;
+        border: 1px solid var(--border-color);
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--bg-hover);
+      }
+
+      .th-hora {
+        width: 130px;
+        min-width: 130px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .th-cancha {
+        min-width: 220px;
+
+        .cancha-title-th {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.35rem;
+          strong { font-size: 0.9rem; color: var(--text-heading); }
+        }
+
+        .badge-surface {
+          background: rgba(59, 130, 246, 0.12);
+          color: #3b82f6;
+          font-size: 0.65rem;
+          font-weight: 700;
+          padding: 0.15rem 0.45rem;
+          border-radius: 4px;
+        }
+
+        .cancha-prices-th {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.7rem;
+          color: var(--text-muted);
+        }
+      }
+
+      .td-hora {
+        background: var(--bg-card);
+        font-size: 0.85rem;
+        color: var(--text-main);
+
+        .luz-tag {
+          display: block;
+          font-size: 0.65rem;
+          color: #f59e0b;
+          font-weight: 700;
+          margin-top: 0.25rem;
+        }
+      }
+
+      .td-slot {
+        background: var(--bg-card);
+      }
+    }
+
+    .slot-card {
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .slot-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .slot-badge {
+          font-size: 0.65rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .slot-price {
+          font-size: 0.75rem;
+          font-weight: 800;
+        }
+      }
+
+      .slot-main-text {
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .slot-footer-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.25rem;
+
+        .badge-pago {
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 0.1rem 0.4rem;
+          border-radius: 4px;
+        }
+
+        .pago-completo { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .pago-parcial { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .btn-xs-pay {
+          background: #10b981;
+          color: #fff;
+          border: none;
+          padding: 0.2rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .btn-xs-cancel {
+          background: rgba(239, 68, 68, 0.15);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          padding: 0.2rem 0.4rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #ef4444;
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    .slot-disponible {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+    }
+
+    .slot-club {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .slot-alquiler {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    .slot-mantenimiento {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .pago-details-card {
+      background: var(--bg-hover);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1rem;
+
+      .pago-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .total-highlight {
+        border-top: 1px solid var(--border-color);
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-primary);
+      }
+    }
+
+    .toast-floating-alert {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #10b981;
+      color: #ffffff;
+      padding: 0.85rem 1.35rem;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 700;
+      z-index: 10000;
+      animation: slideInUp 0.3s ease;
+    }
