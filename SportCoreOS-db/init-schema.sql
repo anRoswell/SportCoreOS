@@ -394,7 +394,45 @@ CREATE TABLE IF NOT EXISTS public.dorsales_categoria (
 );
 
 -- ----------------------------------------------------------------------------
--- 10. ÍNDICES DE ALTO RENDIMIENTO
+-- 10. DIRECTORIO GEOLOCALIZADO DE CANCHAS Y ESCENARIOS DE CARTAGENA
+-- ----------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS public.canchas_cartagena (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre VARCHAR(120) NOT NULL,
+    nombre_comun VARCHAR(100),
+    localidad VARCHAR(80) NOT NULL, -- Localidad 1, 2, 3 o Corregimientos
+    barrio VARCHAR(80) NOT NULL,
+    direccion VARCHAR(200) NOT NULL,
+    referencia_ubicacion VARCHAR(250),
+    tipo_escenario VARCHAR(40) NOT NULL DEFAULT 'PUBLICO_IDER', -- PUBLICO_IDER, PRIVADO_COMERCIAL, COMPLEJO_DEPORTIVO, ESTADIO_OFICIAL, CLUB_CAMPESTRE
+    tipo_superficie VARCHAR(40) NOT NULL DEFAULT 'SINTETICA', -- SINTETICA, CESPED_NATURAL, ARENA, CONCRETO_FUTSAL
+    formato_principal VARCHAR(30) NOT NULL DEFAULT 'FUTBOL_11', -- FUTBOL_11, FUTBOL_9, FUTBOL_8, FUTBOL_7, FUTBOL_5
+    latitud NUMERIC(10, 7) NOT NULL,
+    longitud NUMERIC(10, 7) NOT NULL,
+    google_maps_url TEXT,
+    waze_url TEXT,
+    tiene_iluminacion BOOLEAN DEFAULT true,
+    tiene_graderias BOOLEAN DEFAULT false,
+    tiene_camerinos BOOLEAN DEFAULT false,
+    tiene_parqueadero BOOLEAN DEFAULT false,
+    es_techada BOOLEAN DEFAULT false,
+    capacidad_espectadores INTEGER DEFAULT 0,
+    administrado_por VARCHAR(80) DEFAULT 'IDER Cartagena',
+    telefono_contacto VARCHAR(40),
+    estado VARCHAR(30) DEFAULT 'OPERATIVA', -- OPERATIVA, MANTENIMIENTO, REMODELACION
+    activa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_canchas_ctg_localidad ON public.canchas_cartagena(localidad);
+CREATE INDEX IF NOT EXISTS idx_canchas_ctg_barrio ON public.canchas_cartagena(barrio);
+CREATE INDEX IF NOT EXISTS idx_canchas_ctg_superficie ON public.canchas_cartagena(tipo_superficie);
+CREATE INDEX IF NOT EXISTS idx_canchas_ctg_coords ON public.canchas_cartagena(latitud, longitud);
+
+-- ----------------------------------------------------------------------------
+-- 11. ÍNDICES DE ALTO RENDIMIENTO
 -- ----------------------------------------------------------------------------
 
 CREATE INDEX IF NOT EXISTS idx_jugadores_club_cat ON public.jugadores(club_id, categoria_id);
@@ -411,3 +449,4 @@ COMMENT ON TABLE public.jugadores IS 'Ficha deportiva, técnica, médica y de ma
 COMMENT ON TABLE public.evaluaciones_biometricas IS 'Historial antropométrico y pruebas físicas (Cooper, velocidad, salto)';
 COMMENT ON TABLE public.partidos IS 'Fixture oficial de partidos, convocatorias y actas digitales';
 COMMENT ON TABLE public.cargos_jugador IS 'Cobro de pensiones mensuales, matrículas, arbitrajes y pasarelas PSE/Wompi';
+COMMENT ON TABLE public.canchas_cartagena IS 'Directorio maestro de escenarios y canchas de fútbol de Cartagena geolocalizadas con GPS y Waze';

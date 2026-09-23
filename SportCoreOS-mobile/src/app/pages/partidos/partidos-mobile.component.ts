@@ -44,42 +44,62 @@ export interface PartidoItem {
       </div>
     </div>
 
+    <!-- Filtros Rápidos de Fixture -->
+    <div class="fixture-filter-pills">
+      <button class="filter-pill" [class.active]="filtroEstado() === 'TODOS'" (click)="setFiltro('TODOS')">
+        Todos
+      </button>
+      <button class="filter-pill" [class.active]="filtroEstado() === 'PROGRAMADO'" (click)="setFiltro('PROGRAMADO')">
+        <span class="dot-prog"></span> Próximos
+      </button>
+      <button class="filter-pill" [class.active]="filtroEstado() === 'FINALIZADO'" (click)="setFiltro('FINALIZADO')">
+        Resultados
+      </button>
+    </div>
+
     <main class="mobile-page-content">
-      <!-- Cdk Virtual Scroll Viewport para Fixture Completo -->
+      <!-- Cdk Virtual Scroll Viewport de Altura Controlada con Auto-Scroll -->
       <cdk-virtual-scroll-viewport 
-        itemSize="240" 
+        itemSize="255" 
         class="matches-viewport"
         (scrolledIndexChange)="onScrollChange($event)">
         
         <div *cdkVirtualFor="let m of displayedMatches(); trackBy: trackById" class="match-item-wrapper">
-          <div class="match-item-card mobile-card">
+          <div class="match-item-card">
+            <!-- Header de Categoría y Condición -->
             <div class="match-card-top">
-              <span class="badge badge-blue">{{ m.categoria_nombre }}</span>
+              <span class="badge-cat-tag">⚽ {{ m.categoria_nombre }}</span>
               <span class="match-badge-cond" [class.badge-local]="m.condicion_juego === 'LOCAL'">
                 {{ m.condicion_juego || 'LOCAL' }}
               </span>
             </div>
 
+            <!-- Versus y Marcador -->
             <div class="match-versus-block">
               <div class="team-club">
                 <div class="crest-small">{{ auth.activeClub().sigla }}</div>
-                <strong>{{ auth.activeClub().nombre }}</strong>
+                <strong class="club-title">{{ auth.activeClub().nombre }}</strong>
               </div>
               
-              @if (m.estado_partido === 'FINALIZADO') {
-                <div class="score-display">
-                  <span>{{ m.goles_club }}</span> - <span>{{ m.goles_rival }}</span>
-                </div>
-              } @else {
-                <div class="vs-label">VS</div>
-              }
+              <div class="versus-center">
+                @if (m.estado_partido === 'FINALIZADO') {
+                  <div class="score-display">
+                    <span>{{ m.goles_club }}</span> - <span>{{ m.goles_rival }}</span>
+                  </div>
+                  <span class="match-status-label finalizado">Finalizado</span>
+                } @else {
+                  <div class="vs-label">VS</div>
+                  <span class="match-status-label programado">Programado</span>
+                }
+              </div>
 
               <div class="team-club">
                 <div class="crest-small rival-small">⚔️</div>
-                <strong>{{ m.rival_nombre }}</strong>
+                <strong class="club-title">{{ m.rival_nombre }}</strong>
               </div>
             </div>
 
+            <!-- Datos de Fecha y Hora -->
             <div class="match-details-strip">
               <div class="detail-cell">
                 <i class="fa-regular fa-calendar text-emerald"></i>
@@ -87,21 +107,27 @@ export interface PartidoItem {
               </div>
               <div class="detail-cell">
                 <i class="fa-regular fa-clock text-blue"></i>
-                <span>{{ m.hora_partido }} (Cit: {{ m.hora_citacion }})</span>
+                <span>{{ m.hora_partido }}</span>
+              </div>
+              <div class="detail-cell citacion-cell">
+                <span class="cit-tag">Cit: {{ m.hora_citacion }}</span>
               </div>
             </div>
 
+            <!-- Sede Cancha -->
             <div class="venue-cell">
               <i class="fa-solid fa-location-dot text-amber"></i>
-              <span>{{ m.sede_cancha }}</span>
+              <span class="venue-text">{{ m.sede_cancha }}</span>
             </div>
 
+            <!-- Footer con Botón de Convocatoria y GPS -->
             <div class="match-card-footer">
-              <a routerLink="/convocatorias" [queryParams]="{ partidoId: m.id }" class="btn-primary btn-sm">
-                <i class="fa-solid fa-clipboard-user"></i> Convocatoria
+              <a routerLink="/convocatorias" [queryParams]="{ partidoId: m.id }" class="btn-convocar-match">
+                <i class="fa-solid fa-clipboard-user"></i>
+                <span>Ver Convocatoria & Citación</span>
               </a>
-              <button class="btn-secondary btn-icon-only" (click)="openGps(m.sede_cancha)" title="Abrir GPS">
-                <i class="fa-solid fa-map-location-dot"></i>
+              <button class="btn-gps-action" (click)="openGps(m.sede_cancha)" title="Abrir en GPS">
+                <i class="fa-solid fa-diamond-turn-right"></i> GPS
               </button>
             </div>
           </div>
@@ -114,6 +140,7 @@ export interface PartidoItem {
           </div>
         } @else if (hasReachedEnd() && displayedMatches().length > 0) {
           <div class="infinite-end">
+            <i class="fa-solid fa-check-double text-emerald"></i>
             <span>Fin de la temporada y fixture oficial</span>
           </div>
         }
@@ -123,13 +150,25 @@ export interface PartidoItem {
     <app-bottom-nav></app-bottom-nav>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: #0b1510;
+      background: linear-gradient(180deg, #0b1510 0%, #0f172a 40%, #020617 100%);
+    }
+
     .partidos-subbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.85rem 1rem;
-      background: #fff;
-      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
 
       .subbar-left {
         display: flex;
@@ -137,16 +176,19 @@ export interface PartidoItem {
         gap: 0.75rem;
 
         .btn-back {
-          color: #0f172a;
+          color: #ffffff;
           font-size: 1.1rem;
           text-decoration: none;
+          display: flex;
+          align-items: center;
         }
 
         h2 {
-          font-size: 1.05rem;
+          font-size: 1rem;
           font-weight: 800;
-          color: #0f172a;
+          color: #ffffff;
           margin: 0;
+          letter-spacing: -0.01em;
         }
       }
 
@@ -156,21 +198,22 @@ export interface PartidoItem {
         gap: 8px;
 
         .count-badge {
-          font-size: 0.68rem;
+          font-size: 0.65rem;
           font-weight: 700;
-          color: #475569;
-          background: #f1f5f9;
-          padding: 3px 8px;
+          color: #a7f3d0;
+          background: rgba(6, 78, 59, 0.6);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          padding: 2px 8px;
           border-radius: 9999px;
         }
 
         .btn-icon-refresh {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           border-radius: 8px;
-          border: 1px solid #e2e8f0;
-          background: #f8fafc;
-          color: #059669;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.06);
+          color: #34d399;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -183,38 +226,79 @@ export interface PartidoItem {
       }
     }
 
-    .mobile-page-content {
-      height: calc(100vh - 135px - var(--safe-area-bottom));
-      height: calc(100dvh - 135px - var(--safe-area-bottom));
+    .fixture-filter-pills {
       display: flex;
-      flex-direction: column;
-      background: #f8fafc;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+
+      .filter-pill {
+        flex: 1;
+        padding: 0.35rem 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s;
+
+        .dot-prog {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10b981;
+        }
+
+        &.active {
+          background: #10b981;
+          color: #ffffff;
+          border-color: #34d399;
+        }
+      }
+    }
+
+    .mobile-page-content {
+      flex: 1;
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: calc(62px + var(--safe-area-bottom));
     }
 
     .matches-viewport {
-      flex: 1;
+      height: 100%;
       width: 100%;
       padding: 0.75rem 1rem;
       box-sizing: border-box;
     }
 
     .match-item-wrapper {
-      height: 240px;
+      height: 255px;
       padding-bottom: 0.85rem;
       box-sizing: border-box;
+      width: 100%;
     }
 
     .match-item-card {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      background: #ffffff;
-      border-radius: 14px;
-      border: 1px solid #e2e8f0;
+      justify-content: space-between;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
       padding: 0.85rem;
       height: 100%;
       box-sizing: border-box;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
     }
 
     .match-card-top {
@@ -222,26 +306,28 @@ export interface PartidoItem {
       justify-content: space-between;
       align-items: center;
 
-      .badge-blue {
-        background: #eff6ff;
-        color: #1d4ed8;
-        font-size: 0.68rem;
+      .badge-cat-tag {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        font-size: 0.65rem;
         font-weight: 800;
         padding: 2px 8px;
         border-radius: 6px;
       }
 
       .match-badge-cond {
-        font-size: 0.65rem;
+        font-size: 0.62rem;
         font-weight: 800;
-        background: #f1f5f9;
-        color: #475569;
+        background: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
         padding: 2px 6px;
         border-radius: 4px;
 
         &.badge-local {
-          background: #ecfdf5;
-          color: #059669;
+          background: rgba(16, 185, 129, 0.2);
+          color: #34d399;
+          border: 1px solid rgba(16, 185, 129, 0.3);
         }
       }
     }
@@ -250,64 +336,94 @@ export interface PartidoItem {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #f8fafc;
-      padding: 0.5rem 0.65rem;
-      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 0.6rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
 
       .team-club {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.76rem;
-        max-width: 42%;
+        width: 40%;
 
-        strong {
+        .club-title {
+          font-size: 0.74rem;
+          font-weight: 800;
+          color: #ffffff;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
         .crest-small {
-          width: 26px;
-          height: 26px;
-          background: #059669;
-          color: #fff;
+          width: 28px;
+          height: 28px;
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          color: #ffffff;
           font-size: 0.65rem;
           font-weight: 900;
-          border-radius: 6px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          border: 1px solid #34d399;
 
           &.rival-small {
-            background: #cbd5e1;
-            color: #0f172a;
+            background: #334155;
+            border-color: #64748b;
           }
         }
       }
 
-      .vs-label {
-        font-size: 0.7rem;
-        font-weight: 900;
-        color: #94a3b8;
-      }
+      .versus-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
 
-      .score-display {
-        font-size: 0.95rem;
-        font-weight: 900;
-        color: #0f172a;
-        background: #e2e8f0;
-        padding: 2px 8px;
-        border-radius: 6px;
+        .vs-label {
+          font-size: 0.72rem;
+          font-weight: 900;
+          color: #34d399;
+          background: #0f172a;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .score-display {
+          font-size: 0.95rem;
+          font-weight: 900;
+          color: #ffffff;
+          background: #0f172a;
+          padding: 2px 8px;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .match-status-label {
+          font-size: 0.55rem;
+          font-weight: 800;
+          text-transform: uppercase;
+
+          &.programado { color: #34d399; }
+          &.finalizado { color: #94a3b8; }
+        }
       }
     }
 
     .match-details-strip {
       display: flex;
       justify-content: space-between;
-      font-size: 0.72rem;
-      color: #334155;
+      align-items: center;
+      font-size: 0.7rem;
+      color: #cbd5e1;
       font-weight: 600;
 
       .detail-cell {
@@ -315,50 +431,65 @@ export interface PartidoItem {
         align-items: center;
         gap: 4px;
       }
+
+      .cit-tag {
+        font-size: 0.62rem;
+        font-weight: 700;
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
     }
 
     .venue-cell {
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.72rem;
-      color: #64748b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.7rem;
+      color: #94a3b8;
+
+      .venue-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     .match-card-footer {
       display: flex;
-      justify-content: space-between;
+      gap: 0.5rem;
       align-items: center;
-      margin-top: auto;
-      padding-top: 0.35rem;
-      border-top: 1px solid #f1f5f9;
+      margin-top: 0.25rem;
 
-      .btn-primary {
-        background: #059669;
-        color: #fff;
-        padding: 0.45rem 0.85rem;
-        border-radius: 8px;
-        font-size: 0.74rem;
+      .btn-convocar-match {
+        flex: 1;
+        height: 36px;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        border-radius: 10px;
+        font-size: 0.75rem;
         font-weight: 800;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 5px;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
       }
 
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #0f172a;
-        border: 1px solid #cbd5e1;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+      .btn-gps-action {
+        background: rgba(255, 255, 255, 0.08);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
         cursor: pointer;
       }
     }
@@ -371,7 +502,7 @@ export interface PartidoItem {
       padding: 0.75rem;
       font-size: 0.72rem;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
     }
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -385,6 +516,7 @@ export class PartidosMobileComponent implements OnInit {
   isRefreshing = signal<boolean>(false);
   isLoadingMore = signal<boolean>(false);
   hasReachedEnd = signal<boolean>(false);
+  filtroEstado = signal<'TODOS' | 'PROGRAMADO' | 'FINALIZADO'>('TODOS');
 
   allMatches: PartidoItem[] = [];
   displayedMatches = signal<PartidoItem[]>([]);
@@ -444,16 +576,21 @@ export class PartidosMobileComponent implements OnInit {
 
     this.isLoadingMore.set(true);
     setTimeout(() => {
-      const nextBatch = this.allMatches.slice(this.currentOffset, this.currentOffset + this.pageSize);
+      let filtered = this.allMatches;
+      if (this.filtroEstado() !== 'TODOS') {
+        filtered = this.allMatches.filter(m => m.estado_partido === this.filtroEstado());
+      }
+
+      const nextBatch = filtered.slice(this.currentOffset, this.currentOffset + this.pageSize);
       if (nextBatch.length > 0) {
         this.displayedMatches.update(curr => [...curr, ...nextBatch]);
         this.currentOffset += this.pageSize;
       }
-      if (this.currentOffset >= this.allMatches.length) {
+      if (this.currentOffset >= filtered.length) {
         this.hasReachedEnd.set(true);
       }
       this.isLoadingMore.set(false);
-    }, 300);
+    }, 250);
   }
 
   onScrollChange(index: number): void {
@@ -461,6 +598,14 @@ export class PartidosMobileComponent implements OnInit {
     if (index >= total - 2 && !this.isLoadingMore() && !this.hasReachedEnd()) {
       this.cargarMas();
     }
+  }
+
+  setFiltro(estado: 'TODOS' | 'PROGRAMADO' | 'FINALIZADO'): void {
+    this.filtroEstado.set(estado);
+    this.currentOffset = 0;
+    this.displayedMatches.set([]);
+    this.hasReachedEnd.set(false);
+    this.cargarMas();
   }
 
   recargarPartidos(): void {
@@ -471,7 +616,7 @@ export class PartidosMobileComponent implements OnInit {
     setTimeout(() => {
       this.cargarMas();
       this.isRefreshing.set(false);
-    }, 450);
+    }, 400);
   }
 
   openGps(cancha: string): void {
