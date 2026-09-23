@@ -56,17 +56,26 @@ interface TopPlayer {
     <div class="dashboard-page">
       <!-- HEADER DE BIENVENIDA CON BRANDING DEPORTIVO -->
       <div class="dashboard-hero-header">
-        <div class="hero-left">
-          <div class="club-badge-row">
-            <span class="season-badge">TEMPORADA OFICIAL 2026</span>
-            <span class="tenant-badge"><i class="fa-solid fa-shield-halved"></i> {{ api.activeClub().nombre }}</span>
+        <div class="hero-left-wrapper">
+          <div class="hero-brand-emblem">
+            <img src="assets/branding/sportcore_icon.jpg" alt="SportCoreOS Logo Oficial" class="hero-official-logo" />
+            <div class="emblem-pulse-ring"></div>
           </div>
-          <h1 class="hero-greeting">
-            ¡Hola, {{ authService.currentUser()?.nombres || 'Director' }}!
-          </h1>
-          <p class="hero-subtext">
-            Panel de Control Estratégico • Visión 360° en tiempo real de plantilla, finanzas PSE y fixture.
-          </p>
+          <div class="hero-left">
+            <div class="club-badge-row">
+              <span class="season-badge">TEMPORADA OFICIAL 2026</span>
+              <span class="tenant-badge"><i class="fa-solid fa-shield-halved"></i> {{ api.activeClub().nombre }}</span>
+              <span class="platform-badge">
+                <i class="fa-solid fa-circle-check"></i> SportCore<strong>OS</strong> PRO
+              </span>
+            </div>
+            <h1 class="hero-greeting">
+              ¡Hola, {{ authService.currentUser()?.nombres || 'Director' }}!
+            </h1>
+            <p class="hero-subtext">
+              Panel de Control Estratégico • Visión 360° en tiempo real de plantilla, finanzas PSE y fixture.
+            </p>
+          </div>
         </div>
 
         <div class="hero-actions">
@@ -607,6 +616,56 @@ interface TopPlayer {
       }
     }
 
+    .hero-left-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .hero-brand-emblem {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      flex-shrink: 0;
+
+      .hero-official-logo {
+        width: 100%;
+        height: 100%;
+        border-radius: 18px;
+        object-fit: cover;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25), 0 0 0 2px rgba(16, 185, 129, 0.35);
+        position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05) rotate(-2deg);
+          box-shadow: 0 12px 26px rgba(16, 185, 129, 0.4), 0 0 0 3px var(--color-primary);
+        }
+      }
+
+      .emblem-pulse-ring {
+        position: absolute;
+        inset: -4px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(6, 182, 212, 0.25));
+        z-index: 1;
+        animation: pulseLogoRing 3s ease-in-out infinite;
+      }
+    }
+
+    @keyframes pulseLogoRing {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 0.9;
+        filter: blur(2px);
+      }
+    }
+
     .hero-left {
       display: flex;
       flex-direction: column;
@@ -615,6 +674,7 @@ interface TopPlayer {
       .club-badge-row {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 0.65rem;
         margin-bottom: 0.25rem;
 
@@ -638,6 +698,24 @@ interface TopPlayer {
 
           i {
             color: var(--color-primary);
+          }
+        }
+
+        .platform-badge {
+          font-size: 0.68rem;
+          font-weight: 700;
+          color: #0284c7;
+          background: rgba(2, 132, 199, 0.08);
+          border: 1px solid rgba(2, 132, 199, 0.25);
+          padding: 0.18rem 0.55rem;
+          border-radius: var(--radius-full);
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+
+          i {
+            color: #0284c7;
+            font-size: 0.65rem;
           }
         }
       }
