@@ -21,6 +21,7 @@ import { TenantModulesModule } from './modules/tenant-modules/tenant-modules.mod
 import { ParametrosModule } from './modules/parametros/parametros.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { ServiciosModule } from './modules/servicios/servicios.module';
+import { RetosModule } from './modules/retos/retos.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -52,6 +53,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     ParametrosModule,
     RolesModule,
     ServiciosModule,
+    RetosModule,
   ],
   providers: [
     {

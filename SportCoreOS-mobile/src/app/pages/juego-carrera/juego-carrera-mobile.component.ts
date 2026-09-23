@@ -49,6 +49,33 @@ export interface PlayerMission {
   exigenciaBadge: string;
 }
 
+export interface RetoNivelMobile {
+  nivel: number;
+  meta: number;
+  unidad: string;
+  xp: number;
+  titulo: string;
+  dificultad: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO' | 'PRO' | 'ELITE';
+}
+
+export interface RetoCatalogoMobile {
+  id: string;
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  categoria: 'FISICO' | 'TECNICO' | 'RESISTENCIA' | 'POTENCIA' | 'PRECISION';
+  icono: string;
+  color: string;
+  niveles: RetoNivelMobile[];
+}
+
+export interface RetoProgresoStatus {
+  estado: 'DISPONIBLE' | 'COMPROBABLE' | 'APROBADO';
+  fecha?: string;
+  xpGanado?: number;
+  evaluadorNombre?: string;
+}
+
 @Component({
   selector: 'app-juego-carrera-mobile',
   standalone: true,
@@ -66,8 +93,187 @@ export class JuegoCarreraMobileComponent implements OnInit, OnDestroy {
   // Estado del Jugador en el Juego
   xpTotal = signal<number>(3120);
   rachaTrivia = signal<number>(4);
-  activeTab = signal<'RANKING' | 'TACTICA' | 'MISIONES' | 'TIRO_LIBRE'>('RANKING');
+  activeTab = signal<'RANKING' | 'TACTICA' | 'MISIONES' | 'TIRO_LIBRE'>('MISIONES');
   filtroMision = signal<string>('TODAS');
+
+  // Subpestaña en Exigencias y Retos
+  subTabExigencias = signal<'RETOS_COMPROBABLES' | 'MISIONES_PARTIDO'>('RETOS_COMPROBABLES');
+  filtroCategoriaReto = signal<string>('TODAS');
+
+  // Catálogo de Retos Individuales Comprobables
+  retosCatalogo = signal<RetoCatalogoMobile[]>([
+    {
+      id: 'reto-1',
+      codigo: 'FLEXIONES_PECHO',
+      titulo: 'Flexiones de Pecho Estrictas',
+      descripcion: 'Pecho al suelo y extensión completa de brazos en postura recta comprobada por el DT.',
+      categoria: 'FISICO',
+      icono: 'fa-solid fa-person-walking-arrow-right',
+      color: '#38bdf8',
+      niveles: [
+        { nivel: 1, meta: 5, unidad: 'flexiones', xp: 30, titulo: '5 Flexiones continuas', dificultad: 'PRINCIPIANTE' },
+        { nivel: 2, meta: 10, unidad: 'flexiones', xp: 60, titulo: '10 Flexiones continuas', dificultad: 'INTERMEDIO' },
+        { nivel: 3, meta: 15, unidad: 'flexiones', xp: 100, titulo: '15 Flexiones continuas', dificultad: 'INTERMEDIO' },
+        { nivel: 4, meta: 25, unidad: 'flexiones', xp: 180, titulo: '25 Flexiones continuas', dificultad: 'AVANZADO' },
+        { nivel: 5, meta: 50, unidad: 'flexiones', xp: 400, titulo: '50 Flexiones Modo Titan', dificultad: 'ELITE' }
+      ]
+    },
+    {
+      id: 'reto-2',
+      codigo: 'DOMINADAS_21S',
+      titulo: 'Dominadas y Control Aéreo (21s)',
+      descripcion: 'Control continuo del balón sin que toque el césped (pies, muslos y cabeza).',
+      categoria: 'TECNICO',
+      icono: 'fa-solid fa-futbol',
+      color: '#10b981',
+      niveles: [
+        { nivel: 1, meta: 10, unidad: 'toques', xp: 40, titulo: '10 Dominadas seguidas', dificultad: 'PRINCIPIANTE' },
+        { nivel: 2, meta: 25, unidad: 'toques', xp: 80, titulo: '25 Dominadas seguidas', dificultad: 'INTERMEDIO' },
+        { nivel: 3, meta: 50, unidad: 'toques', xp: 150, titulo: '50 Dominadas estilo libre', dificultad: 'AVANZADO' },
+        { nivel: 4, meta: 100, unidad: 'toques', xp: 300, titulo: '100 Toques de Magia', dificultad: 'PRO' },
+        { nivel: 5, meta: 200, unidad: 'toques', xp: 600, titulo: '200 Toques Master Class', dificultad: 'ELITE' }
+      ]
+    },
+    {
+      id: 'reto-3',
+      codigo: 'PLANCHA_CORE',
+      titulo: 'Plancha Isométrica de Core',
+      descripcion: 'Mantener alineación perfecta de cadera y abdomen sin arquear la espalda.',
+      categoria: 'RESISTENCIA',
+      icono: 'fa-solid fa-shield-halved',
+      color: '#f59e0b',
+      niveles: [
+        { nivel: 1, meta: 30, unidad: 'segundos', xp: 35, titulo: '30 seg Plancha sólida', dificultad: 'PRINCIPIANTE' },
+        { nivel: 2, meta: 60, unidad: 'segundos', xp: 75, titulo: '60 seg (1 min) Resistencia', dificultad: 'INTERMEDIO' },
+        { nivel: 3, meta: 90, unidad: 'segundos', xp: 120, titulo: '90 seg Core Blindado', dificultad: 'AVANZADO' },
+        { nivel: 4, meta: 120, unidad: 'segundos', xp: 200, titulo: '2 minutos de Acero', dificultad: 'PRO' }
+      ]
+    },
+    {
+      id: 'reto-4',
+      codigo: 'SENTADILLAS_SALTO',
+      titulo: 'Sentadillas con Salto Explosivo',
+      descripcion: 'Flexión profunda a 90° con despegue explosivo y caída controlada.',
+      categoria: 'POTENCIA',
+      icono: 'fa-solid fa-bolt',
+      color: '#ec4899',
+      niveles: [
+        { nivel: 1, meta: 10, unidad: 'saltos', xp: 45, titulo: '10 Saltos Explosivos', dificultad: 'PRINCIPIANTE' },
+        { nivel: 2, meta: 20, unidad: 'saltos', xp: 90, titulo: '20 Saltos Explosivos', dificultad: 'INTERMEDIO' },
+        { nivel: 3, meta: 30, unidad: 'saltos', xp: 160, titulo: '30 Saltos Pura Potencia', dificultad: 'AVANZADO' },
+        { nivel: 4, meta: 50, unidad: 'saltos', xp: 350, titulo: '50 Saltos Resistencia Máxima', dificultad: 'ELITE' }
+      ]
+    },
+    {
+      id: 'reto-5',
+      codigo: 'TIRO_LARGUERO',
+      titulo: 'Tiro al Larguero (Crossbar Challenge)',
+      descripcion: 'Impactar el travesaño superior desde el borde de las 18 yardas ante el DT.',
+      categoria: 'PRECISION',
+      icono: 'fa-solid fa-crosshairs',
+      color: '#a855f7',
+      niveles: [
+        { nivel: 1, meta: 1, unidad: 'impactos', xp: 50, titulo: '1 Larguero desde 18m', dificultad: 'INTERMEDIO' },
+        { nivel: 2, meta: 3, unidad: 'impactos', xp: 150, titulo: '3 Largueros en 5 intentos', dificultad: 'PRO' },
+        { nivel: 3, meta: 5, unidad: 'impactos', xp: 350, titulo: '5 Largueros Francotirador', dificultad: 'ELITE' }
+      ]
+    }
+  ]);
+
+  // Progreso individual del jugador (clave: `${retoCodigo}_L${nivel}`)
+  retosProgreso = signal<Record<string, RetoProgresoStatus>>({
+    'FLEXIONES_PECHO_L1': { estado: 'APROBADO', fecha: '2026-09-15', xpGanado: 30, evaluadorNombre: 'DT Carlos Valderrama' },
+    'FLEXIONES_PECHO_L2': { estado: 'COMPROBABLE' },
+    'DOMINADAS_21S_L1': { estado: 'APROBADO', fecha: '2026-09-18', xpGanado: 40, evaluadorNombre: 'DT Carlos Valderrama' },
+    'PLANCHA_CORE_L1': { estado: 'COMPROBABLE' }
+  });
+
+  retosFiltrados = computed(() => {
+    const cat = this.filtroCategoriaReto();
+    if (cat === 'TODAS') return this.retosCatalogo();
+    return this.retosCatalogo().filter(r => r.categoria === cat);
+  });
+
+  retosComprobablesPendientesCount = computed(() => {
+    return Object.values(this.retosProgreso()).filter(p => p.estado === 'COMPROBABLE').length;
+  });
+
+  retosAprobadosCount = computed(() => {
+    return Object.values(this.retosProgreso()).filter(p => p.estado === 'APROBADO').length;
+  });
+
+  xpRetosObtenido = computed(() => {
+    let sum = 0;
+    const progreso = this.retosProgreso();
+    this.retosCatalogo().forEach(reto => {
+      reto.niveles.forEach(lvl => {
+        const key = `${reto.codigo}_L${lvl.nivel}`;
+        if (progreso[key]?.estado === 'APROBADO') {
+          sum += lvl.xp;
+        }
+      });
+    });
+    return sum;
+  });
+
+  xpRetosCatalogoTotal = computed(() => {
+    let sum = 0;
+    this.retosCatalogo().forEach(reto => {
+      reto.niveles.forEach(lvl => {
+        sum += lvl.xp;
+      });
+    });
+    return sum;
+  });
+
+  porcentajeXpRetos = computed(() => {
+    const total = this.xpTotal();
+    const retosXp = this.xpRetosObtenido();
+    if (total <= 0) return 0;
+    return Math.min(100, Math.round((retosXp / total) * 100));
+  });
+
+  porcentajeCatalogoCompletado = computed(() => {
+    const totalCat = this.xpRetosCatalogoTotal();
+    const retosXp = this.xpRetosObtenido();
+    if (totalCat <= 0) return 0;
+    return Math.min(100, Math.round((retosXp / totalCat) * 100));
+  });
+
+  desgloseCategoriasRetos = computed(() => {
+    const map = new Map<string, { categoria: string; totalXp: number; xpGanado: number; aprobados: number; totales: number; color: string; icono: string; titulo: string }>();
+    const progreso = this.retosProgreso();
+
+    this.retosCatalogo().forEach(reto => {
+      if (!map.has(reto.categoria)) {
+        map.set(reto.categoria, {
+          categoria: reto.categoria,
+          titulo: reto.titulo,
+          totalXp: 0,
+          xpGanado: 0,
+          aprobados: 0,
+          totales: 0,
+          color: reto.color,
+          icono: reto.icono
+        });
+      }
+      const item = map.get(reto.categoria)!;
+      reto.niveles.forEach(lvl => {
+        item.totalXp += lvl.xp;
+        item.totales += 1;
+        const key = `${reto.codigo}_L${lvl.nivel}`;
+        if (progreso[key]?.estado === 'APROBADO') {
+          item.xpGanado += lvl.xp;
+          item.aprobados += 1;
+        }
+      });
+    });
+
+    return Array.from(map.values()).map(c => ({
+      ...c,
+      porcentaje: c.totalXp > 0 ? Math.round((c.xpGanado / c.totalXp) * 100) : 0
+    }));
+  });
 
   // Lista Gamificada para el Leaderboard en Tiempo Real
   leaderboardList = signal<MobileRankItem[]>([
@@ -476,5 +682,69 @@ export class JuegoCarreraMobileComponent implements OnInit, OnDestroy {
         this.keeperPosicion.set('center');
       }, 1500);
     }, 400);
+  }
+
+  getProgresoRetoNivel(retoCodigo: string, nivel: number): RetoProgresoStatus {
+    const key = `${retoCodigo}_L${nivel}`;
+    return this.retosProgreso()[key] || { estado: 'DISPONIBLE' };
+  }
+
+  solicitarComprobacionReto(reto: RetoCatalogoMobile, lvl: RetoNivelMobile) {
+    const key = `${reto.codigo}_L${lvl.nivel}`;
+    this.retosProgreso.update(map => ({
+      ...map,
+      [key]: { estado: 'COMPROBABLE' }
+    }));
+
+    if (lvl.nivel > 1) {
+      this.alertService.success(
+        `🚀 ¡Salto de Reto Solicitado! Al superar ${lvl.meta} ${lvl.unidad} (Nivel ${lvl.nivel}) ante el DT, el sistema aprobará automáticamente todos los niveles anteriores y sumará el XP acumulado.`
+      );
+    } else {
+      this.alertService.success(
+        `⏳ ¡Reto "${lvl.titulo}" marcado como COMPROBABLE! En el próximo entrenamiento, realízalo ante tu DT (${lvl.meta} ${lvl.unidad}) para que sea aprobado y recibas +${lvl.xp} XP.`
+      );
+    }
+  }
+
+  aprobarRetoDirectoDTCascada(reto: RetoCatalogoMobile, lvl: RetoNivelMobile) {
+    const targetNivel = lvl.nivel;
+    const currentProg = this.retosProgreso();
+    let totalXpAcumulado = 0;
+    const newProg = { ...currentProg };
+    const nivelesAprobados: number[] = [];
+
+    // Iterar todos los niveles <= targetNivel
+    for (let l = 1; l <= targetNivel; l++) {
+      const lvlDef = reto.niveles.find(n => n.nivel === l);
+      if (lvlDef) {
+        const key = `${reto.codigo}_L${l}`;
+        if (currentProg[key]?.estado !== 'APROBADO') {
+          totalXpAcumulado += lvlDef.xp;
+          newProg[key] = {
+            estado: 'APROBADO',
+            fecha: new Date().toISOString().split('T')[0],
+            xpGanado: lvlDef.xp,
+            evaluadorNombre: 'DT Carlos Valderrama'
+          };
+          nivelesAprobados.push(l);
+        }
+      }
+    }
+
+    this.retosProgreso.set(newProg);
+    if (totalXpAcumulado > 0) {
+      this.xpTotal.update(x => x + totalXpAcumulado);
+    }
+
+    if (nivelesAprobados.length > 1) {
+      this.alertService.success(
+        `🚀 ¡SALTO DE RETO EXITOSO! Al superar ${lvl.meta} ${lvl.unidad} (Nivel ${targetNivel}), el DT aprobó automáticamente ${nivelesAprobados.length} niveles anteriores con un total acumulado de +${totalXpAcumulado} XP.`
+      );
+    } else {
+      this.alertService.success(
+        `✅ ¡Reto "${lvl.titulo}" APROBADO por el DT! Sumaste +${totalXpAcumulado} XP a tu tarjeta FUT.`
+      );
+    }
   }
 }

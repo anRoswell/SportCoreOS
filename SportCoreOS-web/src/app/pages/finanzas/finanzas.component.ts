@@ -23,36 +23,20 @@ export class FinanzasComponent implements OnInit {
   readonly showPagarModal = signal<boolean>(false);
   readonly selectedCargo = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
+  readonly loading = signal<boolean>(false);
+
+  // Paginación Server-Side
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+  readonly totalPages = signal<number>(1);
 
   genMes = new Date().getMonth() + 1;
   genAnio = new Date().getFullYear();
   montoPago = 180000;
   metodoPago = 'PSE Bancolombia';
 
-  readonly filteredCargos = computed(() => {
-    let list = this.cargos();
-    const catId = this.selectedCategoriaId();
-    const estado = this.selectedEstado();
-    const search = this.searchTerm().trim().toLowerCase();
-
-    if (catId && catId !== 'TODAS') {
-      list = list.filter((c) => String(c.categoria_id) === String(catId));
-    }
-    if (estado === 'PAGADO') {
-      list = list.filter((c) => Number(c.saldo_pendiente) <= 0);
-    } else if (estado === 'MORA') {
-      list = list.filter((c) => Number(c.saldo_pendiente) > 0);
-    }
-    if (search) {
-      list = list.filter((c) =>
-        (c.jugador_nombre && c.jugador_nombre.toLowerCase().includes(search)) ||
-        (c.numero_documento && c.numero_documento.toLowerCase().includes(search)) ||
-        (c.concepto_nombre && c.concepto_nombre.toLowerCase().includes(search)) ||
-        (c.categoria_nombre && c.categoria_nombre.toLowerCase().includes(search))
-      );
-    }
-    return list;
-  });
+  private searchDebounceTimer?: any;
 
   readonly recaudoEfectividad = computed(() => {
     const res = this.resumen();
@@ -62,24 +46,125 @@ export class FinanzasComponent implements OnInit {
     return Math.round((rec / fact) * 100);
   });
 
+  readonly showingStart = computed(() => {
+    if (this.totalRecords() === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly showingEnd = computed(() => {
+    const end = this.currentPage() * this.pageSize();
+    return Math.min(end, this.totalRecords());
+  });
+
   ngOnInit(): void {
-    this.loadData();
+    this.loadCategorias();
+    this.loadResumen();
+    this.loadCargos();
   }
 
-  loadData(): void {
-    this.api.getResumenFinanzas().subscribe((res) => {
-      this.resumen.set(res);
-    });
-
-    this.api.getCargos({ limit: 500 }).subscribe((data) => {
-      const rows = Array.isArray(data) ? data : (data?.data || []);
-      this.cargos.set(rows);
-    });
-
+  loadCategorias(): void {
     this.api.getCategorias({ limit: 100 }).subscribe((cats) => {
       const catList = Array.isArray(cats) ? cats : [];
       this.categorias.set(catList);
     });
+  }
+
+  loadResumen(): void {
+    this.api.getResumenFinanzas().subscribe((res) => {
+      this.resumen.set(res);
+    });
+  }
+
+  loadCargos(): void {
+    this.loading.set(true);
+    const catId = this.selectedCategoriaId() !== 'TODAS' ? this.selectedCategoriaId() : undefined;
+    const estado = this.selectedEstado() !== 'TODOS' ? this.selectedEstado() : undefined;
+    const search = this.searchTerm().trim() || undefined;
+
+    this.api.getCargos({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+      categoriaId: catId,
+      estadoPago: estado,
+      search: search
+    }).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res) ? res : (res?.data || []);
+        const total = res?.total !== undefined ? res.total : rows.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
+        this.cargos.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalP);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.cargos.set([]);
+        this.totalRecords.set(0);
+        this.totalPages.set(1);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  onFilterChange(): void {
+    this.currentPage.set(1);
+    this.loadCargos();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchTerm.set(value);
+    this.currentPage.set(1);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.loadCargos();
+    }, 300);
+  }
+
+  clearSearch(): void {
+    this.searchTerm.set('');
+    this.currentPage.set(1);
+    this.loadCargos();
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadCargos();
+    }
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize.set(Number(size));
+    this.currentPage.set(1);
+    this.loadCargos();
+  }
+
+  getVisiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  loadData(): void {
+    this.loadResumen();
+    this.loadCargos();
   }
 
   openGenerarModal(): void {

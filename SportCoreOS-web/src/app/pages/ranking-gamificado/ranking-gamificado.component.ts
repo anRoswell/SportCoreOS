@@ -54,12 +54,24 @@ export class RankingGamificadoComponent implements OnInit {
   isRefreshing = signal<boolean>(false);
   isLoading = signal<boolean>(false);
 
-  // Filtros
+  // Pestaña Principal de la Vista
+  activeMainTab = signal<'LEADERBOARD' | 'RETOS' | 'CERTIFICACION_DT'>('LEADERBOARD');
+
+  // Filtros de Clasificación
   categoriaSeleccionada = signal<string>('TODAS');
   tierSeleccionado = signal<string>('TODOS');
   posicionSeleccionada = signal<string>('TODAS');
   filtroTemporal = signal<'TEMPORADA' | 'MES' | 'SEMANA'>('TEMPORADA');
   busquedaTexto = '';
+
+  // Filtros y Estado del Módulo de Retos Individuales Comprobables
+  filtroTipoReto = signal<string>('TODOS');
+  retosCatalogo = signal<any[]>([]);
+  retosPendientesDT = signal<any[]>([]);
+  jugadorParaRetos = signal<AlumnoRankItem | null>(null);
+  retosDelJugador = signal<any[]>([]);
+  metricasRetosJugador = signal<any>(null);
+  mensajeNotificacion = signal<{ texto: string; tipo: 'exito' | 'info' | 'alerta' } | null>(null);
   
   // Ordenamiento por columnas
   sortColumn = signal<string>('posicionRanking');
@@ -96,6 +108,16 @@ export class RankingGamificadoComponent implements OnInit {
 
   // Lista a renderizar en la tabla (la página activa traída desde la BD)
   paginatedAlumnos = computed(() => this.alumnos());
+
+  // Retos filtrados por categoría de reto
+  retosFiltrados = computed(() => {
+    const tipo = this.filtroTipoReto();
+    if (tipo === 'TODOS') return this.retosCatalogo();
+    return this.retosCatalogo().filter(r => r.categoria_reto === tipo || r.categoriaReto === tipo);
+  });
+
+  // Conteo de solicitudes pendientes para el DT
+  pendientesCount = computed(() => this.retosPendientesDT().length);
 
   showingStart = computed(() => {
     if (this.totalFilteredCount() === 0) return 0;
@@ -139,6 +161,8 @@ export class RankingGamificadoComponent implements OnInit {
     this.cargarCategorias();
     this.cargarTop3Podio();
     this.cargarJugadoresDesdeBD();
+    this.cargarRetosCatalogo();
+    this.cargarRetosPendientesDT();
   }
 
   cargarCategorias(): void {
@@ -157,19 +181,39 @@ export class RankingGamificadoComponent implements OnInit {
     });
   }
 
-  // Cargar siempre el TOP 3 absoluto desde BD para el podio
+  // Cargar el TOP 3 de la categoría consultada desde BD para el podio
   cargarTop3Podio(): void {
-    this.api.getJugadores({ page: 1, limit: 3, sortBy: 'xp_total' }).subscribe({
+    const catId = this.categoriaSeleccionada();
+    const queryParams: any = {
+      page: 1,
+      limit: 3,
+      sortBy: 'xp_total',
+    };
+    if (catId && catId !== 'TODAS') {
+      queryParams.categoriaId = catId;
+    }
+
+    this.api.getJugadores(queryParams).subscribe({
       next: (res) => {
         const list = res.data || (Array.isArray(res) ? res : []);
         if (list && list.length > 0) {
           this.top3.set(list.map((j: any, idx: number) => this.mapJugadorToRankItem(j, idx + 1)));
         } else {
-          this.top3.set(this.obtenerMockAlumnos().slice(0, 3));
+          if (catId === 'TODAS') {
+            this.top3.set(this.obtenerMockAlumnos().slice(0, 3));
+          } else {
+            const filteredMock = this.obtenerMockAlumnos().filter(a => a.categoriaId === catId);
+            this.top3.set(filteredMock.slice(0, 3));
+          }
         }
       },
       error: () => {
-        this.top3.set(this.obtenerMockAlumnos().slice(0, 3));
+        if (catId === 'TODAS') {
+          this.top3.set(this.obtenerMockAlumnos().slice(0, 3));
+        } else {
+          const filteredMock = this.obtenerMockAlumnos().filter(a => a.categoriaId === catId);
+          this.top3.set(filteredMock.slice(0, 3));
+        }
       }
     });
   }
@@ -359,6 +403,7 @@ export class RankingGamificadoComponent implements OnInit {
   onCategoriaChange(catId: string): void {
     this.categoriaSeleccionada.set(catId);
     this.currentPage.set(1);
+    this.cargarTop3Podio();
     this.cargarJugadoresDesdeBD();
   }
 
@@ -392,7 +437,15 @@ export class RankingGamificadoComponent implements OnInit {
     this.posicionSeleccionada.set('TODAS');
     this.busquedaTexto = '';
     this.currentPage.set(1);
+    this.cargarTop3Podio();
     this.cargarJugadoresDesdeBD();
+  }
+
+  getNombreCategoriaSeleccionada(): string {
+    const catId = this.categoriaSeleccionada();
+    if (catId === 'TODAS') return 'Todas las Categorías';
+    const found = this.categoriasDisponibles().find(c => c.id === catId);
+    return found ? found.nombre : 'Categoría Seleccionada';
   }
 
   seleccionarDetalleAlumno(alumno: AlumnoRankItem): void {
@@ -407,9 +460,371 @@ export class RankingGamificadoComponent implements OnInit {
     this.isRefreshing.set(true);
     this.cargarTop3Podio();
     this.cargarJugadoresDesdeBD();
+    this.cargarRetosCatalogo();
+    this.cargarRetosPendientesDT();
     setTimeout(() => {
       this.isRefreshing.set(false);
     }, 600);
+  }
+
+  // =========================================================================
+  // GESTIÓN DE RETOS INDIVIDUALES COMPROBABLES (FLEXIONES, DOMINADAS, ETC.)
+  // =========================================================================
+  setMainTab(tab: 'LEADERBOARD' | 'RETOS' | 'CERTIFICACION_DT'): void {
+    this.activeMainTab.set(tab);
+    if (tab === 'RETOS') {
+      if (!this.jugadorParaRetos()) {
+        const primero = this.alumnos()[0] || this.top3()[0] || this.obtenerMockAlumnos()[0];
+        if (primero) {
+          this.seleccionarJugadorParaRetos(primero);
+        }
+      }
+    } else if (tab === 'CERTIFICACION_DT') {
+      this.cargarRetosPendientesDT();
+    }
+  }
+
+  cargarRetosCatalogo(): void {
+    this.api.getRetosCatalogo().subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list && list.length > 0) {
+          this.retosCatalogo.set(list);
+        } else {
+          this.retosCatalogo.set(this.obtenerMockRetosCatalogo());
+        }
+      },
+      error: () => {
+        this.retosCatalogo.set(this.obtenerMockRetosCatalogo());
+      }
+    });
+  }
+
+  cargarRetosPendientesDT(): void {
+    this.api.getRetosPendientesVerificacion(this.categoriaSeleccionada()).subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list && list.length > 0) {
+          this.retosPendientesDT.set(list);
+        } else {
+          this.retosPendientesDT.set(this.obtenerMockRetosPendientes());
+        }
+      },
+      error: () => {
+        this.retosPendientesDT.set(this.obtenerMockRetosPendientes());
+      }
+    });
+  }
+
+  seleccionarJugadorParaRetos(alumno: AlumnoRankItem): void {
+    this.jugadorParaRetos.set(alumno);
+    this.cargarRetosJugador(alumno.id);
+    this.cargarMetricasRetos(alumno.id);
+  }
+
+  seleccionarJugadorPorId(id: string): void {
+    const found = this.alumnos().find(a => a.id === id) || 
+                  this.top3().find(a => a.id === id) || 
+                  this.obtenerMockAlumnos().find(a => a.id === id);
+    if (found) {
+      this.seleccionarJugadorParaRetos(found);
+    }
+  }
+
+  cargarRetosJugador(jugadorId: string): void {
+    this.api.getRetosJugador(jugadorId).subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list && list.length > 0) {
+          this.retosDelJugador.set(list);
+        } else {
+          this.retosDelJugador.set(this.obtenerMockRetosProgresoJugador(jugadorId));
+        }
+        this.cargarMetricasRetos(jugadorId);
+      },
+      error: () => {
+        this.retosDelJugador.set(this.obtenerMockRetosProgresoJugador(jugadorId));
+        this.cargarMetricasRetos(jugadorId);
+      }
+    });
+  }
+
+  cargarMetricasRetos(jugadorId: string): void {
+    this.api.getMetricasRetosJugador(jugadorId).subscribe({
+      next: (res: any) => {
+        const payload = res?.data || res;
+        if (payload && payload.xpTotalCatalogo) {
+          this.metricasRetosJugador.set(payload);
+        } else {
+          this.metricasRetosJugador.set(this.calcularMetricasLocales(jugadorId));
+        }
+      },
+      error: () => {
+        this.metricasRetosJugador.set(this.calcularMetricasLocales(jugadorId));
+      }
+    });
+  }
+
+  private calcularMetricasLocales(jugadorId: string): any {
+    const jug = this.jugadorParaRetos() || this.alumnos().find(a => a.id === jugadorId);
+    const xpTotalJugador = jug ? jug.xpTotal : 3120;
+    const catalogo = this.retosCatalogo();
+    
+    let xpTotalCatalogo = 0;
+    let totalNivelesCatalogo = 0;
+    const desglose: any[] = [];
+
+    catalogo.forEach((c: any) => {
+      let catXpTotal = 0;
+      let catNiveles = 0;
+      let catXpGanado = 0;
+      let catNivelesAprobados = 0;
+
+      const niveles = Array.isArray(c.niveles) ? c.niveles : [];
+      niveles.forEach((lvl: any) => {
+        const xp = Number(lvl.xp) || 0;
+        catXpTotal += xp;
+        catNiveles += 1;
+        xpTotalCatalogo += xp;
+        totalNivelesCatalogo += 1;
+
+        const prog = this.getProgresoNivel(c.id, Number(lvl.nivel));
+        if (prog.estado === 'APROBADO') {
+          catXpGanado += xp;
+          catNivelesAprobados += 1;
+        }
+      });
+
+      desglose.push({
+        categoria: c.categoria_reto || c.categoriaReto || 'FISICO',
+        nombre: c.nombre || c.titulo,
+        color: c.color_distintivo || c.color || '#10b981',
+        icono: c.icono || 'fa-solid fa-dumbbell',
+        xpGanado: catXpGanado,
+        xpTotal: catXpTotal,
+        nivelesAprobados: catNivelesAprobados,
+        nivelesTotales: catNiveles,
+        porcentaje: catXpTotal > 0 ? Math.round((catXpGanado / catXpTotal) * 100) : 0
+      });
+    });
+
+    const xpRetosObtenido = desglose.reduce((acc, curr) => acc + curr.xpGanado, 0);
+    const porcentajeXpRetos = xpTotalJugador > 0 ? Math.min(100, Math.round((xpRetosObtenido / xpTotalJugador) * 100)) : 0;
+    const porcentajeCatalogoCompletado = xpTotalCatalogo > 0 ? Math.min(100, Math.round((xpRetosObtenido / xpTotalCatalogo) * 100)) : 0;
+    const retosAprobadosCount = desglose.reduce((acc, curr) => acc + curr.nivelesAprobados, 0);
+
+    return {
+      jugadorId,
+      xpTotalJugador,
+      xpRetosObtenido,
+      xpTotalCatalogo: xpTotalCatalogo || 3610,
+      porcentajeXpRetos,
+      porcentajeCatalogoCompletado,
+      retosAprobadosCount,
+      retosPendientesCount: this.retosDelJugador().filter(p => p.estado === 'COMPROBABLE').length,
+      totalNivelesCatalogo: totalNivelesCatalogo || 21,
+      desgloseCategorias: desglose
+    };
+  }
+
+  solicitarComprobacionReto(reto: any, nivel: any): void {
+    const jug = this.jugadorParaRetos();
+    if (!jug) return;
+
+    this.api.solicitarRetoComprobable({
+      jugadorId: jug.id,
+      retoId: reto.id,
+      nivel: nivel.nivel,
+      meta: nivel.meta,
+      unidad: nivel.unidad,
+      xp: nivel.xp,
+    }).subscribe({
+      next: () => {
+        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Realízalo en cancha delante de tu DT para certificar tus +${nivel.xp} XP.`, 'exito');
+        this.cargarRetosJugador(jug.id);
+        this.cargarRetosPendientesDT();
+      },
+      error: () => {
+        // Optimistic local update
+        const nuevoProgreso = {
+          id: `prog-${Date.now()}`,
+          club_id: '10000000-0000-0000-0000-000000000001',
+          jugador_id: jug.id,
+          reto_id: reto.id,
+          nivel_solicitado: nivel.nivel,
+          meta_cantidad: nivel.meta,
+          unidad_medida: nivel.unidad,
+          xp_recompensa: nivel.xp,
+          estado: 'COMPROBABLE',
+          fecha_solicitud: new Date().toISOString(),
+          reto_nombre: reto.nombre,
+          reto_icono: reto.icono,
+          reto_color: reto.color_distintivo,
+          jugador_nombre: jug.nombres,
+          jugador_apellidos: jug.apellidos,
+          jugador_foto: jug.fotoUrl,
+          jugador_dorsal: jug.dorsal,
+          categoria_nombre: jug.categoriaNombre
+        };
+        this.retosDelJugador.update(list => [nuevoProgreso, ...list]);
+        this.retosPendientesDT.update(list => [nuevoProgreso, ...list]);
+        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Preséntalo delante del profe para validar tus +${nivel.xp} XP.`, 'exito');
+      }
+    });
+  }
+
+  evaluarRetoDT(progreso: any, aprobado: boolean, observaciones?: string): void {
+    this.api.evaluarRetoComprobable(progreso.id, {
+      aprobado,
+      observaciones: observaciones || (aprobado ? 'Reto comprobado y aprobado con técnica impecable en cancha.' : 'Técnica incompleta. Requiere practicar más.'),
+      evaluadorDtNombre: 'Prof. Mario Yepes (DT Principal)'
+    }).subscribe({
+      next: (res: any) => {
+        const payload = res?.data || res;
+        this.finalizarEvaluacionReto(progreso, aprobado, payload);
+      },
+      error: () => {
+        this.finalizarEvaluacionReto(progreso, aprobado, null);
+      }
+    });
+  }
+
+  private finalizarEvaluacionReto(progreso: any, aprobado: boolean, respPayload?: any): void {
+    const jugNombre = progreso.jugador_nombre || progreso.jugadorNombre || 'Alumno';
+    const jugadorId = progreso.jugador_id || progreso.jugadorId;
+    const nivelTarget = Number(progreso.nivel_solicitado || progreso.nivelSolicitado) || 1;
+    const retoId = progreso.reto_id || progreso.retoId;
+
+    if (aprobado) {
+      const totalXpGanado = respPayload?.totalXpGanado !== undefined ? Number(respPayload.totalXpGanado) : this.calcularXpAcumuladoLocal(retoId, nivelTarget, jugadorId);
+      const esSalto = respPayload?.esSaltoReto || (nivelTarget > 1 && totalXpGanado > (progreso.xp_recompensa || 30));
+
+      if (esSalto) {
+        this.mostrarNotificacion(
+          `🚀 ¡SALTO DE RETO APROBADO! Al superar el Nivel ${nivelTarget} (${progreso.meta_cantidad || 50} ${progreso.unidad_medida || 'rep'}), se aprobaron automáticamente todos los niveles anteriores sumando un acumulado total de +${totalXpGanado} XP a ${jugNombre}.`,
+          'exito'
+        );
+      } else {
+        this.mostrarNotificacion(
+          `🏆 ¡Reto Nivel ${nivelTarget} APROBADO por el DT! Se sumaron +${totalXpGanado} XP a ${jugNombre}.`,
+          'exito'
+        );
+      }
+      
+      // Actualizar XP en la tabla / podio reactivamente
+      this.alumnos.update(list => list.map(a => {
+        if (a.id === jugadorId) {
+          const newXp = a.xpTotal + totalXpGanado;
+          return {
+            ...a,
+            xpTotal: newXp,
+            xpMisiones: a.xpMisiones + totalXpGanado,
+            nivel: Math.max(1, Math.floor(newXp / 250))
+          };
+        }
+        return a;
+      }));
+
+      this.top3.update(list => list.map(a => {
+        if (a.id === jugadorId) {
+          const newXp = a.xpTotal + totalXpGanado;
+          return {
+            ...a,
+            xpTotal: newXp,
+            xpMisiones: a.xpMisiones + totalXpGanado,
+            nivel: Math.max(1, Math.floor(newXp / 250))
+          };
+        }
+        return a;
+      }));
+
+      // Si el jugador activo en la pestaña de retos es el evaluado, actualizar sus retos en cascada
+      this.retosDelJugador.update(list => {
+        const cat = this.retosCatalogo().find(c => c.id === retoId);
+        const nivelesDef = cat ? (Array.isArray(cat.niveles) ? cat.niveles : []) : [];
+        
+        const mapNiveles = new Map<number, any>();
+        list.forEach(p => mapNiveles.set(Number(p.nivel_solicitado || p.nivelSolicitado), p));
+
+        // Para cada nivel <= nivelTarget
+        for (let l = 1; l <= nivelTarget; l++) {
+          const def = nivelesDef.find((nd: any) => Number(nd.nivel) === l) || { xp: 30, meta: l * 5, unidad: 'repeticiones' };
+          const existing = mapNiveles.get(l);
+          if (existing) {
+            existing.estado = 'APROBADO';
+            existing.xp_recompensa = def.xp;
+            existing.fecha_evaluacion = new Date().toISOString();
+          } else {
+            list.unshift({
+              id: `auto-${Date.now()}-${l}`,
+              club_id: '10000000-0000-0000-0000-000000000001',
+              jugador_id: jugadorId,
+              reto_id: retoId,
+              nivel_solicitado: l,
+              meta_cantidad: def.meta,
+              unidad_medida: def.unidad,
+              xp_recompensa: def.xp,
+              estado: 'APROBADO',
+              fecha_solicitud: new Date().toISOString(),
+              fecha_evaluacion: new Date().toISOString(),
+              evaluador_dt_nombre: 'Prof. Mario Yepes (DT Principal)',
+              observaciones_dt: l === nivelTarget ? 'Aprobado presencialmente ante el DT' : `Aprobado automáticamente por superación de Nivel ${nivelTarget}`
+            });
+          }
+        }
+        return [...list];
+      });
+
+    } else {
+      this.mostrarNotificacion(`⚠️ Reto devuelto a ${jugNombre} para perfeccionar técnica y volver a presentar.`, 'alerta');
+    }
+
+    this.retosPendientesDT.update(list => list.filter(p => p.id !== progreso.id));
+    if (this.jugadorParaRetos()) {
+      this.cargarRetosJugador(this.jugadorParaRetos()!.id);
+    }
+  }
+
+  private calcularXpAcumuladoLocal(retoId: string, nivelTarget: number, jugadorId: string): number {
+    const cat = this.retosCatalogo().find(c => c.id === retoId);
+    if (!cat || !cat.niveles) return 50;
+    
+    const yaAprobados = new Set(
+      this.retosDelJugador()
+        .filter(p => (p.reto_id === retoId || p.retoId === retoId) && p.estado === 'APROBADO')
+        .map(p => Number(p.nivel_solicitado || p.nivelSolicitado))
+    );
+
+    let sum = 0;
+    cat.niveles.forEach((lvl: any) => {
+      const n = Number(lvl.nivel);
+      if (n <= nivelTarget && !yaAprobados.has(n)) {
+        sum += Number(lvl.xp) || 0;
+      }
+    });
+    return sum > 0 ? sum : 50;
+  }
+
+  getProgresoNivel(retoId: string, nivelNum: number): { estado: string; item?: any } {
+    const encontrados = this.retosDelJugador().filter(
+      p => (p.reto_id === retoId || p.retoId === retoId) && 
+           (p.nivel_solicitado === nivelNum || p.nivelSolicitado === nivelNum)
+    );
+    if (encontrados.length === 0) return { estado: 'DISPONIBLE' };
+    const aprobado = encontrados.find(e => e.estado === 'APROBADO');
+    if (aprobado) return { estado: 'APROBADO', item: aprobado };
+    const comprobable = encontrados.find(e => e.estado === 'COMPROBABLE');
+    if (comprobable) return { estado: 'COMPROBABLE', item: comprobable };
+    const rechazado = encontrados.find(e => e.estado === 'RECHAZADO');
+    if (rechazado) return { estado: 'RECHAZADO', item: rechazado };
+    return { estado: 'DISPONIBLE' };
+  }
+
+  mostrarNotificacion(texto: string, tipo: 'exito' | 'info' | 'alerta'): void {
+    this.mensajeNotificacion.set({ texto, tipo });
+    setTimeout(() => {
+      this.mensajeNotificacion.set(null);
+    }, 6000);
   }
 
   getTrendTitle(alumno: AlumnoRankItem): string {
@@ -816,4 +1231,193 @@ export class RankingGamificadoComponent implements OnInit {
       }
     ];
   }
+
+  private obtenerMockRetosCatalogo(): any[] {
+    return [
+      {
+        id: 'c1000000-0000-0000-0000-000000000001',
+        categoria_reto: 'FUERZA_CALISTENIA',
+        nombre: 'Flexiones de Pecho (Push-Ups)',
+        descripcion: 'Dominio de fuerza corporal y estabilidad escapular. Realizar repeticiones con técnica estricta (pecho a 5cm del suelo) delante del DT.',
+        icono: 'fa-solid fa-dumbbell',
+        color_distintivo: '#10B981',
+        niveles: [
+          { nivel: 1, meta: 5, unidad: 'flexiones', xp: 30, titulo: '5 Flexiones (Iniciación)', dificultad: 'PRINCIPIANTE' },
+          { nivel: 2, meta: 10, unidad: 'flexiones', xp: 60, titulo: '10 Flexiones (Guerrero)', dificultad: 'INTERMEDIO' },
+          { nivel: 3, meta: 15, unidad: 'flexiones', xp: 100, titulo: '15 Flexiones (Atleta)', dificultad: 'AVANZADO' },
+          { nivel: 4, meta: 25, unidad: 'flexiones', xp: 180, titulo: '25 Flexiones (Pro Cantera)', dificultad: 'ELITE' },
+          { nivel: 5, meta: 50, unidad: 'flexiones', xp: 350, titulo: '50 Flexiones (Bestia Blue Lock)', dificultad: 'LEYENDA' },
+        ],
+        orden_display: 1,
+        activo: true,
+      },
+      {
+        id: 'c1000000-0000-0000-0000-000000000002',
+        categoria_reto: 'TECNICA_CONTROL',
+        nombre: 'Dominadas de Balón (21s / Juggling)',
+        descripcion: 'Control y sensibilidad del balón sin que toque el césped. Alternando pie derecho e izquierdo frente al Director Técnico.',
+        icono: 'fa-solid fa-futbol',
+        color_distintivo: '#3B82F6',
+        niveles: [
+          { nivel: 1, meta: 10, unidad: 'toques', xp: 40, titulo: '10 Toques Consecutivos', dificultad: 'PRINCIPIANTE' },
+          { nivel: 2, meta: 25, unidad: 'toques', xp: 80, titulo: '25 Toques Alternados', dificultad: 'INTERMEDIO' },
+          { nivel: 3, meta: 50, unidad: 'toques', xp: 150, titulo: '50 Toques Malabarista', dificultad: 'AVANZADO' },
+          { nivel: 4, meta: 100, unidad: 'toques', xp: 300, titulo: '100 Toques Crack Élite', dificultad: 'ELITE' },
+          { nivel: 5, meta: 200, unidad: 'toques', xp: 500, titulo: '200 Toques Rey Oliver Atom', dificultad: 'LEYENDA' },
+        ],
+        orden_display: 2,
+        activo: true,
+      },
+      {
+        id: 'c1000000-0000-0000-0000-000000000003',
+        categoria_reto: 'POTENCIA_VELOCIDAD',
+        nombre: 'Sentadillas con Salto (Jump Squats)',
+        descripcion: 'Potencia explosiva de tren inferior para mejorar el salto vertical y despegue en el remate de cabeza.',
+        icono: 'fa-solid fa-bolt',
+        color_distintivo: '#F59E0B',
+        niveles: [
+          { nivel: 1, meta: 10, unidad: 'saltos', xp: 40, titulo: '10 Saltos Explosivos', dificultad: 'PRINCIPIANTE' },
+          { nivel: 2, meta: 20, unidad: 'saltos', xp: 80, titulo: '20 Saltos Máxima Altura', dificultad: 'INTERMEDIO' },
+          { nivel: 3, meta: 35, unidad: 'saltos', xp: 150, titulo: '35 Saltos Potencia CR7', dificultad: 'AVANZADO' },
+          { nivel: 4, meta: 50, unidad: 'saltos', xp: 280, titulo: '50 Saltos Resistencia Titan', dificultad: 'ELITE' },
+        ],
+        orden_display: 3,
+        activo: true,
+      },
+      {
+        id: 'c1000000-0000-0000-0000-000000000004',
+        categoria_reto: 'RESISTENCIA_CORE',
+        nombre: 'Plancha Isométrica de Core',
+        descripcion: 'Estabilidad lumbo-pélvica y resistencia estática en apoyo de antebrazos sin quebrar la cadera.',
+        icono: 'fa-solid fa-shield-halved',
+        color_distintivo: '#8B5CF6',
+        niveles: [
+          { nivel: 1, meta: 30, unidad: 'segundos', xp: 40, titulo: '30 Segundos de Plancha', dificultad: 'PRINCIPIANTE' },
+          { nivel: 2, meta: 60, unidad: 'segundos', xp: 90, titulo: '60 Segundos Muralla', dificultad: 'INTERMEDIO' },
+          { nivel: 3, meta: 120, unidad: 'segundos', xp: 200, titulo: '2 Minutos de Acero', dificultad: 'AVANZADO' },
+          { nivel: 4, meta: 180, unidad: 'segundos', xp: 350, titulo: '3 Minutos Inquebrantable', dificultad: 'ELITE' },
+        ],
+        orden_display: 4,
+        activo: true,
+      },
+      {
+        id: 'c1000000-0000-0000-0000-000000000005',
+        categoria_reto: 'PRECISION_TIRO',
+        nombre: 'Tiro al Larguero (Crossbar Challenge)',
+        descripcion: 'Impactar el travesaño desde el borde del área grande (16.5 metros) en presencia del entrenador.',
+        icono: 'fa-solid fa-crosshairs',
+        color_distintivo: '#EC4899',
+        niveles: [
+          { nivel: 1, meta: 1, unidad: 'aciertos', xp: 60, titulo: '1 Impacto Directo al Larguero', dificultad: 'INTERMEDIO' },
+          { nivel: 2, meta: 3, unidad: 'aciertos', xp: 180, titulo: '3 Impactos en 5 Intentos', dificultad: 'AVANZADO' },
+          { nivel: 3, meta: 5, unidad: 'aciertos', xp: 350, titulo: '5 de 5 Francotirador Messi', dificultad: 'ELITE' },
+        ],
+        orden_display: 5,
+        activo: true,
+      }
+    ];
+  }
+
+  private obtenerMockRetosPendientes(): any[] {
+    return [
+      {
+        id: 'p1000000-0000-0000-0000-000000000001',
+        club_id: '10000000-0000-0000-0000-000000000001',
+        jugador_id: '40000000-0000-0000-0000-000000000001',
+        reto_id: 'c1000000-0000-0000-0000-000000000001',
+        nivel_solicitado: 3,
+        meta_cantidad: 15,
+        unidad_medida: 'flexiones',
+        xp_recompensa: 100,
+        estado: 'COMPROBABLE',
+        fecha_solicitud: new Date(Date.now() - 3600000).toISOString(),
+        reto_nombre: 'Flexiones de Pecho (Push-Ups)',
+        reto_icono: 'fa-solid fa-dumbbell',
+        reto_color: '#10B981',
+        categoria_reto: 'FUERZA_CALISTENIA',
+        jugador_nombre: 'Mateo',
+        jugador_apellidos: 'Gómez Restrepo',
+        jugador_foto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200',
+        jugador_dorsal: 10,
+        categoria_nombre: 'Sub-15 Élite'
+      },
+      {
+        id: 'p1000000-0000-0000-0000-000000000002',
+        club_id: '10000000-0000-0000-0000-000000000001',
+        jugador_id: '40000000-0000-0000-0000-000000000002',
+        reto_id: 'c1000000-0000-0000-0000-000000000002',
+        nivel_solicitado: 2,
+        meta_cantidad: 25,
+        unidad_medida: 'toques',
+        xp_recompensa: 80,
+        estado: 'COMPROBABLE',
+        fecha_solicitud: new Date(Date.now() - 7200000).toISOString(),
+        reto_nombre: 'Dominadas de Balón (21s / Juggling)',
+        reto_icono: 'fa-solid fa-futbol',
+        reto_color: '#3B82F6',
+        categoria_reto: 'TECNICA_CONTROL',
+        jugador_nombre: 'Samuel',
+        jugador_apellidos: 'Díaz Marín',
+        jugador_foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+        jugador_dorsal: 7,
+        categoria_nombre: 'Sub-17 Pro'
+      }
+    ];
+  }
+
+  private obtenerMockRetosProgresoJugador(jugadorId: string): any[] {
+    return [
+      {
+        id: 'prog-1',
+        jugador_id: jugadorId,
+        reto_id: 'c1000000-0000-0000-0000-000000000001',
+        nivel_solicitado: 1,
+        meta_cantidad: 5,
+        unidad_medida: 'flexiones',
+        xp_recompensa: 30,
+        estado: 'APROBADO',
+        fecha_evaluacion: '2026-03-10',
+        evaluador_dt_nombre: 'Prof. Mario Yepes',
+        observaciones_dt: 'Excelente técnica, pecho abajo y espalda recta.'
+      },
+      {
+        id: 'prog-2',
+        jugador_id: jugadorId,
+        reto_id: 'c1000000-0000-0000-0000-000000000001',
+        nivel_solicitado: 2,
+        meta_cantidad: 10,
+        unidad_medida: 'flexiones',
+        xp_recompensa: 60,
+        estado: 'APROBADO',
+        fecha_evaluacion: '2026-03-18',
+        evaluador_dt_nombre: 'Prof. Mario Yepes',
+        observaciones_dt: 'Superó las 10 repeticiones continuas con solvencia.'
+      },
+      {
+        id: 'prog-3',
+        jugador_id: jugadorId,
+        reto_id: 'c1000000-0000-0000-0000-000000000001',
+        nivel_solicitado: 3,
+        meta_cantidad: 15,
+        unidad_medida: 'flexiones',
+        xp_recompensa: 100,
+        estado: 'COMPROBABLE',
+        fecha_solicitud: new Date().toISOString()
+      },
+      {
+        id: 'prog-4',
+        jugador_id: jugadorId,
+        reto_id: 'c1000000-0000-0000-0000-000000000002',
+        nivel_solicitado: 1,
+        meta_cantidad: 10,
+        unidad_medida: 'toques',
+        xp_recompensa: 40,
+        estado: 'APROBADO',
+        fecha_evaluacion: '2026-03-12',
+        evaluador_dt_nombre: 'Prof. Mario Yepes',
+        observaciones_dt: 'Buen control de empeine y borde interno.'
+      }
+    ];
+  }
 }
+

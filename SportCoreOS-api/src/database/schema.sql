@@ -470,3 +470,45 @@ CREATE TABLE IF NOT EXISTS deportivo.metricas_rendimiento_gps (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================================================
+-- SCHEMA: rendimiento (MÓDULO: RETOS INDIVIDUALES COMPROBABLES & EVALUACIÓN DT)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS rendimiento.retos_catalogo (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+    categoria_reto VARCHAR(50) NOT NULL, -- FUERZA_CALISTENIA, TECNICA_CONTROL, POTENCIA_VELOCIDAD, RESISTENCIA_CORE, PRECISION_TIRO
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT NOT NULL,
+    icono VARCHAR(80) NOT NULL DEFAULT 'fa-solid fa-dumbbell',
+    color_distintivo VARCHAR(30) NOT NULL DEFAULT '#10b981',
+    niveles JSONB NOT NULL DEFAULT '[]'::jsonb,
+    orden_display INT NOT NULL DEFAULT 1,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS rendimiento.retos_jugador_progreso (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    jugador_id UUID NOT NULL REFERENCES deportivo.jugadores(id) ON DELETE CASCADE,
+    reto_id UUID NOT NULL REFERENCES rendimiento.retos_catalogo(id) ON DELETE CASCADE,
+    nivel_solicitado INT NOT NULL DEFAULT 1,
+    meta_cantidad INT NOT NULL DEFAULT 5,
+    unidad_medida VARCHAR(50) NOT NULL DEFAULT 'repeticiones',
+    xp_recompensa INT NOT NULL DEFAULT 30,
+    estado VARCHAR(40) NOT NULL DEFAULT 'COMPROBABLE', -- DISPONIBLE, COMPROBABLE, APROBADO, RECHAZADO
+    fecha_solicitud TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    fecha_evaluacion TIMESTAMP WITH TIME ZONE,
+    evaluador_dt_id UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
+    evaluador_dt_nombre VARCHAR(150),
+    observaciones_dt TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_retos_catalogo_cat ON rendimiento.retos_catalogo(categoria_reto);
+CREATE INDEX IF NOT EXISTS idx_retos_progreso_jug ON rendimiento.retos_jugador_progreso(jugador_id);
+CREATE INDEX IF NOT EXISTS idx_retos_progreso_estado ON rendimiento.retos_jugador_progreso(estado);
+
+

@@ -291,5 +291,126 @@ VALUES
   )
 ON CONFLICT (id) DO NOTHING;
 
+-- 18. SCHEMA RENDIMIENTO: RETOS INDIVIDUALES COMPROBABLES CATÁLOGO
+INSERT INTO rendimiento.retos_catalogo (id, club_id, categoria_reto, nombre, descripcion, icono, color_distintivo, niveles, orden_display, activo)
+VALUES
+  (
+    'c1000000-0000-0000-0000-000000000001',
+    NULL,
+    'FUERZA_CALISTENIA',
+    'Flexiones de Pecho (Push-Ups)',
+    'Dominio de fuerza corporal y estabilidad escapular. Realizar repeticiones con técnica estricta (pecho a 5cm del suelo) delante del DT.',
+    'fa-solid fa-dumbbell',
+    '#10B981',
+    '[
+      {"nivel": 1, "meta": 5, "unidad": "flexiones", "xp": 30, "titulo": "5 Flexiones (Iniciación)", "dificultad": "PRINCIPIANTE"},
+      {"nivel": 2, "meta": 10, "unidad": "flexiones", "xp": 60, "titulo": "10 Flexiones (Guerrero)", "dificultad": "INTERMEDIO"},
+      {"nivel": 3, "meta": 15, "unidad": "flexiones", "xp": 100, "titulo": "15 Flexiones (Atleta)", "dificultad": "AVANZADO"},
+      {"nivel": 4, "meta": 25, "unidad": "flexiones", "xp": 180, "titulo": "25 Flexiones (Pro Cantera)", "dificultad": "ELITE"},
+      {"nivel": 5, "meta": 50, "unidad": "flexiones", "xp": 350, "titulo": "50 Flexiones (Bestia Blue Lock)", "dificultad": "LEYENDA"}
+    ]'::jsonb,
+    1,
+    true
+  ),
+  (
+    'c1000000-0000-0000-0000-000000000002',
+    NULL,
+    'TECNICA_CONTROL',
+    'Dominadas de Balón (21s / Juggling)',
+    'Control y sensibilidad del balón sin que toque el césped. Alternando pie derecho e izquierdo frente al Director Técnico.',
+    'fa-solid fa-futbol',
+    '#3B82F6',
+    '[
+      {"nivel": 1, "meta": 10, "unidad": "toques", "xp": 40, "titulo": "10 Toques Consecutivos", "dificultad": "PRINCIPIANTE"},
+      {"nivel": 2, "meta": 25, "unidad": "toques", "xp": 80, "titulo": "25 Toques Alternados", "dificultad": "INTERMEDIO"},
+      {"nivel": 3, "meta": 50, "unidad": "toques", "xp": 150, "titulo": "50 Toques Malabarista", "dificultad": "AVANZADO"},
+      {"nivel": 4, "meta": 100, "unidad": "toques", "xp": 300, "titulo": "100 Toques Crack Élite", "dificultad": "ELITE"},
+      {"nivel": 5, "meta": 200, "unidad": "toques", "xp": 500, "titulo": "200 Toques Rey Oliver Atom", "dificultad": "LEYENDA"}
+    ]'::jsonb,
+    2,
+    true
+  ),
+  (
+    'c1000000-0000-0000-0000-000000000003',
+    NULL,
+    'POTENCIA_VELOCIDAD',
+    'Sentadillas con Salto (Jump Squats)',
+    'Potencia explosiva de tren inferior para mejorar el salto vertical y despegue en el remate de cabeza.',
+    'fa-solid fa-bolt',
+    '#F59E0B',
+    '[
+      {"nivel": 1, "meta": 10, "unidad": "saltos", "xp": 40, "titulo": "10 Saltos Explosivos", "dificultad": "PRINCIPIANTE"},
+      {"nivel": 2, "meta": 20, "unidad": "saltos", "xp": 80, "titulo": "20 Saltos Máxima Altura", "dificultad": "INTERMEDIO"},
+      {"nivel": 3, "meta": 35, "unidad": "saltos", "xp": 150, "titulo": "35 Saltos Potencia CR7", "dificultad": "AVANZADO"},
+      {"nivel": 4, "meta": 50, "unidad": "saltos", "xp": 280, "titulo": "50 Saltos Resistencia Titan", "dificultad": "ELITE"}
+    ]'::jsonb,
+    3,
+    true
+  ),
+  (
+    'c1000000-0000-0000-0000-000000000004',
+    NULL,
+    'RESISTENCIA_CORE',
+    'Plancha Isométrica de Core',
+    'Estabilidad lumbo-pélvica y resistencia estática en apoyo de antebrazos sin quebrar la cadera.',
+    'fa-solid fa-shield-halved',
+    '#8B5CF6',
+    '[
+      {"nivel": 1, "meta": 30, "unidad": "segundos", "xp": 40, "titulo": "30 Segundos de Plancha", "dificultad": "PRINCIPIANTE"},
+      {"nivel": 2, "meta": 60, "unidad": "segundos", "xp": 90, "titulo": "60 Segundos Muralla", "dificultad": "INTERMEDIO"},
+      {"nivel": 3, "meta": 120, "unidad": "segundos", "xp": 200, "titulo": "2 Minutos de Acero", "dificultad": "AVANZADO"},
+      {"nivel": 4, "meta": 180, "unidad": "segundos", "xp": 350, "titulo": "3 Minutos Inquebrantable", "dificultad": "ELITE"}
+    ]'::jsonb,
+    4,
+    true
+  ),
+  (
+    'c1000000-0000-0000-0000-000000000005',
+    NULL,
+    'PRECISION_TIRO',
+    'Tiro al Larguero (Crossbar Challenge)',
+    'Impactar el travesaño desde el borde del área grande (16.5 metros) en presencia del entrenador.',
+    'fa-solid fa-crosshairs',
+    '#EC4899',
+    '[
+      {"nivel": 1, "meta": 1, "unidad": "aciertos", "xp": 60, "titulo": "1 Impacto Directo al Larguero", "dificultad": "INTERMEDIO"},
+      {"nivel": 2, "meta": 3, "unidad": "aciertos", "xp": 180, "titulo": "3 Impactos en 5 Intentos", "dificultad": "AVANZADO"},
+      {"nivel": 3, "meta": 5, "unidad": "aciertos", "xp": 350, "titulo": "5 de 5 Francotirador Messi", "dificultad": "ELITE"}
+    ]'::jsonb,
+    5,
+    true
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- 19. SCHEMA RENDIMIENTO: RETOS JUGADOR PROGRESO INICIALES (DEMO COMPROBABLES)
+INSERT INTO rendimiento.retos_jugador_progreso (id, club_id, jugador_id, reto_id, nivel_solicitado, meta_cantidad, unidad_medida, xp_recompensa, estado, fecha_solicitud)
+VALUES
+  (
+    'p1000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '40000000-0000-0000-0000-000000000001',
+    'c1000000-0000-0000-0000-000000000001',
+    3,
+    15,
+    'flexiones',
+    100,
+    'COMPROBABLE',
+    NOW() - INTERVAL '1 hour'
+  ),
+  (
+    'p1000000-0000-0000-0000-000000000002',
+    '10000000-0000-0000-0000-000000000001',
+    '40000000-0000-0000-0000-000000000002',
+    'c1000000-0000-0000-0000-000000000002',
+    2,
+    25,
+    'toques',
+    80,
+    'COMPROBABLE',
+    NOW() - INTERVAL '2 hours'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+
 
 

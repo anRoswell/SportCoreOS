@@ -21,6 +21,7 @@ export class ScoutingComponent implements OnInit {
 
   readonly viewMode = signal<'pipeline' | 'lista'>('pipeline');
   readonly prospectosList = signal<any[]>([]);
+  readonly loading = signal<boolean>(false);
 
   readonly showCreateModal = signal<boolean>(false);
   readonly showExpedienteModal = signal<boolean>(false);
@@ -36,6 +37,24 @@ export class ScoutingComponent implements OnInit {
   selectedPosicion: string = 'TODAS';
   selectedEstado: string = 'TODOS';
   selectedFile: File | null = null;
+
+  // Paginación Server-Side
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+  readonly totalPages = signal<number>(1);
+
+  private searchDebounceTimer?: any;
+
+  readonly showingStart = computed(() => {
+    if (this.totalRecords() === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly showingEnd = computed(() => {
+    const end = this.currentPage() * this.pageSize();
+    return Math.min(end, this.totalRecords());
+  });
 
   prospectoForm = {
     nombres: '',
@@ -56,64 +75,130 @@ export class ScoutingComponent implements OnInit {
     comentarios: '',
   };
 
-  readonly filteredProspectos = computed(() => {
-    let list = this.prospectosList();
-    if (this.searchQuery) {
-      const q = this.searchQuery.toLowerCase().trim();
-      list = list.filter(p => {
-        const full = `${p.nombres || ''} ${p.apellidos || ''} ${p.nombres_apellidos || ''}`.toLowerCase();
-        const club = (p.club_origen || '').toLowerCase();
-        const ciudad = (p.ciudad || '').toLowerCase();
-        return full.includes(q) || club.includes(q) || ciudad.includes(q);
-      });
-    }
-    if (this.selectedPosicion !== 'TODAS') {
-      list = list.filter(p => p.posicion_principal === this.selectedPosicion);
-    }
-    if (this.selectedEstado !== 'TODOS') {
-      list = list.filter(p => p.estado_pipeline === this.selectedEstado);
-    }
-    return list;
-  });
-
   ngOnInit(): void {
     this.loadProspectos();
   }
 
   loadProspectos(): void {
-    this.api.getProspectos().subscribe((data) => {
-      const rawList = Array.isArray(data) ? data : (data?.data || []);
-      const mapped = rawList.map((p: any) => {
-        const full = p.nombres_apellidos || `${p.nombres || ''} ${p.apellidos || ''}`.trim() || 'Prospecto';
-        const parts = full.split(' ');
-        const nombres = p.nombres || parts[0] || 'Prospecto';
-        const apellidos = p.apellidos || parts.slice(1).join(' ') || '';
-        return {
-          ...p,
-          nombres,
-          apellidos,
-          nombres_apellidos: full,
-          estado_pipeline: p.estado_scouting || p.estado_pipeline || 'en_observacion',
-          promedio_tecnico: p.score_promedio_calculado ? Number(p.score_promedio_calculado).toFixed(1) : (p.valoracion_general || '8.5'),
-          pierna_habil: p.pie_habil || p.pierna_habil || 'Derecha',
-        };
-      });
-      this.prospectosList.set(mapped);
+    this.loading.set(true);
+    const search = this.searchQuery.trim() || undefined;
+    const pos = this.selectedPosicion !== 'TODAS' ? this.selectedPosicion : undefined;
+    const est = this.selectedEstado !== 'TODOS' ? this.selectedEstado : undefined;
+
+    // En modo pipeline cargamos un volumen mayor (hasta 100) para mostrar en las 4 columnas del Kanban,
+    // en modo lista se aplica la paginación tradicional de tabla por página.
+    const isKanban = this.viewMode() === 'pipeline';
+    const limit = isKanban ? 100 : this.pageSize();
+    const page = isKanban ? 1 : this.currentPage();
+
+    this.api.getProspectos({
+      page: page,
+      limit: limit,
+      search: search,
+      posicion: pos,
+      estado: est
+    }).subscribe({
+      next: (res) => {
+        const rawList = Array.isArray(res) ? res : (res?.data || []);
+        const total = res?.total !== undefined ? res.total : rawList.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
+
+        const mapped = rawList.map((p: any) => {
+          const full = p.nombres_apellidos || `${p.nombres || ''} ${p.apellidos || ''}`.trim() || 'Prospecto';
+          const parts = full.split(' ');
+          const nombres = p.nombres || parts[0] || 'Prospecto';
+          const apellidos = p.apellidos || parts.slice(1).join(' ') || '';
+          return {
+            ...p,
+            nombres,
+            apellidos,
+            nombres_apellidos: full,
+            estado_pipeline: p.estado_scouting || p.estado_pipeline || 'en_observacion',
+            promedio_tecnico: p.score_promedio_calculado ? Number(p.score_promedio_calculado).toFixed(1) : (p.valoracion_general || '8.5'),
+            pierna_habil: p.pie_habil || p.pierna_habil || 'Derecha',
+          };
+        });
+
+        this.prospectosList.set(mapped);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalP);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.prospectosList.set([]);
+        this.totalRecords.set(0);
+        this.totalPages.set(1);
+        this.loading.set(false);
+      }
     });
   }
 
   onFilterChange(): void {
-    // Computed signal updates automatically
+    this.currentPage.set(1);
+    this.loadProspectos();
+  }
+
+  onSearchInput(val: string): void {
+    this.searchQuery = val;
+    this.currentPage.set(1);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.loadProspectos();
+    }, 300);
   }
 
   resetFilters(): void {
     this.searchQuery = '';
     this.selectedPosicion = 'TODAS';
     this.selectedEstado = 'TODOS';
+    this.currentPage.set(1);
+    this.loadProspectos();
+  }
+
+  setViewMode(mode: 'pipeline' | 'lista'): void {
+    this.viewMode.set(mode);
+    this.currentPage.set(1);
+    this.loadProspectos();
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadProspectos();
+    }
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize.set(Number(size));
+    this.currentPage.set(1);
+    this.loadProspectos();
+  }
+
+  getVisiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   getProspectosByCol(estado: string): any[] {
-    return this.filteredProspectos().filter(p => p.estado_pipeline === estado);
+    return this.prospectosList().filter(p => p.estado_pipeline === estado);
   }
 
   countByEstado(estado: string): number {

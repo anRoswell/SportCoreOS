@@ -1,4 +1,4 @@
-:root {
+:root, [data-theme="light"] {
   /* Paleta Deportiva Esmeralda / Pitch Green (Exacto SportCoreOS-web) */
   --primary-50: #ecfdf5;
   --primary-100: #d1fae5;
@@ -44,16 +44,19 @@
   --color-amber-subtle: rgba(217, 119, 6, 0.1);
   --color-danger-subtle: rgba(220, 38, 38, 0.1);
 
-  /* Fondos y Superficies (Modo Claro Limpio Exacto a Web) */
+  /* Fondos y Superficies (Modo Claro Limpio Exacto a Web por defecto) */
   --bg-main: #f8fafc;
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
   --bg-card-hover: #f1f5f9;
   --bg-card-elevated: #ffffff;
-  --bg-surface: #f1f5f9;
+  --bg-surface: #ffffff;
   --bg-header: #ffffff;
+  --bg-header-rgba: rgba(255, 255, 255, 0.95);
+  --bg-bottom-nav: rgba(255, 255, 255, 0.97);
   --bg-sidebar: #ffffff;
   --bg-input: #ffffff;
+  --bg-input-subtle: #f8fafc;
   --bg-table-header: #f8fafc;
   --bg-table-hover: rgba(0, 0, 0, 0.02);
 
@@ -86,9 +89,51 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --shadow-glow: 0 4px 14px 0 rgba(16, 185, 129, 0.2);
   --shadow-elevated: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-bottom-nav: 0 -4px 20px rgba(0, 0, 0, 0.06);
 
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="dark"], body.dark-theme {
+  /* Fondos y Superficies (Modo Oscuro) */
+  --bg-main: #0b0f19;
+  --bg-app: #0b0f19;
+  --bg-card: #111827;
+  --bg-card-hover: #1f2937;
+  --bg-card-elevated: #1e293b;
+  --bg-surface: #1e293b;
+  --bg-header: #0d131f;
+  --bg-header-rgba: rgba(15, 23, 42, 0.95);
+  --bg-bottom-nav: rgba(15, 23, 42, 0.96);
+  --bg-sidebar: #0d131f;
+  --bg-input: #161f30;
+  --bg-input-subtle: #111827;
+  --bg-table-header: #0d131f;
+  --bg-table-hover: rgba(255, 255, 255, 0.02);
+
+  /* Textos */
+  --text-main: #f9fafb;
+  --text-heading: #ffffff;
+  --text-body: #e2e8f0;
+  --text-primary: #f9fafb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+
+  /* Bordes */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(16, 185, 129, 0.5);
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 25px rgba(16, 185, 129, 0.25);
+  --shadow-elevated: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-bottom-nav: 0 -8px 24px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -113,12 +158,13 @@ html, body {
 
 body.mobile-viewport {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg-app);
+  background-color: var(--bg-main);
   color: var(--text-main);
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden !important;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Restricción global para CDK Virtual Scroll en móvil */
@@ -173,7 +219,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
-  background: var(--bg-card-elevated);
+  background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -190,7 +236,7 @@ h1, h2, h3, h4, h5, h6 {
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-card);
+    background: var(--bg-card-hover);
   }
 }
 
@@ -239,7 +285,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.1rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-card);
 }
 
 /* Badges */

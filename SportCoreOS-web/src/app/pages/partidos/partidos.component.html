@@ -1,23 +1,53 @@
 <div class="partidos-page">
-      <!-- HEADER -->
+      <!-- HEADER & FILTERS BAR -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Fixture & Calendario de Partidos</h1>
           <p class="page-subtitle">Torneos oficiales, partidos amistosos y actas digitales de juego en tiempo real</p>
         </div>
         <div class="header-actions">
-          <div class="filter-group">
-            <label class="filter-label">Categoría:</label>
-            <select [ngModel]="selectedCategoriaId()" (ngModelChange)="selectedCategoriaId.set($event)" class="sport-select">
-              <option value="TODAS">Todas las Categorías</option>
-              @for (cat of categorias(); track cat.id) {
-                <option [value]="cat.id">{{ cat.nombre }}</option>
-              }
-            </select>
-          </div>
           <button class="btn-primary" (click)="openScheduleModal()">
             <i class="fa-solid fa-calendar-plus"></i> Programar Nuevo Partido
           </button>
+        </div>
+      </div>
+
+      <!-- FILTERS BAR -->
+      <div class="filters-row fut-card">
+        <div class="filter-item">
+          <label><i class="fa-solid fa-users"></i> Categoría:</label>
+          <select [ngModel]="selectedCategoriaId()" (ngModelChange)="selectedCategoriaId.set($event); onFilterChange()" class="sport-select">
+            <option value="TODAS">Todas las Categorías</option>
+            @for (cat of categorias(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-item">
+          <label><i class="fa-solid fa-circle-check"></i> Estado:</label>
+          <select [ngModel]="selectedEstado()" (ngModelChange)="selectedEstado.set($event); onFilterChange()" class="sport-select">
+            <option value="TODOS">Todos los Estados</option>
+            <option value="PROGRAMADO">Programado</option>
+            <option value="FINALIZADO">Finalizado</option>
+            <option value="EN_VIVO">En Vivo / En Juego</option>
+          </select>
+        </div>
+        <div class="filter-item search-box">
+          <label><i class="fa-solid fa-magnifying-glass"></i> Buscar:</label>
+          <div class="search-input-wrapper">
+            <input 
+              type="text" 
+              [ngModel]="searchQuery()" 
+              (ngModelChange)="onSearchInput($event)" 
+              placeholder="Buscar por rival o sede..." 
+              class="sport-input search-input" 
+            />
+            @if (searchQuery()) {
+              <button class="btn-clear-search" (click)="clearSearch()" title="Limpiar búsqueda">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            }
+          </div>
         </div>
       </div>
 
@@ -38,73 +68,144 @@
             </tr>
           </thead>
           <tbody>
-            @for (p of filteredPartidos(); track p.id) {
-              <tr class="match-table-row">
-                <td>
-                  <div class="date-box">
-                    <strong>{{ p.fecha_partido }}</strong>
-                    <small><i class="fa-regular fa-clock"></i> {{ p.hora_partido }} (Cit: {{ p.hora_citacion || p.hora_partido }})</small>
-                  </div>
-                </td>
-                <td>
-                  <span class="badge badge-blue">{{ p.categoria_nombre || 'Categoría' }}</span>
-                </td>
-                <td>
-                  <strong class="rival-name">{{ p.rival_nombre }}</strong>
-                </td>
-                <td>
-                  <span class="badge" [class.badge-success]="p.condicion_juego === 'LOCAL'" [class.badge-warning]="p.condicion_juego === 'VISITANTE'">
-                    {{ p.condicion_juego }}
-                  </span>
-                </td>
-                <td>
-                  <div class="sede-cell">
-                    <span>{{ p.sede_cancha }}</span>
-                    <button class="btn-gps-link" (click)="openGps(p)" title="Ver en Google Maps">
-                      <i class="fa-solid fa-map-location-dot"></i>
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <span class="kit-tag">{{ p.indumentaria_kit || 'Titular' }}</span>
-                </td>
-                <td>
-                  <div class="score-badge">
-                    <span>{{ p.goles_club !== null ? p.goles_club : 0 }}</span> - <span>{{ p.goles_rival !== null ? p.goles_rival : 0 }}</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="badge" [class.badge-success]="p.estado_partido === 'PROGRAMADO'" [class.badge-blue]="p.estado_partido === 'FINALIZADO'">
-                    {{ p.estado_partido }}
-                  </span>
-                </td>
-                <td>
-                  <div class="actions-row">
-                    <button class="btn-secondary btn-sm btn-edit-match" (click)="openEditModal(p)" title="Editar Partido">
-                      <i class="fa-solid fa-pen-to-square"></i> Editar
-                    </button>
-                    <button class="btn-secondary btn-sm" (click)="goToConvocatoria(p)" title="Ver y gestionar convocatoria">
-                      <i class="fa-solid fa-users"></i> Convocatoria
-                    </button>
-                    <button class="btn-primary btn-sm btn-acta" (click)="openActaModal(p)" title="Ver acta digital y eventos">
-                      <i class="fa-solid fa-clipboard-list"></i> Acta
-                    </button>
-                    <button class="btn-secondary btn-sm btn-delete-match" (click)="openDeleteModal(p)" title="Eliminar / Cancelar Partido">
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
+            @if (loading()) {
               <tr>
                 <td colspan="9" class="empty-table-cell">
-                  <i class="fa-solid fa-futbol"></i>
-                  <p>No hay partidos registrados para esta categoría.</p>
+                  <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+                  <p>Consultando calendario de partidos en la Base de Datos...</p>
                 </td>
               </tr>
+            } @else {
+              @for (p of partidos(); track p.id) {
+                <tr class="match-table-row">
+                  <td>
+                    <div class="date-box">
+                      <strong>{{ p.fecha_partido }}</strong>
+                      <small><i class="fa-regular fa-clock"></i> {{ p.hora_partido }} (Cit: {{ p.hora_citacion || p.hora_partido }})</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-blue">{{ p.categoria_nombre || 'Categoría' }}</span>
+                  </td>
+                  <td>
+                    <strong class="rival-name">{{ p.rival_nombre }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="p.condicion_juego === 'LOCAL'" [class.badge-warning]="p.condicion_juego === 'VISITANTE'">
+                      {{ p.condicion_juego }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="sede-cell">
+                      <span>{{ p.sede_cancha }}</span>
+                      <button class="btn-gps-link" (click)="openGps(p)" title="Ver en Google Maps">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="kit-tag">{{ p.indumentaria_kit || 'Titular' }}</span>
+                  </td>
+                  <td>
+                    <div class="score-badge">
+                      <span>{{ p.goles_club !== null ? p.goles_club : 0 }}</span> - <span>{{ p.goles_rival !== null ? p.goles_rival : 0 }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="p.estado_partido === 'PROGRAMADO'" [class.badge-blue]="p.estado_partido === 'FINALIZADO'">
+                      {{ p.estado_partido }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="actions-row">
+                      <button class="btn-secondary btn-sm btn-edit-match" (click)="openEditModal(p)" title="Editar Partido">
+                        <i class="fa-solid fa-pen-to-square"></i> Editar
+                      </button>
+                      <button class="btn-secondary btn-sm" (click)="goToConvocatoria(p)" title="Ver y gestionar convocatoria">
+                        <i class="fa-solid fa-users"></i> Convocatoria
+                      </button>
+                      <button class="btn-primary btn-sm btn-acta" (click)="openActaModal(p)" title="Ver acta digital y eventos">
+                        <i class="fa-solid fa-clipboard-list"></i> Acta
+                      </button>
+                      <button class="btn-secondary btn-sm btn-delete-match" (click)="openDeleteModal(p)" title="Eliminar / Cancelar Partido">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="empty-table-cell">
+                    <i class="fa-solid fa-futbol"></i>
+                    <p>No hay partidos registrados para los filtros seleccionados.</p>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
+
+        <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalRecords() }}</strong> partidos</span>
+            <div class="page-size-selector">
+              <label>Por página:</label>
+              <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="20">20</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pagination-controls">
+            <button 
+              class="page-btn nav-btn" 
+              [disabled]="currentPage() === 1 || loading()" 
+              (click)="setPage(1)" 
+              title="Primera Página">
+              <i class="fa-solid fa-angles-left"></i>
+            </button>
+            <button 
+              class="page-btn nav-btn" 
+              [disabled]="currentPage() === 1 || loading()" 
+              (click)="setPage(currentPage() - 1)" 
+              title="Página Anterior">
+              <i class="fa-solid fa-angle-left"></i>
+              <span>Anterior</span>
+            </button>
+
+            <div class="page-numbers">
+              @for (p of getVisiblePages(); track p) {
+                <button 
+                  class="page-btn num-btn" 
+                  [class.active]="currentPage() === p" 
+                  [disabled]="loading()"
+                  (click)="setPage(p)">
+                  {{ p }}
+                </button>
+              }
+            </div>
+
+            <button 
+              class="page-btn nav-btn" 
+              [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+              (click)="setPage(currentPage() + 1)" 
+              title="Página Siguiente">
+              <span>Siguiente</span>
+              <i class="fa-solid fa-angle-right"></i>
+            </button>
+            <button 
+              class="page-btn nav-btn" 
+              [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+              (click)="setPage(totalPages())" 
+              title="Última Página">
+              <i class="fa-solid fa-angles-right"></i>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- MODAL PROGRAMAR PARTIDO -->

@@ -1040,7 +1040,67 @@ export class ApiService {
       map(res => res.data || res)
     );
   }
+
+  // ==========================================
+  // MÓDULO 17: RETOS INDIVIDUALES COMPROBABLES & EVALUACIÓN DT
+  // ==========================================
+  getRetosCatalogo(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/retos/catalogo`).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  getRetosJugador(jugadorId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/retos/jugador/${jugadorId}`).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  solicitarRetoComprobable(dto: {
+    jugadorId: string;
+    retoId: string;
+    nivel: number;
+    meta: number;
+    unidad: string;
+    xp: number;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/retos/solicitar`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  getRetosPendientesVerificacion(categoriaId?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (categoriaId && categoriaId !== 'TODAS') {
+      params = params.set('categoriaId', categoriaId);
+    }
+    return this.http.get<any>(`${this.apiUrl}/retos/pendientes`, { params }).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  evaluarRetoComprobable(progresoId: string, dto: {
+    aprobado: boolean;
+    evaluadorDtId?: string;
+    evaluadorDtNombre?: string;
+    observaciones?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/retos/${progresoId}/evaluar`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  getMetricasRetosJugador(jugadorId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/retos/jugador/${jugadorId}/metricas`).pipe(
+      map(res => res.data || res),
+      catchError(() => of(null))
+    );
+  }
 }
+
 
 
 

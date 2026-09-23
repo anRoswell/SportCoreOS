@@ -22,6 +22,8 @@ export class PartidosComponent implements OnInit {
   readonly partidos = signal<any[]>([]);
   readonly categorias = signal<any[]>([]);
   readonly selectedCategoriaId = signal<string>('TODAS');
+  readonly selectedEstado = signal<string>('TODOS');
+  readonly searchQuery = signal<string>('');
   readonly showScheduleModal = signal<boolean>(false);
   readonly showEditModal = signal<boolean>(false);
   readonly selectedMatchToEdit = signal<any | null>(null);
@@ -31,6 +33,13 @@ export class PartidosComponent implements OnInit {
   readonly showDeleteModal = signal<boolean>(false);
   readonly matchToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
+  readonly loading = signal<boolean>(false);
+
+  // Paginación Server-Side
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+  readonly totalPages = signal<number>(1);
 
   newMatch = {
     categoria_id: '',
@@ -63,29 +72,121 @@ export class PartidosComponent implements OnInit {
     descripcion: '',
   };
 
-  readonly filteredPartidos = computed(() => {
-    const list = this.partidos();
-    const catId = this.selectedCategoriaId();
-    if (catId === 'TODAS') return list;
-    return list.filter((p) => p.categoria_id === catId);
+  private searchDebounceTimer?: any;
+
+  readonly showingStart = computed(() => {
+    if (this.totalRecords() === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly showingEnd = computed(() => {
+    const end = this.currentPage() * this.pageSize();
+    return Math.min(end, this.totalRecords());
   });
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadCategorias();
+    this.loadPartidos();
   }
 
-  loadData(): void {
-    this.api.getCategorias().subscribe((cats) => {
+  loadCategorias(): void {
+    this.api.getCategorias({ limit: 100 }).subscribe((cats) => {
       this.categorias.set(cats || []);
       if (cats && cats.length > 0 && !this.newMatch.categoria_id) {
         this.newMatch.categoria_id = cats[0].id;
       }
     });
+  }
 
-    this.api.getPartidos().subscribe((data) => {
-      const rows = Array.isArray(data) ? data : (data?.data || []);
-      this.partidos.set(rows);
+  loadPartidos(): void {
+    this.loading.set(true);
+    const catId = this.selectedCategoriaId() !== 'TODAS' ? this.selectedCategoriaId() : undefined;
+    const estado = this.selectedEstado() !== 'TODOS' ? this.selectedEstado() : undefined;
+    const search = this.searchQuery().trim() || undefined;
+
+    this.api.getPartidos({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+      categoriaId: catId,
+      estado: estado,
+      search: search
+    }).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res) ? res : (res?.data || []);
+        const total = res?.total !== undefined ? res.total : rows.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
+        this.partidos.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalP);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.partidos.set([]);
+        this.totalRecords.set(0);
+        this.totalPages.set(1);
+        this.loading.set(false);
+      }
     });
+  }
+
+  onFilterChange(): void {
+    this.currentPage.set(1);
+    this.loadPartidos();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(1);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.loadPartidos();
+    }, 300);
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+    this.loadPartidos();
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadPartidos();
+    }
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize.set(Number(size));
+    this.currentPage.set(1);
+    this.loadPartidos();
+  }
+
+  getVisiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  loadData(): void {
+    this.loadPartidos();
   }
 
   openScheduleModal(): void {

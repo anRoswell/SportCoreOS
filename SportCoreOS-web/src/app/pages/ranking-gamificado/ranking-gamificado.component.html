@@ -27,15 +27,60 @@
         </div>
       </header>
 
-      <!-- BARRA DE FILTROS & SELECCIÓN DE CATEGORÍA / TEMPORALIDAD -->
-      <section class="controls-bar">
+      <!-- NOTIFICACIÓN TOAST REACTIVA -->
+      @if (mensajeNotificacion()) {
+        <div class="gamification-toast" [ngClass]="'toast-' + mensajeNotificacion()?.tipo">
+          <i class="fa-solid" [ngClass]="mensajeNotificacion()?.tipo === 'exito' ? 'fa-circle-check' : (mensajeNotificacion()?.tipo === 'alerta' ? 'fa-triangle-exclamation' : 'fa-circle-info')"></i>
+          <span>{{ mensajeNotificacion()?.texto }}</span>
+          <button class="btn-close-toast" (click)="mensajeNotificacion.set(null)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      }
+
+      <!-- PESTAÑAS PRINCIPALES DE NAVEGACIÓN GAMIFICADA -->
+      <nav class="main-gamification-nav">
+        <button 
+          type="button" 
+          class="nav-tab-btn" 
+          [class.active]="activeMainTab() === 'LEADERBOARD'" 
+          (click)="setMainTab('LEADERBOARD')">
+          <i class="fa-solid fa-trophy"></i>
+          <span>🏆 Salón de la Fama & Podio</span>
+        </button>
+        <button 
+          type="button" 
+          class="nav-tab-btn" 
+          [class.active]="activeMainTab() === 'RETOS'" 
+          (click)="setMainTab('RETOS')">
+          <i class="fa-solid fa-dumbbell"></i>
+          <span>🎯 Retos Individuales Comprobables</span>
+          <span class="pill-sparkle">Nivel & Tiers</span>
+        </button>
+        <button 
+          type="button" 
+          class="nav-tab-btn" 
+          [class.active]="activeMainTab() === 'CERTIFICACION_DT'" 
+          (click)="setMainTab('CERTIFICACION_DT')">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>🛡️ Certificación en Cancha (DT)</span>
+          @if (pendientesCount() > 0) {
+            <span class="badge-pending-counter">{{ pendientesCount() }}</span>
+          }
+        </button>
+      </nav>
+
+      <!-- ===================================================================== -->
+      <!-- VISTA 1: SALÓN DE LA FAMA & TABLA GENERAL (LEADERBOARD) -->
+      <!-- ===================================================================== -->
+      @if (activeMainTab() === 'LEADERBOARD') {
+        <!-- BARRA DE FILTROS & SELECCIÓN DE CATEGORÍA / TEMPORALIDAD -->
+        <section class="controls-bar">
         <div class="filter-group-chips">
           <span class="filter-lbl"><i class="fa-solid fa-layer-group"></i> Categoría:</span>
           <button 
             type="button" 
             class="chip-btn" 
             [class.active]="categoriaSeleccionada() === 'TODAS'" 
-            (click)="categoriaSeleccionada.set('TODAS')">
+            (click)="onCategoriaChange('TODAS')">
             Todas las Categorías
           </button>
           @for (cat of categoriasDisponibles(); track cat.id) {
@@ -43,7 +88,7 @@
               type="button" 
               class="chip-btn" 
               [class.active]="categoriaSeleccionada() === cat.id" 
-              (click)="categoriaSeleccionada.set(cat.id)">
+              (click)="onCategoriaChange(cat.id)">
               <span class="cat-dot" [style.background]="cat.color"></span>
               {{ cat.nombre }}
             </button>
@@ -56,11 +101,12 @@
             <input 
               type="text" 
               [(ngModel)]="busquedaTexto" 
+              (ngModelChange)="onSearchChange()"
               placeholder="Buscar por alumno o dorsal..."
               class="search-input" 
             />
             @if (busquedaTexto) {
-              <button class="btn-clear-search" (click)="busquedaTexto = ''"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-clear-search" (click)="busquedaTexto = ''; onSearchChange()"><i class="fa-solid fa-xmark"></i></button>
             }
           </div>
 
@@ -87,117 +133,130 @@
         </div>
       </section>
 
-      <!-- PODIO DE HONOR GAMIFICADO (TOP 3 JUGADORES) -->
-      @if (top3().length >= 3 && !busquedaTexto) {
+      <!-- PODIO DE HONOR GAMIFICADO (TOP 3 JUGADORES DE LA CATEGORÍA CONSULTADA) -->
+      @if (top3().length > 0 && !busquedaTexto) {
         <section class="podium-section">
+          <div class="podium-header-badge">
+            <div class="podium-category-pill">
+              <i class="fa-solid fa-trophy text-amber"></i>
+              <span>Podio de Honor: <strong>{{ getNombreCategoriaSeleccionada() }}</strong></span>
+            </div>
+          </div>
+
           <div class="podium-container">
             <!-- 2do LUGAR: PLATA -->
-            <div class="podium-column place-2">
-              <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[1])">
-                <div class="rank-crown-badge silver">
-                  <i class="fa-solid fa-medal"></i>
-                  <span>#2</span>
+            @if (top3().length >= 2) {
+              <div class="podium-column place-2">
+                <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[1])">
+                  <div class="rank-crown-badge silver">
+                    <i class="fa-solid fa-medal"></i>
+                    <span>#2</span>
+                  </div>
+                  
+                  <!-- MINI CARTA FUT HOLOGRÁFICA PLATA -->
+                  <div class="mini-fut-card tier-plata">
+                    <div class="card-ovr-box">
+                      <span class="ovr-num">{{ top3()[1].overallRating }}</span>
+                      <span class="pos-code">{{ top3()[1].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+                    </div>
+                    <div class="card-avatar-wrap">
+                      <img [src]="top3()[1].fotoUrl" [alt]="top3()[1].nombres" />
+                    </div>
+                    <div class="card-info-wrap">
+                      <span class="card-player-name">{{ top3()[1].nombres }} {{ top3()[1].apellidos }}</span>
+                      <span class="card-player-cat">{{ top3()[1].categoriaNombre }} • #{{ top3()[1].dorsal }}</span>
+                    </div>
+                    <div class="card-xp-badge">
+                      <i class="fa-solid fa-bolt"></i> {{ top3()[1].xpTotal | number }} XP
+                    </div>
+                  </div>
                 </div>
-                
-                <!-- MINI CARTA FUT HOLOGRÁFICA PLATA -->
-                <div class="mini-fut-card tier-plata">
-                  <div class="card-ovr-box">
-                    <span class="ovr-num">{{ top3()[1].overallRating }}</span>
-                    <span class="pos-code">{{ top3()[1].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-                  </div>
-                  <div class="card-avatar-wrap">
-                    <img [src]="top3()[1].fotoUrl" [alt]="top3()[1].nombres" />
-                  </div>
-                  <div class="card-info-wrap">
-                    <span class="card-player-name">{{ top3()[1].nombres }} {{ top3()[1].apellidos }}</span>
-                    <span class="card-player-cat">{{ top3()[1].categoriaNombre }} • #{{ top3()[1].dorsal }}</span>
-                  </div>
-                  <div class="card-xp-badge">
-                    <i class="fa-solid fa-bolt"></i> {{ top3()[1].xpTotal | number }} XP
+                <div class="podium-pedestal silver-pedestal">
+                  <div class="pedestal-rank">2</div>
+                  <div class="pedestal-meta">
+                    <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[1].rachaEntrenamientos }} días racha</span>
+                    <span class="level">Nivel {{ top3()[1].nivel }}</span>
                   </div>
                 </div>
               </div>
-              <div class="podium-pedestal silver-pedestal">
-                <div class="pedestal-rank">2</div>
-                <div class="pedestal-meta">
-                  <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[1].rachaEntrenamientos }} días racha</span>
-                  <span class="level">Nivel {{ top3()[1].nivel }}</span>
-                </div>
-              </div>
-            </div>
+            }
 
             <!-- 1er LUGAR: ORO (CAMPEÓN / MVP) -->
-            <div class="podium-column place-1">
-              <div class="champion-halo"></div>
-              <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[0])">
-                <div class="rank-crown-badge gold">
-                  <i class="fa-solid fa-crown"></i>
-                  <span>#1 MVP</span>
+            @if (top3().length >= 1) {
+              <div class="podium-column place-1">
+                <div class="champion-halo"></div>
+                <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[0])">
+                  <div class="rank-crown-badge gold">
+                    <i class="fa-solid fa-crown"></i>
+                    <span>#1 MVP</span>
+                  </div>
+                  
+                  <!-- CARTA FUT HOLOGRÁFICA ORO -->
+                  <div class="mini-fut-card tier-oro main-mvp">
+                    <div class="card-prism-shine"></div>
+                    <div class="card-ovr-box">
+                      <span class="ovr-num">{{ top3()[0].overallRating }}</span>
+                      <span class="pos-code">{{ top3()[0].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+                    </div>
+                    <div class="card-avatar-wrap">
+                      <img [src]="top3()[0].fotoUrl" [alt]="top3()[0].nombres" />
+                      <span class="mvp-star-badge"><i class="fa-solid fa-star"></i></span>
+                    </div>
+                    <div class="card-info-wrap">
+                      <span class="card-player-name">{{ top3()[0].nombres }} {{ top3()[0].apellidos }}</span>
+                      <span class="card-player-cat">{{ top3()[0].categoriaNombre }} • #{{ top3()[0].dorsal }}</span>
+                    </div>
+                    <div class="card-xp-badge gold-xp">
+                      <i class="fa-solid fa-bolt"></i> {{ top3()[0].xpTotal | number }} XP
+                    </div>
+                  </div>
                 </div>
-                
-                <!-- CARTA FUT HOLOGRÁFICA ORO -->
-                <div class="mini-fut-card tier-oro main-mvp">
-                  <div class="card-prism-shine"></div>
-                  <div class="card-ovr-box">
-                    <span class="ovr-num">{{ top3()[0].overallRating }}</span>
-                    <span class="pos-code">{{ top3()[0].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-                  </div>
-                  <div class="card-avatar-wrap">
-                    <img [src]="top3()[0].fotoUrl" [alt]="top3()[0].nombres" />
-                    <span class="mvp-star-badge"><i class="fa-solid fa-star"></i></span>
-                  </div>
-                  <div class="card-info-wrap">
-                    <span class="card-player-name">{{ top3()[0].nombres }} {{ top3()[0].apellidos }}</span>
-                    <span class="card-player-cat">{{ top3()[0].categoriaNombre }} • #{{ top3()[0].dorsal }}</span>
-                  </div>
-                  <div class="card-xp-badge gold-xp">
-                    <i class="fa-solid fa-bolt"></i> {{ top3()[0].xpTotal | number }} XP
+                <div class="podium-pedestal gold-pedestal">
+                  <div class="pedestal-rank">1</div>
+                  <div class="pedestal-meta">
+                    <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[0].rachaEntrenamientos }} días racha</span>
+                    <span class="level text-amber">Nivel {{ top3()[0].nivel }} Pro</span>
                   </div>
                 </div>
               </div>
-              <div class="podium-pedestal gold-pedestal">
-                <div class="pedestal-rank">1</div>
-                <div class="pedestal-meta">
-                  <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[0].rachaEntrenamientos }} días racha</span>
-                  <span class="level text-amber">Nivel {{ top3()[0].nivel }} Pro</span>
-                </div>
-              </div>
-            </div>
+            }
 
             <!-- 3er LUGAR: BRONCE -->
-            <div class="podium-column place-3">
-              <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[2])">
-                <div class="rank-crown-badge bronze">
-                  <i class="fa-solid fa-award"></i>
-                  <span>#3</span>
+            @if (top3().length >= 3) {
+              <div class="podium-column place-3">
+                <div class="podium-card-holder" (click)="seleccionarDetalleAlumno(top3()[2])">
+                  <div class="rank-crown-badge bronze">
+                    <i class="fa-solid fa-award"></i>
+                    <span>#3</span>
+                  </div>
+                  
+                  <!-- MINI CARTA FUT HOLOGRÁFICA BRONCE -->
+                  <div class="mini-fut-card tier-bronce">
+                    <div class="card-ovr-box">
+                      <span class="ovr-num">{{ top3()[2].overallRating }}</span>
+                      <span class="pos-code">{{ top3()[2].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+                    </div>
+                    <div class="card-avatar-wrap">
+                      <img [src]="top3()[2].fotoUrl" [alt]="top3()[2].nombres" />
+                    </div>
+                    <div class="card-info-wrap">
+                      <span class="card-player-name">{{ top3()[2].nombres }} {{ top3()[2].apellidos }}</span>
+                      <span class="card-player-cat">{{ top3()[2].categoriaNombre }} • #{{ top3()[2].dorsal }}</span>
+                    </div>
+                    <div class="card-xp-badge">
+                      <i class="fa-solid fa-bolt"></i> {{ top3()[2].xpTotal | number }} XP
+                    </div>
+                  </div>
                 </div>
-                
-                <!-- MINI CARTA FUT HOLOGRÁFICA BRONCE -->
-                <div class="mini-fut-card tier-bronce">
-                  <div class="card-ovr-box">
-                    <span class="ovr-num">{{ top3()[2].overallRating }}</span>
-                    <span class="pos-code">{{ top3()[2].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-                  </div>
-                  <div class="card-avatar-wrap">
-                    <img [src]="top3()[2].fotoUrl" [alt]="top3()[2].nombres" />
-                  </div>
-                  <div class="card-info-wrap">
-                    <span class="card-player-name">{{ top3()[2].nombres }} {{ top3()[2].apellidos }}</span>
-                    <span class="card-player-cat">{{ top3()[2].categoriaNombre }} • #{{ top3()[2].dorsal }}</span>
-                  </div>
-                  <div class="card-xp-badge">
-                    <i class="fa-solid fa-bolt"></i> {{ top3()[2].xpTotal | number }} XP
+                <div class="podium-pedestal bronze-pedestal">
+                  <div class="pedestal-rank">3</div>
+                  <div class="pedestal-meta">
+                    <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[2].rachaEntrenamientos }} días racha</span>
+                    <span class="level">Nivel {{ top3()[2].nivel }}</span>
                   </div>
                 </div>
               </div>
-              <div class="podium-pedestal bronze-pedestal">
-                <div class="pedestal-rank">3</div>
-                <div class="pedestal-meta">
-                  <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3()[2].rachaEntrenamientos }} días racha</span>
-                  <span class="level">Nivel {{ top3()[2].nivel }}</span>
-                </div>
-              </div>
-            </div>
+            }
           </div>
         </section>
       }
@@ -539,10 +598,307 @@
           </div>
         }
       </section>
+    } <!-- Fin @if (activeMainTab() === 'LEADERBOARD') -->
 
-      <!-- MODAL LATERAL / EXPEDIENTE DE CARTA FUT EVOLUTIVA DEL ALUMNO SELECCIONADO -->
-      @if (alumnoSeleccionado()) {
-        <div class="modal-backdrop" (click)="alumnoSeleccionado.set(null)">
+    <!-- ===================================================================== -->
+    <!-- VISTA 2: RETOS INDIVIDUALES COMPROBABLES & MÉTRICAS DE EXPERIENCIA -->
+    <!-- ===================================================================== -->
+    @if (activeMainTab() === 'RETOS') {
+      <section class="retos-module-view">
+        <!-- SELECTOR DE ALUMNO ACTIVO / PROTAGONISTA -->
+        <div class="active-student-bar">
+          <div class="student-bar-info">
+            <span class="lbl"><i class="fa-solid fa-user-ninja text-emerald"></i> Alumno Evaluado:</span>
+            <div class="selected-student-chip">
+              @if (jugadorParaRetos()) {
+                <img [src]="jugadorParaRetos()?.fotoUrl" [alt]="jugadorParaRetos()?.nombres" class="mini-avatar" />
+                <div class="student-names">
+                  <strong>{{ jugadorParaRetos()?.nombres }} {{ jugadorParaRetos()?.apellidos }}</strong>
+                  <span>#{{ jugadorParaRetos()?.dorsal }} • {{ jugadorParaRetos()?.categoriaNombre }} • Nivel {{ jugadorParaRetos()?.nivel }} ({{ jugadorParaRetos()?.xpTotal | number }} XP Total)</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Selector rápido para cambiar de alumno -->
+          <div class="switch-student-wrap">
+            <label><i class="fa-solid fa-arrows-rotate"></i> Cambiar Alumno:</label>
+            <select [ngModel]="jugadorParaRetos()?.id" (ngModelChange)="seleccionarJugadorPorId($event)" class="student-select">
+              @for (alm of alumnos(); track alm.id) {
+                <option [value]="alm.id">#{{ alm.dorsal }} {{ alm.nombres }} {{ alm.apellidos }} ({{ alm.categoriaNombre }})</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- PANEL DE MÉTRICAS & PORCENTAJE DE XP POR RETOS FÍSICOS Y TÉCNICOS -->
+        <div class="retos-metrics-dashboard">
+          <div class="metrics-hero-gauge">
+            <div class="gauge-circle-wrap">
+              <div class="gauge-ring">
+                <span class="gauge-percent-value">{{ metricasRetosJugador()?.porcentajeXpRetos || 0 }}%</span>
+                <span class="gauge-percent-label">XP por Retos</span>
+              </div>
+            </div>
+            <div class="gauge-text-block">
+              <h4>Aporte de Retos al Nivel del Jugador</h4>
+              <p>El <strong>{{ metricasRetosJugador()?.porcentajeXpRetos || 0 }}%</strong> de la experiencia total de este alumno ({{ metricasRetosJugador()?.xpRetosObtenido || 0 | number }} de {{ metricasRetosJugador()?.xpTotalJugador || 3120 | number }} XP) ha sido comprobada presencialmente ante el Director Técnico.</p>
+              
+              <div class="xp-global-progress-track">
+                <div class="track-fill" [style.width.%]="metricasRetosJugador()?.porcentajeXpRetos || 0"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics-kpis-grid">
+            <div class="kpi-box-metric green-kpi">
+              <div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-val">+{{ metricasRetosJugador()?.xpRetosObtenido || 0 | number }} XP</span>
+                <span class="kpi-lbl">Ganado en Retos</span>
+              </div>
+            </div>
+
+            <div class="kpi-box-metric cyan-kpi">
+              <div class="kpi-icon"><i class="fa-solid fa-certificate"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-val">{{ metricasRetosJugador()?.retosAprobadosCount || 0 }} / {{ metricasRetosJugador()?.totalNivelesCatalogo || 21 }}</span>
+                <span class="kpi-lbl">Niveles Aprobados ({{ metricasRetosJugador()?.porcentajeCatalogoCompletado || 0 }}%)</span>
+              </div>
+            </div>
+
+            <div class="kpi-box-metric amber-kpi">
+              <div class="kpi-icon"><i class="fa-solid fa-stopwatch-20"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-val">{{ metricasRetosJugador()?.retosPendientesCount || 0 }} en Cancha</span>
+                <span class="kpi-lbl">Listos para Probar al DT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESGLOSE POR DISCIPLINAS / CATEGORÍAS -->
+        @if (metricasRetosJugador()?.desgloseCategorias?.length > 0) {
+          <div class="categories-progress-row">
+            @for (cat of metricasRetosJugador()?.desgloseCategorias; track cat.categoria) {
+              <div class="cat-progress-card">
+                <div class="cat-card-top">
+                  <span class="cat-name"><i [class]="cat.icono" [style.color]="cat.color"></i> {{ cat.nombre }}</span>
+                  <span class="cat-pct" [style.color]="cat.color">{{ cat.porcentaje }}%</span>
+                </div>
+                <div class="cat-bar-track">
+                  <div class="cat-bar-fill" [style.width.%]="cat.porcentaje" [style.background-color]="cat.color"></div>
+                </div>
+                <div class="cat-card-bottom">
+                  <span>{{ cat.nivelesAprobados }}/{{ cat.nivelesTotales }} niveles</span>
+                  <strong>+{{ cat.xpGanado }} / {{ cat.xpTotal }} XP</strong>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- BARRA DE FILTROS POR CATEGORÍA DE RETO & EXPLICACIÓN DE SALTO EN CASCADA -->
+        <div class="retos-filter-bar">
+          <div class="filter-chips-list">
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'TODOS'" (click)="filtroTipoReto.set('TODOS')">
+              <i class="fa-solid fa-layer-group"></i> Todos los Retos
+            </button>
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'FUERZA_CALISTENIA'" (click)="filtroTipoReto.set('FUERZA_CALISTENIA')">
+              <i class="fa-solid fa-dumbbell"></i> Fuerza (Flexiones)
+            </button>
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'TECNICA_CONTROL'" (click)="filtroTipoReto.set('TECNICA_CONTROL')">
+              <i class="fa-solid fa-futbol"></i> Técnica (21s Dominadas)
+            </button>
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'POTENCIA_VELOCIDAD'" (click)="filtroTipoReto.set('POTENCIA_VELOCIDAD')">
+              <i class="fa-solid fa-bolt"></i> Potencia (Saltos)
+            </button>
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'RESISTENCIA_CORE'" (click)="filtroTipoReto.set('RESISTENCIA_CORE')">
+              <i class="fa-solid fa-shield-halved"></i> Resistencia (Plancha)
+            </button>
+            <button type="button" class="reto-chip" [class.active]="filtroTipoReto() === 'PRECISION_TIRO'" (click)="filtroTipoReto.set('PRECISION_TIRO')">
+              <i class="fa-solid fa-crosshairs"></i> Precisión (Largueros)
+            </button>
+          </div>
+
+          <div class="retos-info-legend">
+            <span class="info-pill cascade-info"><i class="fa-solid fa-rocket text-cyan"></i> <strong>Regla de Salto de Reto:</strong> Si demuestras directamente un nivel superior (ej. 50 flexiones), el DT aprobará automáticamente todos los niveles anteriores y sumará el acumulado de XP.</span>
+          </div>
+        </div>
+
+        <!-- GRID DE TARJETAS DE RETOS INDIVIDUALES -->
+        <div class="retos-cards-grid">
+          @for (reto of retosFiltrados(); track reto.id) {
+            <div class="reto-card-card">
+              <div class="reto-card-header" [style.borderLeftColor]="reto.color_distintivo || '#10b981'">
+                <div class="reto-icon-box" [style.background]="(reto.color_distintivo || '#10b981') + '15'" [style.color]="reto.color_distintivo || '#10b981'">
+                  <i [class]="reto.icono"></i>
+                </div>
+                <div class="reto-header-text">
+                  <h3>{{ reto.nombre }}</h3>
+                  <p>{{ reto.descripcion }}</p>
+                </div>
+              </div>
+
+              <!-- LISTA DE NIVELES PROGRESIVOS (TIERS: 5, 10, 15, 25, 50...) -->
+              <div class="reto-tiers-container">
+                @for (nivel of reto.niveles; track nivel.nivel) {
+                  @let prog = getProgresoNivel(reto.id, nivel.nivel);
+                  <div 
+                    class="tier-row-item" 
+                    [class.tier-aprobado]="prog.estado === 'APROBADO'"
+                    [class.tier-comprobable]="prog.estado === 'COMPROBABLE'"
+                    [class.tier-rechazado]="prog.estado === 'RECHAZADO'">
+                    
+                    <div class="tier-left-info">
+                      <div class="tier-number-badge">
+                        <span>Nivel {{ nivel.nivel }}</span>
+                        @if (nivel.nivel > 1 && prog.estado !== 'APROBADO') {
+                          <span class="badge-jump-hint" title="Al aprobar este nivel, se aprueban automáticamente todos los niveles anteriores"><i class="fa-solid fa-forward-fast"></i> Salto</span>
+                        }
+                      </div>
+                      <div class="tier-title-meta">
+                        <strong class="tier-title">{{ nivel.titulo }}</strong>
+                        <span class="tier-meta-sub">{{ nivel.meta }} {{ nivel.unidad }} • Dificultad {{ nivel.dificultad }}</span>
+                      </div>
+                    </div>
+
+                    <div class="tier-right-action">
+                      <div class="tier-xp-reward">
+                        <i class="fa-solid fa-bolt"></i> +{{ nivel.xp }} XP
+                      </div>
+
+                      <!-- ESTADO 1: DISPONIBLE (Alumno desea que sea comprobable) -->
+                      @if (prog.estado === 'DISPONIBLE') {
+                        <button 
+                          type="button" 
+                          class="btn-solicitar-comprobacion" 
+                          [class.btn-jump-action]="nivel.nivel > 1"
+                          (click)="solicitarComprobacionReto(reto, nivel)"
+                          [title]="nivel.nivel > 1 ? 'Saltar directamente a este nivel y desbloquear el acumulado' : 'Marcar para comprobar en cancha'">
+                          <i class="fa-solid" [class.fa-hand]="nivel.nivel === 1" [class.fa-rocket]="nivel.nivel > 1"></i>
+                          <span>{{ nivel.nivel > 1 ? 'Comprobar Nivel ' + nivel.nivel : 'Deseo Comprobar' }}</span>
+                        </button>
+                      }
+
+                      <!-- ESTADO 2: COMPROBABLE (Listo para realizar delante del DT) -->
+                      @if (prog.estado === 'COMPROBABLE') {
+                        <div class="badge-comprobable-live">
+                          <span class="pulse-beacon"></span>
+                          <i class="fa-solid fa-stopwatch-20"></i>
+                          <span>Comprobable en Cancha</span>
+                        </div>
+                      }
+
+                      <!-- ESTADO 3: APROBADO POR EL DT (XP Acreditada) -->
+                      @if (prog.estado === 'APROBADO') {
+                        <div class="badge-aprobado-certified" [title]="prog.item?.observaciones_dt || 'Aprobado en entrenamiento'">
+                          <i class="fa-solid fa-circle-check"></i>
+                          <span>Certificado DT (+{{ nivel.xp }} XP)</span>
+                        </div>
+                      }
+
+                      <!-- ESTADO 4: RECHAZADO (Requiere más práctica) -->
+                      @if (prog.estado === 'RECHAZADO') {
+                        <div class="badge-rechazado-retry">
+                          <span><i class="fa-solid fa-circle-exclamation"></i> Practicar técnica</span>
+                          <button type="button" class="btn-retry-tier" (click)="solicitarComprobacionReto(reto, nivel)">Reintentar</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ===================================================================== -->
+    <!-- VISTA 3: PANEL DE CERTIFICACIÓN & APROBACIÓN DT EN CANCHA -->
+    <!-- ===================================================================== -->
+    @if (activeMainTab() === 'CERTIFICACION_DT') {
+      <section class="dt-certification-view">
+        <div class="dt-banner-hero">
+          <div class="dt-hero-icon">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <div class="dt-hero-text">
+            <h3>Panel de Validación & Certificación en Cancha (Director Técnico)</h3>
+            <p>Revisa a los alumnos que están realizando sus retos físicos/técnicos delante tuyo en la sesión. <strong>Soporta Salto de Reto:</strong> Al aprobar un nivel superior (ej. 50 flexiones), el sistema aprueba automáticamente los niveles anteriores y suma el acumulado de XP en vivo.</p>
+          </div>
+          <div class="dt-hero-counter">
+            <span class="count-num">{{ pendientesCount() }}</span>
+            <span class="count-lbl">Retos Esperando Verificación</span>
+          </div>
+        </div>
+
+        <!-- LISTA DE RETOS PENDIENTES DE EVALUACIÓN EN VIVO -->
+        <div class="pending-retos-list">
+          @for (p of retosPendientesDT(); track p.id) {
+            <div class="pending-eval-card" [class.is-jump-card]="(p.nivel_solicitado || p.nivelSolicitado) > 1">
+              <div class="player-eval-col">
+                <img [src]="p.jugador_foto || p.jugadorFoto || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200'" [alt]="p.jugador_nombre" class="player-eval-avatar" />
+                <div class="player-eval-info">
+                  <span class="player-dorsal-tag">#{{ p.jugador_dorsal || p.jugadorDorsal || '10' }}</span>
+                  <h4 class="player-eval-name">{{ p.jugador_nombre || p.jugadorNombre }} {{ p.jugador_apellidos || p.jugadorApellidos }}</h4>
+                  <span class="player-eval-cat">{{ p.categoria_nombre || p.categoriaNombre || 'Categoría Principal' }}</span>
+                </div>
+              </div>
+
+              <div class="challenge-eval-col">
+                <div class="challenge-badge-wrap">
+                  <span class="chal-icon"><i [class]="p.reto_icono || p.retoIcono || 'fa-solid fa-dumbbell'"></i></span>
+                  <div>
+                    <h4 class="chal-name">{{ p.reto_nombre || p.retoNombre }}</h4>
+                    <p class="chal-target">
+                      <strong>Meta: {{ p.meta_cantidad || p.metaCantidad }} {{ p.unidad_medida || p.unidadMedida }}</strong> • Nivel {{ p.nivel_solicitado || p.nivelSolicitado }}
+                      @if ((p.nivel_solicitado || p.nivelSolicitado) > 1) {
+                        <span class="cascade-alert-pill"><i class="fa-solid fa-forward-fast"></i> Salto: Auto-aprueba niveles anteriores</span>
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div class="chal-xp-tag">
+                  <i class="fa-solid fa-bolt"></i> +{{ p.xp_recompensa || p.xpRecompensa }} XP directos
+                </div>
+              </div>
+
+              <div class="actions-eval-col">
+                <button 
+                  type="button" 
+                  class="btn-approve-dt" 
+                  (click)="evaluarRetoDT(p, true)">
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>✅ Aprobar en Cancha {{ (p.nivel_solicitado || p.nivelSolicitado) > 1 ? '& Cascada (+XP)' : '(+' + (p.xp_recompensa || p.xpRecompensa) + ' XP)' }}</span>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-reject-dt" 
+                  (click)="evaluarRetoDT(p, false)">
+                  <i class="fa-solid fa-rotate-left"></i>
+                  <span>❌ Corregir Técnica</span>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-pending-box">
+              <div class="empty-icon"><i class="fa-solid fa-circle-check text-emerald"></i></div>
+              <h3>¡Todo al día en Cancha!</h3>
+              <p>No hay alumnos en cola esperando comprobación de retos individuales en este momento.</p>
+              <button type="button" class="btn-goto-retos" (click)="setMainTab('RETOS')">
+                Ver Catálogo de Retos Individuales
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- MODAL LATERAL / EXPEDIENTE DE CARTA FUT EVOLUTIVA DEL ALUMNO SELECCIONADO -->
+    @if (alumnoSeleccionado()) {
+      <div class="modal-backdrop" (click)="alumnoSeleccionado.set(null)">
           <div class="fut-inspect-drawer" (click)="$event.stopPropagation()">
             <div class="drawer-header">
               <div class="drawer-title-wrap">
@@ -636,6 +992,34 @@
                   <div class="xp-row row-total">
                     <span class="lbl">TOTAL EXPERIENCIA TEMPORADA:</span>
                     <strong class="val text-emerald">{{ alumnoSeleccionado()?.xpTotal | number }} XP</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RETOS INDIVIDUALES COMPROBADOS & CERTIFICADOS POR DT -->
+              <div class="xp-detailed-card mt-3">
+                <h4 class="box-subtitle"><i class="fa-solid fa-medal text-amber"></i> Retos Comprobables Certificados por DT</h4>
+                <div class="certified-retos-badges">
+                  <div class="certified-badge-pill">
+                    <i class="fa-solid fa-dumbbell text-emerald"></i>
+                    <div>
+                      <strong>Flexiones de Pecho (Push-Ups)</strong>
+                      <span>15 flexiones • Aprobado por Prof. Yepes (+100 XP)</span>
+                    </div>
+                  </div>
+                  <div class="certified-badge-pill">
+                    <i class="fa-solid fa-futbol text-blue"></i>
+                    <div>
+                      <strong>Dominadas de Balón (21s)</strong>
+                      <span>25 toques • Aprobado por DT (+80 XP)</span>
+                    </div>
+                  </div>
+                  <div class="certified-badge-pill">
+                    <i class="fa-solid fa-bolt text-amber"></i>
+                    <div>
+                      <strong>Sentadillas con Salto</strong>
+                      <span>20 saltos • Aprobado en entrenamiento (+80 XP)</span>
+                    </div>
                   </div>
                 </div>
               </div>

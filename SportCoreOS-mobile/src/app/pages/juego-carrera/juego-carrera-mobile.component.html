@@ -195,64 +195,235 @@
         </section>
       }
 
-      <!-- 4. CONTENIDO DE PESTAÑA: EXIGENCIAS & RETOS (ENTRENAMIENTOS / AMISTOSOS / OFICIALES) -->
+      <!-- 4. CONTENIDO DE PESTAÑA: EXIGENCIAS & RETOS (RETOS COMPROBABLES DT / MISIONES) -->
       @if (activeTab() === 'MISIONES') {
         <section class="game-card-view">
-          <div class="view-header">
-            <div class="view-title">
-              <i class="fa-solid fa-medal text-emerald"></i>
-              <div>
-                <h3>Exigencias de Rendimiento Real</h3>
-                <p>Cumple metas en tus entrenamientos y partidos para subir de OVR</p>
+          <!-- Sub-navegación: Retos Comprobables vs Misiones -->
+          <div class="exigencias-subnav-toggle">
+            <button 
+              class="subnav-toggle-btn" 
+              [class.active]="subTabExigencias() === 'RETOS_COMPROBABLES'"
+              (click)="subTabExigencias.set('RETOS_COMPROBABLES')">
+              <i class="fa-solid fa-dumbbell"></i>
+              <span>Retos Físicos DT</span>
+              <span class="badge-counter-mini" *ngIf="retosComprobablesPendientesCount() > 0">
+                {{ retosComprobablesPendientesCount() }}
+              </span>
+            </button>
+            <button 
+              class="subnav-toggle-btn" 
+              [class.active]="subTabExigencias() === 'MISIONES_PARTIDO'"
+              (click)="subTabExigencias.set('MISIONES_PARTIDO')">
+              <i class="fa-solid fa-clipboard-list"></i>
+              <span>Misiones de Partido</span>
+            </button>
+          </div>
+
+          <!-- SUB-SECCIÓN A: RETOS INDIVIDUALES COMPROBABLES -->
+          @if (subTabExigencias() === 'RETOS_COMPROBABLES') {
+            <!-- GAUGE HERO DE PORCENTAJE DE XP GANADA POR RETOS -->
+            <div class="mobile-xp-gauge-card">
+              <div class="gauge-left">
+                <div class="gauge-circle-mini">
+                  <span class="gauge-num">{{ porcentajeXpRetos() }}%</span>
+                  <span class="gauge-sub">XP Retos</span>
+                </div>
+              </div>
+              <div class="gauge-right">
+                <div class="gauge-headline">
+                  <h4>{{ xpRetosObtenido() | number }} de {{ xpTotal() | number }} XP</h4>
+                  <span class="badge-cat-count">{{ retosAprobadosCount() }} aprobados</span>
+                </div>
+                <p class="gauge-desc">Experiencia ganada en retos físicos y técnicos comprobados en cancha ante el DT.</p>
+                
+                <div class="mini-progress-track">
+                  <div class="mini-progress-fill" [style.width.%]="porcentajeXpRetos()"></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Filtros de Misiones -->
-          <div class="mission-type-chips">
-            <button class="chip" [class.active]="filtroMision() === 'TODAS'" (click)="filtroMision.set('TODAS')">Todas</button>
-            <button class="chip" [class.active]="filtroMision() === 'ENTRENAMIENTO'" (click)="filtroMision.set('ENTRENAMIENTO')">🏃 Entrenamientos</button>
-            <button class="chip" [class.active]="filtroMision() === 'AMISTOSO'" (click)="filtroMision.set('AMISTOSO')">⚽ Amistosos</button>
-            <button class="chip" [class.active]="filtroMision() === 'OFICIAL'" (click)="filtroMision.set('OFICIAL')">🏆 Torneo Oficial</button>
-          </div>
-
-          <!-- Lista de Retos / Misiones -->
-          <div class="missions-list">
-            @for (m of misionesFiltradas(); track m.id) {
-              <div class="mission-card" [class.completed]="m.completada">
-                <div class="mission-left-icon" [ngClass]="m.tipo.toLowerCase()">
-                  <i [class]="m.icono"></i>
-                </div>
-                <div class="mission-body">
-                  <div class="mission-top-row">
-                    <span class="mission-badge" [ngClass]="m.tipo.toLowerCase()">{{ m.exigenciaBadge }}</span>
-                    <span class="mission-xp">+{{ m.xp }} XP</span>
-                  </div>
-                  <h4 class="mission-title">{{ m.titulo }}</h4>
-                  <p class="mission-desc">{{ m.descripcion }}</p>
-
-                  <div class="mission-progress-row">
-                    <div class="progress-bar-wrap">
-                      <div class="bar-fill" [style.width.%]="(m.progreso / m.meta) * 100"></div>
-                    </div>
-                    <span class="progress-count">{{ m.progreso }}/{{ m.meta }}</span>
+            <!-- DESGLOSE RESUMEN POR CATEGORÍAS EN MOBILE -->
+            <div class="mobile-cat-chips-scroll">
+              @for (cat of desgloseCategoriasRetos(); track cat.categoria) {
+                <div class="cat-pill-item" [style.border-left-color]="cat.color">
+                  <span class="cat-pill-name"><i [class]="cat.icono" [style.color]="cat.color"></i> {{ cat.categoria }}</span>
+                  <div class="cat-pill-meta">
+                    <span class="cat-pill-pct" [style.color]="cat.color">{{ cat.porcentaje }}%</span>
+                    <span class="cat-pill-xp">+{{ cat.xpGanado }} XP</span>
                   </div>
                 </div>
+              }
+            </div>
 
-                <div class="mission-action-btn">
-                  @if (m.completada) {
-                    <span class="badge-done"><i class="fa-solid fa-circle-check"></i> Reclamada</span>
-                  } @else if (m.progreso >= m.meta) {
-                    <button class="btn-claim-xp" (click)="reclamarMision(m)">
-                      <i class="fa-solid fa-gift"></i> Reclamar
-                    </button>
-                  } @else {
-                    <span class="badge-in-progress">En curso</span>
-                  }
+            <div class="view-header mt-1">
+              <div class="view-title">
+                <i class="fa-solid fa-stopwatch-20 text-cyan"></i>
+                <div>
+                  <h3>Catálogo de Retos & Salto de Nivel</h3>
+                  <p>Al superar un nivel superior, el DT auto-aprueba todos los anteriores</p>
                 </div>
               </div>
-            }
-          </div>
+              <div class="retos-summary-chips">
+                <span class="chip-metric green"><i class="fa-solid fa-circle-check"></i> {{ retosAprobadosCount() }} Aprobados</span>
+                <span class="chip-metric amber" *ngIf="retosComprobablesPendientesCount() > 0"><i class="fa-solid fa-clock"></i> {{ retosComprobablesPendientesCount() }} En Cancha</span>
+              </div>
+            </div>
+
+            <!-- Banner Explicativo de Flujo y Salto de Reto -->
+            <div class="coach-workflow-banner">
+              <div class="flow-icon"><i class="fa-solid fa-rocket text-cyan"></i></div>
+              <div class="flow-text">
+                <strong>🚀 Regla de Salto de Reto en Cascada:</strong>
+                <p>Si eres capaz de realizar directamente 50 flexiones, marca el Nivel 5. Al certificarlo con tu DT, <strong>el sistema te aprobará automáticamente los niveles 1, 2, 3, 4 y 5</strong> sumando todo el XP acumulado.</p>
+              </div>
+            </div>
+
+            <!-- Chips de Categoría de Reto -->
+            <div class="mission-type-chips">
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'TODAS'" (click)="filtroCategoriaReto.set('TODAS')">Todos los Retos</button>
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'FISICO'" (click)="filtroCategoriaReto.set('FISICO')">💪 Físico</button>
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'TECNICO'" (click)="filtroCategoriaReto.set('TECNICO')">⚽ Técnico</button>
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'RESISTENCIA'" (click)="filtroCategoriaReto.set('RESISTENCIA')">🛡️ Resistencia</button>
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'POTENCIA'" (click)="filtroCategoriaReto.set('POTENCIA')">⚡ Potencia</button>
+              <button class="chip" [class.active]="filtroCategoriaReto() === 'PRECISION'" (click)="filtroCategoriaReto.set('PRECISION')">🎯 Precisión</button>
+            </div>
+
+            <!-- Lista de Tarjetas de Retos -->
+            <div class="retos-cards-list">
+              @for (reto of retosFiltrados(); track reto.id) {
+                <div class="reto-expandable-card">
+                  <div class="reto-card-header">
+                    <div class="reto-header-left">
+                      <div class="reto-icon-circle" [style.background-color]="reto.color + '22'" [style.color]="reto.color">
+                        <i [class]="reto.icono"></i>
+                      </div>
+                      <div class="reto-title-block">
+                        <div class="reto-cat-line">
+                          <span class="reto-cat-badge" [style.color]="reto.color">{{ reto.categoria }}</span>
+                          <span class="reto-levels-count">{{ reto.niveles.length }} Niveles</span>
+                        </div>
+                        <h4 class="reto-title-text">{{ reto.titulo }}</h4>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="reto-desc-text">{{ reto.descripcion }}</p>
+
+                  <!-- Niveles Progresivos del Reto -->
+                  <div class="reto-tiers-container">
+                    @for (lvl of reto.niveles; track lvl.nivel) {
+                      @let prog = getProgresoRetoNivel(reto.codigo, lvl.nivel);
+                      <div 
+                        class="reto-tier-row"
+                        [class.tier-aprobado]="prog.estado === 'APROBADO'"
+                        [class.tier-comprobable]="prog.estado === 'COMPROBABLE'"
+                        [class.tier-disponible]="prog.estado === 'DISPONIBLE'">
+                        
+                        <div class="tier-left-info">
+                          <div class="tier-number-tag">
+                            <span class="lvl-badge-num">NIVEL {{ lvl.nivel }}</span>
+                            <span class="diff-badge" [ngClass]="lvl.dificultad.toLowerCase()">{{ lvl.dificultad }}</span>
+                            @if (lvl.nivel > 1 && prog.estado !== 'APROBADO') {
+                              <span class="jump-pill-mini" title="Salto en cascada"><i class="fa-solid fa-forward-fast"></i> Salto</span>
+                            }
+                          </div>
+                          <div class="tier-title-meta">
+                            <span class="tier-title-label">{{ lvl.titulo }}</span>
+                            <span class="tier-target-val"><i class="fa-solid fa-flag-checkered text-slate"></i> Meta: <strong>{{ lvl.meta }} {{ lvl.unidad }}</strong></span>
+                          </div>
+                        </div>
+
+                        <div class="tier-right-action">
+                          <div class="tier-xp-reward">+{{ lvl.xp }} XP</div>
+
+                          @if (prog.estado === 'APROBADO') {
+                            <div class="status-pill aprobado" title="Certificado por el DT">
+                              <i class="fa-solid fa-certificate"></i>
+                              <span>Aprobado</span>
+                            </div>
+                          } @else if (prog.estado === 'COMPROBABLE') {
+                            <div class="status-pill comprobable-pulse" (click)="aprobarRetoDirectoDTCascada(reto, lvl)" title="Toca para simular aprobación DT en cascada">
+                              <span class="pulse-beacon"></span>
+                              <i class="fa-solid fa-stopwatch"></i>
+                              <span>En Cancha</span>
+                            </div>
+                          } @else {
+                            <button 
+                              class="btn-solicitar-comprobar"
+                              [class.btn-jump-pulse]="lvl.nivel > 1"
+                              (click)="solicitarComprobacionReto(reto, lvl)"
+                              [title]="lvl.nivel > 1 ? 'Saltar directamente a este nivel y auto-aprobar los anteriores' : 'Comprobar en cancha'">
+                              <i class="fa-solid" [class.fa-hand]="lvl.nivel === 1" [class.fa-rocket]="lvl.nivel > 1"></i>
+                              <span>{{ lvl.nivel > 1 ? 'Saltar Nv.' + lvl.nivel : 'Comprobar' }}</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- SUB-SECCIÓN B: MISIONES DE PARTIDO & ENTRENAMIENTO -->
+          @if (subTabExigencias() === 'MISIONES_PARTIDO') {
+            <div class="view-header">
+              <div class="view-title">
+                <i class="fa-solid fa-medal text-emerald"></i>
+                <div>
+                  <h3>Exigencias de Rendimiento Real</h3>
+                  <p>Cumple metas en tus entrenamientos y partidos para subir de OVR</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filtros de Misiones -->
+            <div class="mission-type-chips">
+              <button class="chip" [class.active]="filtroMision() === 'TODAS'" (click)="filtroMision.set('TODAS')">Todas</button>
+              <button class="chip" [class.active]="filtroMision() === 'ENTRENAMIENTO'" (click)="filtroMision.set('ENTRENAMIENTO')">🏃 Entrenamientos</button>
+              <button class="chip" [class.active]="filtroMision() === 'AMISTOSO'" (click)="filtroMision.set('AMISTOSO')">⚽ Amistosos</button>
+              <button class="chip" [class.active]="filtroMision() === 'OFICIAL'" (click)="filtroMision.set('OFICIAL')">🏆 Torneo Oficial</button>
+            </div>
+
+            <!-- Lista de Retos / Misiones -->
+            <div class="missions-list">
+              @for (m of misionesFiltradas(); track m.id) {
+                <div class="mission-card" [class.completed]="m.completada">
+                  <div class="mission-left-icon" [ngClass]="m.tipo.toLowerCase()">
+                    <i [class]="m.icono"></i>
+                  </div>
+                  <div class="mission-body">
+                    <div class="mission-top-row">
+                      <span class="mission-badge" [ngClass]="m.tipo.toLowerCase()">{{ m.exigenciaBadge }}</span>
+                      <span class="mission-xp">+{{ m.xp }} XP</span>
+                    </div>
+                    <h4 class="mission-title">{{ m.titulo }}</h4>
+                    <p class="mission-desc">{{ m.descripcion }}</p>
+
+                    <div class="mission-progress-row">
+                      <div class="progress-bar-wrap">
+                        <div class="bar-fill" [style.width.%]="(m.progreso / m.meta) * 100"></div>
+                      </div>
+                      <span class="progress-count">{{ m.progreso }}/{{ m.meta }}</span>
+                    </div>
+                  </div>
+
+                  <div class="mission-action-btn">
+                    @if (m.completada) {
+                      <span class="badge-done"><i class="fa-solid fa-circle-check"></i> Reclamada</span>
+                    } @else if (m.progreso >= m.meta) {
+                      <button class="btn-claim-xp" (click)="reclamarMision(m)">
+                        <i class="fa-solid fa-gift"></i> Reclamar
+                      </button>
+                    } @else {
+                      <span class="badge-in-progress">En curso</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </section>
       }
 
