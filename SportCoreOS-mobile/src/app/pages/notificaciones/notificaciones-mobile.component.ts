@@ -176,6 +176,11 @@ export interface NotificacionItem {
       display: flex;
       flex-direction: column;
       background: #f8fafc;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden !important;
+      overflow-y: hidden;
+      box-sizing: border-box;
     }
 
     .filter-tabs {
@@ -184,6 +189,8 @@ export interface NotificacionItem {
       padding: 0.75rem 1rem 0.4rem;
       background: #fff;
       border-bottom: 1px solid #e2e8f0;
+      width: 100%;
+      box-sizing: border-box;
 
       .tab-btn {
         flex: 1;
@@ -206,15 +213,19 @@ export interface NotificacionItem {
 
     .notif-viewport {
       flex: 1;
-      width: 100%;
-      padding: 0.65rem 1rem;
-      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.65rem 0.85rem;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
 
     .notif-item-wrapper {
       height: 88px;
       padding-bottom: 0.5rem;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .notif-card {

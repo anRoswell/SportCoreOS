@@ -243,16 +243,22 @@ interface ReciboMensualidad {
       display: flex;
       flex-direction: column;
       background: #f8fafc;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden !important;
+      overflow-y: hidden;
+      box-sizing: border-box;
     }
 
     .wallet-balance-card {
       background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #0f172a 100%);
       color: #fff;
-      margin: 0.75rem 1rem 0.5rem;
+      margin: 0.75rem 0.85rem 0.5rem;
       padding: 1.15rem;
       border-radius: 1.25rem;
       box-shadow: 0 10px 20px -5px rgba(6, 78, 59, 0.4);
       flex-shrink: 0;
+      box-sizing: border-box;
 
       .wallet-top {
         display: flex;
@@ -310,8 +316,10 @@ interface ReciboMensualidad {
     .filter-tabs {
       display: flex;
       gap: 0.5rem;
-      padding: 0 1rem 0.5rem;
+      padding: 0 0.85rem 0.5rem;
       flex-shrink: 0;
+      width: 100%;
+      box-sizing: border-box;
 
       .tab-btn {
         flex: 1;
@@ -334,15 +342,19 @@ interface ReciboMensualidad {
 
     .recibos-viewport {
       flex: 1;
-      width: 100%;
-      padding: 0 1rem 0.5rem;
-      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0 0.85rem 0.5rem;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
 
     .recibo-item-wrapper {
       height: 210px;
       padding-bottom: 0.75rem;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .recibo-card {

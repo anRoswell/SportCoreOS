@@ -378,11 +378,15 @@ export interface ReservaActiva {
     }
 
     .canchas-container {
-      padding: 1rem;
+      padding: 0.85rem;
       padding-bottom: calc(75px + var(--safe-area-bottom));
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.15rem;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden !important;
+      box-sizing: border-box;
     }
 
     .filter-card {

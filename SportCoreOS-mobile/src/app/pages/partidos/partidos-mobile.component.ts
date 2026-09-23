@@ -270,22 +270,29 @@ export interface PartidoItem {
       height: 100%;
       min-height: 0;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: hidden;
+      width: 100%;
+      max-width: 100vw;
       margin-bottom: calc(62px + var(--safe-area-bottom));
+      box-sizing: border-box;
     }
 
     .matches-viewport {
       height: 100%;
-      width: 100%;
-      padding: 0.75rem 1rem;
-      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.75rem 0.85rem;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
 
     .match-item-wrapper {
       height: 255px;
       padding-bottom: 0.85rem;
-      box-sizing: border-box;
-      width: 100%;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .match-item-card {

@@ -199,20 +199,28 @@ export interface NoticiaClub {
     .news-container {
       height: calc(100vh - 135px - var(--safe-area-bottom));
       height: calc(100dvh - 135px - var(--safe-area-bottom));
-      overflow: hidden;
+      overflow-x: hidden !important;
+      overflow-y: hidden;
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
     }
 
     .news-viewport {
       height: 100%;
-      width: 100%;
-      padding: 0.85rem 1rem;
-      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.85rem 0.85rem;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
 
     .news-card-wrapper {
       height: 330px;
       padding-bottom: 1rem;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .news-card {

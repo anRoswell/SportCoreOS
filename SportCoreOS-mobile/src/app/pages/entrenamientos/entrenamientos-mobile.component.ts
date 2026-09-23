@@ -178,9 +178,12 @@ interface JugadorAsistencia {
   `,
   styles: [`
     .page-content {
-      padding: 1rem;
+      padding: 0.85rem;
       padding-bottom: calc(85px + var(--safe-area-bottom));
-      max-width: 600px;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden !important;
+      box-sizing: border-box;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
