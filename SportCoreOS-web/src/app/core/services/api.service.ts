@@ -60,7 +60,7 @@ export const DEFAULT_CLUBS: Club[] = [
     id: '10000000-0000-0000-0000-000000000002',
     nombre: 'Academia Semillero Santa Fe',
     slug: 'semillero-santa-fe',
-    logo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=200',
+    logo: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
     plan: 'Plan Semillero Oro',
     sigla: 'SSF',
     ciudad: 'Medellín',

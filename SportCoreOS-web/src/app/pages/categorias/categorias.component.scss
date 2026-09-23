@@ -219,6 +219,29 @@
         }
       }
 
+      .cat-schedule {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.78rem;
+        color: var(--text-heading);
+        background: var(--bg-surface);
+        padding: 0.45rem 0.65rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        margin: 0.35rem 0;
+
+        i {
+          color: #10b981;
+          font-size: 0.85rem;
+          flex-shrink: 0;
+        }
+
+        strong {
+          color: var(--color-primary);
+        }
+      }
+
       .cat-footer {
         display: flex;
         justify-content: space-between;

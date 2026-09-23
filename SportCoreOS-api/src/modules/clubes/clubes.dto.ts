@@ -28,7 +28,7 @@ export class CreateClubDto {
   @IsString()
   pais?: string;
 
-  @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120' })
+  @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120' })
   @IsOptional()
   @IsString()
   logoUrl?: string;
@@ -61,7 +61,7 @@ export class UpdateClubDto {
   @IsString()
   pais?: string;
 
-  @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120' })
+  @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120' })
   @IsOptional()
   @IsString()
   logoUrl?: string;

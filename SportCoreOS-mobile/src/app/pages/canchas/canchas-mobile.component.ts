@@ -65,6 +65,15 @@ export class CanchasMobileComponent {
     { fechaStr: '2026-09-27', nombreDia: 'DOM', numDia: '27', mes: 'SEP' }
   ];
 
+  readonly fallbackCanchaImg = 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=600&auto=format&fit=crop&q=80';
+
+  onImgError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target && target.src !== this.fallbackCanchaImg) {
+      target.src = this.fallbackCanchaImg;
+    }
+  }
+
   canchas = signal<CanchaSede[]>([
     {
       id: 'c1',
@@ -72,7 +81,7 @@ export class CanchasMobileComponent {
       tipo: 'Fútbol 11',
       superficie: 'Césped Natural',
       precioHora: 190000,
-      imagen: 'https://images.unsplash.com/photo-1529900245534-47fbfb57836a?w=600&auto=format&fit=crop&q=80',
+      imagen: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=600&auto=format&fit=crop&q=80',
       iluminacion: true,
       sede: 'Sede Principal - Campo A',
       horariosDisponibles: ['06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM']

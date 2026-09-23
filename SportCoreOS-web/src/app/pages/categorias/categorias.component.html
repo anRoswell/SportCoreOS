@@ -67,6 +67,11 @@
               <span><strong>DT:</strong> {{ c.dt_nombre || 'Sin Director Técnico Asignado' }}</span>
             </div>
 
+            <div class="cat-schedule">
+              <i class="fa-regular fa-calendar-days"></i>
+              <span><strong>Prácticas:</strong> {{ c.dias_entrenamiento || 'Lun, Mié, Vie' }} • {{ c.horario_entrenamiento || '16:00 - 18:00' }}</span>
+            </div>
+
             <div class="cat-footer">
               <div class="player-count">
                 <strong>{{ c.total_jugadores }}</strong> jugadores inscritos
@@ -180,6 +185,26 @@
                 </div>
               </div>
 
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-stopwatch"></i> Días y Horarios de Práctica (Plan Semanal)</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-calendar-check"></i> Días de Entrenamiento Semanales</label>
+                    <input type="text" [(ngModel)]="newCat.dias_entrenamiento" name="dias_entrenamiento" placeholder="ej. Lunes, Miércoles, Viernes" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-clock"></i> Horario de Práctica</label>
+                    <input type="text" [(ngModel)]="newCat.horario_entrenamiento" name="horario_entrenamiento" placeholder="ej. 16:00 - 18:00" class="sport-input" />
+                  </div>
+                </div>
+                <div class="form-row g1" style="margin-top: 0.5rem;">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-location-dot"></i> Sede / Cancha Habitual de Práctica</label>
+                    <input type="text" [(ngModel)]="newCat.sede_entrenamiento" name="sede_entrenamiento" placeholder="ej. Sede Principal - Campo A (Césped)" class="sport-input" />
+                  </div>
+                </div>
+              </div>
+
               <div class="modal-actions">
                 <button type="button" class="btn-secondary" (click)="closeCreateModal()">
                   <i class="fa-solid fa-xmark"></i> Cancelar
@@ -277,6 +302,26 @@
                         <option [value]="dt.id">{{ dt.nombre }} {{ dt.apellido }} ({{ dt.email }})</option>
                       }
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <span class="modal-section-title"><i class="fa-solid fa-stopwatch"></i> Días y Horarios de Práctica (Plan Semanal)</span>
+                <div class="form-row g2">
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-calendar-check"></i> Días de Entrenamiento Semanales</label>
+                    <input type="text" [(ngModel)]="editCat.dias_entrenamiento" name="editDias" placeholder="ej. Lunes, Miércoles, Viernes" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label><i class="fa-regular fa-clock"></i> Horario de Práctica</label>
+                    <input type="text" [(ngModel)]="editCat.horario_entrenamiento" name="editHorario" placeholder="ej. 16:00 - 18:00" class="sport-input" />
+                  </div>
+                </div>
+                <div class="form-row g1" style="margin-top: 0.5rem;">
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-location-dot"></i> Sede / Cancha Habitual de Práctica</label>
+                    <input type="text" [(ngModel)]="editCat.sede_entrenamiento" name="editSede" placeholder="ej. Sede Principal - Campo A (Césped)" class="sport-input" />
                   </div>
                 </div>
               </div>

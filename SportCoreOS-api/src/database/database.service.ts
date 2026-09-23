@@ -471,7 +471,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           sigla: 'FCFC',
           ciudad: 'Bogotá D.C.',
           pais: 'Colombia',
-          logo_url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120&auto=format&fit=crop&q=80',
+          logo_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120&auto=format&fit=crop&q=80',
           plan: 'Plan Élite Pro',
           activo: true,
           created_at: new Date(),

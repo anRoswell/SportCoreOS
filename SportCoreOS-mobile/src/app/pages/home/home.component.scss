@@ -334,7 +334,8 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      width: 38%;
+      width: 40%;
+      min-width: 0;
 
       .crest-frame {
         width: 46px;
@@ -372,9 +373,10 @@
         font-size: 0.78rem;
         font-weight: 800;
         color: var(--text-heading);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
+        text-align: center;
+        line-height: 1.25;
         max-width: 100%;
       }
 

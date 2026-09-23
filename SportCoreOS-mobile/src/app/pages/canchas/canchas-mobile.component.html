@@ -76,7 +76,7 @@
         @for (cancha of canchasFiltradas(); track cancha.id) {
           <div class="cancha-card">
             <div class="cancha-image-wrap">
-              <img [src]="cancha.imagen" [alt]="cancha.nombre" loading="lazy" />
+              <img [src]="cancha.imagen" [alt]="cancha.nombre" (error)="onImgError($event)" loading="lazy" />
               <div class="card-tags">
                 <span class="tag-type">{{ cancha.tipo }}</span>
                 <span class="tag-surface">{{ cancha.superficie }}</span>

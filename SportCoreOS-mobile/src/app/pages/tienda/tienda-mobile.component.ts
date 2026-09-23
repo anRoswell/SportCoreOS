@@ -93,7 +93,7 @@ export class TiendaMobileComponent {
       nombre: 'Espinilleras Anatómicas Pro con Portaespinilleras',
       categoria: 'accesorios',
       precio: 48000,
-      imagen: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80',
+      imagen: 'https://images.unsplash.com/photo-1543351611-58f69d7c1781?w=600&auto=format&fit=crop&q=80',
       descripcion: 'Carcasa reforzada de polímero ultraligero con espuma EVA de alto confort para absorción de impactos.',
       tallas: ['S', 'M', 'L'],
       stock: 35

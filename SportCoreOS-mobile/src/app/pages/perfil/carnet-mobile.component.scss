@@ -26,11 +26,13 @@
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+      background: var(--bg-main);
     }
 
     .view-switch {
       display: flex;
-      background: #e2e8f0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
       padding: 0.25rem;
       border-radius: 12px;
       gap: 0.25rem;
@@ -43,7 +45,7 @@
         border-radius: 10px;
         font-size: 0.82rem;
         font-weight: 700;
-        color: #64748b;
+        color: var(--text-muted);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -52,9 +54,9 @@
         transition: all 0.2s ease;
 
         &.active {
-          background: #fff;
-          color: #0f172a;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+          background: var(--color-primary);
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
         }
       }
     }
@@ -206,13 +208,15 @@
     }
 
     .pass-qr-section {
-      background: #fff;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
       border-radius: 1rem;
       padding: 1rem;
-      color: #0f172a;
+      color: var(--text-heading);
       display: flex;
       align-items: center;
       gap: 1rem;
+      box-shadow: var(--shadow-sm);
 
       .qr-box {
         width: 80px;
@@ -233,7 +237,7 @@
 
         .scan-note {
           font-size: 0.72rem;
-          color: #64748b;
+          color: var(--text-muted);
           margin: 0;
           line-height: 1.35;
         }
@@ -244,7 +248,7 @@
           gap: 0.35rem;
           font-size: 0.7rem;
           font-weight: 700;
-          color: #047857;
+          color: var(--color-primary);
 
           .pulsing-dot {
             width: 8px;
@@ -260,7 +264,7 @@
     .card-actions {
       .btn-action {
         width: 100%;
-        background: #0f172a;
+        background: var(--color-primary);
         color: #fff;
         border: none;
         padding: 0.85rem;
@@ -272,6 +276,7 @@
         justify-content: center;
         gap: 0.5rem;
         cursor: pointer;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
       }
     }
 
@@ -282,14 +287,14 @@
       gap: 1rem;
 
       .med-status-banner {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        background: var(--color-primary-subtle);
+        border: 1px solid rgba(16, 185, 129, 0.3);
         border-radius: 1rem;
         padding: 1rem;
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
-        color: #166534;
+        color: var(--text-heading);
 
         i { font-size: 1.5rem; color: #16a34a; }
 
@@ -297,12 +302,13 @@
           font-size: 0.95rem;
           font-weight: 800;
           margin: 0 0 0.2rem 0;
+          color: var(--text-heading);
         }
 
         p {
           font-size: 0.75rem;
           margin: 0;
-          color: #4b5563;
+          color: var(--text-muted);
         }
       }
 
@@ -312,13 +318,14 @@
         gap: 0.75rem;
 
         .med-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border-color);
           padding: 0.85rem;
           border-radius: 12px;
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
+          box-shadow: var(--shadow-sm);
 
           &.full {
             grid-column: span 2;

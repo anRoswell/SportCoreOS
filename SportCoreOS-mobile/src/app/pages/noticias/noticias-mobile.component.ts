@@ -55,7 +55,7 @@ export class NoticiasMobileComponent implements OnInit {
         titulo: 'Convocatoria y Viaje Oficial a Torneo Nacional Medellín 2026',
         categoria: 'viaje',
         fecha: '22 de Septiembre, 2026',
-        imagen: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80',
+        imagen: 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=600&auto=format&fit=crop&q=80',
         resumen: 'Se abre el proceso de inscripción y autorización para las categorías Sub-13, Sub-15 y Sub-17 para el torneo en Medellín.',
         contenido: 'El club participará en la Copa Nacional Élite de Fútbol Formativo. El desplazamiento se realizará el 15 de Octubre con póliza médica todo riesgo y cuerpo técnico completo. Todos los acudientes deben firmar la autorización digital antes del 30 de Septiembre.',
         requiereFirma: true,
@@ -66,7 +66,7 @@ export class NoticiasMobileComponent implements OnInit {
         titulo: 'Inauguración de Nuevas Luminarias LED en Campo Sintético',
         categoria: 'sede',
         fecha: '18 de Septiembre, 2026',
-        imagen: 'https://images.unsplash.com/photo-1529900245534-47fbfb57836a?w=600&auto=format&fit=crop&q=80',
+        imagen: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=600&auto=format&fit=crop&q=80',
         resumen: 'A partir de este lunes contaremos con iluminación profesional en todas las canchas para entrenamientos nocturnos seguros.',
         contenido: 'La directiva del club culminó la instalación de las nuevas torres de iluminación de 500 Lux, permitiendo extender los horarios de entrenamiento y partidos nocturnos en condiciones óptimas de visibilidad.',
         requiereFirma: false

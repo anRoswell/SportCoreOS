@@ -36,6 +36,9 @@ export class CategoriasComponent implements OnInit {
     color_distintivo: '#10B981',
     cupo_maximo: 25,
     director_tecnico_id: null as string | null,
+    dias_entrenamiento: 'Lunes, Miércoles, Viernes',
+    horario_entrenamiento: '16:00 - 18:00',
+    sede_entrenamiento: 'Sede Principal - Campo A (Césped)',
   };
 
   editCat = {
@@ -48,6 +51,9 @@ export class CategoriasComponent implements OnInit {
     color_distintivo: '#10B981',
     cupo_maximo: 25,
     director_tecnico_id: null as string | null,
+    dias_entrenamiento: 'Lunes, Miércoles, Viernes',
+    horario_entrenamiento: '16:00 - 18:00',
+    sede_entrenamiento: 'Sede Principal - Campo A (Césped)',
   };
 
   readonly filteredCategorias = computed(() => {
@@ -90,6 +96,9 @@ export class CategoriasComponent implements OnInit {
       color_distintivo: '#10B981',
       cupo_maximo: 25,
       director_tecnico_id: null,
+      dias_entrenamiento: 'Lunes, Miércoles, Viernes',
+      horario_entrenamiento: '16:00 - 18:00',
+      sede_entrenamiento: 'Sede Principal - Campo A (Césped)',
     };
     this.showCreateModal.set(true);
   }
@@ -110,6 +119,9 @@ export class CategoriasComponent implements OnInit {
       color_distintivo: cat.color_distintivo || '#10B981',
       cupo_maximo: cat.cupo_maximo || 25,
       director_tecnico_id: cat.director_tecnico_id || cat.dt_id || null,
+      dias_entrenamiento: cat.dias_entrenamiento || 'Lunes, Miércoles, Viernes',
+      horario_entrenamiento: cat.horario_entrenamiento || '16:00 - 18:00',
+      sede_entrenamiento: cat.sede_entrenamiento || 'Sede Principal - Campo A (Césped)',
     };
     this.showEditModal.set(true);
   }
@@ -152,6 +164,9 @@ export class CategoriasComponent implements OnInit {
           color_distintivo: '#10B981',
           cupo_maximo: 25,
           director_tecnico_id: null,
+          dias_entrenamiento: 'Lunes, Miércoles, Viernes',
+          horario_entrenamiento: '16:00 - 18:00',
+          sede_entrenamiento: 'Sede Principal - Campo A (Césped)',
         };
       },
       error: () => {

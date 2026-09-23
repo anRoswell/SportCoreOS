@@ -145,7 +145,7 @@ export class ClubesService {
       sigla: dto.sigla.toUpperCase().trim(),
       ciudad: dto.ciudad.trim(),
       pais: dto.pais?.trim() || 'Colombia',
-      logo_url: dto.logoUrl || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=120&auto=format&fit=crop&q=80',
+      logo_url: dto.logoUrl || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120&auto=format&fit=crop&q=80',
       plan: 'Plan Élite Pro',
       activo: true,
       configuracion_json: {

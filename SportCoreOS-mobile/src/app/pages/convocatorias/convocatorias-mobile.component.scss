@@ -121,7 +121,8 @@
       flex-direction: column;
       align-items: center;
       gap: 0.25rem;
-      width: 40%;
+      flex: 1;
+      min-width: 0;
       text-align: center;
 
       .team-badge {
@@ -135,6 +136,7 @@
         font-weight: 900;
         font-size: 0.85rem;
         color: #fff;
+        flex-shrink: 0;
 
         &.rival { background: rgba(239, 68, 68, 0.25); }
       }
@@ -142,9 +144,10 @@
       .team-name {
         font-size: 0.8rem;
         font-weight: 800;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.25;
+        text-align: center;
         max-width: 100%;
       }
     }
