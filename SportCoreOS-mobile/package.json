@@ -36,14 +36,5 @@
     "@angular/compiler-cli": "^19.0.0",
     "@capacitor/cli": "6.0.0",
     "typescript": "~5.6.2"
-  },
-  "browserslist": [
-    "Chrome >=61",
-    "ChromeAndroid >=61",
-    "Firefox >=63",
-    "Firefox ESR",
-    "Edge >=79",
-    "Safari >=13",
-    "iOS >=13"
-  ]
+  }
 }
