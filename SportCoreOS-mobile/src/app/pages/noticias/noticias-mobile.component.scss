@@ -67,6 +67,7 @@
       width: 100%;
       max-width: 100vw;
       box-sizing: border-box;
+      background: var(--bg-main);
     }
 
     .news-viewport {
@@ -87,12 +88,12 @@
     }
 
     .news-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
       border-radius: 1.25rem;
       overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      box-shadow: var(--shadow-sm);
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -131,20 +132,20 @@
 
         .news-date {
           font-size: 0.7rem;
-          color: #64748b;
+          color: var(--text-muted);
         }
 
         h3 {
           font-size: 0.98rem;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--text-heading);
           margin: 0;
           line-height: 1.25;
         }
 
         p {
           font-size: 0.78rem;
-          color: #475569;
+          color: var(--text-body);
           margin: 0;
           line-height: 1.35;
           display: -webkit-box;

@@ -252,10 +252,19 @@
         </div>
       </div>
 
-      <!-- AJUSTES DE SEGURIDAD -->
+      <!-- AJUSTES DE SEGURIDAD & PREFERENCIAS -->
       <div class="menu-section">
-        <h4 class="section-title">Ajustes de Seguridad</h4>
+        <h4 class="section-title">Preferencias & Ajustes</h4>
         <div class="info-list">
+          <button class="action-row" (click)="themeService.toggleTheme()" [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+            <div class="info-left">
+              <i class="fa-solid text-amber" [class.fa-sun]="themeService.isDark()" [class.fa-moon]="!themeService.isDark()"></i>
+              <span>Tema Visual de la Aplicación</span>
+            </div>
+            <span class="status-toggle" [style.background]="themeService.isDark() ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)'" [style.color]="themeService.isDark() ? '#f59e0b' : '#059669'">
+              {{ themeService.isDark() ? '🌙 MODO OSCURO' : '☀️ MODO CLARO' }}
+            </span>
+          </button>
           <button class="action-row" (click)="cambiarClave()">
             <div class="info-left">
               <i class="fa-solid fa-key text-amber"></i>

@@ -18,6 +18,7 @@ export class TiendaComponent implements OnInit {
 
   readonly catalogoList = signal<any[]>([]);
   readonly pedidosList = signal<any[]>([]);
+  readonly loading = signal<boolean>(false);
 
   readonly selectedProduct = signal<any | null>(null);
   readonly selectedPedidoToDeliver = signal<any | null>(null);
@@ -29,6 +30,22 @@ export class TiendaComponent implements OnInit {
   readonly showDeleteProductModal = signal<boolean>(false);
   readonly productToDelete = signal<any | null>(null);
   readonly toastMessage = signal<string>('');
+
+  // Paginación Server-Side
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(8);
+  readonly totalRecords = signal<number>(0);
+  readonly totalPages = signal<number>(1);
+
+  readonly showingStart = computed(() => {
+    if (this.totalRecords() === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly showingEnd = computed(() => {
+    const end = this.currentPage() * this.pageSize();
+    return Math.min(end, this.totalRecords());
+  });
 
   isEditingProduct: boolean = false;
   editingProductId: string | null = null;
@@ -58,30 +75,115 @@ export class TiendaComponent implements OnInit {
     ] as any[],
   };
 
-  readonly filteredProductos = computed(() => {
-    const list = this.catalogoList();
-    const filter = this.selectedCatFilter();
-    if (filter === 'TODAS') return list;
-    return list.filter((p) => p.categoria === filter);
-  });
-
   ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData(): void {
+    if (this.activeTab() === 'catalogo' || this.activeTab() === 'stock') {
+      this.loadCatalogo();
+    } else if (this.activeTab() === 'pedidos') {
+      this.loadPedidos();
+    }
+  }
+
+  onTabChange(tab: 'catalogo' | 'pedidos' | 'stock'): void {
+    this.activeTab.set(tab);
+    this.currentPage.set(1);
+    this.pageSize.set(tab === 'catalogo' ? 8 : 10);
+    this.loadData();
+  }
+
+  onCatFilterChange(cat: string): void {
+    this.selectedCatFilter.set(cat);
+    this.currentPage.set(1);
     this.loadCatalogo();
-    this.loadPedidos();
   }
 
   loadCatalogo(): void {
-    this.api.getCatalogoTienda().subscribe((data) => {
-      const rows = Array.isArray(data) ? data : (data?.data || []);
-      this.catalogoList.set(rows);
+    this.loading.set(true);
+    const cat = this.selectedCatFilter() !== 'TODAS' ? this.selectedCatFilter() : undefined;
+    this.api.getCatalogoTienda({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+      categoria: cat
+    }).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res) ? res : (res?.data || []);
+        const total = res?.total !== undefined ? res.total : rows.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
+        this.catalogoList.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalP);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.catalogoList.set([]);
+        this.totalRecords.set(0);
+        this.totalPages.set(1);
+        this.loading.set(false);
+      }
     });
   }
 
   loadPedidos(): void {
-    this.api.getPedidosTienda().subscribe((data) => {
-      const rows = Array.isArray(data) ? data : (data?.data || []);
-      this.pedidosList.set(rows);
+    this.loading.set(true);
+    this.api.getPedidosTienda({
+      page: this.currentPage(),
+      limit: this.pageSize()
+    }).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res) ? res : (res?.data || []);
+        const total = res?.total !== undefined ? res.total : rows.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
+        this.pedidosList.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalP);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.pedidosList.set([]);
+        this.totalRecords.set(0);
+        this.totalPages.set(1);
+        this.loading.set(false);
+      }
     });
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadData();
+    }
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize.set(Number(size));
+    this.currentPage.set(1);
+    this.loadData();
+  }
+
+  getVisiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   formatCategoria(cat: string): string {

@@ -216,6 +216,45 @@
           color: var(--text-muted);
         }
       }
+
+      .mini-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+
+        .mini-page-btn {
+          width: 28px;
+          height: 28px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border-color);
+          background: var(--bg-surface);
+          color: var(--text-main);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 0.75rem;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+          }
+
+          &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+        }
+
+        .mini-page-info {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--text-muted);
+        }
+      }
     }
 
     /* MAIN PANEL */

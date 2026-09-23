@@ -22,10 +22,17 @@ export class TelemetriaComponent implements OnInit {
   readonly selectedSesion = signal<any | null>(null);
   readonly jugadoresList = signal<any[]>([]);
   readonly activeHeatmapPlayer = signal<any | null>(null);
+  readonly loading = signal<boolean>(false);
 
   readonly showCreateModal = signal<boolean>(false);
   readonly showAddMetricaModal = signal<boolean>(false);
   readonly toastMessage = signal<string>('');
+
+  // Paginación de sesiones
+  readonly currentSesionesPage = signal<number>(1);
+  readonly totalSesiones = signal<number>(0);
+  readonly totalSesionesPages = signal<number>(1);
+  readonly sesionesPageSize = signal<number>(10);
 
   selectedFile: File | null = null;
 
@@ -67,31 +74,57 @@ export class TelemetriaComponent implements OnInit {
   }
 
   loadSesiones(preferredId?: string): void {
-    this.api.getSesionesTelemetria().subscribe((res: any) => {
-      const sesiones = Array.isArray(res) ? res : res?.data || [];
-      this.sesionesList.set(sesiones);
-      if (sesiones && sesiones.length > 0) {
-        let target = sesiones[0];
-        if (preferredId) {
-          target = sesiones.find((s: any) => s.id === preferredId) || sesiones[0];
-        } else if (this.selectedSesion()?.id) {
-          target = sesiones.find((s: any) => s.id === this.selectedSesion()?.id) || sesiones[0];
+    this.loading.set(true);
+    this.api.getSesionesTelemetria({
+      page: this.currentSesionesPage(),
+      limit: this.sesionesPageSize()
+    }).subscribe({
+      next: (res: any) => {
+        const sesiones = Array.isArray(res) ? res : res?.data || [];
+        const total = res?.total !== undefined ? res.total : sesiones.length;
+        const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.sesionesPageSize()) || 1;
+
+        this.sesionesList.set(sesiones);
+        this.totalSesiones.set(total);
+        this.totalSesionesPages.set(totalP);
+        this.loading.set(false);
+
+        if (sesiones && sesiones.length > 0) {
+          let target = sesiones[0];
+          if (preferredId) {
+            target = sesiones.find((s: any) => s.id === preferredId) || sesiones[0];
+          } else if (this.selectedSesion()?.id) {
+            target = sesiones.find((s: any) => s.id === this.selectedSesion()?.id) || sesiones[0];
+          }
+          this.selectSesion(target);
+        } else {
+          // Fallback demo session
+          const demoSes = {
+            id: 'demo-1',
+            nombre_sesion: 'Fecha 14: SportCore FC vs Academia Pro',
+            tipo_sesion: 'partido',
+            fecha_sesion: new Date().toISOString().split('T')[0],
+            duracion_minutos: 90,
+            clima: '24°C Despejado',
+          };
+          this.selectedSesion.set(demoSes);
+          this.activeHeatmapPlayer.set(this.activeMetricas()[0]);
         }
-        this.selectSesion(target);
-      } else {
-        // Fallback demo session
-        const demoSes = {
-          id: 'demo-1',
-          nombre_sesion: 'Fecha 14: SportCore FC vs Academia Pro',
-          tipo_sesion: 'partido',
-          fecha_sesion: new Date().toISOString().split('T')[0],
-          duracion_minutos: 90,
-          clima: '24°C Despejado',
-        };
-        this.selectedSesion.set(demoSes);
-        this.activeHeatmapPlayer.set(this.activeMetricas()[0]);
+      },
+      error: () => {
+        this.sesionesList.set([]);
+        this.totalSesiones.set(0);
+        this.totalSesionesPages.set(1);
+        this.loading.set(false);
       }
     });
+  }
+
+  setSesionesPage(page: number): void {
+    if (page >= 1 && page <= this.totalSesionesPages()) {
+      this.currentSesionesPage.set(page);
+      this.loadSesiones();
+    }
   }
 
   loadJugadores(): void {

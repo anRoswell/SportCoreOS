@@ -106,30 +106,56 @@
           </div>
 
           <div class="sesiones-list">
-            @for (s of sesionesList(); track s.id) {
-              <div
-                class="sesion-item-card"
-                [class.active]="selectedSesion()?.id === s.id"
-                (click)="selectSesion(s)"
-              >
-                <div class="sesion-item-top">
-                  <strong class="sesion-name">{{ s.nombre_sesion }}</strong>
-                  <span class="badge" [class.badge-primary]="s.tipo_sesion === 'partido'" [class.badge-success]="s.tipo_sesion === 'entrenamiento'">
-                    {{ s.tipo_sesion === 'partido' ? 'Partido' : 'Entreno' }}
-                  </span>
-                </div>
-                <div class="sesion-item-sub">
-                  <span><i class="fa-regular fa-calendar"></i> {{ s.fecha_sesion }}</span>
-                  <span><i class="fa-solid fa-stopwatch"></i> {{ s.duracion_minutos || 90 }} min</span>
-                </div>
-              </div>
-            } @empty {
+            @if (loading()) {
               <div class="empty-state-sm">
-                <i class="fa-solid fa-satellite"></i>
-                <p>No hay sesiones registradas.</p>
+                <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+                <p>Cargando sesiones...</p>
               </div>
+            } @else {
+              @for (s of sesionesList(); track s.id) {
+                <div
+                  class="sesion-item-card"
+                  [class.active]="selectedSesion()?.id === s.id"
+                  (click)="selectSesion(s)"
+                >
+                  <div class="sesion-item-top">
+                    <strong class="sesion-name">{{ s.nombre_sesion }}</strong>
+                    <span class="badge" [class.badge-primary]="s.tipo_sesion === 'partido'" [class.badge-success]="s.tipo_sesion === 'entrenamiento'">
+                      {{ s.tipo_sesion === 'partido' ? 'Partido' : 'Entreno' }}
+                    </span>
+                  </div>
+                  <div class="sesion-item-sub">
+                    <span><i class="fa-regular fa-calendar"></i> {{ s.fecha_sesion }}</span>
+                    <span><i class="fa-solid fa-stopwatch"></i> {{ s.duracion_minutos || 90 }} min</span>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-state-sm">
+                  <i class="fa-solid fa-satellite"></i>
+                  <p>No hay sesiones registradas.</p>
+                </div>
+              }
             }
           </div>
+
+          <!-- MINI PAGINADOR DE SESIONES -->
+          @if (totalSesionesPages() > 1) {
+            <div class="mini-pagination">
+              <button 
+                class="mini-page-btn" 
+                [disabled]="currentSesionesPage() === 1 || loading()" 
+                (click)="setSesionesPage(currentSesionesPage() - 1)">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <span class="mini-page-info">{{ currentSesionesPage() }} / {{ totalSesionesPages() }}</span>
+              <button 
+                class="mini-page-btn" 
+                [disabled]="currentSesionesPage() === totalSesionesPages() || loading()" 
+                (click)="setSesionesPage(currentSesionesPage() + 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          }
         </div>
 
         <!-- PANEL CENTRAL: MAPA DE CALOR 2D + MÉTRICAS CINEMÁTICAS + WIDGETS PRO -->

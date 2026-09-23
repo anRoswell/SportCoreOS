@@ -10,21 +10,21 @@
             <button
               class="tab-btn"
               [class.active]="activeTab() === 'catalogo'"
-              (click)="activeTab.set('catalogo')"
+              (click)="onTabChange('catalogo')"
             >
               <i class="fa-solid fa-shirt"></i> Catálogo & Ventas
             </button>
             <button
               class="tab-btn"
               [class.active]="activeTab() === 'pedidos'"
-              (click)="activeTab.set('pedidos')"
+              (click)="onTabChange('pedidos')"
             >
               <i class="fa-solid fa-boxes-packing"></i> Despachos & Pedidos
             </button>
             <button
               class="tab-btn"
               [class.active]="activeTab() === 'stock'"
-              (click)="activeTab.set('stock')"
+              (click)="onTabChange('stock')"
             >
               <i class="fa-solid fa-warehouse"></i> Inventario & Bodega
             </button>
@@ -42,86 +42,155 @@
             <button
               class="cat-filter-btn"
               [class.active]="selectedCatFilter() === 'TODAS'"
-              (click)="selectedCatFilter.set('TODAS')"
+              (click)="onCatFilterChange('TODAS')"
             >
               Todos los Artículos
             </button>
             <button
               class="cat-filter-btn"
               [class.active]="selectedCatFilter() === 'uniforme_oficial'"
-              (click)="selectedCatFilter.set('uniforme_oficial')"
+              (click)="onCatFilterChange('uniforme_oficial')"
             >
               Uniformes Oficiales
             </button>
             <button
               class="cat-filter-btn"
               [class.active]="selectedCatFilter() === 'entrenamiento'"
-              (click)="selectedCatFilter.set('entrenamiento')"
+              (click)="onCatFilterChange('entrenamiento')"
             >
               Ropa Entrenamiento
             </button>
             <button
               class="cat-filter-btn"
               [class.active]="selectedCatFilter() === 'balones'"
-              (click)="selectedCatFilter.set('balones')"
+              (click)="onCatFilterChange('balones')"
             >
               Balones & Balonería
             </button>
           </div>
 
-          <div class="products-grid">
-            @for (p of filteredProductos(); track p.id) {
-              <div class="product-card fut-card">
-                <div class="product-img-wrap">
-                  <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=300'" alt="{{ p.nombre }}" />
-                  <span class="badge-cat">{{ formatCategoria(p.categoria) }}</span>
-                  @if (p.personalizable) {
-                    <span class="badge-custom"><i class="fa-solid fa-signature"></i> Personalizable</span>
+          @if (loading()) {
+            <div class="empty-state fut-card">
+              <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+              <p>Consultando catálogo en la Base de Datos...</p>
+            </div>
+          } @else {
+            <div class="products-grid">
+              @for (p of catalogoList(); track p.id) {
+                <div class="product-card fut-card">
+                  <div class="product-img-wrap">
+                    <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=300'" alt="{{ p.nombre }}" />
+                    <span class="badge-cat">{{ formatCategoria(p.categoria) }}</span>
+                    @if (p.personalizable) {
+                      <span class="badge-custom"><i class="fa-solid fa-signature"></i> Personalizable</span>
+                    }
+                  </div>
+
+                  <div class="product-info">
+                    <span class="product-sku">{{ p.codigo_sku }}</span>
+                    <h3 class="product-title">{{ p.nombre }}</h3>
+                    <div class="product-price">\${{ p.precio_venta | number }} COP</div>
+
+                    <!-- VARIANTES DE TALLAS DISPONIBLES -->
+                    <div class="variants-wrap">
+                      <label class="tallas-label">Tallas disponibles:</label>
+                      <div class="tallas-pills">
+                        @for (v of p.variantes; track v.id) {
+                          <span
+                            class="talla-pill"
+                            [class.talla-low]="v.stock_actual > 0 && v.stock_actual <= v.stock_minimo_alerta"
+                            [class.talla-out]="v.stock_actual === 0"
+                          >
+                            {{ v.talla }}
+                            <small>({{ v.stock_actual }})</small>
+                          </span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="product-card-actions">
+                      <button class="btn-primary btn-buy" (click)="openBuyModal(p)">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedido
+                      </button>
+                      <button class="btn-secondary btn-icon-only" (click)="openEditProductModal(p)" title="Editar Producto">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button class="btn-secondary btn-icon-only btn-danger-hover" (click)="eliminarProducto(p)" title="Desactivar Producto">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-state fut-card">
+                  <i class="fa-solid fa-shirt"></i>
+                  <p>No se encontraron productos en esta categoría.</p>
+                </div>
+              }
+            </div>
+
+            <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+            <div class="pagination-bar fut-card mt-3">
+              <div class="pagination-info">
+                <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalRecords() }}</strong> artículos</span>
+                <div class="page-size-selector">
+                  <label>Por página:</label>
+                  <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
+                    <option [value]="4">4</option>
+                    <option [value]="8">8</option>
+                    <option [value]="16">16</option>
+                    <option [value]="32">32</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pagination-controls">
+                <button 
+                  class="page-btn nav-btn" 
+                  [disabled]="currentPage() === 1 || loading()" 
+                  (click)="setPage(1)" 
+                  title="Primera Página">
+                  <i class="fa-solid fa-angles-left"></i>
+                </button>
+                <button 
+                  class="page-btn nav-btn" 
+                  [disabled]="currentPage() === 1 || loading()" 
+                  (click)="setPage(currentPage() - 1)" 
+                  title="Página Anterior">
+                  <i class="fa-solid fa-angle-left"></i>
+                  <span>Anterior</span>
+                </button>
+
+                <div class="page-numbers">
+                  @for (p of getVisiblePages(); track p) {
+                    <button 
+                      class="page-btn num-btn" 
+                      [class.active]="currentPage() === p" 
+                      [disabled]="loading()"
+                      (click)="setPage(p)">
+                      {{ p }}
+                    </button>
                   }
                 </div>
 
-                <div class="product-info">
-                  <span class="product-sku">{{ p.codigo_sku }}</span>
-                  <h3 class="product-title">{{ p.nombre }}</h3>
-                  <div class="product-price">\${{ p.precio_venta | number }} COP</div>
-
-                  <!-- VARIANTES DE TALLAS DISPONIBLES -->
-                  <div class="variants-wrap">
-                    <label class="tallas-label">Tallas disponibles:</label>
-                    <div class="tallas-pills">
-                      @for (v of p.variantes; track v.id) {
-                        <span
-                          class="talla-pill"
-                          [class.talla-low]="v.stock_actual > 0 && v.stock_actual <= v.stock_minimo_alerta"
-                          [class.talla-out]="v.stock_actual === 0"
-                        >
-                          {{ v.talla }}
-                          <small>({{ v.stock_actual }})</small>
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <div class="product-card-actions">
-                    <button class="btn-primary btn-buy" (click)="openBuyModal(p)">
-                      <i class="fa-solid fa-cart-shopping"></i> Pedido
-                    </button>
-                    <button class="btn-secondary btn-icon-only" (click)="openEditProductModal(p)" title="Editar Producto">
-                      <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn-secondary btn-icon-only btn-danger-hover" (click)="eliminarProducto(p)" title="Desactivar Producto">
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                  </div>
-                </div>
+                <button 
+                  class="page-btn nav-btn" 
+                  [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+                  (click)="setPage(currentPage() + 1)" 
+                  title="Página Siguiente">
+                  <span>Siguiente</span>
+                  <i class="fa-solid fa-angle-right"></i>
+                </button>
+                <button 
+                  class="page-btn nav-btn" 
+                  [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+                  (click)="setPage(totalPages())" 
+                  title="Última Página">
+                  <i class="fa-solid fa-angles-right"></i>
+                </button>
               </div>
-            } @empty {
-              <div class="empty-state fut-card">
-                <i class="fa-solid fa-shirt"></i>
-                <p>No se encontraron productos en esta categoría.</p>
-              </div>
-            }
-          </div>
+            </div>
+          }
         </div>
       }
 
@@ -147,59 +216,130 @@
                 </tr>
               </thead>
               <tbody>
-                @for (ped of pedidosList(); track ped.id) {
+                @if (loading()) {
                   <tr>
-                    <td>
-                      <div class="qr-code-pill">
-                        <i class="fa-solid fa-qrcode"></i>
-                        <span>{{ ped.codigo_qr }}</span>
-                      </div>
+                    <td colspan="7" class="empty-table-cell text-center py-4">
+                      <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+                      <p>Consultando órdenes en la Base de Datos...</p>
                     </td>
-                    <td>
-                      <strong>{{ ped.producto_nombre }}</strong>
-                      <div><small class="text-muted">Talla: {{ ped.talla }} • {{ ped.cantidad }} un.</small></div>
-                    </td>
-                    <td>
-                      @if (ped.estampado_nombre || ped.estampado_dorsal) {
-                        <div class="dorsal-tag">
-                          <span>#{{ ped.estampado_dorsal }}</span>
-                          <strong>{{ ped.estampado_nombre }}</strong>
+                  </tr>
+                } @else {
+                  @for (ped of pedidosList(); track ped.id) {
+                    <tr>
+                      <td>
+                        <div class="qr-code-pill">
+                          <i class="fa-solid fa-qrcode"></i>
+                          <span>{{ ped.codigo_qr }}</span>
                         </div>
-                      } @else {
-                        <span class="text-muted">Estándar (Sin dorsal)</span>
-                      }
-                    </td>
-                    <td>
-                      <div><strong>{{ ped.comprador_nombre || 'Particular' }}</strong></div>
-                      <small class="text-muted">{{ ped.comprador_telefono || '-' }}</small>
-                    </td>
-                    <td><strong>\${{ ped.monto_total | number }}</strong></td>
-                    <td>
-                      <span
-                        class="badge"
-                        [class.badge-success]="ped.estado_despacho === 'ENTREGADO'"
-                        [class.badge-warning]="ped.estado_despacho === 'PENDIENTE_ENTREGA'"
-                      >
-                        {{ ped.estado_despacho === 'ENTREGADO' ? 'Entregado' : 'Pendiente Entrega' }}
-                      </span>
-                    </td>
-                    <td>
-                      @if (ped.estado_despacho === 'PENDIENTE_ENTREGA') {
-                        <button class="btn-secondary btn-sm" (click)="openDespacharModal(ped)">
-                          <i class="fa-solid fa-truck-ramp-box"></i> Despachar
-                        </button>
-                      } @else {
-                        <small class="text-muted"><i class="fa-solid fa-check"></i> {{ ped.recibido_por || 'Entregado' }}</small>
-                      }
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="7" class="text-center py-4">No hay órdenes registradas actualmente.</td>
-                  </tr>
+                      </td>
+                      <td>
+                        <strong>{{ ped.producto_nombre }}</strong>
+                        <div><small class="text-muted">Talla: {{ ped.talla }} • {{ ped.cantidad }} un.</small></div>
+                      </td>
+                      <td>
+                        @if (ped.estampado_nombre || ped.estampado_dorsal) {
+                          <div class="dorsal-tag">
+                            <span>#{{ ped.estampado_dorsal }}</span>
+                            <strong>{{ ped.estampado_nombre }}</strong>
+                          </div>
+                        } @else {
+                          <span class="text-muted">Estándar (Sin dorsal)</span>
+                        }
+                      </td>
+                      <td>
+                        <div><strong>{{ ped.comprador_nombre || 'Particular' }}</strong></div>
+                        <small class="text-muted">{{ ped.comprador_telefono || '-' }}</small>
+                      </td>
+                      <td><strong>\${{ ped.monto_total | number }}</strong></td>
+                      <td>
+                        <span
+                          class="badge"
+                          [class.badge-success]="ped.estado_despacho === 'ENTREGADO'"
+                          [class.badge-warning]="ped.estado_despacho === 'PENDIENTE_ENTREGA'"
+                        >
+                          {{ ped.estado_despacho === 'ENTREGADO' ? 'Entregado' : 'Pendiente Entrega' }}
+                        </span>
+                      </td>
+                      <td>
+                        @if (ped.estado_despacho === 'PENDIENTE_ENTREGA') {
+                          <button class="btn-secondary btn-sm" (click)="openDespacharModal(ped)">
+                            <i class="fa-solid fa-truck-ramp-box"></i> Despachar
+                          </button>
+                        } @else {
+                          <small class="text-muted"><i class="fa-solid fa-check"></i> {{ ped.recibido_por || 'Entregado' }}</small>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" class="text-center py-4">No hay órdenes registradas actualmente.</td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
+          </div>
+
+          <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+          <div class="pagination-bar">
+            <div class="pagination-info">
+              <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalRecords() }}</strong> pedidos</span>
+              <div class="page-size-selector">
+                <label>Por página:</label>
+                <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="25">25</option>
+                  <option [value]="50">50</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pagination-controls">
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === 1 || loading()" 
+                (click)="setPage(1)" 
+                title="Primera Página">
+                <i class="fa-solid fa-angles-left"></i>
+              </button>
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === 1 || loading()" 
+                (click)="setPage(currentPage() - 1)" 
+                title="Página Anterior">
+                <i class="fa-solid fa-angle-left"></i>
+                <span>Anterior</span>
+              </button>
+
+              <div class="page-numbers">
+                @for (p of getVisiblePages(); track p) {
+                  <button 
+                    class="page-btn num-btn" 
+                    [class.active]="currentPage() === p" 
+                    [disabled]="loading()"
+                    (click)="setPage(p)">
+                    {{ p }}
+                  </button>
+                }
+              </div>
+
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+                (click)="setPage(currentPage() + 1)" 
+                title="Página Siguiente">
+                <span>Siguiente</span>
+                <i class="fa-solid fa-angle-right"></i>
+              </button>
+              <button 
+                class="page-btn nav-btn" 
+                [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
+                (click)="setPage(totalPages())" 
+                title="Última Página">
+                <i class="fa-solid fa-angles-right"></i>
+              </button>
+            </div>
           </div>
         </div>
       }

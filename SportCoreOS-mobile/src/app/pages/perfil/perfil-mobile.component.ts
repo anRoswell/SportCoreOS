@@ -5,6 +5,7 @@ import { MobileHeaderComponent } from '../../shared/components/mobile-header.com
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 export interface InsigniaDeportista {
   id: string;
@@ -33,6 +34,7 @@ export interface InsigniaDeportista {
 })
 export class PerfilMobileComponent implements OnInit {
   authService = inject(AuthService);
+  themeService = inject(ThemeService);
   private alertService = inject(AlertService);
 
   currentUser = this.authService.currentUser;
