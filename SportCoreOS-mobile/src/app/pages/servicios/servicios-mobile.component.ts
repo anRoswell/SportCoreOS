@@ -903,7 +903,7 @@ export interface ServicioMobile {
       inset: 0;
       background: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(4px);
-      z-index: 100;
+      z-index: 1100;
       display: flex;
       align-items: flex-end;
     }
@@ -915,7 +915,7 @@ export interface ServicioMobile {
       width: 100%;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 1.25rem;
+      padding: 1.25rem 1.25rem 3.5rem 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
