@@ -1,10 +1,13 @@
 {
-  "scene1_hook": 11.224308,
+  "scene1_hook": 10.841179,
   "scene2_ecosystem": 10.948209,
   "scene3_asistencias": 11.5361,
   "scene4_partidos_tactica": 12.048707,
-  "scene5_canchas": 11.047755,
-  "scene6_scouting_ia": 11.969887,
-  "scene7_carnet_tienda": 10.074467,
-  "scene8_outro": 8.902404
+  "scene5_pagos": 12.094921,
+  "scene6_servicios": 10.016871,
+  "scene7_canchas": 10.780726,
+  "scene8_juego_carrera": 11.339637,
+  "scene9_scouting_ia": 11.714467,
+  "scene10_carnet_tienda": 10.074467,
+  "scene11_outro": 8.902404
 }

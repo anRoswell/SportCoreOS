@@ -8,6 +8,7 @@ const AUDIO_DIR = path.join(PROMO_DIR, 'audio');
 const BGM_PATH = path.join(AUDIO_DIR, 'bgm_track.wav');
 const SEGS_DIR = path.join(PROMO_DIR, 'segments');
 const OUTPUT_DIR = path.join(PROMO_DIR, 'output');
+const APP_STORE_DIR = path.join(PROMO_DIR, '..', 'assets', 'app-store');
 const ARTIFACTS_DIR = '/Users/sectic/.gemini/antigravity-cli/brain/99f28f48-6add-4d28-8d5c-bac40c11c044';
 
 if (!fs.existsSync(SEGS_DIR)) fs.mkdirSync(SEGS_DIR, { recursive: true });
@@ -20,14 +21,17 @@ const scenes = [
   { index: 2, id: 'scene2_ecosystem', frame: 'frame_scene2_ecosystem.png' },
   { index: 3, id: 'scene3_asistencias', frame: 'frame_scene3_asistencias.png' },
   { index: 4, id: 'scene4_partidos_tactica', frame: 'frame_scene4_partidos_tactica.png' },
-  { index: 5, id: 'scene5_canchas', frame: 'frame_scene5_canchas.png' },
-  { index: 6, id: 'scene6_scouting_ia', frame: 'frame_scene6_scouting_ia.png' },
-  { index: 7, id: 'scene7_carnet_tienda', frame: 'frame_scene7_carnet_tienda.png' },
-  { index: 8, id: 'scene8_outro', frame: 'frame_scene8_outro.png' },
+  { index: 5, id: 'scene5_pagos', frame: 'frame_scene5_pagos.png' },
+  { index: 6, id: 'scene6_servicios', frame: 'frame_scene6_servicios.png' },
+  { index: 7, id: 'scene7_canchas', frame: 'frame_scene7_canchas.png' },
+  { index: 8, id: 'scene8_juego_carrera', frame: 'frame_scene8_juego_carrera.png' },
+  { index: 9, id: 'scene9_scouting_ia', frame: 'frame_scene9_scouting_ia.png' },
+  { index: 10, id: 'scene10_carnet_tienda', frame: 'frame_scene10_carnet_tienda.png' },
+  { index: 11, id: 'scene11_outro', frame: 'frame_scene11_outro.png' },
 ];
 
 async function main() {
-  console.log('🎬 Iniciando renderizado de video promocional de SportCoreOS (1080p 60fps)...');
+  console.log('🎬 Iniciando renderizado master de 11 escenas de SportCoreOS (1080p 60fps)...');
   const segmentFiles = [];
 
   for (const sc of scenes) {
@@ -62,13 +66,13 @@ async function main() {
   fs.writeFileSync(concatListPath, concatContent);
 
   const concatTempOutput = path.join(SEGS_DIR, 'concat_temp.mp4');
-  console.log('🔗 Concatenando escenas...');
+  console.log('🔗 Concatenando las 11 escenas...');
   execSync(`ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -c copy "${concatTempOutput}" 2>/dev/null`);
 
   // Total Duration
   const totalDurStr = execSync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${concatTempOutput}"`).toString().trim();
   const totalDur = parseFloat(totalDurStr);
-  console.log(`⏱️ Duración total del video: ${totalDur.toFixed(2)}s`);
+  console.log(`⏱️ Duración total del video concatenado: ${totalDur.toFixed(2)}s`);
 
   // Final Master Output: Mix Voiceover + Stadium BGM
   const masterOutput = path.join(OUTPUT_DIR, 'sportcore_os_promo_video.mp4');
@@ -90,18 +94,25 @@ async function main() {
   execSync(finalCmd);
   console.log(`🎉 Master Video generado exitosamente: ${masterOutput}`);
 
-  // Generate High-Res Poster from Ecosystem Scene (Escena 2)
+  // Generate High-Res Poster from Modo Carrera Scene (Escena 8)
   const posterOutput = path.join(OUTPUT_DIR, 'sportcore_os_promo_poster.jpg');
-  execSync(`ffmpeg -y -ss 00:00:15 -i "${masterOutput}" -vframes 1 -q:v 2 "${posterOutput}" 2>/dev/null`);
+  execSync(`ffmpeg -y -ss 00:01:20 -i "${masterOutput}" -vframes 1 -q:v 2 "${posterOutput}" 2>/dev/null`);
   console.log(`🖼️ Poster generado: ${posterOutput}`);
+
+  // Copy to App Store Directory
+  if (fs.existsSync(APP_STORE_DIR)) {
+    fs.copyFileSync(masterOutput, path.join(APP_STORE_DIR, 'sportcore_os_promo_video.mp4'));
+    fs.copyFileSync(masterOutput, path.join(APP_STORE_DIR, 'video_promocional_sportcore_os_1080p.mp4'));
+    fs.copyFileSync(posterOutput, path.join(APP_STORE_DIR, 'sportcore_os_promo_poster.jpg'));
+    fs.copyFileSync(posterOutput, path.join(APP_STORE_DIR, 'video_promocional_sportcore_os_poster.jpg'));
+    console.log(`📱 Video y Poster copiados a: ${APP_STORE_DIR}`);
+  }
 
   // Copy to Artifacts folder
   if (fs.existsSync(ARTIFACTS_DIR)) {
-    const artVideo = path.join(ARTIFACTS_DIR, 'sportcore_os_promo_video.mp4');
-    const artPoster = path.join(ARTIFACTS_DIR, 'sportcore_os_promo_poster.jpg');
-    fs.copyFileSync(masterOutput, artVideo);
-    fs.copyFileSync(posterOutput, artPoster);
-    console.log(`🚀 Video y Poster desplegados en Artifacts: ${artVideo}`);
+    fs.copyFileSync(masterOutput, path.join(ARTIFACTS_DIR, 'sportcore_os_promo_video.mp4'));
+    fs.copyFileSync(posterOutput, path.join(ARTIFACTS_DIR, 'sportcore_os_promo_poster.jpg'));
+    console.log(`🚀 Video y Poster desplegados en Artifacts`);
   }
 
   const stat = fs.statSync(masterOutput);

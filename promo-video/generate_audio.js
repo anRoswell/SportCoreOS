@@ -7,13 +7,13 @@ if (!fs.existsSync(AUDIO_DIR)) {
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
 }
 
-const VOICE = 'Paulina'; // Spanish (Mexico) high-clarity voice
+const VOICE = 'Paulina'; // Spanish high clarity
 
 const script = [
   {
     id: 'scene1_hook',
     title: 'Hook & Problema',
-    text: '¿Administrar tu club o academia deportiva sigue dependiendo de planillas de papel, mensajes caóticos y cobros desorganizados? Es momento de evolucionar al estándar profesional.'
+    text: '¿Administrar tu club o academia deportiva sigue dependiendo de planillas de papel, cobros manuales y mensajes dispersos? Es momento de evolucionar al estándar profesional.'
   },
   {
     id: 'scene2_ecosystem',
@@ -31,28 +31,43 @@ const script = [
     text: 'Organiza partidos y torneos sin fricción. Diseña alineaciones en la pizarra táctica interactiva, cita a tus jugadores con notificación inmediata y registra actas arbitrales en vivo.'
   },
   {
-    id: 'scene5_canchas',
+    id: 'scene5_pagos',
+    title: 'Pagos & Recaudos PSE',
+    text: 'Automatiza la tesorería del club. Emite cobros de pensiones, matrículas y arbitrajes con pasarela P S E y Wompi, entregando estados de cuenta y comprobantes digitales al instante.'
+  },
+  {
+    id: 'scene6_servicios',
+    title: 'Clínicas & Masterclasses',
+    text: 'Amplía tu oferta deportiva con clínicas de especialización, masterclasses de tecnificación y servicios de preparación física con reserva de cupos en línea.'
+  },
+  {
+    id: 'scene7_canchas',
     title: 'Alquiler de Canchas & Escenarios',
-    text: 'Maximiza el uso de tus instalaciones deportivas. Gestiona la disponibilidad horaria de canchas, iluminación nocturna y tarifas con reservas y pagos en línea integrados.'
+    text: 'Maximiza el uso de tus instalaciones deportivas. Gestiona la disponibilidad horaria de canchas sintéticas, iluminación nocturna y tarifas con reservas integradas.'
   },
   {
-    id: 'scene6_scouting_ia',
+    id: 'scene8_juego_carrera',
+    title: 'Modo Carrera & Gamificación',
+    text: 'Motiva a tus jugadores con el Modo Carrera Evolution: su carta digital interactiva con valoración de atributos, misiones de partido, retos físicos y puntos de experiencia.'
+  },
+  {
+    id: 'scene9_scouting_ia',
     title: 'Scouting & Boletín con IA',
-    text: 'Potencia el talento de tus atletas con inteligencia artificial. Evaluaciones técnicas personalizadas, radar de habilidades por posición y boletines descargables en formato PDF.'
+    text: 'Potencia el talento deportivo con inteligencia artificial. Evaluaciones técnicas personalizadas, radar de habilidades por posición y boletines descargables en formato PDF.'
   },
   {
-    id: 'scene7_carnet_tienda',
+    id: 'scene10_carnet_tienda',
     title: 'Carnet Digital & Tienda Oficial',
     text: 'Identificación oficial con carnet digital y validación Q R biométrica, junto a una tienda virtual para adquirir uniformes oficiales con control de inventario.'
   },
   {
-    id: 'scene8_outro',
+    id: 'scene11_outro',
     title: 'Cierre & Llamado a la Acción',
     text: 'SportCoreOS: Potenciando el deporte con tecnología de élite. Solicita tu demostración hoy mismo y lleva tu club al siguiente nivel.'
   }
 ];
 
-console.log('🎙️ Generando pistas de locución en español para SportCoreOS...');
+console.log('🎙️ Generando 11 pistas de locución completas para SportCoreOS...');
 
 const durations = {};
 
@@ -68,7 +83,6 @@ for (const sc of script) {
     execSync(`say -r 175 -o "${aiffPath}" "${sc.text}"`);
   }
 
-  // Convert to 44.1kHz stereo WAV
   execSync(`ffmpeg -y -i "${aiffPath}" -ar 44100 -ac 2 "${wavPath}" 2>/dev/null`);
   if (fs.existsSync(aiffPath)) fs.unlinkSync(aiffPath);
 
@@ -79,4 +93,4 @@ for (const sc of script) {
 }
 
 fs.writeFileSync(path.join(AUDIO_DIR, 'durations.json'), JSON.stringify(durations, null, 2));
-console.log('✅ Todas las locuciones generadas exitosamente con duraciones registradas.');
+console.log('✅ Todas las 11 locuciones generadas exitosamente con duraciones registradas.');
