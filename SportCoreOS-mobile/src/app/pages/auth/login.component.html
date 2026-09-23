@@ -1,0 +1,108 @@
+<div class="mobile-login-page">
+      <!-- Imagen de fondo de Estadio de Fútbol -->
+      <div class="stadium-bg-layer"></div>
+      <div class="stadium-overlay"></div>
+
+      <!-- Header de Impacto Deportivo con Brand Oficial -->
+      <div class="login-brand-header">
+        <div class="brand-crest-wrapper">
+          <div class="crest-glow"></div>
+          <div class="brand-crest">
+            <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS" class="brand-crest-img" />
+          </div>
+        </div>
+        <div class="brand-badge-tag">SISTEMA OFICIAL DE CANTERAS</div>
+        <h1 class="brand-title">Sport<span class="text-primary">Core</span> <span class="badge-os">OS</span></h1>
+        <p class="brand-subtitle">Gestión Integral de Clubes, Academias y Deportistas</p>
+      </div>
+
+      <!-- Tarjeta Principal de Login -->
+      <div class="login-card-container">
+        <div class="login-card">
+          <!-- Selector de Personas Demo (Mismos Usuarios de la Web) -->
+          <div class="demo-personas-section">
+            <div class="demo-header-row">
+              <span class="demo-section-title"><i class="fa-solid fa-users-gear text-primary"></i> Perfiles Demo Disponibles</span>
+              <span class="demo-hint-badge">Click para autocompletar</span>
+            </div>
+
+            <div class="demo-personas-scroll">
+              @for (persona of auth.demoPersonas; track persona.id) {
+                <button 
+                  type="button" 
+                  class="demo-card-btn" 
+                  [class.active]="selectedPersonaId() === persona.id"
+                  (click)="selectPersona(persona)">
+                  <div class="avatar-wrap">
+                    <img [src]="persona.avatar" [alt]="persona.nombres" class="demo-avatar-img" />
+                    <span class="role-mini-dot" [style.background-color]="persona.badgeColor"></span>
+                  </div>
+                  <div class="demo-info">
+                    <span class="demo-name">{{ persona.nombres }} {{ persona.apellidos.split(' ')[0] }}</span>
+                    <span class="demo-role-badge" [style.color]="persona.badgeColor">
+                      <i [class]="persona.icon"></i> {{ persona.label }}
+                    </span>
+                  </div>
+                </button>
+              }
+            </div>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" class="login-form">
+            <div class="form-floating-group">
+              <label><i class="fa-regular fa-envelope"></i> Correo Electrónico</label>
+              <div class="input-with-icon">
+                <input
+                  type="email"
+                  [(ngModel)]="email"
+                  name="email"
+                  required
+                  placeholder="ej. carlos.valderrama@sportcore.com"
+                  class="stadium-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-floating-group">
+              <div class="label-row">
+                <label><i class="fa-solid fa-lock"></i> Contraseña de Acceso</label>
+                <a routerLink="/auth/forgot-password" class="link-forgot">¿Olvidaste tu clave?</a>
+              </div>
+              <div class="input-with-icon password-wrap">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  [(ngModel)]="password"
+                  name="password"
+                  required
+                  placeholder="••••••••"
+                  class="stadium-input"
+                />
+                <button type="button" class="btn-eye" (click)="toggleShowPassword()">
+                  <i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-stadium-login" [disabled]="isSubmitting() || !email || !password">
+              @if (isSubmitting()) {
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span>Ingresando al Campo...</span>
+              } @else {
+                <i class="fa-solid fa-bolt"></i>
+                <span>Entrar a la Cancha ({{ activePersonaLabel() }})</span>
+              }
+            </button>
+          </form>
+
+          <!-- Acceso Rápido / Hint Informativo -->
+          <div class="demo-auto-hint">
+            <i class="fa-solid fa-circle-check text-primary"></i>
+            <span>Perfil seleccionado: <strong>{{ activePersonaLabel() }}</strong> ({{ email }})</span>
+          </div>
+        </div>
+
+        <div class="stadium-footer">
+          <p><i class="fa-solid fa-shield"></i> Conexión Cifrada SSL • SportCore Multi-Tenant</p>
+        </div>
+      </div>
+    </div>

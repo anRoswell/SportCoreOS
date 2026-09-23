@@ -1,0 +1,219 @@
+.boletin-subbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+
+      .btn-back {
+        color: #0f172a;
+        font-size: 1.1rem;
+        text-decoration: none;
+      }
+
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+      }
+    }
+
+    .boletin-container {
+      padding: 1.25rem;
+      padding-bottom: calc(75px + var(--safe-area-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .athlete-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .athlete-avatar {
+        position: relative;
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #10b981;
+
+        img { width: 100%; height: 100%; object-fit: cover; }
+
+        .dorsal {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0, 0, 0, 0.7);
+          color: #fff;
+          font-size: 0.6rem;
+          font-weight: 800;
+          text-align: center;
+        }
+      }
+
+      .athlete-info {
+        h2 { font-size: 1.15rem; font-weight: 800; margin: 0 0 0.2rem 0; color: #0f172a; }
+        p { font-size: 0.78rem; color: #64748b; margin: 0 0 0.4rem 0; }
+
+        .ia-score {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          background: #ecfdf5;
+          color: #047857;
+          padding: 0.2rem 0.6rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+      }
+    }
+
+    /* Tarjeta IA */
+    .ia-insight-card {
+      background: linear-gradient(135deg, #093322 0%, #064e3b 100%);
+      color: #fff;
+      padding: 1.35rem;
+      border-radius: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.35);
+
+      .insight-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .ia-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: rgba(16, 185, 129, 0.25);
+          color: #6ee7b7;
+          padding: 0.25rem 0.65rem;
+          border-radius: 20px;
+          font-size: 0.72rem;
+          font-weight: 700;
+        }
+
+        .periodo {
+          font-size: 0.7rem;
+          opacity: 0.8;
+        }
+      }
+
+      .summary-text {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: 0;
+        opacity: 0.95;
+      }
+
+      .highlight-pills {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.35rem;
+
+        .pill {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 0.6rem 0.85rem;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          &.strong i { color: #34d399; }
+          &.focus i { color: #fbbf24; }
+        }
+      }
+    }
+
+    /* Métricas */
+    .metrics-section {
+      h3 { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin: 0 0 0.75rem 0; }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+
+        .metric-card {
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          padding: 0.85rem;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+
+          .metric-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            i { font-size: 1.1rem; }
+            .m-val { font-size: 1.05rem; font-weight: 800; color: #0f172a; small { font-size: 0.65rem; font-weight: 600; color: #64748b; } }
+          }
+
+          .m-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+          }
+
+          .progress-bar-wrap {
+            height: 5px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+
+            .progress-bar-fill {
+              height: 100%;
+              border-radius: 4px;
+            }
+          }
+        }
+      }
+    }
+
+    /* Resumen de Asistencia */
+    .stats-summary-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 1.15rem;
+
+      h3 { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin: 0 0 0.85rem 0; }
+
+      .stats-row {
+        display: flex;
+        justify-content: space-between;
+
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.2rem;
+
+          .stat-num { font-size: 1.25rem; font-weight: 800; }
+          .stat-lbl { font-size: 0.68rem; font-weight: 700; color: #64748b; }
+        }
+      }
+    }
+
+    .text-success { color: #10b981; }
+    .text-primary { color: #047857; }
+    .text-warning { color: #f59e0b; }
+    .text-info { color: #0284c7; }

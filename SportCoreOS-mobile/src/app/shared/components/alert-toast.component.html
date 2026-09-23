@@ -1,0 +1,21 @@
+<div class="toast-stack">
+      @for (t of alertService.toasts(); track t.id) {
+        <div class="mobile-toast" [class]="'toast-' + t.type" (click)="alertService.remove(t.id)">
+          <div class="toast-icon">
+            @switch (t.type) {
+              @case ('success') { <i class="fa-solid fa-circle-check"></i> }
+              @case ('error') { <i class="fa-solid fa-circle-exclamation"></i> }
+              @case ('warning') { <i class="fa-solid fa-triangle-exclamation"></i> }
+              @case ('info') { <i class="fa-solid fa-circle-info"></i> }
+            }
+          </div>
+          <div class="toast-content">
+            <h5 class="toast-title">{{ t.title }}</h5>
+            <p class="toast-message">{{ t.message }}</p>
+          </div>
+          <button class="toast-close" (click)="alertService.remove(t.id); $event.stopPropagation()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      }
+    </div>

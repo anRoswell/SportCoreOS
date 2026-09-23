@@ -1,0 +1,31 @@
+<header class="mobile-app-header">
+      <div class="header-left">
+        <div class="club-logo-crest">
+          <img src="/assets/branding/sportcore_icon.jpg" alt="SportCoreOS Crest" class="crest-img" />
+          <span class="live-dot-beacon"></span>
+        </div>
+        <div class="header-titles">
+          <div class="club-title-row">
+            <h2 class="club-name">{{ auth.activeClub().nombre }}</h2>
+          </div>
+          <span class="app-version-pill">
+            <i class="fa-solid fa-bolt text-emerald"></i> SportCore Cloud OS
+          </span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        @if (auth.currentUser(); as user) {
+          <a routerLink="/perfil" class="user-pill-link" [title]="(user.nombres || 'Usuario') + ' (' + user.rol + ')'">
+            <div class="user-avatar-mini">
+              <img [src]="user.fotoUrl || auth.demoPersonas[1].avatar" alt="Avatar" />
+              <div class="role-badge-dot" [class]="'dot-' + user.rol"></div>
+            </div>
+            <div class="user-text-meta">
+              <span class="user-name-short">{{ getPrimerNombre(user.nombres) }}</span>
+              <span class="user-role-label">{{ formatRole(user.rol) }}</span>
+            </div>
+          </a>
+        }
+      </div>
+    </header>

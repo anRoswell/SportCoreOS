@@ -13,23 +13,7 @@ import { AlertToastComponent } from './shared/components/alert-toast.component';
     LoadingSpinnerComponent,
     AlertToastComponent
   ],
-  template: `
-    <!-- Top global loading bar & overlay -->
-    <app-loading-spinner></app-loading-spinner>
-
-    <!-- Global alert toasts -->
-    <app-alert-toast></app-alert-toast>
-
-    <!-- Mobile view routing outlet -->
-    <router-outlet></router-outlet>
-  `,
-  styles: [`
-    :host {
-      display: block;
-      min-height: 100vh;
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-    }
-  `]
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {}

@@ -1,0 +1,451 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="servicios-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Clínicas & Masterclasses</h2>
+      </div>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarServicios()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-mis-pases" (click)="abrirMisPases()" title="Mis Pases QR">
+          <i class="fa-solid fa-qrcode"></i>
+          @if (misPases().length > 0) {
+            <span class="badge-count">{{ misPases().length }}</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <main class="servicios-container">
+      <!-- BANNER PROMO HERO -->
+      <section class="promo-hero-card">
+        <div class="hero-tag-pill">
+          <i class="fa-solid fa-fire-flame-curved"></i> ESPECIALIZACIÓN PRO
+        </div>
+        <h3 class="hero-title">Clínicas de Micro-Habilidades</h3>
+        <p class="hero-desc">
+          Entrena explosividad, neuro-agilidad, regate 1v1 y tiros libres con preparadores profesionales en canchas de Cartagena.
+        </p>
+        <div class="hero-features">
+          <span><i class="fa-solid fa-bolt text-emerald"></i> Sensores Láser</span>
+          <span><i class="fa-solid fa-brain text-cyan"></i> Luces Fitlight</span>
+          <span><i class="fa-solid fa-award text-amber"></i> Insignia Digital</span>
+        </div>
+      </section>
+
+      <!-- CATEGORY CHIPS SCROLLER -->
+      <section class="chips-scroller">
+        <button
+          class="chip-item"
+          [class.active]="selectedCategoria() === 'TODAS'"
+          (click)="selectedCategoria.set('TODAS')"
+        >
+          <i class="fa-solid fa-grid-2"></i> Todas
+        </button>
+        <button
+          class="chip-item chip-emerald"
+          [class.active]="selectedCategoria() === 'VELOCIDAD_EXPLOSIVIDAD'"
+          (click)="selectedCategoria.set('VELOCIDAD_EXPLOSIVIDAD')"
+        >
+          <i class="fa-solid fa-bolt"></i> ⚡ Explosividad
+        </button>
+        <button
+          class="chip-item chip-cyan"
+          [class.active]="selectedCategoria() === 'COORDINACION_AGILIDAD'"
+          (click)="selectedCategoria.set('COORDINACION_AGILIDAD')"
+        >
+          <i class="fa-solid fa-brain"></i> 🧠 Neuro-Agilidad
+        </button>
+        <button
+          class="chip-item chip-amber"
+          [class.active]="selectedCategoria() === 'TECNICA_REGATE'"
+          (click)="selectedCategoria.set('TECNICA_REGATE')"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 🪄 Regate 1v1
+        </button>
+        <button
+          class="chip-item chip-pink"
+          [class.active]="selectedCategoria() === 'ARQUEROS_ELITE'"
+          (click)="selectedCategoria.set('ARQUEROS_ELITE')"
+        >
+          <i class="fa-solid fa-mitten"></i> 🧤 Porteros
+        </button>
+        <button
+          class="chip-item chip-purple"
+          [class.active]="selectedCategoria() === 'DEFINICION_TIRO'"
+          (click)="selectedCategoria.set('DEFINICION_TIRO')"
+        >
+          <i class="fa-solid fa-bullseye"></i> 🎯 Definición
+        </button>
+      </section>
+
+      <!-- SEARCH BAR -->
+      <section class="search-section">
+        <div class="search-input-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            placeholder="Buscar clínica, profe o cancha..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+          @if (searchQuery()) {
+            <button class="btn-clear-search" (click)="searchQuery.set('')">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- LISTA DE CLÍNICAS -->
+      <section class="clinicas-list">
+        @for (s of filteredServicios(); track s.id) {
+          <div class="clinica-card" [style.border-top-color]="s.color_tema || '#10b981'">
+            <!-- CARD HEADER -->
+            <div class="card-head">
+              <span class="cat-pill" [style.color]="s.color_tema" [style.background]="(s.color_tema || '#10b981') + '20'">
+                <i class="fa-solid" [ngClass]="s.icono || 'fa-bolt'"></i>
+                {{ getCategoriaLabel(s.categoria_servicio) }}
+              </span>
+              <span class="age-pill">
+                <i class="fa-solid fa-user-tag"></i> {{ s.edad_min }}-{{ s.edad_max }} Años
+              </span>
+            </div>
+
+            <!-- TITLE & SUBTITLE -->
+            <h3 class="clinica-title">{{ s.titulo }}</h3>
+            <p class="clinica-sub">{{ s.subtitulo }}</p>
+
+            <!-- COACH & FIELD -->
+            <div class="coach-row">
+              <img [src]="s.entrenador_avatar || defaultAvatar" [alt]="s.entrenador_nombre" class="coach-avatar" />
+              <div class="coach-meta">
+                <span class="coach-name">{{ s.entrenador_nombre }}</span>
+                <span class="coach-badge">{{ s.entrenador_badge }}</span>
+              </div>
+            </div>
+
+            <div class="venue-block">
+              <div class="venue-line">
+                <i class="fa-solid fa-location-dot text-emerald"></i>
+                <span>{{ s.cancha_nombre }} (Cartagena)</span>
+                @if (s.cancha_gps_url) {
+                  <a [href]="s.cancha_gps_url" target="_blank" rel="noopener" class="gps-link">
+                    <i class="fa-solid fa-diamond-turn-right"></i> GPS
+                  </a>
+                }
+              </div>
+              <div class="schedule-line">
+                <i class="fa-solid fa-clock text-amber"></i>
+                <span>{{ s.dias_semana }} • {{ s.horario_rango }}</span>
+              </div>
+            </div>
+
+            <!-- CUPOS PROGRESS -->
+            <div class="cupos-box">
+              <div class="cupos-labels">
+                <span>{{ s.cupos_ocupados }}/{{ s.cupos_totales }} cupos tomados</span>
+                <span class="urgency-badge" [class.danger]="(s.cupos_totales - s.cupos_ocupados) <= 3">
+                  {{ (s.cupos_totales - s.cupos_ocupados) === 0 ? '¡AGOTADO!' : '¡Quedan ' + (s.cupos_totales - s.cupos_ocupados) + '!' }}
+                </span>
+              </div>
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.width.%]="(s.cupos_ocupados / s.cupos_totales) * 100"
+                  [style.background]="s.color_tema || '#10b981'"
+                ></div>
+              </div>
+            </div>
+
+            <!-- REWARD -->
+            <div class="reward-tag">
+              <i class="fa-solid fa-award text-amber"></i> Insignia Ficha: <strong>{{ s.insignia_obtenida }}</strong>
+            </div>
+
+            <!-- FOOTER PRICING & ACTION -->
+            <div class="card-bottom">
+              <div class="price-info">
+                <span class="price-sub">Paquete Mensual:</span>
+                <span class="price-main">\${{ formatNumber(s.precio_paquete_mensual) }}</span>
+                <span class="price-single">o \${{ formatNumber(s.precio_sesion_individual) }} / sesión</span>
+              </div>
+
+              <button
+                class="btn-book"
+                [disabled]="s.cupos_ocupados >= s.cupos_totales"
+                (click)="abrirModalInscripcion(s)"
+              >
+                <i class="fa-solid fa-ticket"></i>
+                {{ s.cupos_ocupados >= s.cupos_totales ? 'Agotado' : 'Reservar' }}
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <p>No se encontraron clínicas en esta categoría.</p>
+            <button class="btn-reset" (click)="resetFiltros()">Ver Todas</button>
+          </div>
+        }
+      </section>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET MODAL: CHECKOUT & INSCRIPCIÓN                   -->
+    <!-- ============================================================ -->
+    @if (modalInscripcion()) {
+      <div class="sheet-overlay" (click)="cerrarModalInscripcion()">
+        <div class="sheet-content" (click)="$event.stopPropagation()">
+          <div class="sheet-handle"></div>
+
+          <!-- SUCCESS TICKET STATE -->
+          @if (ticketGenerado()) {
+            <div class="ticket-view">
+              <div class="ticket-header-success" [style.background]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? '#d97706' : (selectedServicio()?.color_tema || '#10b981')">
+                <i class="fa-solid" [ngClass]="ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'fa-clock' : 'fa-circle-check'"></i>
+                <h3>{{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'Inscripción en Revisión' : '¡Inscripción Exitosa!' }}</h3>
+                <span>{{ ticketData()?.estado_pago === 'PENDIENTE_APROBACION' ? 'Comprobante Nequi enviado a Tesorería' : 'Pase QR Digital Oficial SportCoreOS' }}</span>
+              </div>
+              @if (ticketData()?.estado_pago === 'PENDIENTE_APROBACION') {
+                <div class="mobile-pending-banner">
+                  <i class="fa-solid fa-vault"></i>
+                  <span>Cupo reservado. Tu pase QR definitivo se activará cuando la tesorera valide el abono.</span>
+                </div>
+              }
+              <div class="ticket-details">
+                <h4 class="ticket-program">{{ selectedServicio()?.titulo }}</h4>
+                <div class="t-row">
+                  <span class="t-k">Atleta:</span>
+                  <span class="t-v">{{ ticketData()?.nombre_jugador }}</span>
+                </div>
+                <div class="t-row">
+                  <span class="t-k">Plan:</span>
+                  <span class="t-v">{{ ticketData()?.tipo_plan }}</span>
+                </div>
+                <div class="t-row">
+                  <span class="t-k">Total Pagado:</span>
+                  <span class="t-v text-emerald font-bold">\${{ formatNumber(ticketData()?.monto_pagado) }}</span>
+                </div>
+                <div class="t-row">
+                  <span class="t-k">Sede Cartagena:</span>
+                  <span class="t-v">{{ selectedServicio()?.cancha_nombre }}</span>
+                </div>
+                <div class="t-row">
+                  <span class="t-k">Horario:</span>
+                  <span class="t-v">{{ selectedServicio()?.dias_semana }} ({{ selectedServicio()?.horario_rango }})</span>
+                </div>
+
+                <div class="qr-ticket-box">
+                  <div class="qr-icon-holder">
+                    <i class="fa-solid fa-qrcode"></i>
+                  </div>
+                  <div class="qr-codes">
+                    <span class="qr-token-str">{{ ticketData()?.codigo_qr_ticket }}</span>
+                    <span class="qr-ref-str">Ref: {{ ticketData()?.referencia_transaccion }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ticket-actions">
+                <button class="btn-whatsapp-share" (click)="compartirWhatsApp()">
+                  <i class="fa-brands fa-whatsapp"></i> Compartir Pase por WhatsApp
+                </button>
+                <button class="btn-close-sheet" (click)="cerrarModalInscripcion()">
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- CHECKOUT FORM -->
+            <div class="sheet-form">
+              <div class="sheet-header">
+                <h3>Inscribirse a Clínica</h3>
+                <p>{{ selectedServicio()?.titulo }}</p>
+              </div>
+
+              <!-- SELECTOR PLAN -->
+              <div class="plan-options">
+                <div
+                  class="plan-card"
+                  [class.active]="tipoPlan() === 'PAQUETE_MENSUAL'"
+                  (click)="tipoPlan.set('PAQUETE_MENSUAL')"
+                >
+                  <div class="p-radio">
+                    <i class="fa-solid fa-circle-dot" *ngIf="tipoPlan() === 'PAQUETE_MENSUAL'"></i>
+                    <i class="fa-regular fa-circle" *ngIf="tipoPlan() !== 'PAQUETE_MENSUAL'"></i>
+                  </div>
+                  <div class="p-text">
+                    <span class="p-name">Mes Completo (Recomendado)</span>
+                    <span class="p-sub">Todas las sesiones del mes + evaluación</span>
+                  </div>
+                  <span class="p-cost">\${{ formatNumber(selectedServicio()?.precio_paquete_mensual) }}</span>
+                </div>
+
+                <div
+                  class="plan-card"
+                  [class.active]="tipoPlan() === 'SESION_INDIVIDUAL'"
+                  (click)="tipoPlan.set('SESION_INDIVIDUAL')"
+                >
+                  <div class="p-radio">
+                    <i class="fa-solid fa-circle-dot" *ngIf="tipoPlan() === 'SESION_INDIVIDUAL'"></i>
+                    <i class="fa-regular fa-circle" *ngIf="tipoPlan() !== 'SESION_INDIVIDUAL'"></i>
+                  </div>
+                  <div class="p-text">
+                    <span class="p-name">Sesión Individual</span>
+                    <span class="p-sub">1 sesión intensiva de 90 min</span>
+                  </div>
+                  <span class="p-cost">\${{ formatNumber(selectedServicio()?.precio_sesion_individual) }}</span>
+                </div>
+              </div>
+
+              <!-- INPUTS -->
+              <div class="input-fields">
+                <div class="input-wrap">
+                  <label>Nombre del Atleta / Niño:</label>
+                  <input type="text" [(ngModel)]="nombreJugador" placeholder="ej. Mateo Valderrama" />
+                </div>
+                <div class="input-wrap">
+                  <label>Nombre del Padre / Acudiente:</label>
+                  <input type="text" [(ngModel)]="nombreAcudiente" placeholder="ej. Carlos Valderrama" />
+                </div>
+                <div class="input-wrap">
+                  <label>WhatsApp del Acudiente:</label>
+                  <input type="tel" [(ngModel)]="telefonoAcudiente" placeholder="ej. 3001234567" />
+                </div>
+              </div>
+
+              <!-- DESCUENTO HERMANO -->
+              <div class="discount-check">
+                <label>
+                  <input type="checkbox" [(ngModel)]="aplicaDescuentoHermano" />
+                  <span>Aplica descuento 2do hermano (-{{ selectedServicio()?.descuento_hermanos_pct || 15 }}%)</span>
+                </label>
+              </div>
+
+              <!-- MÉTODO DE PAGO -->
+              <div class="pay-selector">
+                <label>Método de Pago:</label>
+                <div class="pay-chips">
+                  <button
+                    class="pay-btn"
+                    [class.active]="metodoPago() === 'WOMPI_PSE'"
+                    (click)="metodoPago.set('WOMPI_PSE')"
+                  >
+                    <i class="fa-solid fa-building-columns"></i> PSE
+                  </button>
+                  <button
+                    class="pay-btn"
+                    [class.active]="metodoPago() === 'NEQUI'"
+                    (click)="metodoPago.set('NEQUI')"
+                  >
+                    <i class="fa-solid fa-mobile-screen-button"></i> Nequi
+                  </button>
+                  <button
+                    class="pay-btn"
+                    [class.active]="metodoPago() === 'DAVIPLATA'"
+                    (click)="metodoPago.set('DAVIPLATA')"
+                  >
+                    <i class="fa-solid fa-wallet"></i> DaviPlata
+                  </button>
+                </div>
+              </div>
+
+              @if (metodoPago() === 'NEQUI' || metodoPago() === 'DAVIPLATA') {
+                <div class="nequi-card-mobile">
+                  <div class="nequi-top">
+                    <span class="n-title"><i class="fa-solid fa-mobile-screen-button"></i> Transferir a Nequi / DaviPlata</span>
+                    <button type="button" class="btn-copy-mini" (click)="copiarNumero('3109876543')">Copiar</button>
+                  </div>
+                  <div class="n-acc">310 987 6543</div>
+                  <div class="n-holder">SportCore Academy SAS • NIT 901.458.772-1</div>
+
+                  <div class="voucher-box-mobile">
+                    <label class="lbl-voucher"><i class="fa-solid fa-receipt text-emerald"></i> Comprobante de Pago:</label>
+                    <div class="voucher-actions-row">
+                      <button type="button" class="btn-attach-voucher" (click)="usarComprobanteDemoMobile()">
+                        <i class="fa-solid" [ngClass]="comprobanteUrl() ? 'fa-check text-emerald' : 'fa-wand-magic-sparkles'"></i>
+                        {{ comprobanteUrl() ? 'Soporte Adjuntado ✓' : 'Adjuntar Soporte Demo' }}
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      [(ngModel)]="referenciaTransaccion"
+                      placeholder="Ref / # Aprobación (ej. NQ-918231)"
+                      class="ref-input-mobile"
+                    />
+                  </div>
+                </div>
+              }
+
+              <!-- TOTAL BAR -->
+              <div class="total-strip">
+                <div>
+                  <span class="tot-label">Total a Pagar:</span>
+                  <span class="tot-note">Sin cobros adicionales</span>
+                </div>
+                <div class="tot-val">&#36;{{ formatNumber(montoCalculado()) }}</div>
+              </div>
+
+              <!-- ACTION -->
+              <div class="sheet-actions">
+                <button
+                  class="btn-pay-now"
+                  [disabled]="isSubmitting() || !nombreJugador || !nombreAcudiente || !telefonoAcudiente"
+                  (click)="confirmarInscripcion()"
+                >
+                  <i class="fa-solid fa-shield-check" *ngIf="!isSubmitting()"></i>
+                  <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting()"></i>
+                  {{ isSubmitting() ? 'Procesando...' : (metodoPago() === 'WOMPI_PSE' ? 'Pagar $' + formatNumber(montoCalculado()) + ' (PSE)' : 'Confirmar & Enviar Soporte') }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ============================================================ -->
+    <!-- MODAL: MIS PASES QR                                          -->
+    <!-- ============================================================ -->
+    @if (modalMisPases()) {
+      <div class="sheet-overlay" (click)="cerrarMisPases()">
+        <div class="sheet-content" (click)="$event.stopPropagation()">
+          <div class="sheet-handle"></div>
+          <div class="sheet-header">
+            <h3><i class="fa-solid fa-qrcode text-emerald"></i> Mis Pases QR Activos</h3>
+            <p>Pases digitales para acceso a clínicas especializadas</p>
+          </div>
+
+          <div class="pases-list">
+            @for (p of misPases(); track p.id) {
+              <div class="pase-item">
+                <div class="pase-item-top">
+                  <span class="pase-title">{{ p.servicio_titulo || p.titulo }}</span>
+                  <span class="pase-badge" [class.pase-pending]="p.estado_pago === 'PENDIENTE_APROBACION'">{{ p.estado_pago === 'PENDIENTE_APROBACION' ? 'EN REVISIÓN' : 'ACTIVO' }}</span>
+                </div>
+                <div class="pase-meta">
+                  <span><i class="fa-solid fa-user"></i> {{ p.nombre_jugador }}</span>
+                  <span><i class="fa-solid fa-clock"></i> {{ p.horario_rango }}</span>
+                </div>
+                <div class="pase-qr-row">
+                  <i class="fa-solid fa-qrcode"></i>
+                  <span class="qr-str">{{ p.codigo_qr_ticket }}</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state-pases">
+                <i class="fa-solid fa-ticket"></i>
+                <p>Aún no tienes pases para clínicas. ¡Inscríbete en una arriba!</p>
+              </div>
+            }
+          </div>
+
+          <button class="btn-close-sheet" (click)="cerrarMisPases()">Cerrar</button>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

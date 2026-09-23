@@ -1,0 +1,283 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="canchas-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Alquiler de Canchas</h2>
+      </div>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarCanchas()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-mis-reservas" (click)="abrirMisReservas()">
+          <i class="fa-solid fa-calendar-check"></i>
+          @if (misReservas().length > 0) {
+            <span class="badge-count">{{ misReservas().length }}</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <main class="canchas-container">
+      <!-- Selector de Sede & Filtro -->
+      <section class="filter-card">
+        <div class="filter-header">
+          <i class="fa-solid fa-location-dot text-success"></i>
+          <span>Sede Principal: <strong>Complejo Deportivo El Prado</strong></span>
+        </div>
+        
+        <div class="type-chips">
+          <button 
+            class="chip" 
+            [class.active]="filtroTipo() === 'todos'"
+            (click)="filtroTipo.set('todos')">
+            Todas ({{ canchas().length }})
+          </button>
+          <button 
+            class="chip" 
+            [class.active]="filtroTipo() === 'Fútbol 11'"
+            (click)="filtroTipo.set('Fútbol 11')">
+            Fútbol 11
+          </button>
+          <button 
+            class="chip" 
+            [class.active]="filtroTipo() === 'Fútbol 8'"
+            (click)="filtroTipo.set('Fútbol 8')">
+            Fútbol 8
+          </button>
+          <button 
+            class="chip" 
+            [class.active]="filtroTipo() === 'Fútbol 5'"
+            (click)="filtroTipo.set('Fútbol 5')">
+            Fútbol 5
+          </button>
+        </div>
+      </section>
+
+      <!-- Selector de Fecha de Reserva -->
+      <section class="date-selector">
+        <label><i class="fa-solid fa-calendar-day"></i> Selecciona la Fecha:</label>
+        <div class="days-scroll">
+          @for (dia of proximosDias; track dia.fechaStr) {
+            <button 
+              class="day-card" 
+              [class.active]="fechaSeleccionada() === dia.fechaStr"
+              (click)="fechaSeleccionada.set(dia.fechaStr)">
+              <span class="day-name">{{ dia.nombreDia }}</span>
+              <span class="day-num">{{ dia.numDia }}</span>
+              <span class="day-month">{{ dia.mes }}</span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- Grid de Canchas Disponibles -->
+      <div class="canchas-list">
+        @for (cancha of canchasFiltradas(); track cancha.id) {
+          <div class="cancha-card">
+            <div class="cancha-image-wrap">
+              <img [src]="cancha.imagen" [alt]="cancha.nombre" loading="lazy" />
+              <div class="card-tags">
+                <span class="tag-type">{{ cancha.tipo }}</span>
+                <span class="tag-surface">{{ cancha.superficie }}</span>
+              </div>
+              <div class="price-pill">
+                \${{ cancha.precioHora | number }} <small>/ hora</small>
+              </div>
+            </div>
+
+            <div class="cancha-details">
+              <div class="title-row">
+                <h3>{{ cancha.nombre }}</h3>
+                @if (cancha.iluminacion) {
+                  <span class="tag-light" title="Iluminación LED Profesional">
+                    <i class="fa-solid fa-lightbulb"></i> LED
+                  </span>
+                }
+              </div>
+              <p class="sede-text"><i class="fa-solid fa-map-pin"></i> {{ cancha.sede }}</p>
+
+              <!-- Horarios Disponibles -->
+              <div class="slots-section">
+                <label>Horarios Disponibles:</label>
+                <div class="slots-grid">
+                  @for (hora of cancha.horariosDisponibles; track hora) {
+                    <button 
+                      class="slot-btn"
+                      (click)="seleccionarHorario(cancha, hora)">
+                      <i class="fa-regular fa-clock"></i> {{ hora }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </main>
+
+    <!-- Modal de Reserva & Checkout -->
+    @if (reservaModal()) {
+      <div class="modal-backdrop" (click)="reservaModal.set(null)">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <h3>Confirmar Alquiler de Cancha</h3>
+            <button class="btn-close" (click)="reservaModal.set(null)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="booking-summary-card">
+              <div class="summary-top">
+                <h4>{{ reservaModal()!.cancha.nombre }}</h4>
+                <span class="booking-type">{{ reservaModal()!.cancha.tipo }}</span>
+              </div>
+              
+              <div class="booking-details-grid">
+                <div class="detail-item">
+                  <span class="lbl">FECHA</span>
+                  <span class="val">{{ fechaSeleccionada() }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="lbl">HORARIO</span>
+                  <span class="val text-success">{{ reservaModal()!.hora }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="lbl">DURACIÓN</span>
+                  <span class="val">60 Minutos</span>
+                </div>
+                <div class="detail-item">
+                  <span class="lbl">SEDE</span>
+                  <span class="val">{{ reservaModal()!.cancha.sede }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Métodos de Pago Disponibles -->
+            <div class="payment-selection">
+              <label>Selecciona tu Método de Pago:</label>
+              
+              <div class="methods-list">
+                <label class="method-option" [class.selected]="metodoPago() === 'PSE'">
+                  <input type="radio" name="metodo" value="PSE" [(ngModel)]="metodoPago" />
+                  <div class="method-info">
+                    <i class="fa-solid fa-building-columns text-primary"></i>
+                    <div>
+                      <strong>PSE / Débito Bancario</strong>
+                      <p>Transferencia instantánea desde cualquier banco</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label class="method-option" [class.selected]="metodoPago() === 'NEQUI'">
+                  <input type="radio" name="metodo" value="NEQUI" [(ngModel)]="metodoPago" />
+                  <div class="method-info">
+                    <i class="fa-solid fa-mobile-screen-button text-info"></i>
+                    <div>
+                      <strong>Nequi / Daviplata</strong>
+                      <p>Aprobación directa con notificación push</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label class="method-option" [class.selected]="metodoPago() === 'SEDE'">
+                  <input type="radio" name="metodo" value="SEDE" [(ngModel)]="metodoPago" />
+                  <div class="method-info">
+                    <i class="fa-solid fa-money-bill-wave text-success"></i>
+                    <div>
+                      <strong>Pagar en Portería de Sede</strong>
+                      <p>Efectivo o datáfono antes de iniciar tu partido</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="price-breakdown">
+              <div class="breakdown-row">
+                <span>Alquiler Cancha (1 Hora)</span>
+                <span>\${{ reservaModal()!.cancha.precioHora | number }}</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Iluminación Nocturna & Petos</span>
+                <span class="text-success">INCLUIDO</span>
+              </div>
+              <div class="breakdown-total">
+                <span>Total a Pagar:</span>
+                <span class="total-amount">\${{ reservaModal()!.cancha.precioHora | number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-confirm-booking" (click)="confirmarReserva()">
+              <i class="fa-solid fa-lock"></i> Confirmar & Reservar Ahora
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Drawer de Mis Reservas Activas -->
+    @if (mostrarMisReservas()) {
+      <div class="modal-backdrop" (click)="mostrarMisReservas.set(false)">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <h3>Mis Reservas Activas ({{ misReservas().length }})</h3>
+            <button class="btn-close" (click)="mostrarMisReservas.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            @for (res of misReservas(); track res.id) {
+              <div class="my-booking-card">
+                <div class="my-booking-top">
+                  <span class="badge-status-confirmed"><i class="fa-solid fa-circle-check"></i> {{ res.estado }}</span>
+                  <span class="code-access">CÓDIGO: <strong>{{ res.codigoAcceso }}</strong></span>
+                </div>
+                <h4>{{ res.canchaNombre }}</h4>
+                <p class="booking-meta">
+                  <i class="fa-solid fa-calendar"></i> {{ res.fecha }} &bull; <i class="fa-solid fa-clock"></i> {{ res.hora }}
+                </p>
+                <p class="booking-sede"><i class="fa-solid fa-map-location-dot"></i> {{ res.sede }}</p>
+                
+                <div class="my-booking-actions">
+                  <button class="btn-cancel" (click)="cancelarReserva(res.id)">Cancelar</button>
+                  <a [href]="'https://www.google.com/maps/search/?api=1&query=' + res.sede" target="_blank" class="btn-maps">
+                    <i class="fa-solid fa-diamond-turn-right"></i> Cómo llegar
+                  </a>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-reservas">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <p>No tienes reservas activas por el momento.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Pantalla de Éxito -->
+    @if (reservaExitosa()) {
+      <div class="modal-backdrop">
+        <div class="success-card">
+          <div class="icon-success-pulse">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>¡Cancha Reservada!</h3>
+          <p>Tu código de acceso en portería es <strong>#{{ codigoGenerado }}</strong></p>
+          <div class="order-tips">
+            <i class="fa-solid fa-futbol"></i> Preséntate 10 minutos antes en la sede con tu calzado adecuado.
+          </div>
+          <button class="btn-confirm-booking" (click)="reservaExitosa.set(false)">
+            Ver en Mis Reservas
+          </button>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

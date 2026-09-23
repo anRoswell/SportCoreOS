@@ -1,0 +1,131 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="carnet-subbar">
+      <div class="subbar-left">
+        <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Socio Pass Digital</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarCarnet()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
+
+    <main class="carnet-container">
+      <!-- Selector de Vista: Carnet vs Ficha Médica SOS -->
+      <div class="view-switch">
+        <button 
+          [class.active]="vistaActiva() === 'carnet'"
+          (click)="vistaActiva.set('carnet')">
+          <i class="fa-solid fa-id-card"></i> Carnet Oficial
+        </button>
+        <button 
+          [class.active]="vistaActiva() === 'medica'"
+          (click)="vistaActiva.set('medica')">
+          <i class="fa-solid fa-heart-pulse"></i> Ficha Médica SOS
+        </button>
+      </div>
+
+      @if (vistaActiva() === 'carnet') {
+        <!-- Tarjeta Holográfica de Carnet -->
+        <div class="digital-pass-card">
+          <div class="card-glow"></div>
+          
+          <div class="pass-header">
+            <div class="brand">
+              <div class="logo-shield">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="brand-text">
+                <h3>SPORTCORE OS</h3>
+                <span>ACADEMIA OFICIAL</span>
+              </div>
+            </div>
+            <span class="badge-status">ACTIVO 2026</span>
+          </div>
+
+          <div class="pass-body">
+            <div class="athlete-avatar">
+              <img [src]="deportista.foto" [alt]="deportista.nombre" />
+              <span class="dorsal-tag">#{{ deportista.dorsal }}</span>
+            </div>
+
+            <div class="athlete-meta">
+              <h2 class="name">{{ deportista.nombre }}</h2>
+              <p class="role-cat">{{ deportista.posicion }} &bull; {{ deportista.categoria }}</p>
+              
+              <div class="meta-row">
+                <div class="meta-item">
+                  <span class="label">ID SOCIO</span>
+                  <span class="val">{{ deportista.socioId }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="label">VIGENCIA</span>
+                  <span class="val">{{ deportista.vigencia }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Código QR Dinámico de Validación de Acceso -->
+          <div class="pass-qr-section">
+            <div class="qr-box">
+              <img 
+                [src]="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SPORTCORE_VALID_MEMBER_' + deportista.socioId" 
+                alt="QR Validación" />
+            </div>
+            <div class="qr-info">
+              <p class="scan-note">Presenta este código en portería para validación de entrada a entrenamientos y torneos oficiales.</p>
+              <div class="live-counter">
+                <span class="pulsing-dot"></span> Código Verificado en Línea
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-action" (click)="guardarEnBilletera()">
+            <i class="fa-brands fa-apple"></i> / <i class="fa-brands fa-google-wallet"></i> Guardar en Billetera
+          </button>
+        </div>
+      } @else {
+        <!-- Ficha Médica SOS -->
+        <div class="medical-sheet-card">
+          <div class="med-status-banner" [class.apto]="deportista.estadoMedico === 'Apto para Competencia'">
+            <i class="fa-solid fa-circle-check"></i>
+            <div>
+              <h4>{{ deportista.estadoMedico }}</h4>
+              <p>Certificado médico al día emitido por Medicina Deportiva.</p>
+            </div>
+          </div>
+
+          <div class="med-info-grid">
+            <div class="med-card">
+              <span class="label">TIPO DE SANGRE</span>
+              <span class="value blood">{{ deportista.tipoSangre }}</span>
+            </div>
+
+            <div class="med-card">
+              <span class="label">EPS / SEGURO</span>
+              <span class="value">{{ deportista.eps }}</span>
+            </div>
+
+            <div class="med-card full">
+              <span class="label">ALERGIAS & ANTECEDENTES</span>
+              <span class="value text-warning">{{ deportista.alergias }}</span>
+            </div>
+
+            <div class="med-card full emergency-box">
+              <span class="label text-danger"><i class="fa-solid fa-phone-volume"></i> CONTACTO DE EMERGENCIA</span>
+              <div class="contact-details">
+                <strong>{{ deportista.contactoEmergencia }}</strong>
+                <a [href]="'tel:' + deportista.telefonoEmergencia" class="btn-call-sos">
+                  <i class="fa-solid fa-phone"></i> {{ deportista.telefonoEmergencia }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </main>
+
+    <app-bottom-nav></app-bottom-nav>

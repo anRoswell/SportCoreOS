@@ -1,0 +1,247 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="tienda-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Tienda Oficial</h2>
+      </div>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarTienda()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <div class="cart-trigger" (click)="abrirCarrito()">
+          <i class="fa-solid fa-bag-shopping"></i>
+          @if (totalItemsCarrito() > 0) {
+            <span class="cart-badge">{{ totalItemsCarrito() }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <main class="tienda-container">
+      <!-- Banner Promocional -->
+      <section class="tienda-hero">
+        <div class="hero-badge"><i class="fa-solid fa-sparkles"></i> Colección 2026/2027</div>
+        <h2>Viste con orgullo los colores del club</h2>
+        <p>Uniformes oficiales, equipamiento técnico y accesorios con envío directo o recogida en sede.</p>
+      </section>
+
+      <!-- Selector de Categorías -->
+      <div class="categories-scroll">
+        <button 
+          class="cat-chip" 
+          [class.active]="categoriaActiva() === 'todos'"
+          (click)="categoriaActiva.set('todos')">
+          <i class="fa-solid fa-border-all"></i> Todos
+        </button>
+        <button 
+          class="cat-chip" 
+          [class.active]="categoriaActiva() === 'uniformes'"
+          (click)="categoriaActiva.set('uniformes')">
+          <i class="fa-solid fa-shirt"></i> Uniformes
+        </button>
+        <button 
+          class="cat-chip" 
+          [class.active]="categoriaActiva() === 'calzado'"
+          (click)="categoriaActiva.set('calzado')">
+          <i class="fa-solid fa-shoe-prints"></i> Calzado
+        </button>
+        <button 
+          class="cat-chip" 
+          [class.active]="categoriaActiva() === 'accesorios'"
+          (click)="categoriaActiva.set('accesorios')">
+          <i class="fa-solid fa-socks"></i> Accesorios
+        </button>
+        <button 
+          class="cat-chip" 
+          [class.active]="categoriaActiva() === 'entrenamiento'"
+          (click)="categoriaActiva.set('entrenamiento')">
+          <i class="fa-solid fa-futbol"></i> Balones & Conos
+        </button>
+      </div>
+
+      <!-- Grid de Productos -->
+      <div class="products-grid">
+        @for (prod of productosFiltrados(); track prod.id) {
+          <div class="product-card" (click)="verDetalle(prod)">
+            <div class="prod-img-wrap">
+              <img [src]="prod.imagen" [alt]="prod.nombre" loading="lazy" />
+              @if (prod.destacado) {
+                <span class="badge-featured">Top Ventas</span>
+              }
+            </div>
+            
+            <div class="prod-info">
+              <span class="prod-cat">{{ prod.categoria | uppercase }}</span>
+              <h4 class="prod-title">{{ prod.nombre }}</h4>
+              
+              <div class="prod-price-row">
+                <div class="prices">
+                  <span class="current-price">\${{ prod.precio | number }}</span>
+                  @if (prod.precioOriginal) {
+                    <span class="old-price">\${{ prod.precioOriginal | number }}</span>
+                  }
+                </div>
+                <button class="btn-add-quick" (click)="abrirModalRapido(prod, $event)">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <i class="fa-solid fa-box-open"></i>
+            <p>No hay artículos disponibles en esta categoría.</p>
+          </div>
+        }
+      </div>
+    </main>
+
+    <!-- Modal Detalle / Añadir Producto -->
+    @if (productoSeleccionado()) {
+      <div class="modal-backdrop" (click)="cerrarDetalle()">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <h3>Detalle del Artículo</h3>
+            <button class="btn-close" (click)="cerrarDetalle()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="modal-img-wrap">
+              <img [src]="productoSeleccionado()!.imagen" [alt]="productoSeleccionado()!.nombre" />
+            </div>
+
+            <div class="modal-details">
+              <div class="modal-title-row">
+                <h4>{{ productoSeleccionado()!.nombre }}</h4>
+                <span class="modal-price">\${{ productoSeleccionado()!.precio | number }}</span>
+              </div>
+              <p class="modal-desc">{{ productoSeleccionado()!.descripcion }}</p>
+
+              @if (productoSeleccionado()!.tallas.length > 0) {
+                <div class="size-selector-section">
+                  <label>Selecciona tu Talla:</label>
+                  <div class="sizes-grid">
+                    @for (talla of productoSeleccionado()!.tallas; track talla) {
+                      <button 
+                        class="size-btn" 
+                        [class.selected]="tallaElegida() === talla"
+                        (click)="tallaElegida.set(talla)">
+                        {{ talla }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="stock-info">
+                <i class="fa-solid fa-circle-check text-success"></i> 
+                <span>{{ productoSeleccionado()!.stock }} unidades disponibles en stock</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-primary-mobile" (click)="agregarAlCarrito()">
+              <i class="fa-solid fa-cart-plus"></i> Agregar al Carrito (\${{ productoSeleccionado()!.precio | number }})
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Drawer de Carrito y Checkout -->
+    @if (mostrarCarrito()) {
+      <div class="modal-backdrop" (click)="mostrarCarrito.set(false)">
+        <div class="cart-drawer" (click)="$event.stopPropagation()">
+          <div class="drawer-header">
+            <div class="drawer-title">
+              <i class="fa-solid fa-bag-shopping"></i>
+              <h3>Bolsa de Compras ({{ totalItemsCarrito() }})</h3>
+            </div>
+            <button class="btn-close" (click)="mostrarCarrito.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="drawer-body">
+            @if (carrito().length === 0) {
+              <div class="cart-empty-view">
+                <i class="fa-solid fa-basket-shopping"></i>
+                <p>Tu bolsa de compras está vacía</p>
+                <button class="btn-outline-mobile" (click)="mostrarCarrito.set(false)">
+                  Explorar Catálogo
+                </button>
+              </div>
+            } @else {
+              <div class="cart-items-list">
+                @for (item of carrito(); track item.producto.id + item.tallaSeleccionada) {
+                  <div class="cart-item-row">
+                    <img [src]="item.producto.imagen" [alt]="item.producto.nombre" />
+                    <div class="item-details">
+                      <h5>{{ item.producto.nombre }}</h5>
+                      @if (item.tallaSeleccionada) {
+                        <span class="item-meta">Talla: {{ item.tallaSeleccionada }}</span>
+                      }
+                      <span class="item-price">\${{ item.producto.precio * item.cantidad | number }}</span>
+                    </div>
+
+                    <div class="qty-controls">
+                      <button (click)="cambiarCantidad(item, -1)"><i class="fa-solid fa-minus"></i></button>
+                      <span>{{ item.cantidad }}</span>
+                      <button (click)="cambiarCantidad(item, 1)"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="checkout-summary">
+                <div class="summary-line">
+                  <span>Subtotal</span>
+                  <span>\${{ subtotalCarrito() | number }}</span>
+                </div>
+                <div class="summary-line">
+                  <span>Envío a Domicilio / Sede</span>
+                  <span class="free-text">GRATIS</span>
+                </div>
+                <div class="summary-total">
+                  <span>Total a Pagar</span>
+                  <span class="total-amount">\${{ subtotalCarrito() | number }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (carrito().length > 0) {
+            <div class="drawer-footer">
+              <button class="btn-checkout-now" (click)="procederPago()">
+                <i class="fa-solid fa-lock"></i> Pagar con Wompi / PSE (\${{ subtotalCarrito() | number }})
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Modal Pago Exitoso Simulado -->
+    @if (pagoExitoso()) {
+      <div class="modal-backdrop">
+        <div class="success-card">
+          <div class="icon-success-pulse">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>¡Pedido Confirmado!</h3>
+          <p>Tu orden <strong>#SC-{{ orderNumber }}</strong> ha sido procesada con éxito.</p>
+          <div class="order-tips">
+            <i class="fa-solid fa-truck-fast"></i> Recibirás las notificaciones de despacho y guía en tu WhatsApp y correo.
+          </div>
+          <button class="btn-primary-mobile" (click)="cerrarExito()">
+            Seguir Comprando
+          </button>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

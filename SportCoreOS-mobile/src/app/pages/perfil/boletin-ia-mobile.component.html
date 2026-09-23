@@ -1,0 +1,98 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="boletin-subbar">
+      <div class="subbar-left">
+        <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Boletín de Rendimiento IA</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarBoletin()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
+
+    <main class="boletin-container">
+      <!-- Tarjeta Resumen del Deportista -->
+      <section class="athlete-card">
+        <div class="athlete-avatar">
+          <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" alt="Mateo Morales" />
+          <span class="dorsal">#10</span>
+        </div>
+        <div class="athlete-info">
+          <h2>Mateo Morales</h2>
+          <p>Delantero &bull; Categoría Sub-15 A</p>
+          <div class="ia-score">
+            <i class="fa-solid fa-bolt"></i> Overall Rating: <strong>88/100</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Informe Generado por Inteligencia Artificial (Gemini) -->
+      <section class="ia-insight-card">
+        <div class="insight-header">
+          <div class="ia-badge">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Análisis Táctico Gemini IA</span>
+          </div>
+          <span class="periodo">Mes: Septiembre 2026</span>
+        </div>
+
+        <div class="ia-content">
+          <p class="summary-text">
+            "Mateo demuestra una <strong>alta efectividad en transiciones ofensivas (85%)</strong> y aceleración en el último tercio de cancha. Se observa una notable mejora en el apoyo defensivo durante repliegue táctico."
+          </p>
+
+          <div class="highlight-pills">
+            <div class="pill strong">
+              <i class="fa-solid fa-circle-check"></i> Fortaleza: <strong>Definición & Uno contra Uno</strong>
+            </div>
+            <div class="pill focus">
+              <i class="fa-solid fa-bullseye"></i> Foco de Trabajo: <strong>Orientación corporal en remate zurdo</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Métricas Físicas & Tácticas -->
+      <section class="metrics-section">
+        <h3>Métricas de Rendimiento en Campo</h3>
+        <div class="metrics-grid">
+          @for (m of metricas; track m.label) {
+            <div class="metric-card">
+              <div class="metric-top">
+                <i [class]="m.icono" [style.color]="m.color"></i>
+                <span class="m-val">{{ m.valor }} <small>{{ m.unidad }}</small></span>
+              </div>
+              <span class="m-title">{{ m.label }}</span>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" [style.width.%]="(m.valor / m.max) * 100" [style.background]="m.color"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Estadísticas de Asistencia y Disciplina -->
+      <section class="stats-summary-card">
+        <h3>Asistencia & Minutos Jugados</h3>
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-num text-success">96%</span>
+            <span class="stat-lbl">Asistencia</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num text-primary">540'</span>
+            <span class="stat-lbl">Minutos Torneo</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num text-warning">6</span>
+            <span class="stat-lbl">Goles</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num text-info">4</span>
+            <span class="stat-lbl">Asistencias</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <app-bottom-nav></app-bottom-nav>

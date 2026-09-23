@@ -1,0 +1,267 @@
+<app-mobile-header></app-mobile-header>
+
+    <!-- Subbar con botón Refresh Pull-to-Refresh y Generador de Afiche -->
+    <div class="conv-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Convocatoria & Nómina</h2>
+      </div>
+
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarDatos()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-generate-poster" (click)="abrirModalPoster()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Afiche IA</span>
+        </button>
+      </div>
+    </div>
+
+    <main class="page-content">
+      <!-- Tarjeta del Partido -->
+      <div class="match-summary-card">
+        <div class="card-meta-top">
+          <span class="cat-pill">SUB-17 ÉLITE &bull; CLAUSURA</span>
+          <span class="date-pill"><i class="fa-regular fa-clock"></i> Sábado &bull; 09:30 AM</span>
+        </div>
+
+        <div class="vs-row">
+          <div class="team-block">
+            <div class="team-badge">{{ auth.activeClub().sigla }}</div>
+            <span class="team-name">{{ auth.activeClub().nombre }}</span>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="team-block">
+            <div class="team-badge rival">NAC</div>
+            <span class="team-name">Atlético Nacional</span>
+          </div>
+        </div>
+
+        <div class="venue-row">
+          <i class="fa-solid fa-location-dot text-amber"></i>
+          <span>Cancha Sintética Principal - Sede Deportiva Los Arrayanes</span>
+        </div>
+      </div>
+
+      <!-- PESTAÑAS TÉCNICAS: TITULARES vs SUPLENTES vs CITACIÓN JUGADOR -->
+      <div class="squad-tabs-container">
+        <div class="squad-tabs">
+          <button 
+            class="tab-item" 
+            [class.active]="activeTab() === 'TITULARES'" 
+            (click)="activeTab.set('TITULARES')">
+            <i class="fa-solid fa-star text-amber"></i>
+            <span>11 Titulares ({{ titulares().length }})</span>
+          </button>
+          <button 
+            class="tab-item" 
+            [class.active]="activeTab() === 'SUPLENTES'" 
+            (click)="activeTab.set('SUPLENTES')">
+            <i class="fa-solid fa-users text-blue"></i>
+            <span>Suplentes ({{ suplentes().length }})</span>
+          </button>
+          <button 
+            class="tab-item" 
+            [class.active]="activeTab() === 'CITACION'" 
+            (click)="activeTab.set('CITACION')">
+            <i class="fa-solid fa-user-check text-emerald"></i>
+            <span>Mi Estado</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VISTA PESTAÑA: TITULARES (11 INICIAL) -->
+      @if (activeTab() === 'TITULARES') {
+        <div class="squad-list">
+          <div class="section-label">
+            <span>ALINEACIÓN TITULAR CONFIRMADA</span>
+            <button class="btn-add-player" (click)="abrirModalConvocar()">
+              <i class="fa-solid fa-user-plus"></i> Convocar
+            </button>
+          </div>
+
+          @for (j of titulares(); track j.id) {
+            <div class="player-card titular-card">
+              <div class="dorsal-box">{{ j.dorsal }}</div>
+              <div class="player-details">
+                <div class="name-row">
+                  <h4>{{ j.nombres }} {{ j.apellidos }}</h4>
+                  <span class="pos-badge">{{ j.posicion }}</span>
+                </div>
+                <div class="confirm-meta">
+                  <span class="status-chip" [class]="j.estadoAsistencia.toLowerCase()">
+                    <i class="fa-solid" [class.fa-circle-check]="j.estadoAsistencia === 'CONFIRMADO'" [class.fa-clock]="j.estadoAsistencia === 'PENDIENTE'" [class.fa-circle-xmark]="j.estadoAsistencia === 'EXCUSADO'"></i>
+                    {{ j.estadoAsistencia }}
+                  </span>
+                </div>
+              </div>
+              <div class="player-tactical-actions">
+                <button class="btn-swap" (click)="cambiarRol(j, 'SUPLENTE')" title="Pasar a Suplente">
+                  <i class="fa-solid fa-arrow-down"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- VISTA PESTAÑA: SUPLENTES (BANCO DE SUPLENTES) -->
+      @if (activeTab() === 'SUPLENTES') {
+        <div class="squad-list">
+          <div class="section-label">
+            <span>BANCO DE SUPLENTES Y RELEVOS</span>
+            <button class="btn-add-player" (click)="abrirModalConvocar()">
+              <i class="fa-solid fa-user-plus"></i> Convocar
+            </button>
+          </div>
+
+          @for (j of suplentes(); track j.id) {
+            <div class="player-card suplente-card">
+              <div class="dorsal-box suplente">{{ j.dorsal }}</div>
+              <div class="player-details">
+                <div class="name-row">
+                  <h4>{{ j.nombres }} {{ j.apellidos }}</h4>
+                  <span class="pos-badge">{{ j.posicion }}</span>
+                </div>
+                <div class="confirm-meta">
+                  <span class="status-chip" [class]="j.estadoAsistencia.toLowerCase()">
+                    {{ j.estadoAsistencia }}
+                  </span>
+                </div>
+              </div>
+              <div class="player-tactical-actions">
+                <button class="btn-swap promo" (click)="cambiarRol(j, 'TITULAR')" title="Ascender a Titular">
+                  <i class="fa-solid fa-arrow-up"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- VISTA PESTAÑA: MI ESTADO / CITACIÓN DE JUGADOR -->
+      @if (activeTab() === 'CITACION') {
+        <div class="my-rsvp-card">
+          <div class="rsvp-header">
+            <h3>Tu Citación Oficial</h3>
+            <span class="my-role-badge">★ TITULAR (#8 MEDIOCENTRO)</span>
+          </div>
+          <p class="rsvp-instructions">
+            Por favor confirma si puedes presentarte puntualmente a las <strong>08:30 AM</strong> con uniforme titular completo e hidratación.
+          </p>
+
+          <div class="rsvp-actions">
+            <button 
+              class="btn-rsvp-confirm" 
+              [class.active]="miEstado() === 'CONFIRMADO'"
+              (click)="responderMiCitacion('CONFIRMADO')">
+              <i class="fa-solid fa-circle-check"></i> Sí, Asistiré al Partido
+            </button>
+            <button 
+              class="btn-rsvp-excuse" 
+              [class.active]="miEstado() === 'EXCUSADO'"
+              (click)="responderMiCitacion('EXCUSADO')">
+              <i class="fa-solid fa-circle-xmark"></i> No podré asistir
+            </button>
+          </div>
+        </div>
+      }
+    </main>
+
+    <!-- MODAL NUEVO JUGADOR CONVOCADO (Con confirmación Continuar o Cerrar) -->
+    @if (mostrarModalConvocar()) {
+      <div class="modal-backdrop" (click)="mostrarModalConvocar.set(false)">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <h3>Convocar Nuevo Jugador</h3>
+            <button class="btn-close" (click)="mostrarModalConvocar.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="form-group">
+              <label>Selecciona el Jugador:</label>
+              <select [(ngModel)]="nuevoConvocado.jugadorId" class="form-select">
+                <option value="j-9">Juan David Castro (#11 - Extremo Izquierdo)</option>
+                <option value="j-10">Andrés Felipe Marín (#14 - Lateral Derecho)</option>
+                <option value="j-11">Felipe Quintero (#12 - Arquero Suplente)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Rol Táctico:</label>
+              <div class="role-selector">
+                <label class="radio-chip" [class.selected]="nuevoConvocado.rol === 'TITULAR'">
+                  <input type="radio" name="rol" value="TITULAR" [(ngModel)]="nuevoConvocado.rol" /> Titular (11 Inicial)
+                </label>
+                <label class="radio-chip" [class.selected]="nuevoConvocado.rol === 'SUPLENTE'">
+                  <input type="radio" name="rol" value="SUPLENTE" [(ngModel)]="nuevoConvocado.rol" /> Suplente
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking" (click)="guardarNuevoConvocado()">
+              <i class="fa-solid fa-plus"></i> Registrar Convocatoria
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL CONFIRMACIÓN: ¿DESEA CONTINUAR O CERRAR? -->
+    @if (mostrarDialogoContinuar()) {
+      <div class="modal-backdrop">
+        <div class="dialog-card">
+          <div class="icon-success">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>¡Jugador Convocado con Éxito!</h3>
+          <p>El registro fue procesado en el sistema.</p>
+          
+          <div class="dialog-actions">
+            <button class="btn-dialog-continue" (click)="continuarAgregando()">
+              <i class="fa-solid fa-plus"></i> Convocar Otro
+            </button>
+            <button class="btn-dialog-close" (click)="cerrarYActualizar()">
+              <i class="fa-solid fa-check"></i> Cerrar y Actualizar Lista
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL GENERADOR DE AFICHE IA -->
+    @if (showPosterModal()) {
+      <div class="modal-backdrop" (click)="cerrarModalPoster()">
+        <div class="poster-modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles text-emerald"></i> Afiche Oficial con IA</h3>
+              <p class="modal-subtitle">{{ auth.activeClub().nombre }} &bull; Nómina Titular</p>
+            </div>
+            <button class="btn-close-modal" (click)="cerrarModalPoster()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas #posterCanvas width="1080" height="1350" class="responsive-canvas"></canvas>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-primary-action" (click)="descargarAfiche()">
+              <i class="fa-solid fa-download"></i> Descargar Afiche HD
+            </button>
+            <button class="btn-secondary-action" (click)="compartirWhatsApp()">
+              <i class="fa-brands fa-whatsapp text-emerald"></i> Compartir por WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

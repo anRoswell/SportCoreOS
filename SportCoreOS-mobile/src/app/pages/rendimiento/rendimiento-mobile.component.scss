@@ -1,0 +1,228 @@
+.rend-subbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+
+      .subbar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .btn-back {
+          color: #0f172a;
+          font-size: 1.1rem;
+          text-decoration: none;
+        }
+
+        h2 {
+          font-size: 1.1rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
+      }
+
+      .btn-ia-report {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        color: #fff;
+        text-decoration: none;
+        padding: 0.45rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        box-shadow: 0 2px 6px rgba(4, 120, 87, 0.25);
+      }
+    }
+
+    .rend-container {
+      padding: 1rem;
+      padding-bottom: calc(75px + var(--safe-area-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* FIFA Style Card */
+    .fifa-card {
+      position: relative;
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 60%, #022c22 100%);
+      color: #fff;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+
+      .card-glow {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 140px;
+        height: 140px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%);
+      }
+
+      .fifa-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .rating-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          .overall {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #6ee7b7;
+          }
+          .pos {
+            font-size: 0.95rem;
+            font-weight: 800;
+            opacity: 0.85;
+          }
+        }
+
+        .player-visual {
+          width: 90px;
+          height: 90px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 3px solid #10b981;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+
+          img { width: 100%; height: 100%; object-fit: cover; }
+        }
+      }
+
+      .player-name {
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        margin: 0.75rem 0 0.2rem 0;
+        text-align: center;
+      }
+
+      .club-label {
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        color: #a7f3d0;
+        text-align: center;
+        margin: 0 0 1.25rem 0;
+      }
+
+      .fifa-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 0.85rem;
+
+        .stat-col {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+
+          .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .val {
+              font-size: 1.1rem;
+              font-weight: 900;
+              min-width: 26px;
+              color: #34d399;
+            }
+            .lbl {
+              font-size: 0.72rem;
+              font-weight: 700;
+              opacity: 0.85;
+            }
+          }
+        }
+      }
+    }
+
+    /* Medidas */
+    .bio-section, .tests-section {
+      h3 {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .bio-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+
+        .bio-card {
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          padding: 0.85rem;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .label { font-size: 0.65rem; font-weight: 800; color: #64748b; }
+          .val {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #0f172a;
+            small { font-size: 0.7rem; font-weight: 600; color: #64748b; }
+          }
+
+          .badge-trend {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            width: fit-content;
+
+            &.positive { background: #dcfce7; color: #166534; }
+            &.neutral { background: #f1f5f9; color: #475569; }
+          }
+        }
+      }
+    }
+
+    .tests-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+
+      .test-row {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .test-info {
+          display: flex;
+          flex-direction: column;
+          strong { font-size: 0.85rem; color: #0f172a; }
+          span { font-size: 0.72rem; color: #64748b; }
+        }
+
+        .test-record {
+          font-size: 1.15rem;
+          font-weight: 900;
+          color: #047857;
+        }
+      }
+    }

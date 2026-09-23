@@ -1,0 +1,162 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="pagos-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Estado de Cuenta & Cartera</h2>
+      </div>
+      <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPagos()" title="Actualizar">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
+
+    <main class="page-content">
+      <!-- Balance Total del Deportista -->
+      <div class="wallet-balance-card">
+        <div class="wallet-top">
+          <div class="wallet-label">
+            <i class="fa-solid fa-wallet text-emerald"></i>
+            <span>Saldo Pendiente Total</span>
+          </div>
+          <span class="wallet-status" [class.al-dia]="totalPendiente() === 0">
+            {{ totalPendiente() === 0 ? 'AL DÍA' : 'CUOTAS POR PAGAR' }}
+          </span>
+        </div>
+
+        <div class="balance-amount">
+          <span class="currency">$</span>
+          <span class="value">{{ totalPendiente() | number:'1.0-0' }}</span>
+          <span class="cop">COP</span>
+        </div>
+
+        <div class="wallet-meta">
+          <span>Deportista: <strong>Samuel Díaz</strong></span>
+          <span>Cat: <strong>Sub-15 Élite</strong></span>
+        </div>
+      </div>
+
+      <!-- Filtros de Recibos -->
+      <div class="filter-tabs">
+        <button class="tab-btn" [class.active]="filter() === 'TODOS'" (click)="setFilter('TODOS')">Todos ({{ displayedRecibos().length }})</button>
+        <button class="tab-btn" [class.active]="filter() === 'PENDIENTES'" (click)="setFilter('PENDIENTES')">Pendientes</button>
+        <button class="tab-btn" [class.active]="filter() === 'HISTORIAL'" (click)="setFilter('HISTORIAL')">Historial</button>
+      </div>
+
+      <!-- Virtual Scrolling Viewport para Historial Masivo de Pagos -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="210" 
+        class="recibos-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let r of displayedRecibos(); trackBy: trackById" class="recibo-item-wrapper">
+          <div class="recibo-card" [class]="'border-' + r.estado.toLowerCase()">
+            <div class="recibo-header">
+              <div class="recibo-title-wrap">
+                <span class="mes-badge">{{ r.mes }} {{ r.ano }}</span>
+                <span class="concepto-title">{{ r.concepto }}</span>
+              </div>
+              <span class="estado-pill" [class]="r.estado.toLowerCase()">
+                {{ r.estado }}
+              </span>
+            </div>
+
+            <div class="recibo-body">
+              <div class="price-row">
+                <span class="price-lbl">Valor Cuota:</span>
+                <strong class="price-val">$ {{ r.valor | number:'1.0-0' }} COP</strong>
+              </div>
+              <div class="date-row">
+                <i class="fa-regular fa-calendar-xmark text-amber"></i>
+                <span>Vence: <strong>{{ r.fechaVencimiento }}</strong></span>
+              </div>
+            </div>
+
+            <!-- Acciones de Pago -->
+            <div class="recibo-actions">
+              @if (r.estado === 'PENDIENTE' || r.estado === 'VENCIDO') {
+                <button class="btn-pay-now" (click)="iniciarPago(r)">
+                  <i class="fa-solid fa-bolt"></i> Pagar con PSE / Wompi
+                </button>
+              } @else {
+                <div class="paid-details">
+                  <span><i class="fa-solid fa-circle-check text-emerald"></i> Ref: {{ r.referenciaPago }}</span>
+                  <button class="btn-download-pdf" (click)="descargarComprobante(r)">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (isLoadingMore()) {
+          <div class="loading-more-box">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más extractos...</span>
+          </div>
+        } @else if (hasReachedEnd() && displayedRecibos().length > 0) {
+          <div class="end-history-box">
+            <span>Fin del historial financiero</span>
+          </div>
+        }
+      </cdk-virtual-scroll-viewport>
+    </main>
+
+    <!-- Modal Pasarela PSE / Wompi -->
+    @if (modalPagoActivo()) {
+      <div class="modal-backdrop" (click)="cerrarModalPago()">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="wompi-brand">
+              <span class="secure-icon"><i class="fa-solid fa-shield-halved"></i></span>
+              <div>
+                <h4>Pasarela de Pagos Segura</h4>
+                <small>Wompi • PSE • Tarjeta Bancaria</small>
+              </div>
+            </div>
+            <button class="btn-close" (click)="cerrarModalPago()"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="summary-box">
+              <span class="concept-lbl">{{ reciboSeleccionado()?.concepto }} ({{ reciboSeleccionado()?.mes }})</span>
+              <span class="total-topay">$ {{ reciboSeleccionado()?.valor | number:'1.0-0' }} COP</span>
+            </div>
+
+            <div class="payment-methods-grid">
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'PSE'" 
+                (click)="metodoSeleccionado.set('PSE')">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>PSE Débito</span>
+              </button>
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'CARD'" 
+                (click)="metodoSeleccionado.set('CARD')">
+                <i class="fa-regular fa-credit-card"></i>
+                <span>Tarjeta Crédito</span>
+              </button>
+              <button 
+                class="method-btn" 
+                [class.selected]="metodoSeleccionado() === 'NEQUI'" 
+                (click)="metodoSeleccionado.set('NEQUI')">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <span>Nequi / Daviplata</span>
+              </button>
+            </div>
+
+            <button class="btn-confirm-gateway" [disabled]="procesandoPago()" (click)="procesarTransaccion()">
+              @if (procesandoPago()) {
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Conectando con banco...
+              } @else {
+                <i class="fa-solid fa-lock"></i> Confirmar Pago Seguro
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

@@ -1,0 +1,102 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="rend-subbar">
+      <div class="subbar-left">
+        <a routerLink="/perfil" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Biometría & Radar Físico</h2>
+      </div>
+      <div class="subbar-right">
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarBiometria()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <a routerLink="/perfil/boletin-ia" class="btn-ia-report">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Boletín IA
+        </a>
+      </div>
+    </div>
+
+    <main class="rend-container">
+      <!-- Tarjeta Atributos FIFA / Radar -->
+      <section class="fifa-card">
+        <div class="card-glow"></div>
+        <div class="fifa-top">
+          <div class="rating-box">
+            <span class="overall">88</span>
+            <span class="pos">EXT</span>
+          </div>
+          <div class="player-visual">
+            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" alt="Mateo Morales" />
+          </div>
+        </div>
+
+        <h3 class="player-name">MATEO MORALES</h3>
+        <p class="club-label">SPORTCORE ACADEMY &bull; SUB-15 A</p>
+
+        <div class="fifa-stats-grid">
+          <div class="stat-col">
+            <div class="stat-item"><span class="val">91</span> <span class="lbl">PAC (Ritmo)</span></div>
+            <div class="stat-item"><span class="val">84</span> <span class="lbl">SHO (Tiro)</span></div>
+            <div class="stat-item"><span class="val">87</span> <span class="lbl">PAS (Pases)</span></div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-item"><span class="val">89</span> <span class="lbl">DRI (Regate)</span></div>
+            <div class="stat-item"><span class="val">62</span> <span class="lbl">DEF (Defensa)</span></div>
+            <div class="stat-item"><span class="val">80</span> <span class="lbl">PHY (Físico)</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Resumen Antropométrico -->
+      <section class="bio-section">
+        <h3><i class="fa-solid fa-ruler-combined text-primary"></i> Medidas Antropométricas</h3>
+        <div class="bio-grid">
+          <div class="bio-card">
+            <span class="label">ESTATURA</span>
+            <span class="val">{{ testActual.estaturaCm }} <small>cm</small></span>
+            <span class="badge-trend positive"><i class="fa-solid fa-arrow-up"></i> +2.5 cm vs Ene</span>
+          </div>
+
+          <div class="bio-card">
+            <span class="label">PESO CORPORAL</span>
+            <span class="val">{{ testActual.pesoKg }} <small>kg</small></span>
+            <span class="badge-trend neutral">IMC: {{ testActual.imc }}</span>
+          </div>
+
+          <div class="bio-card">
+            <span class="label">% GRASA</span>
+            <span class="val">{{ testActual.grasaPct }} <small>%</small></span>
+            <span class="badge-trend positive"><i class="fa-solid fa-circle-check"></i> Rango Óptimo</span>
+          </div>
+
+          <div class="bio-card">
+            <span class="label">VO2 MÁXIMO</span>
+            <span class="val">{{ testActual.vo2Max }} <small>ml/kg</small></span>
+            <span class="badge-trend positive"><i class="fa-solid fa-bolt"></i> Élite Sub-15</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tests de Campo Físicos -->
+      <section class="tests-section">
+        <h3><i class="fa-solid fa-stopwatch text-warning"></i> Tests de Velocidad & Potencia</h3>
+        <div class="tests-list">
+          <div class="test-row">
+            <div class="test-info">
+              <strong>Sprint 30 Metros Lanzado</strong>
+              <span>Aceleración & Velocidad Punta</span>
+            </div>
+            <span class="test-record">{{ testActual.velocidad30mSeg }}s</span>
+          </div>
+
+          <div class="test-row">
+            <div class="test-info">
+              <strong>Salto Vertical (CMJ)</strong>
+              <span>Potencia de Tren Inferior</span>
+            </div>
+            <span class="test-record">{{ testActual.saltoVerticalCm }} cm</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <app-bottom-nav></app-bottom-nav>

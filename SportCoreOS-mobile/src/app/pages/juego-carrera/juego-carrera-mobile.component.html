@@ -1,0 +1,450 @@
+<app-mobile-header></app-mobile-header>
+
+    <!-- Subbarra superior de navegación -->
+    <div class="career-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="subbar-title-wrap">
+          <h2>Modo Carrera: Evolution</h2>
+          <span class="subbar-league">SPORTCORE LEAGUE 2026</span>
+        </div>
+      </div>
+      <div class="subbar-right">
+        <div class="xp-pill-counter">
+          <i class="fa-solid fa-bolt text-warning"></i>
+          <span>{{ xpTotal() }} XP</span>
+        </div>
+      </div>
+    </div>
+
+    <main class="career-main-content">
+      <!-- 1. CARTA FUT EVOLUTIVA DINÁMICA -->
+      <section class="fut-evolution-section">
+        <div class="fut-card-wrapper" [ngClass]="getTierClass(tier())">
+          <!-- Brillo y Efecto Prisma Holograma -->
+          <div class="fut-card-prism"></div>
+          <div class="fut-card-glow"></div>
+
+          <!-- Header de la Carta FUT -->
+          <div class="fut-card-header">
+            <div class="fut-ovr-box">
+              <span class="fut-ovr-number">{{ overallRating() }}</span>
+              <span class="fut-pos-code">EXT</span>
+              <div class="fut-tier-pill">{{ tier() }}</div>
+            </div>
+
+            <div class="fut-avatar-frame">
+              <img [src]="auth.currentUser()?.fotoUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80'" alt="Jugador" class="fut-player-img" />
+              <span class="fut-flag">🇨🇴</span>
+              <span class="fut-shield">{{ auth.activeClub().sigla }}</span>
+            </div>
+          </div>
+
+          <!-- Nombre y Categoría -->
+          <div class="fut-card-name-strip">
+            <h3 class="fut-player-name">{{ auth.currentUser()?.nombres || 'SAMUEL DÍAZ' }}</h3>
+            <span class="fut-club-subtitle">SPORTCORE ACADEMY • SUB-15 ÉLITE</span>
+          </div>
+
+          <!-- Atributos 6 Pilares FIFA -->
+          <div class="fut-attributes-grid">
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().ritmo }}</span>
+              <span class="attr-lbl">RIT</span>
+            </div>
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().tiro }}</span>
+              <span class="attr-lbl">TIR</span>
+            </div>
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().pase }}</span>
+              <span class="attr-lbl">PAS</span>
+            </div>
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().regate }}</span>
+              <span class="attr-lbl">REG</span>
+            </div>
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().defensa }}</span>
+              <span class="attr-lbl">DEF</span>
+            </div>
+            <div class="fut-attr-item">
+              <span class="attr-val">{{ stats().fisico }}</span>
+              <span class="attr-lbl">FÍS</span>
+            </div>
+          </div>
+
+          <!-- Barra de Progreso al Siguiente Nivel -->
+          <div class="fut-level-progress-box">
+            <div class="level-info-row">
+              <span class="lvl-badge"><i class="fa-solid fa-star"></i> NIVEL {{ nivel() }}</span>
+              <span class="lvl-xp-text">{{ xpActualNivel() }} / {{ xpMetaNivel() }} XP</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="porcentajeProgreso()"></div>
+            </div>
+            <span class="next-tier-hint" *ngIf="tier() !== 'ELITE'">
+              Siguiente Rango: <strong>{{ getSiguienteTier() }}</strong> (Nivel {{ getNivelSiguienteTier() }})
+            </span>
+            <span class="next-tier-hint elite-max" *ngIf="tier() === 'ELITE'">
+              👑 ¡RANGO MÁXIMO ALCANZADO: LEYENDA ÉLITE!
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. SELECTOR DE PESTAÑAS: TÁCTICA / RETOS / ATRIBUTOS / RANKING LEADERBOARD -->
+      <div class="game-tabs-bar">
+        <button class="game-tab-btn" [class.active]="activeTab() === 'RANKING'" (click)="setTab('RANKING')">
+          <i class="fa-solid fa-trophy text-amber"></i>
+          <span>Leaderboard</span>
+          <span class="live-dot-mini" title="En vivo por WebSocket"></span>
+        </button>
+        <button class="game-tab-btn" [class.active]="activeTab() === 'TACTICA'" (click)="setTab('TACTICA')">
+          <i class="fa-solid fa-brain"></i>
+          <span>Trivia Táctica</span>
+        </button>
+        <button class="game-tab-btn" [class.active]="activeTab() === 'MISIONES'" (click)="setTab('MISIONES')">
+          <i class="fa-solid fa-bullseye"></i>
+          <span>Exigencias</span>
+        </button>
+        <button class="game-tab-btn" [class.active]="activeTab() === 'TIRO_LIBRE'" (click)="setTab('TIRO_LIBRE')">
+          <i class="fa-solid fa-futbol"></i>
+          <span>Tiro Libre</span>
+        </button>
+      </div>
+
+      <!-- 3. CONTENIDO DE PESTAÑA: TRIVIA TÁCTICA -->
+      @if (activeTab() === 'TACTICA') {
+        <section class="game-card-view">
+          <div class="view-header">
+            <div class="view-title">
+              <i class="fa-solid fa-lightbulb text-warning"></i>
+              <div>
+                <h3>Academia de Decisiones Tácticas</h3>
+                <p>Responde como un profesional en el campo y gana XP directo</p>
+              </div>
+            </div>
+            <span class="streak-badge"><i class="fa-solid fa-fire"></i> Racha: {{ rachaTrivia() }}</span>
+          </div>
+
+          @if (!triviaFinalizada()) {
+            <div class="tactical-question-card">
+              <div class="question-header">
+                <span class="q-number">SITUACIÓN TÁCTICA #{{ currentQuestionIndex() + 1 }}</span>
+                <span class="q-xp-reward">+{{ currentQuestion().xpRecompensa }} XP</span>
+              </div>
+
+              <div class="situation-box">
+                <p class="situation-context"><i class="fa-solid fa-diagram-project"></i> {{ currentQuestion().contexto }}</p>
+                <h4 class="situation-text">{{ currentQuestion().situacion }}</h4>
+              </div>
+
+              <!-- Opciones de Respuesta -->
+              <div class="options-list">
+                @for (op of currentQuestion().opciones; track $index) {
+                  <button 
+                    class="option-btn"
+                    [class.selected]="selectedOption() === $index"
+                    [class.correct]="mostrarResultado() && op.correcta"
+                    [class.incorrect]="mostrarResultado() && selectedOption() === $index && !op.correcta"
+                    [disabled]="mostrarResultado()"
+                    (click)="selectOption($index)">
+                    <span class="opt-letter">{{ getLetter($index) }}</span>
+                    <span class="opt-text">{{ op.texto }}</span>
+                    <i class="fa-solid fa-circle-check opt-check" *ngIf="mostrarResultado() && op.correcta"></i>
+                    <i class="fa-solid fa-circle-xmark opt-xmark" *ngIf="mostrarResultado() && selectedOption() === $index && !op.correcta"></i>
+                  </button>
+                }
+              </div>
+
+              <!-- Feedback del DT -->
+              @if (mostrarResultado()) {
+                <div class="feedback-coach-box" [class.success]="isRespuestaCorrecta()" [class.danger]="!isRespuestaCorrecta()">
+                  <div class="coach-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                  <div class="coach-feedback-text">
+                    <strong>{{ isRespuestaCorrecta() ? '¡Excelente Visión de Juego! (+50 XP)' : 'Consejo del Entrenador:' }}</strong>
+                    <p>{{ feedbackMensaje() }}</p>
+                  </div>
+                </div>
+
+                <button class="btn-next-question" (click)="siguientePregunta()">
+                  <span>Siguiente Jugada</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              } @else {
+                <button 
+                  class="btn-confirm-answer" 
+                  [disabled]="selectedOption() === null" 
+                  (click)="confirmarRespuesta()">
+                  <i class="fa-solid fa-check"></i>
+                  <span>Confirmar Decisión</span>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="trivia-completed-box">
+              <div class="trophy-bounce"><i class="fa-solid fa-trophy"></i></div>
+              <h3>¡Sesión Táctica Completada!</h3>
+              <p>Has sumado <strong>+150 XP</strong> para la evolución de tu tarjeta de jugador.</p>
+              <button class="btn-restart" (click)="reiniciarTrivia()">
+                <i class="fa-solid fa-rotate-right"></i> Jugar Otra Ronda Táctica
+              </button>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- 4. CONTENIDO DE PESTAÑA: EXIGENCIAS & RETOS (ENTRENAMIENTOS / AMISTOSOS / OFICIALES) -->
+      @if (activeTab() === 'MISIONES') {
+        <section class="game-card-view">
+          <div class="view-header">
+            <div class="view-title">
+              <i class="fa-solid fa-medal text-emerald"></i>
+              <div>
+                <h3>Exigencias de Rendimiento Real</h3>
+                <p>Cumple metas en tus entrenamientos y partidos para subir de OVR</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtros de Misiones -->
+          <div class="mission-type-chips">
+            <button class="chip" [class.active]="filtroMision() === 'TODAS'" (click)="filtroMision.set('TODAS')">Todas</button>
+            <button class="chip" [class.active]="filtroMision() === 'ENTRENAMIENTO'" (click)="filtroMision.set('ENTRENAMIENTO')">🏃 Entrenamientos</button>
+            <button class="chip" [class.active]="filtroMision() === 'AMISTOSO'" (click)="filtroMision.set('AMISTOSO')">⚽ Amistosos</button>
+            <button class="chip" [class.active]="filtroMision() === 'OFICIAL'" (click)="filtroMision.set('OFICIAL')">🏆 Torneo Oficial</button>
+          </div>
+
+          <!-- Lista de Retos / Misiones -->
+          <div class="missions-list">
+            @for (m of misionesFiltradas(); track m.id) {
+              <div class="mission-card" [class.completed]="m.completada">
+                <div class="mission-left-icon" [ngClass]="m.tipo.toLowerCase()">
+                  <i [class]="m.icono"></i>
+                </div>
+                <div class="mission-body">
+                  <div class="mission-top-row">
+                    <span class="mission-badge" [ngClass]="m.tipo.toLowerCase()">{{ m.exigenciaBadge }}</span>
+                    <span class="mission-xp">+{{ m.xp }} XP</span>
+                  </div>
+                  <h4 class="mission-title">{{ m.titulo }}</h4>
+                  <p class="mission-desc">{{ m.descripcion }}</p>
+
+                  <div class="mission-progress-row">
+                    <div class="progress-bar-wrap">
+                      <div class="bar-fill" [style.width.%]="(m.progreso / m.meta) * 100"></div>
+                    </div>
+                    <span class="progress-count">{{ m.progreso }}/{{ m.meta }}</span>
+                  </div>
+                </div>
+
+                <div class="mission-action-btn">
+                  @if (m.completada) {
+                    <span class="badge-done"><i class="fa-solid fa-circle-check"></i> Reclamada</span>
+                  } @else if (m.progreso >= m.meta) {
+                    <button class="btn-claim-xp" (click)="reclamarMision(m)">
+                      <i class="fa-solid fa-gift"></i> Reclamar
+                    </button>
+                  } @else {
+                    <span class="badge-in-progress">En curso</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- 5. CONTENIDO DE PESTAÑA: MINIJUEGO TIRO DE PRECISIÓN -->
+      @if (activeTab() === 'TIRO_LIBRE') {
+        <section class="game-card-view">
+          <div class="view-header">
+            <div class="view-title">
+              <i class="fa-solid fa-crosshairs text-rose"></i>
+              <div>
+                <h3>Diana de Precisión & Definición</h3>
+                <p>Apunta al ángulo de la portería para sumar XP y afinar tu puntería</p>
+              </div>
+            </div>
+            <span class="score-display">Goles: <strong>{{ golesMarcados() }}</strong> / 5</span>
+          </div>
+
+          <!-- Portería Interactiva -->
+          <div class="target-goal-pitch">
+            <div class="crossbar-top"></div>
+            <div class="post-left"></div>
+            <div class="post-right"></div>
+            <div class="goal-netting"></div>
+
+            <!-- Arquero animado -->
+            <div class="keeper-character" [ngClass]="keeperPosicion()">
+              <div class="keeper-body">🧤⚽</div>
+            </div>
+
+            <!-- 4 Zonas de Tiro / Ángulos -->
+            <button class="target-zone top-left" (click)="disparar(1)" [disabled]="disparando()">
+              <span>Ángulo Superior Izq</span>
+              <strong>+40 XP</strong>
+            </button>
+            <button class="target-zone top-right" (click)="disparar(2)" [disabled]="disparando()">
+              <span>Ángulo Superior Der</span>
+              <strong>+40 XP</strong>
+            </button>
+            <button class="target-zone bottom-left" (click)="disparar(3)" [disabled]="disparando()">
+              <span>Raso Esquinado Izq</span>
+              <strong>+25 XP</strong>
+            </button>
+            <button class="target-zone bottom-right" (click)="disparar(4)" [disabled]="disparando()">
+              <span>Raso Esquinado Der</span>
+              <strong>+25 XP</strong>
+            </button>
+          </div>
+
+          <!-- Mensaje de Resultado del Tiro -->
+          @if (tiroResultadoMensaje()) {
+            <div class="shot-result-banner" [class.goal]="esGol()" [class.saved]="!esGol()">
+              <i class="fa-solid" [class.fa-futbol]="esGol()" [class.fa-hand]="!esGol()"></i>
+              <span>{{ tiroResultadoMensaje() }}</span>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- 6. CONTENIDO DE PESTAÑA: LEADERBOARD GAMIFICADO EN TIEMPO REAL (WEBSOCKET) -->
+      @if (activeTab() === 'RANKING') {
+        <section class="game-card-view ranking-mobile-view">
+          <!-- Banner de Conexión WebSocket en Vivo -->
+          <div class="socket-live-strip">
+            <div class="socket-status">
+              <span class="pulse-dot-green"></span>
+              <span>SOCKET EN VIVO: <strong>LEADERBOARD 2026-I</strong></span>
+            </div>
+            <span class="socket-count"><i class="fa-solid fa-signal text-emerald"></i> Sincronizado</span>
+          </div>
+
+          <!-- Toast Notificación de Último Evento WebSocket recibido -->
+          @if (socketService.ultimoEvento(); as ev) {
+            <div class="socket-event-toast" [class.gain]="ev.xpDelta > 0" [class.penalty]="ev.xpDelta < 0">
+              <div class="event-icon">
+                <i class="fa-solid" [class.fa-bolt]="ev.xpDelta > 0" [class.fa-circle-exclamation]="ev.xpDelta < 0"></i>
+              </div>
+              <div class="event-body">
+                <div class="event-headline">
+                  <strong>{{ ev.jugadorNombre }} (#{{ ev.dorsal }})</strong>
+                  <span class="event-delta" [class.delta-plus]="ev.xpDelta > 0" [class.delta-minus]="ev.xpDelta < 0">
+                    {{ ev.xpDelta > 0 ? '+' + ev.xpDelta : ev.xpDelta }} XP
+                  </span>
+                </div>
+                <p class="event-desc">{{ ev.motivo }}</p>
+                <span class="event-time"><i class="fa-regular fa-clock"></i> {{ ev.timestamp }}</span>
+              </div>
+            </div>
+          }
+
+          <!-- MINI PODIO TOP 3 MOBILE -->
+          <div class="mobile-podium-row">
+            <!-- #2 Plata -->
+            @if (top3Alumnos()[1]; as p2) {
+              <div class="podium-mini-col place-2" (click)="verDetalleAlumno(p2)">
+                <div class="crown-pill silver">#2</div>
+                <div class="avatar-podium silver-ring">
+                  <img [src]="p2.fotoUrl" [alt]="p2.nombres" />
+                </div>
+                <span class="podium-name">{{ p2.nombres }}</span>
+                <span class="podium-xp silver-text">{{ p2.xpTotal }} XP</span>
+                <div class="pedestal-bar silver-bg">2</div>
+              </div>
+            }
+
+            <!-- #1 Oro MVP -->
+            @if (top3Alumnos()[0]; as p1) {
+              <div class="podium-mini-col place-1" (click)="verDetalleAlumno(p1)">
+                <div class="crown-pill gold"><i class="fa-solid fa-crown"></i> #1</div>
+                <div class="avatar-podium gold-ring">
+                  <img [src]="p1.fotoUrl" [alt]="p1.nombres" />
+                </div>
+                <span class="podium-name">{{ p1.nombres }}</span>
+                <span class="podium-xp gold-text">{{ p1.xpTotal }} XP</span>
+                <div class="pedestal-bar gold-bg">1</div>
+              </div>
+            }
+
+            <!-- #3 Bronce -->
+            @if (top3Alumnos()[2]; as p3) {
+              <div class="podium-mini-col place-3" (click)="verDetalleAlumno(p3)">
+                <div class="crown-pill bronze">#3</div>
+                <div class="avatar-podium bronze-ring">
+                  <img [src]="p3.fotoUrl" [alt]="p3.nombres" />
+                </div>
+                <span class="podium-name">{{ p3.nombres }}</span>
+                <span class="podium-xp bronze-text">{{ p3.xpTotal }} XP</span>
+                <div class="pedestal-bar bronze-bg">3</div>
+              </div>
+            }
+          </div>
+
+          <!-- LISTA DE ALUMNOS MOBILE CON SOCKET ANIMATION -->
+          <div class="mobile-leaderboard-list">
+            <div class="list-header-title">
+              <span>CLASIFICACIÓN GENERAL ({{ leaderboardList().length }} ALUMNOS)</span>
+              <span class="legend-hint"><i class="fa-solid fa-fire text-amber"></i> Racha DT</span>
+            </div>
+
+            @for (alumno of leaderboardList(); track alumno.id) {
+              <div 
+                class="mobile-player-rank-card" 
+                [class.my-card]="alumno.id === 'alm-2'"
+                [class.rank-gold]="alumno.posicionRanking === 1"
+                (click)="verDetalleAlumno(alumno)">
+                
+                <!-- Posición y Tendencia -->
+                <div class="rank-pos-box">
+                  <span class="rank-badge" [ngClass]="'pos-' + alumno.posicionRanking">
+                    {{ alumno.posicionRanking }}
+                  </span>
+                  @if (alumno.posicionAnterior > alumno.posicionRanking) {
+                    <i class="fa-solid fa-caret-up text-emerald"></i>
+                  } @else if (alumno.posicionAnterior < alumno.posicionRanking) {
+                    <i class="fa-solid fa-caret-down text-rose"></i>
+                  } @else {
+                    <i class="fa-solid fa-minus text-slate"></i>
+                  }
+                </div>
+
+                <!-- Foto y Datos -->
+                <div class="player-mid-box">
+                  <div class="avatar-circle" [ngClass]="'ring-' + alumno.tier.toLowerCase()">
+                    <img [src]="alumno.fotoUrl" [alt]="alumno.nombres" />
+                    <span class="dorsal-tag">#{{ alumno.dorsal }}</span>
+                  </div>
+                  <div class="player-info-lines">
+                    <div class="name-line">
+                      <span class="full-name">{{ alumno.nombres }} {{ alumno.apellidos }}</span>
+                      @if (alumno.id === 'alm-2') {
+                        <span class="you-badge">TÚ</span>
+                      }
+                    </div>
+                    <span class="cat-pos-line">{{ alumno.categoriaNombre }} • {{ alumno.posicionCampo }}</span>
+                    <div class="mini-badges-row">
+                      <span class="tier-pill" [ngClass]="'tier-' + alumno.tier.toLowerCase()">{{ alumno.tier }} (Lv.{{ alumno.nivel }})</span>
+                      <span class="streak-pill" *ngIf="alumno.rachaEntrenamientos > 0">
+                        <i class="fa-solid fa-fire text-amber"></i> {{ alumno.rachaEntrenamientos }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- OVR & XP Total -->
+                <div class="player-right-ovr">
+                  <div class="ovr-circle">{{ alumno.overallRating }}</div>
+                  <span class="xp-count-val">{{ alumno.xpTotal | number }} XP</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </main>
+
+    <app-bottom-nav></app-bottom-nav>

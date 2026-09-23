@@ -1,0 +1,119 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="partidos-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Calendario & Fixture</h2>
+      </div>
+      <div class="subbar-right">
+        <span class="count-badge">{{ displayedMatches().length }} de {{ allMatches.length }}</span>
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarPartidos()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros Rápidos de Fixture -->
+    <div class="fixture-filter-pills">
+      <button class="filter-pill" [class.active]="filtroEstado() === 'TODOS'" (click)="setFiltro('TODOS')">
+        Todos
+      </button>
+      <button class="filter-pill" [class.active]="filtroEstado() === 'PROGRAMADO'" (click)="setFiltro('PROGRAMADO')">
+        <span class="dot-prog"></span> Próximos
+      </button>
+      <button class="filter-pill" [class.active]="filtroEstado() === 'FINALIZADO'" (click)="setFiltro('FINALIZADO')">
+        Resultados
+      </button>
+    </div>
+
+    <main class="mobile-page-content">
+      <!-- Cdk Virtual Scroll Viewport de Altura Controlada con Auto-Scroll -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="255" 
+        class="matches-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let m of displayedMatches(); trackBy: trackById" class="match-item-wrapper">
+          <div class="match-item-card">
+            <!-- Header de Categoría y Condición -->
+            <div class="match-card-top">
+              <span class="badge-cat-tag">⚽ {{ m.categoria_nombre }}</span>
+              <span class="match-badge-cond" [class.badge-local]="m.condicion_juego === 'LOCAL'">
+                {{ m.condicion_juego || 'LOCAL' }}
+              </span>
+            </div>
+
+            <!-- Versus y Marcador -->
+            <div class="match-versus-block">
+              <div class="team-club">
+                <div class="crest-small">{{ auth.activeClub().sigla }}</div>
+                <strong class="club-title">{{ auth.activeClub().nombre }}</strong>
+              </div>
+              
+              <div class="versus-center">
+                @if (m.estado_partido === 'FINALIZADO') {
+                  <div class="score-display">
+                    <span>{{ m.goles_club }}</span> - <span>{{ m.goles_rival }}</span>
+                  </div>
+                  <span class="match-status-label finalizado">Finalizado</span>
+                } @else {
+                  <div class="vs-label">VS</div>
+                  <span class="match-status-label programado">Programado</span>
+                }
+              </div>
+
+              <div class="team-club">
+                <div class="crest-small rival-small">⚔️</div>
+                <strong class="club-title">{{ m.rival_nombre }}</strong>
+              </div>
+            </div>
+
+            <!-- Datos de Fecha y Hora -->
+            <div class="match-details-strip">
+              <div class="detail-cell">
+                <i class="fa-regular fa-calendar text-emerald"></i>
+                <span>{{ m.fecha_partido }}</span>
+              </div>
+              <div class="detail-cell">
+                <i class="fa-regular fa-clock text-blue"></i>
+                <span>{{ m.hora_partido }}</span>
+              </div>
+              <div class="detail-cell citacion-cell">
+                <span class="cit-tag">Cit: {{ m.hora_citacion }}</span>
+              </div>
+            </div>
+
+            <!-- Sede Cancha -->
+            <div class="venue-cell">
+              <i class="fa-solid fa-location-dot text-amber"></i>
+              <span class="venue-text">{{ m.sede_cancha }}</span>
+            </div>
+
+            <!-- Footer con Botón de Convocatoria y GPS -->
+            <div class="match-card-footer">
+              <a routerLink="/convocatorias" [queryParams]="{ partidoId: m.id }" class="btn-convocar-match">
+                <i class="fa-solid fa-clipboard-user"></i>
+                <span>Ver Convocatoria & Citación</span>
+              </a>
+              <button class="btn-gps-action" (click)="openGps(m.sede_cancha)" title="Abrir en GPS">
+                <i class="fa-solid fa-diamond-turn-right"></i> GPS
+              </button>
+            </div>
+          </div>
+        </div>
+
+        @if (isLoadingMore()) {
+          <div class="infinite-indicator">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más fechas del fixture...</span>
+          </div>
+        } @else if (hasReachedEnd() && displayedMatches().length > 0) {
+          <div class="infinite-end">
+            <i class="fa-solid fa-check-double text-emerald"></i>
+            <span>Fin de la temporada y fixture oficial</span>
+          </div>
+        }
+      </cdk-virtual-scroll-viewport>
+    </main>
+
+    <app-bottom-nav></app-bottom-nav>

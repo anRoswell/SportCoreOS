@@ -1,0 +1,600 @@
+<app-mobile-header></app-mobile-header>
+
+    <!-- SUBBAR STADIUM DARK CON GRADIENTE ESMERALDA -->
+    <div class="entr-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back" title="Volver al Home"><i class="fa-solid fa-arrow-left"></i></a>
+        <div>
+          <h2>Control de Asistencia</h2>
+          <span class="subbar-badge-live"><span class="live-pulse-dot"></span> Planilla de Cancha</span>
+        </div>
+      </div>
+      <div class="subbar-right">
+        <button class="btn-voice-dictation" (click)="abrirModalDictadoVoz()" title="Dictar Novedades por Voz">
+          <i class="fa-solid fa-microphone"></i>
+          <span>Dictar</span>
+        </button>
+        <button class="btn-qr-scan" (click)="abrirModalEscanerQR()" title="Escanear QR de Cancha">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>QR</span>
+        </button>
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarAsistencia()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- SELECTOR TÁCTICO DE CATEGORÍAS ASIGNADAS AL ENTRENADOR -->
+    <div class="category-selector-bar">
+      <div class="category-chips-scroll">
+        @for (cat of categoriasAsignadas(); track cat.id) {
+          <button 
+            type="button" 
+            class="cat-chip-btn" 
+            [class.active]="categoriaSeleccionada()?.id === cat.id"
+            (click)="seleccionarCategoria(cat)">
+            <span class="cat-dot" [style.background]="cat.color_distintivo || '#10b981'"></span>
+            <span class="cat-name">{{ cat.nombre }}</span>
+            <span class="cat-count">({{ cat.total_jugadores || cat.plantel?.length || 0 }})</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- FILTROS RÁPIDOS POR ESTADO -->
+    <div class="attendance-filter-pills">
+      <button class="filter-pill" [class.active]="filtroEstado() === 'TODOS'" (click)="setFiltro('TODOS')">
+        Todos ({{ jugadores().length }})
+      </button>
+      <button class="filter-pill pill-presente-tab" [class.active]="filtroEstado() === 'PRESENTE'" (click)="setFiltro('PRESENTE')">
+        <i class="fa-solid fa-check"></i> {{ contarPorEstado('PRESENTE') }}
+      </button>
+      <button class="filter-pill pill-retraso-tab" [class.active]="filtroEstado() === 'RETRASO'" (click)="setFiltro('RETRASO')">
+        <i class="fa-solid fa-clock"></i> {{ contarPorEstado('RETRASO') }}
+      </button>
+      <button class="filter-pill pill-excusa-tab" [class.active]="filtroEstado() === 'EXCUSA'" (click)="setFiltro('EXCUSA')">
+        <i class="fa-solid fa-file-medical"></i> {{ contarPorEstado('EXCUSA') }}
+      </button>
+      <button class="filter-pill pill-falta-tab" [class.active]="filtroEstado() === 'FALTA'" (click)="setFiltro('FALTA')">
+        <i class="fa-solid fa-xmark"></i> {{ contarPorEstado('FALTA') }}
+      </button>
+    </div>
+
+    <main class="page-content">
+      <!-- TARJETA TÁCTICA DE SESIÓN ACTIVA (STADIUM CARD) -->
+      <div class="session-card">
+        <div class="session-header">
+          <div class="session-badge">
+            <i class="fa-solid fa-whistle text-emerald"></i> SESIÓN TÉCNICA
+          </div>
+          <span class="session-date"><i class="fa-regular fa-calendar"></i> Hoy • 16:00 - 18:00</span>
+        </div>
+
+        <div class="session-info-grid">
+          <div class="info-cell">
+            <span class="lbl"><i class="fa-solid fa-shield-halved"></i> Categoría</span>
+            <strong>{{ categoriaSeleccionada()?.nombre || 'Sub-15 Élite A' }}</strong>
+          </div>
+          <div class="info-cell">
+            <span class="lbl"><i class="fa-solid fa-location-dot"></i> Cancha</span>
+            <strong>{{ categoriaSeleccionada()?.cancha || 'Sede Principal #1' }}</strong>
+          </div>
+          <div class="info-cell">
+            <span class="lbl"><i class="fa-solid fa-dumbbell"></i> Enfoque</span>
+            <strong>{{ categoriaSeleccionada()?.enfoque || 'Fuerza & Presión' }}</strong>
+          </div>
+        </div>
+
+        <!-- KPI Ticker de Asistencia -->
+        <div class="summary-pills">
+          <div class="pill pill-presente" (click)="setFiltro('PRESENTE')">
+            <span class="pill-count">{{ contarPorEstado('PRESENTE') }}</span>
+            <span class="pill-name"><i class="fa-solid fa-check"></i> Presentes</span>
+          </div>
+          <div class="pill pill-retraso" (click)="setFiltro('RETRASO')">
+            <span class="pill-count">{{ contarPorEstado('RETRASO') }}</span>
+            <span class="pill-name"><i class="fa-solid fa-clock"></i> Retrasos</span>
+          </div>
+          <div class="pill pill-excusa" (click)="setFiltro('EXCUSA')">
+            <span class="pill-count">{{ contarPorEstado('EXCUSA') }}</span>
+            <span class="pill-name"><i class="fa-solid fa-file-medical"></i> Excusas</span>
+          </div>
+          <div class="pill pill-falta" (click)="setFiltro('FALTA')">
+            <span class="pill-count">{{ contarPorEstado('FALTA') }}</span>
+            <span class="pill-name"><i class="fa-solid fa-xmark"></i> Faltas</span>
+          </div>
+        </div>
+        <!-- Banner de Delegación de Asistente / Capitán -->
+        <div class="delegation-strip">
+          <div class="delegation-left">
+            <i class="fa-solid fa-user-shield text-blue"></i>
+            <span>Pase delegado: <strong>Capitán Mateo Gómez (#10)</strong></span>
+          </div>
+          <button class="btn-delegated-toggle" (click)="toggleModoDelegado()">
+            <i class="fa-solid" [class.fa-toggle-on]="modoDelegadoActivo()" [class.fa-toggle-off]="!modoDelegadoActivo()"></i>
+            <span>{{ modoDelegadoActivo() ? 'Modo Capitán' : 'Delegar' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BARRA DE ACCIÓN RÁPIDA -->
+      <div class="quick-actions-bar">
+        <button class="btn-quick-all" (click)="marcarTodos('PRESENTE')">
+          <i class="fa-solid fa-check-double"></i> Todos Presentes
+        </button>
+        <button class="btn-show-pitch-qr" (click)="abrirModalGeneradorQR()">
+          <i class="fa-solid fa-display"></i> Mostrar QR de Cancha
+        </button>
+        <span class="roster-pct">
+          Efectividad: <strong>{{ porcentajeAsistencia() }}%</strong>
+        </span>
+      </div>
+
+      <!-- LISTA DE JUGADORES (CARDS CON BOTONERA TÁCTIL & CALIFICACIÓN RÁPIDA) -->
+      <div class="players-list">
+        @for (j of jugadoresFiltrados(); track j.id) {
+          <div class="player-row-card" [class]="'border-' + j.estado.toLowerCase()">
+            <div class="player-top-main">
+              <div class="player-left">
+                <div class="player-dorsal">#{{ j.dorsal }}</div>
+                <div class="player-details">
+                  <div class="player-name-line">
+                    <span class="player-name">{{ j.nombres }} {{ j.apellidos }}</span>
+                    <span class="status-indicator" [class]="'tag-' + j.estado.toLowerCase()">
+                      {{ j.estado }}
+                    </span>
+                  </div>
+                  <span class="player-pos">{{ j.posicion }}</span>
+                  @if (j.observacion) {
+                    <span class="player-obs"><i class="fa-solid fa-note-sticky"></i> {{ j.observacion }}</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Botonera de 4 Estados Táctiles Ultra-Optimizada -->
+              <div class="status-toggle-group">
+                <button 
+                  type="button" 
+                  class="btn-status status-presente" 
+                  [class.active]="j.estado === 'PRESENTE'"
+                  (click)="cambiarEstado(j.id, 'PRESENTE')"
+                  title="Presente">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-retraso" 
+                  [class.active]="j.estado === 'RETRASO'"
+                  (click)="abrirDialogoObservacion(j, 'RETRASO')"
+                  title="Retraso">
+                  <i class="fa-solid fa-clock"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-excusa" 
+                  [class.active]="j.estado === 'EXCUSA'"
+                  (click)="abrirDialogoObservacion(j, 'EXCUSA')"
+                  title="Excusa médica">
+                  <i class="fa-solid fa-file-medical"></i>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-status status-falta" 
+                  [class.active]="j.estado === 'FALTA'"
+                  (click)="cambiarEstado(j.id, 'FALTA')"
+                  title="Falta injustificada">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- FILA DE CALIFICACIÓN RÁPIDA DE RENDIMIENTO/ACTITUD (1 TOQUE) -->
+            @if (j.estado === 'PRESENTE' || j.estado === 'RETRASO') {
+              <div class="performance-fast-rating-row">
+                <span class="rating-strip-label"><i class="fa-solid fa-gauge-high"></i> Intensidad DT:</span>
+                <div class="rating-buttons-group">
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-destacado" 
+                    [class.active]="j.calificacionRendimiento === 'DESTACADO'"
+                    (click)="calificarJugador(j.id, 'DESTACADO')"
+                    title="Sobresaliente (+100 XP)">
+                    ⚡ Destacado (+100 XP)
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-cumplio" 
+                    [class.active]="j.calificacionRendimiento === 'CUMPLIO'"
+                    (click)="calificarJugador(j.id, 'CUMPLIO')"
+                    title="Normal (+50 XP)">
+                    👍 Cumplió (+50 XP)
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn-rating rate-baja" 
+                    [class.active]="j.calificacionRendimiento === 'BAJA_INTENSIDAD'"
+                    (click)="calificarJugador(j.id, 'BAJA_INTENSIDAD')"
+                    title="Baja Intensidad (+20 XP)">
+                    ⚠️ Baja (+20 XP)
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <i class="fa-solid fa-user-check empty-icon"></i>
+            <p>No hay jugadores en esta categoría de filtro.</p>
+            <button class="btn-clear-filter" (click)="setFiltro('TODOS')">Ver Todos</button>
+          </div>
+        }
+      </div>
+
+      <!-- PANEL DE CONFIRMACIÓN OFICIAL POR EL DIRECTOR TÉCNICO (DT) -->
+      <div class="coach-signature-card" [class.confirmed]="asistenciaConfirmadaPorDT()">
+        <div class="coach-card-header">
+          <div class="coach-badge-info">
+            <div class="coach-avatar-ring">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <div class="coach-meta-text">
+              <span class="coach-role-title">VALIDACIÓN DEL CUERPO TÉCNICO</span>
+              <h4 class="coach-name">{{ auth.currentUser()?.nombres }} {{ auth.currentUser()?.apellidos || 'Director Técnico' }}</h4>
+            </div>
+          </div>
+          <div class="dt-status-pill" [class.verified]="asistenciaConfirmadaPorDT()">
+            <i class="fa-solid" [class.fa-circle-check]="asistenciaConfirmadaPorDT()" [class.fa-clock]="!asistenciaConfirmadaPorDT()"></i>
+            <span>{{ asistenciaConfirmadaPorDT() ? 'PLANILLA AVALADA' : 'PENDIENTE FIRMA DT' }}</span>
+          </div>
+        </div>
+
+        @if (asistenciaConfirmadaPorDT()) {
+          <div class="coach-confirmed-details">
+            <p><i class="fa-solid fa-shield-check text-emerald"></i> Asistencia certificada oficialmente para el cálculo de XP y convocatorias.</p>
+            <span class="time-stamp-confirmed">Avalado Hoy a las {{ horaConfirmacionDT() }} • Registro Inmutable</span>
+          </div>
+        } @else {
+          <p class="coach-hint-text">
+            Como Director Técnico responsable de la categoría <strong>{{ categoriaSeleccionada()?.nombre }}</strong>, confirma la asistencia para validar los puntos XP de los jugadores y el reporte oficial de cantera.
+          </p>
+        }
+      </div>
+
+      <!-- BOTÓN DE CONFIRMACIÓN Y GUARDADO DEFINITIVO -->
+      <div class="save-footer">
+        <button 
+          class="btn-primary btn-save" 
+          [class.btn-confirmed-style]="asistenciaConfirmadaPorDT()"
+          (click)="abrirModalConfirmacionDT()">
+          <i class="fa-solid" [class.fa-circle-check]="asistenciaConfirmadaPorDT()" [class.fa-signature]="!asistenciaConfirmadaPorDT()"></i>
+          <span>{{ asistenciaConfirmadaPorDT() ? 'Re-validar Planilla DT' : 'Confirmar & Avalar Asistencia como DT' }}</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- MODAL DE FIRMA Y CONFIRMACIÓN OFICIAL DEL TÉCNICO -->
+    @if (mostrarModalConfirmacionDT()) {
+      <div class="modal-backdrop" (click)="mostrarModalConfirmacionDT.set(false)">
+        <div class="modal-sheet dt-confirm-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-clipboard-check text-emerald"></i>
+              <div>
+                <h3>Aval Oficial de Asistencia DT</h3>
+                <p class="sheet-subtitle">{{ categoriaSeleccionada()?.nombre }} • {{ jugadores().length }} Jugadores en Planilla</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="mostrarModalConfirmacionDT.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body dt-confirm-body">
+            <!-- Resumen de Planilla -->
+            <div class="dt-summary-box">
+              <div class="sum-item text-emerald">
+                <strong>{{ contarPorEstado('PRESENTE') }}</strong>
+                <span>Presentes (+50 XP)</span>
+              </div>
+              <div class="sum-item text-amber">
+                <strong>{{ contarPorEstado('RETRASO') }}</strong>
+                <span>Retrasos (+25 XP)</span>
+              </div>
+              <div class="sum-item text-blue">
+                <strong>{{ contarPorEstado('EXCUSA') }}</strong>
+                <span>Excusas (0 XP)</span>
+              </div>
+              <div class="sum-item text-rose">
+                <strong>{{ contarPorEstado('FALTA') }}</strong>
+                <span>Faltas (-30 XP)</span>
+              </div>
+            </div>
+
+            <!-- Declaración de Responsabilidad DT -->
+            <div class="dt-declaration-box">
+              <i class="fa-solid fa-fingerprint"></i>
+              <p>
+                Yo, <strong>{{ auth.currentUser()?.nombres }} {{ auth.currentUser()?.apellidos }}</strong>, en calidad de Director Técnico / Entrenador, certifico la exactitud del pase de lista en campo y autorizo la asignación de experiencia deportiva (<strong>+50 XP</strong> presentes / <strong>-30 XP penalización</strong> por inasistencia injustificada).
+              </p>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking btn-confirm-dt-action" (click)="ejecutarConfirmacionDT()">
+              <i class="fa-solid fa-check-double"></i> Avalar & Guardar Planilla
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 1: GENERADOR DE QR DINÁMICO DE CANCHA (PANTALLA DT / SEDE) -->
+    @if (mostrarModalGeneradorQR()) {
+      <div class="modal-backdrop" (click)="mostrarModalGeneradorQR.set(false)">
+        <div class="modal-sheet qr-display-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-qrcode text-emerald"></i>
+              <div>
+                <h3>Código QR de Cancha en Vivo</h3>
+                <p class="sheet-subtitle">{{ categoriaSeleccionada()?.nombre }} • {{ categoriaSeleccionada()?.cancha }}</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="mostrarModalGeneradorQR.set(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body qr-display-body">
+            <!-- Dynamic Token Box -->
+            <div class="qr-token-countdown">
+              <span class="token-pulse-dot"></span>
+              <span>TOKEN DINÁMICO • EXPIRA EN: <strong>{{ qrTiempoRestante() }}s</strong></span>
+            </div>
+
+            <!-- SVG QR Visual Interactivo -->
+            <div class="qr-visual-frame">
+              <div class="qr-code-svg-wrap">
+                <svg viewBox="0 0 200 200" class="qr-svg-matrix">
+                  <!-- Posicionadores Esquinas QR -->
+                  <rect x="10" y="10" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="22" y="22" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <rect x="140" y="10" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="152" y="22" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <rect x="10" y="140" width="50" height="50" fill="none" stroke="#10b981" stroke-width="6" rx="6" />
+                  <rect x="22" y="152" width="26" height="26" fill="#10b981" rx="4" />
+
+                  <!-- Matriz de Puntos Aleatorios Dinámicos -->
+                  @for (dot of qrMatrixDots(); track $index) {
+                    <rect [attr.x]="dot.x" [attr.y]="dot.y" width="10" height="10" fill="#f8fafc" rx="2" opacity="0.9" />
+                  }
+
+                  <!-- Isotipo Central -->
+                  <circle cx="100" cy="100" r="22" fill="#0b0f19" stroke="#10b981" stroke-width="3" />
+                  <text x="100" y="106" font-size="16" text-anchor="middle" fill="#34d399">⚽</text>
+                </svg>
+              </div>
+              <div class="qr-code-label">
+                <code>{{ qrTokenActual() }}</code>
+              </div>
+            </div>
+
+            <p class="qr-instructions">
+              Los muchachos escanean este código con la App móvil al pisar la cancha para marcar <strong>PRESENTE</strong> de forma instantánea y ganar <strong>+50 XP</strong>.
+            </p>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking" (click)="regenerarTokenQR()">
+              <i class="fa-solid fa-arrows-rotate"></i> Regenerar Token QR
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 2: ESCÁNER QR DE CANCHA (CÁMARA DEL JUGADOR) -->
+    @if (mostrarModalEscanerQR()) {
+      <div class="modal-backdrop" (click)="cerrarModalEscanerQR()">
+        <div class="modal-sheet qr-scanner-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-camera text-emerald"></i>
+              <div>
+                <h3>Escanear QR de Cancha</h3>
+                <p class="sheet-subtitle">Apunta la cámara al código mostrado por tu DT</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="cerrarModalEscanerQR()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body qr-scanner-body">
+            <!-- Simulación de Viewport de Cámara con Retícula -->
+            <div class="scanner-camera-viewport">
+              <div class="scan-laser-line"></div>
+              <div class="scan-target-frame">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+              </div>
+              <div class="scanner-camera-bg">
+                <i class="fa-solid fa-qrcode bg-ghost-qr"></i>
+              </div>
+            </div>
+
+            <!-- Selector de Jugador para Check-in Simulado -->
+            <div class="scanner-player-select">
+              <label><i class="fa-solid fa-user-check text-emerald"></i> Jugador que realiza Check-in:</label>
+              <select [(ngModel)]="jugadorSeleccionadoScanId" class="form-input">
+                @for (j of jugadores(); track j.id) {
+                  <option [value]="j.id">#{{ j.dorsal }} {{ j.nombres }} {{ j.apellidos }} ({{ j.posicion }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking btn-scan-simulate" [disabled]="escaneando()" (click)="procesarEscaneoQR()">
+              <i class="fa-solid" [class.fa-bolt]="!escaneando()" [class.fa-spinner]="escaneando()" [class.fa-spin]="escaneando()"></i>
+              <span>{{ escaneando() ? 'Validando Token con Servidor...' : 'Simular Escaneo Exitoso' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL 3: DICTADO POR VOZ INTELIGENTE (SPEECH-TO-TEXT ASISTIDO POR IA) -->
+    @if (mostrarModalDictadoVoz()) {
+      <div class="modal-backdrop" (click)="cerrarModalDictadoVoz()">
+        <div class="modal-sheet voice-dictation-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div class="dt-sheet-title">
+              <i class="fa-solid fa-microphone-lines text-rose"></i>
+              <div>
+                <h3>Dictado de Novedades por Voz</h3>
+                <p class="sheet-subtitle">Habla libremente: la IA procesará estados y observaciones</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="cerrarModalDictadoVoz()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body voice-dictation-body">
+            <!-- Botón de Grabación con Onda Animada -->
+            <div class="voice-mic-container">
+              <button 
+                type="button" 
+                class="btn-voice-mic-main" 
+                [class.recording]="grabandoVoz()"
+                (click)="toggleGrabacionVoz()">
+                <i class="fa-solid fa-microphone"></i>
+                <div class="mic-wave-ring" *ngIf="grabandoVoz()"></div>
+              </button>
+              <span class="mic-status-label">
+                {{ grabandoVoz() ? 'Escuchando al DT... (Toca para detener)' : 'Toca el micrófono para dictar' }}
+              </span>
+            </div>
+
+            <!-- Transcripción en Tiempo Real -->
+            <div class="transcription-preview-box">
+              <div class="transcription-header">
+                <span class="lbl"><i class="fa-solid fa-wand-magic-sparkles"></i> Transcripción IA:</span>
+                <button class="btn-sample-voice" *ngIf="!textoDictadoTranscrito" (click)="usarEjemploDictado()">
+                  <i class="fa-solid fa-bolt"></i> Cargar Frase de Ejemplo
+                </button>
+              </div>
+              <p class="transcription-text" [class.placeholder]="!textoDictadoTranscrito">
+                "{{ textoDictadoTranscrito || 'Ej: Samuel Díaz destacado en velocidad, Mateo Gómez retraso por tráfico, Carlos Londoño falta...' }}"
+              </p>
+            </div>
+
+            <!-- Acciones Rápidas Detectadas -->
+            @if (novedadesDetectadasVoz().length > 0) {
+              <div class="detected-actions-box">
+                <span class="actions-header-title">Novedades Listas para Aplicar ({{ novedadesDetectadasVoz().length }}):</span>
+                <div class="detected-chips-list">
+                  @for (nov of novedadesDetectadasVoz(); track $index) {
+                    <div class="detected-chip">
+                      <span class="chip-player">{{ nov.jugadorNombre }}</span>
+                      <span class="chip-badge" [class]="'tag-' + nov.estado.toLowerCase()">{{ nov.estado }}</span>
+                      @if (nov.rating) {
+                        <span class="chip-rating">⚡ {{ nov.rating }}</span>
+                      }
+                      @if (nov.obs) {
+                        <span class="chip-obs">"{{ nov.obs }}"</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="sheet-footer">
+            <button 
+              class="btn-submit-booking btn-apply-voice" 
+              [disabled]="!textoDictadoTranscrito || procesandoVoz()" 
+              (click)="aplicarNovedadesDictado()">
+              <i class="fa-solid" [class.fa-check]="!procesandoVoz()" [class.fa-spinner]="procesandoVoz()" [class.fa-spin]="procesandoVoz()"></i>
+              <span>{{ procesandoVoz() ? 'Aplicando a Planilla...' : 'Aplicar Novedades a Planilla' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL OBSERVACIÓN RÁPIDA (RETRASO O EXCUSA) -->
+    @if (jugadorEditandoObs()) {
+      <div class="modal-backdrop" (click)="cerrarModalObs()">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <div>
+              <h3>Nota / Motivo de Asistencia</h3>
+              <p class="sheet-subtitle">#{{ jugadorEditandoObs()?.dorsal }} {{ jugadorEditandoObs()?.nombres }} {{ jugadorEditandoObs()?.apellidos }}</p>
+            </div>
+            <button class="btn-close" (click)="cerrarModalObs()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="form-group">
+              <label>Estado Asignado:</label>
+              <div class="estado-preview-pill" [class]="'tag-' + estadoTemporalObs().toLowerCase()">
+                {{ estadoTemporalObs() }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Motivo u Observación (Opcional):</label>
+              <input 
+                type="text" 
+                [(ngModel)]="textoObsTemporal" 
+                placeholder="Ej. Tráfico pesado, Cita médica, Calambre..."
+                class="form-input" 
+                maxlength="80"
+              />
+            </div>
+          </div>
+
+          <div class="sheet-footer">
+            <button class="btn-submit-booking" (click)="confirmarObservacion()">
+              <i class="fa-solid fa-check"></i> Aplicar Estado
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- DIALOGO: ¿DESEA CONTINUAR EDITANDO O CERRAR Y ACTUALIZAR? -->
+    @if (mostrarDialogoGuardado()) {
+      <div class="modal-backdrop">
+        <div class="dialog-card">
+          <div class="icon-success">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>¡Asistencia Guardada!</h3>
+          <p>La planilla de la sesión fue persistida con éxito en la base de datos.</p>
+          
+          <div class="dialog-actions">
+            <button class="btn-dialog-continue" (click)="continuarEditando()">
+              <i class="fa-solid fa-pen-to-square"></i> Continuar Editando
+            </button>
+            <button class="btn-dialog-close" (click)="cerrarYActualizar()">
+              <i class="fa-solid fa-check"></i> Cerrar y Actualizar Lista
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

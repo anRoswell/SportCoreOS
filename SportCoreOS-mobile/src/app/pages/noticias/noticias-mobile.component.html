@@ -1,0 +1,110 @@
+<app-mobile-header></app-mobile-header>
+
+    <div class="news-subbar">
+      <div class="subbar-left">
+        <a routerLink="/home" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>Muro de Noticias & Circulares</h2>
+      </div>
+      <div class="subbar-right">
+        <span class="count-badge">{{ displayedNoticias().length }} de {{ totalDisponibles }}</span>
+        <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarNoticias()" title="Actualizar">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <main class="news-container">
+      <!-- Cdk Virtual Scroll Viewport para máximo rendimiento en DOM -->
+      <cdk-virtual-scroll-viewport 
+        itemSize="330" 
+        class="news-viewport"
+        (scrolledIndexChange)="onScrollChange($event)">
+        
+        <div *cdkVirtualFor="let noticia of displayedNoticias(); trackBy: trackById" class="news-card-wrapper">
+          <article class="news-card" (click)="verDetalle(noticia)">
+            <div class="news-image-wrap">
+              <img [src]="noticia.imagen" [alt]="noticia.titulo" loading="lazy" />
+              <span class="badge-cat" [class]="'cat-' + noticia.categoria">
+                {{ noticia.categoria | uppercase }}
+              </span>
+            </div>
+
+            <div class="news-content">
+              <div class="news-date"><i class="fa-regular fa-calendar"></i> {{ noticia.fecha }}</div>
+              <h3>{{ noticia.titulo }}</h3>
+              <p>{{ noticia.resumen }}</p>
+
+              @if (noticia.requiereFirma) {
+                <div class="sign-alert-banner" [class.signed]="noticia.firmado">
+                  @if (noticia.firmado) {
+                    <i class="fa-solid fa-circle-check text-success"></i>
+                    <span>Consentimiento y Autorización Firmada</span>
+                  } @else {
+                    <i class="fa-solid fa-signature text-warning"></i>
+                    <span><strong>Requiere Firma de Acudiente</strong> (Toque para autorizar)</span>
+                  }
+                </div>
+              }
+            </div>
+          </article>
+        </div>
+
+        <!-- Indicador de Carga de Infinite Scroll -->
+        @if (isLoadingMore()) {
+          <div class="infinite-loading-box">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+            <span>Cargando más publicaciones oficiales...</span>
+          </div>
+        } @else if (hasReachedEnd()) {
+          <div class="infinite-end-box">
+            <i class="fa-solid fa-check-double text-emerald"></i>
+            <span>Has llegado al final de las circulares publicadas</span>
+          </div>
+        }
+      </cdk-virtual-scroll-viewport>
+    </main>
+
+    <!-- Modal Detalle & Firma Digital Táctil -->
+    @if (noticiaSeleccionada()) {
+      <div class="modal-backdrop" (click)="noticiaSeleccionada.set(null)">
+        <div class="modal-sheet" (click)="$event.stopPropagation()">
+          <div class="sheet-header">
+            <h3>Circular Oficial</h3>
+            <button class="btn-close" (click)="noticiaSeleccionada.set(null)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="modal-news-img">
+              <img [src]="noticiaSeleccionada()!.imagen" [alt]="noticiaSeleccionada()!.titulo" />
+            </div>
+
+            <div class="modal-meta-row">
+              <span class="badge-cat">{{ noticiaSeleccionada()!.categoria | uppercase }}</span>
+              <span class="date-txt">{{ noticiaSeleccionada()!.fecha }}</span>
+            </div>
+
+            <h2>{{ noticiaSeleccionada()!.titulo }}</h2>
+            <p class="article-body">{{ noticiaSeleccionada()!.contenido }}</p>
+
+            @if (noticiaSeleccionada()!.requiereFirma && !noticiaSeleccionada()!.firmado) {
+              <div class="signature-box">
+                <h4><i class="fa-solid fa-pen-nib"></i> Firma Digital de Consentimiento</h4>
+                <p>Yo, como acudiente legal, autorizo la participación del deportista en el evento descrito bajo los protocolos del club.</p>
+                
+                <div class="canvas-mock">
+                  <span class="sig-placeholder">Área táctil de firma del acudiente</span>
+                </div>
+
+                <button class="btn-sign-now" (click)="firmarDocumento()">
+                  <i class="fa-solid fa-fingerprint"></i> Autorizar y Firmar Digitalmente
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

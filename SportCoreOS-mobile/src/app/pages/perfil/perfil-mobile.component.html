@@ -1,0 +1,355 @@
+<app-mobile-header title="Mi Perfil" subtitle="Ficha del Atleta, Carnet & Insignias"></app-mobile-header>
+
+    <main class="page-content">
+      <!-- DIGITAL ID CARD HERO -->
+      <div class="digital-card">
+        <div class="card-glass">
+          <div class="card-header">
+            <div class="club-brand">
+              <i class="fa-solid fa-shield-halved brand-icon"></i>
+              <span class="club-title">SPORTCORE CLUB</span>
+            </div>
+            <span class="id-badge">SOCIO ACTIVO</span>
+          </div>
+
+          <div class="card-body">
+            <div class="avatar-box">
+              <img [src]="authService.demoPersonas[3].avatar" alt="Foto Atleta" class="avatar-img" />
+              <span class="dorsal-tag">#10</span>
+            </div>
+            <div class="player-info">
+              <h2 class="user-fullname">{{ currentUser()?.nombres || 'Mateo Valderrama' }}</h2>
+              <p class="user-role-label">{{ currentUser()?.rol || 'ATLETA ÉLITE SUB-15' }}</p>
+              <div class="sub-tags">
+                <span class="tag"><i class="fa-solid fa-id-card"></i> CC 1047495812</span>
+                <span class="tag"><i class="fa-solid fa-shirt"></i> Volante Ofensivo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="qr-preview">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div class="validity-info">
+              <span class="val-label">Vigencia Carnet:</span>
+              <span class="val-date">Temporada 2026 • Al Día</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- VITRINA DE INSIGNIAS & MASTERCLASSES PRO (TROPHY SHOWCASE)     -->
+      <!-- ============================================================ -->
+      <section class="trophy-showcase-section">
+        <div class="showcase-header">
+          <div class="header-titles">
+            <div class="badge-tag-pill">
+              <i class="fa-solid fa-award"></i> GAMIFICACIÓN ÉLITE
+            </div>
+            <h3 class="section-title-main">
+              <i class="fa-solid fa-trophy text-amber"></i> Vitrina de Insignias Pro
+            </h3>
+            <p class="section-sub-desc">
+              Medallas y certificaciones oficiales ganadas en Clínicas de Alto Rendimiento.
+            </p>
+          </div>
+          <div class="trophy-counter-badge">
+            <span class="count-num">{{ insigniasDesbloqueadas().length }}</span>
+            <span class="count-total">/ {{ insigniasList().length }}</span>
+          </div>
+        </div>
+
+        <!-- MASTERY LEVEL PROGRESS -->
+        <div class="mastery-level-card">
+          <div class="mastery-top">
+            <div class="level-info">
+              <span class="level-icon">👑</span>
+              <div>
+                <span class="level-title">Rango Actual: <strong>Maestro Élite Oro</strong></span>
+                <span class="level-desc">{{ insigniasDesbloqueadas().length }} de {{ insigniasList().length }} micro-habilidades conquistadas</span>
+              </div>
+            </div>
+            <span class="level-pct">{{ porcentajeMaestria() }}%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" [style.width.%]="porcentajeMaestria()"></div>
+          </div>
+        </div>
+
+        <!-- FILTER TABS FOR TROPHIES -->
+        <div class="trophy-filter-chips">
+          <button
+            class="filter-chip"
+            [class.active]="filtroInsignias() === 'TODAS'"
+            (click)="filtroInsignias.set('TODAS')"
+          >
+            Todas ({{ insigniasList().length }})
+          </button>
+          <button
+            class="filter-chip chip-emerald"
+            [class.active]="filtroInsignias() === 'DESBLOQUEADAS'"
+            (click)="filtroInsignias.set('DESBLOQUEADAS')"
+          >
+            <i class="fa-solid fa-circle-check"></i> Obtenidas ({{ insigniasDesbloqueadas().length }})
+          </button>
+          <button
+            class="filter-chip chip-locked"
+            [class.active]="filtroInsignias() === 'BLOQUEADAS'"
+            (click)="filtroInsignias.set('BLOQUEADAS')"
+          >
+            <i class="fa-solid fa-lock"></i> Por Conquistar ({{ insigniasBloqueadas().length }})
+          </button>
+        </div>
+
+        <!-- TROPHIES GRID -->
+        <div class="trophies-grid">
+          @for (ins of filteredInsignias(); track ins.id) {
+            <div
+              class="trophy-card"
+              [class.unlocked]="ins.desbloqueada"
+              [class.locked]="!ins.desbloqueada"
+              (click)="abrirDetalleInsignia(ins)"
+            >
+              @if (ins.desbloqueada) {
+                <div class="trophy-glow-halo" [style.background]="ins.color_tema + '25'"></div>
+              }
+
+              <!-- CARD TOP -->
+              <div class="trophy-card-top">
+                <span
+                  class="trophy-badge-pill"
+                  [style.color]="ins.desbloqueada ? ins.color_tema : '#94a3b8'"
+                  [style.background]="ins.desbloqueada ? (ins.color_tema + '18') : 'rgba(255,255,255,0.05)'"
+                >
+                  <i class="fa-solid" [ngClass]="ins.desbloqueada ? 'fa-circle-check' : 'fa-lock'"></i>
+                  {{ ins.desbloqueada ? ins.nivel : 'Bloqueada' }}
+                </span>
+                <span class="trophy-cat-pill">{{ ins.categoria }}</span>
+              </div>
+
+              <!-- ICON -->
+              <div
+                class="trophy-icon-box"
+                [style.background]="ins.desbloqueada ? (ins.color_tema + '20') : 'rgba(255,255,255,0.04)'"
+                [style.border-color]="ins.desbloqueada ? (ins.color_tema + '60') : 'rgba(255,255,255,0.08)'"
+                [style.color]="ins.desbloqueada ? ins.color_tema : '#64748b'"
+              >
+                <i class="fa-solid" [ngClass]="ins.icono"></i>
+              </div>
+
+              <!-- INFO -->
+              <div class="trophy-info">
+                <h4 class="trophy-name" [style.color]="ins.desbloqueada ? '#ffffff' : '#94a3b8'">
+                  {{ ins.nombre }}
+                </h4>
+                <p class="trophy-clinic">{{ ins.clinica_titulo }}</p>
+              </div>
+
+              <!-- FOOTER -->
+              <div class="trophy-card-bottom">
+                @if (ins.desbloqueada) {
+                  <span class="metric-highlight text-emerald">
+                    <i class="fa-solid fa-chart-line"></i> {{ ins.metrica_clave }}
+                  </span>
+                } @else {
+                  <span class="unlock-hint">
+                    <i class="fa-solid fa-arrow-right"></i> Ver Clínica Pro
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- CTA TO EXPLORE MORE CLINICS -->
+        <div class="explore-clinics-banner">
+          <div class="explore-content">
+            <h4><i class="fa-solid fa-fire text-amber"></i> ¿Listo para tu siguiente Insignia?</h4>
+            <p>Inscríbete en las próximas clínicas de micro-habilidades en Cartagena.</p>
+          </div>
+          <a routerLink="/servicios" class="btn-explore-link">
+            Explorar Clínicas <i class="fa-solid fa-chevron-right"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ACCESOS RÁPIDOS PRO DEPORTISTA -->
+      <div class="menu-section">
+        <h4 class="section-title">Módulos del Deportista & Club</h4>
+        <div class="info-list">
+          <a routerLink="/perfil/carnet" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-id-badge text-emerald"></i>
+              <span>Carnet Digital & Ficha Médica SOS</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow"></i>
+          </a>
+          <a routerLink="/perfil/boletin-ia" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-wand-magic-sparkles text-cyan"></i>
+              <span>Boletín de Rendimiento IA (Gemini)</span>
+            </div>
+            <span class="status-toggle">NUEVO</span>
+          </a>
+          <a routerLink="/servicios" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-graduation-cap text-amber"></i>
+              <span>Clínicas & Masterclasses Especializadas</span>
+            </div>
+            <span class="status-toggle bg-amber-soft">PRO</span>
+          </a>
+          <a routerLink="/pagos" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-credit-card text-purple"></i>
+              <span>Estado de Pagos & Mensualidades</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow"></i>
+          </a>
+          <a routerLink="/tienda" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-bag-shopping text-pink"></i>
+              <span>Tienda Oficial de Indumentaria</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- DATOS PERSONALES -->
+      <div class="menu-section">
+        <h4 class="section-title">Datos Personales & Ficha</h4>
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-left">
+              <i class="fa-solid fa-envelope text-blue"></i>
+              <span>Correo Electrónico</span>
+            </div>
+            <span class="info-val">{{ currentUser()?.email || 'mateo.valderrama@gmail.com' }}</span>
+          </div>
+          <div class="info-item">
+            <div class="info-left">
+              <i class="fa-solid fa-phone text-emerald"></i>
+              <span>Teléfono Acudiente</span>
+            </div>
+            <span class="info-val">+57 300 123 4567</span>
+          </div>
+          <div class="info-item">
+            <div class="info-left">
+              <i class="fa-solid fa-heart-pulse text-rose"></i>
+              <span>EPS / Seguro Médico</span>
+            </div>
+            <span class="info-val">SURA EPS (Póliza Deportiva Activa)</span>
+          </div>
+          <div class="info-item">
+            <div class="info-left">
+              <i class="fa-solid fa-location-dot text-amber"></i>
+              <span>Sede de Entrenamiento</span>
+            </div>
+            <span class="info-val">Alameda La Victoria (Cartagena)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AJUSTES DE SEGURIDAD -->
+      <div class="menu-section">
+        <h4 class="section-title">Ajustes de Seguridad</h4>
+        <div class="info-list">
+          <button class="action-row" (click)="cambiarClave()">
+            <div class="info-left">
+              <i class="fa-solid fa-key text-amber"></i>
+              <span>Cambiar Contraseña</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow"></i>
+          </button>
+          <button class="action-row" (click)="toggleNotificaciones()">
+            <div class="info-left">
+              <i class="fa-solid fa-bell text-emerald"></i>
+              <span>Notificaciones Push de Clínicas & Convocatorias</span>
+            </div>
+            <span class="status-toggle">ACTIVADO</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="logout-section">
+        <button class="btn-logout" (click)="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          Cerrar Sesión Segura
+        </button>
+      </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET: DETALLE MODAL DE INSIGNIA CON DIPLOMA DIGITAL   -->
+    <!-- ============================================================ -->
+    @if (selectedInsignia()) {
+      <div class="sheet-overlay" (click)="cerrarDetalleInsignia()">
+        <div class="sheet-content" (click)="$event.stopPropagation()">
+          <div class="sheet-handle"></div>
+
+          <div class="insignia-modal-header" [style.background]="'radial-gradient(circle, ' + selectedInsignia()?.color_tema + '30 0%, #0f172a 80%)'">
+            <div
+              class="modal-badge-large"
+              [style.background]="selectedInsignia()?.color_tema + '25'"
+              [style.border-color]="selectedInsignia()?.color_tema"
+              [style.color]="selectedInsignia()?.color_tema"
+            >
+              <i class="fa-solid" [ngClass]="selectedInsignia()?.icono"></i>
+            </div>
+            <span class="modal-level-tag" [style.background]="selectedInsignia()?.color_tema" [style.color]="'#0f172a'">
+              {{ selectedInsignia()?.desbloqueada ? selectedInsignia()?.nivel : 'Bloqueada 🔒' }}
+            </span>
+            <h3 class="modal-insignia-title">{{ selectedInsignia()?.nombre }}</h3>
+            <p class="modal-clinic-subtitle">{{ selectedInsignia()?.clinica_titulo }}</p>
+          </div>
+
+          <div class="insignia-modal-body">
+            <!-- STATUS DESCRIPTION -->
+            <p class="insignia-desc-text">{{ selectedInsignia()?.descripcion }}</p>
+
+            <!-- STATS & DETAILS GRID -->
+            <div class="insignia-details-box">
+              <div class="detail-row">
+                <span class="d-label"><i class="fa-solid fa-user-tie text-emerald"></i> Evaluador Oficial:</span>
+                <span class="d-val">{{ selectedInsignia()?.entrenador_nombre }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="d-label"><i class="fa-solid fa-location-dot text-cyan"></i> Sede Cartagena:</span>
+                <span class="d-val">{{ selectedInsignia()?.cancha_nombre }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="d-label"><i class="fa-solid fa-calendar-check text-amber"></i> Fecha Acreditación:</span>
+                <span class="d-val">{{ selectedInsignia()?.fecha_obtencion || 'Pendiente por Conquistar' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="d-label"><i class="fa-solid fa-bolt text-rose"></i> Métrica Clave Obtenida:</span>
+                <span class="d-val text-emerald font-bold">{{ selectedInsignia()?.metrica_clave || 'Requiere Aprobación' }}</span>
+              </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="modal-actions-box">
+              @if (selectedInsignia()?.desbloqueada) {
+                <button class="btn-share-whatsapp" (click)="compartirInsigniaWhatsApp()">
+                  <i class="fa-brands fa-whatsapp"></i> Presumir en WhatsApp & Redes
+                </button>
+                <button class="btn-cert-download" (click)="descargarCertificado()">
+                  <i class="fa-solid fa-certificate"></i> Ver Diploma Digital
+                </button>
+              } @else {
+                <a routerLink="/servicios" (click)="cerrarDetalleInsignia()" class="btn-go-clinic">
+                  <i class="fa-solid fa-ticket"></i> Inscribirme en esta Clínica Pro
+                </a>
+              }
+              <button class="btn-sheet-close" (click)="cerrarDetalleInsignia()">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-bottom-nav></app-bottom-nav>

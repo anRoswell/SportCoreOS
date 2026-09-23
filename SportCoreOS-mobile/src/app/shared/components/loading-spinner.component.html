@@ -1,0 +1,42 @@
+@if (loadingService.isLoading()) {
+      <div class="mobile-loading-bar" [style.background]="'linear-gradient(90deg, ' + currentQuote().accentColor + ', ' + currentQuote().secondaryColor + ')'"></div>
+      
+      <div class="mobile-loading-backdrop">
+        <div class="spinner-card" [style.boxShadow]="'0 12px 35px ' + currentQuote().glowColor">
+          <!-- Insignia de Leyenda -->
+          <div class="legend-badge" [style.borderColor]="currentQuote().accentColor" [style.color]="currentQuote().accentColor">
+            <i class="fa-solid" [class]="currentQuote().icon"></i>
+            <span>{{ currentQuote().badge }}</span>
+          </div>
+
+          <!-- Balón Animado SVG -->
+          <div class="ball-stage">
+            <svg class="ball-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#0f172a" stroke-width="3" />
+              <polygon points="50,32 63,42 58,57 42,57 37,42" fill="#0f172a" />
+              <path d="M 50 32 L 50 12" stroke="#0f172a" stroke-width="2.5" />
+              <path d="M 63 42 L 82 36" stroke="#0f172a" stroke-width="2.5" />
+              <path d="M 58 57 L 72 74" stroke="#0f172a" stroke-width="2.5" />
+              <path d="M 42 57 L 28 74" stroke="#0f172a" stroke-width="2.5" />
+              <path d="M 37 42 L 18 36" stroke="#0f172a" stroke-width="2.5" />
+              <polygon points="50,12 36,4 24,14 30,26 50,12" fill="#1e293b" />
+              <polygon points="82,36 94,44 92,60 78,58 63,42" fill="#1e293b" />
+              <polygon points="72,74 76,90 60,96 52,84 58,57" fill="#1e293b" />
+              <polygon points="28,74 24,90 40,96 48,84 42,57" fill="#1e293b" />
+              <polygon points="18,36 6,44 8,60 22,58 37,42" fill="#1e293b" />
+            </svg>
+            <div class="aura-glow" [style.boxShadow]="'0 0 25px ' + currentQuote().accentColor"></div>
+          </div>
+
+          <div class="quote-box">
+            <strong class="speaker-title">{{ currentQuote().character }}</strong>
+            <p class="quote-text">{{ currentQuote().quote }}</p>
+          </div>
+
+          <div class="status-indicator">
+            <div class="spin-ring" [style.borderTopColor]="currentQuote().accentColor"></div>
+            <span class="loading-label">{{ loadingService.message() || currentQuote().actionText }}</span>
+          </div>
+        </div>
+      </div>
+    }
