@@ -236,9 +236,19 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     await btnCancelCreate.click();
     await expect(createModal).not.toBeVisible();
 
-    // 2. Modal Medición Biométrica
-    const btnBioRow = page.locator('.player-row').first().locator('.btn-bio');
-    await btnBioRow.click();
+    // 2. Modal Medición Biométrica (vía Expediente 360°)
+    const firstRow = page.locator('.player-row').first();
+    await firstRow.locator('.btn-view').click();
+    const expModal = page.locator('.expediente-modal');
+    await expect(expModal).toBeVisible({ timeout: 5000 });
+
+    const tabBio = expModal.locator('.exp-tab-btn', { hasText: 'Radar Biométrico' });
+    await tabBio.click();
+    await page.waitForTimeout(200);
+
+    const btnNewBio = expModal.locator('button', { hasText: 'Registrar Nueva Medición' });
+    await btnNewBio.click();
+
     const bioModal = page.locator('.bio-modal-card');
     await expect(bioModal).toBeVisible();
 
@@ -249,10 +259,14 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     await inputPeso.fill('60');
     await expect(bioModal.locator('.imc-live-preview')).toContainText('20.8');
 
-    // Cancelar modal
+    // Cancelar modal biometría
     const btnCancelBio = bioModal.locator('.btn-cancel');
     await btnCancelBio.click();
     await expect(bioModal).not.toBeVisible();
+
+    // Cerrar Expediente
+    await expModal.locator('.modal-close-btn').click();
+    await expect(expModal).not.toBeVisible();
 
     sniffer.assertZeroErrors();
   });

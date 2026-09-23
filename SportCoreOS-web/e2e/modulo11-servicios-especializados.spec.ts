@@ -82,14 +82,16 @@ test.describe('MÓDULO 11: SERVICIOS ESPECIALIZADOS, CLÍNICAS PRO & PASES QR - 
     await page.goto('/servicios');
     await page.waitForLoadState('networkidle');
 
-    // Seleccionar la primera tarjeta con cupos disponibles
-    const firstCard = page.locator('.servicio-card').first();
-    const serviceTitle = await firstCard.locator('.servicio-title').textContent();
+    // Seleccionar una tarjeta con cupos disponibles (no disabled)
+    const availableCard = page.locator('.servicio-card', { has: page.locator('.btn-inscribir:not([disabled])') }).first();
+    await expect(availableCard).toBeVisible();
+    const serviceTitle = await availableCard.locator('.servicio-title').textContent();
     expect(serviceTitle).toBeTruthy();
 
     // Click en botón 'Inscribirse / Pago PSE'
-    const btnInscribir = firstCard.locator('.btn-inscribir');
+    const btnInscribir = availableCard.locator('.btn-inscribir');
     await expect(btnInscribir).toBeVisible();
+    await expect(btnInscribir).toBeEnabled();
     await btnInscribir.click();
 
     // Validar apertura del Modal de Inscripción
