@@ -15,6 +15,7 @@ export class CategoriasRepository extends BaseRepository {
       limit?: number;
       search?: string;
       rama?: string;
+      directorTecnicoId?: string;
     },
   ) {
     const isPaginated = options?.page !== undefined || options?.limit !== undefined;
@@ -24,6 +25,11 @@ export class CategoriasRepository extends BaseRepository {
 
     const whereParts = ['c.club_id = $1', 'c.activa = true'];
     const params: any[] = [clubId];
+
+    if (options?.directorTecnicoId) {
+      params.push(options.directorTecnicoId);
+      whereParts.push(`c.director_tecnico_id = $${params.length}`);
+    }
 
     if (options?.rama && options.rama !== 'TODAS') {
       params.push(options.rama);
@@ -47,7 +53,8 @@ export class CategoriasRepository extends BaseRepository {
     const queryParams = [...params, limit, offset];
     const dataRes = await this.db.query(
       `SELECT c.id, c.nombre, c.codigo_categoria, c.anio_nacimiento_min, c.anio_nacimiento_max,
-              c.rama, c.nivel_competencia, c.color_distintivo, c.activa,
+              c.rama, c.nivel_competencia, c.color_distintivo, c.activa, c.cupo_maximo,
+              c.director_tecnico_id,
               u.id as dt_id, CONCAT(u.nombre, ' ', u.apellido) as dt_nombre,
               (SELECT COUNT(*) FROM deportivo.jugadores j WHERE j.categoria_id = c.id AND j.estado_matricula = 'ACTIVO') as total_jugadores
        FROM deportivo.categorias c

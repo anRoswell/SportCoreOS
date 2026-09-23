@@ -12,6 +12,7 @@ export class CategoriasService {
       limit?: number;
       search?: string;
       rama?: string;
+      directorTecnicoId?: string;
     },
   ) {
     return this.categoriasRepository.findCategoriasByClub(clubId, options);

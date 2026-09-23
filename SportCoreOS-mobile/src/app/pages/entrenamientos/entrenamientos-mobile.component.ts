@@ -20,6 +20,17 @@ export interface JugadorAsistencia {
   avatar?: string;
 }
 
+export interface CategoriaDeportivaItem {
+  id: string;
+  nombre: string;
+  codigo_categoria: string;
+  color_distintivo?: string;
+  total_jugadores?: number;
+  cancha?: string;
+  enfoque?: string;
+  plantel?: JugadorAsistencia[];
+}
+
 @Component({
   selector: 'app-entrenamientos-mobile',
   standalone: true,
@@ -42,6 +53,23 @@ export interface JugadorAsistencia {
         <button class="btn-icon-refresh" [class.spinning]="isRefreshing()" (click)="recargarAsistencia()" title="Actualizar">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
+      </div>
+    </div>
+
+    <!-- SELECTOR TÁCTICO DE CATEGORÍAS ASIGNADAS AL ENTRENADOR -->
+    <div class="category-selector-bar">
+      <div class="category-chips-scroll">
+        @for (cat of categoriasAsignadas(); track cat.id) {
+          <button 
+            type="button" 
+            class="cat-chip-btn" 
+            [class.active]="categoriaSeleccionada()?.id === cat.id"
+            (click)="seleccionarCategoria(cat)">
+            <span class="cat-dot" [style.background]="cat.color_distintivo || '#10b981'"></span>
+            <span class="cat-name">{{ cat.nombre }}</span>
+            <span class="cat-count">({{ cat.total_jugadores || cat.plantel?.length || 0 }})</span>
+          </button>
+        }
       </div>
     </div>
 
@@ -77,15 +105,15 @@ export interface JugadorAsistencia {
         <div class="session-info-grid">
           <div class="info-cell">
             <span class="lbl"><i class="fa-solid fa-shield-halved"></i> Categoría</span>
-            <strong>Sub-17 Élite</strong>
+            <strong>{{ categoriaSeleccionada()?.nombre || 'Sub-15 Élite A' }}</strong>
           </div>
           <div class="info-cell">
             <span class="lbl"><i class="fa-solid fa-location-dot"></i> Cancha</span>
-            <strong>Sede Norte #2</strong>
+            <strong>{{ categoriaSeleccionada()?.cancha || 'Sede Principal #1' }}</strong>
           </div>
           <div class="info-cell">
             <span class="lbl"><i class="fa-solid fa-dumbbell"></i> Enfoque</span>
-            <strong>Fuerza & Presión</strong>
+            <strong>{{ categoriaSeleccionada()?.enfoque || 'Fuerza & Presión' }}</strong>
           </div>
         </div>
 
@@ -371,19 +399,73 @@ export interface JugadorAsistencia {
       }
     }
 
+    /* SELECTOR DE CATEGORÍAS ASIGNADAS */
+    .category-selector-bar {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 0.5rem 0.85rem;
+      border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+
+      .category-chips-scroll {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        &::-webkit-scrollbar { display: none; }
+
+        .cat-chip-btn {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1.5px solid rgba(255, 255, 255, 0.12);
+          border-radius: 9999px;
+          padding: 0.35rem 0.75rem;
+          color: #cbd5e1;
+          font-size: 0.72rem;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          .cat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+          }
+
+          .cat-count {
+            font-size: 0.65rem;
+            color: #94a3b8;
+          }
+
+          &.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #6ee7b7;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+
+            .cat-count {
+              color: #a7f3d0;
+            }
+          }
+        }
+      }
+    }
+
     /* FILTROS RÁPIDOS */
     .attendance-filter-pills {
       display: flex;
       gap: 0.35rem;
-      padding: 0.5rem 0.85rem;
-      background: rgba(15, 23, 42, 0.8);
+      padding: 0.45rem 0.85rem;
+      background: rgba(15, 23, 42, 0.75);
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       overflow-x: auto;
       scrollbar-width: none;
       &::-webkit-scrollbar { display: none; }
 
       .filter-pill {
-        padding: 0.35rem 0.6rem;
+        padding: 0.32rem 0.55rem;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 8px;
@@ -953,24 +1035,60 @@ export class EntrenamientosMobileComponent implements OnInit {
   mostrarDialogoGuardado = signal<boolean>(false);
   filtroEstado = signal<'TODOS' | 'PRESENTE' | 'RETRASO' | 'EXCUSA' | 'FALTA'>('TODOS');
 
+  // Categorías Asignadas y Selección
+  categoriasAsignadas = signal<CategoriaDeportivaItem[]>([
+    {
+      id: '30000000-0000-0000-0000-000000000001',
+      nombre: 'Sub-15 Élite A',
+      codigo_categoria: 'SUB15-A',
+      color_distintivo: '#10b981',
+      total_jugadores: 11,
+      cancha: 'Sede Norte #2',
+      enfoque: 'Presión Alta & Definición',
+      plantel: [
+        { id: 'j-1', nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
+        { id: 'j-2', nombres: 'Mateo', apellidos: 'Gómez', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
+        { id: 'j-3', nombres: 'Sebastián', apellidos: 'Muñoz', dorsal: 1, posicion: 'Portero', estado: 'PRESENTE' },
+        { id: 'j-4', nombres: 'Nicolás', apellidos: 'Zapata', dorsal: 4, posicion: 'Defensa Central', estado: 'RETRASO', observacion: 'Tráfico vía Las Palmas' },
+        { id: 'j-5', nombres: 'Carlos', apellidos: 'Londoño', dorsal: 9, posicion: 'Delantero', estado: 'EXCUSA', observacion: 'Fisioterapia rodilla izq.' },
+        { id: 'j-6', nombres: 'Daniel', apellidos: 'Henao', dorsal: 7, posicion: 'Extremo Derecho', estado: 'PRESENTE' },
+        { id: 'j-7', nombres: 'Samuel', apellidos: 'Vásquez', dorsal: 3, posicion: 'Lateral Izquierdo', estado: 'FALTA' },
+        { id: 'j-8', nombres: 'Alejandro', apellidos: 'Ochoa', dorsal: 5, posicion: 'Defensa Central', estado: 'PRESENTE' },
+        { id: 'j-9', nombres: 'Juan David', apellidos: 'Castro', dorsal: 11, posicion: 'Extremo Izquierdo', estado: 'PRESENTE' },
+        { id: 'j-10', nombres: 'Andrés Felipe', apellidos: 'Marín', dorsal: 14, posicion: 'Lateral Derecho', estado: 'PRESENTE' },
+        { id: 'j-11', nombres: 'David', apellidos: 'Herrera', dorsal: 12, posicion: 'Portero Suplente', estado: 'PRESENTE' }
+      ]
+    },
+    {
+      id: '30000000-0000-0000-0000-000000000002',
+      nombre: 'Sub-17 Nacional Pro',
+      codigo_categoria: 'SUB17-PRO',
+      color_distintivo: '#3b82f6',
+      total_jugadores: 9,
+      cancha: 'Cancha Principal Sintética',
+      enfoque: 'Fuerza, Salto & Transición Defensiva',
+      plantel: [
+        { id: 'u17-1', nombres: 'Esteban', apellidos: 'Pérez Salazar', dorsal: 4, posicion: 'Defensa Central', estado: 'PRESENTE' },
+        { id: 'u17-2', nombres: 'Samuel', apellidos: 'Díaz Marín', dorsal: 10, posicion: 'Volante Ofensivo', estado: 'PRESENTE' },
+        { id: 'u17-3', nombres: 'Jerónimo', apellidos: 'Cano', dorsal: 9, posicion: 'Delantero Centro', estado: 'PRESENTE' },
+        { id: 'u17-4', nombres: 'Lucas', apellidos: 'Mendoza', dorsal: 8, posicion: 'Mediocentro', estado: 'RETRASO', observacion: 'Colegio salida tarde' },
+        { id: 'u17-5', nombres: 'Felipe', apellidos: 'Berrío', dorsal: 11, posicion: 'Extremo Izquierdo', estado: 'PRESENTE' },
+        { id: 'u17-6', nombres: 'Tomás', apellidos: 'Giraldo', dorsal: 2, posicion: 'Lateral Derecho', estado: 'PRESENTE' },
+        { id: 'u17-7', nombres: 'David', apellidos: 'Gutiérrez', dorsal: 1, posicion: 'Arquero Titular', estado: 'PRESENTE' },
+        { id: 'u17-8', nombres: 'Camilo', apellidos: 'Ríos', dorsal: 7, posicion: 'Extremo Derecho', estado: 'EXCUSA', observacion: 'Permiso académico' },
+        { id: 'u17-9', nombres: 'Sebastián', apellidos: 'Álvarez', dorsal: 6, posicion: 'Volante de Marca', estado: 'PRESENTE' }
+      ]
+    }
+  ]);
+
+  categoriaSeleccionada = signal<CategoriaDeportivaItem | null>(null);
+
   // Estado para la observación modal
   jugadorEditandoObs = signal<JugadorAsistencia | null>(null);
   estadoTemporalObs = signal<'RETRASO' | 'EXCUSA'>('RETRASO');
   textoObsTemporal = '';
 
-  jugadores = signal<JugadorAsistencia[]>([
-    { id: 'j-1', nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
-    { id: 'j-2', nombres: 'Mateo', apellidos: 'Gómez', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
-    { id: 'j-3', nombres: 'Sebastián', apellidos: 'Muñoz', dorsal: 1, posicion: 'Portero', estado: 'PRESENTE' },
-    { id: 'j-4', nombres: 'Nicolás', apellidos: 'Zapata', dorsal: 4, posicion: 'Defensa Central', estado: 'RETRASO', observacion: 'Tráfico pesado vía Las Palmas' },
-    { id: 'j-5', nombres: 'Carlos', apellidos: 'Londoño', dorsal: 9, posicion: 'Delantero', estado: 'EXCUSA', observacion: 'Fisioterapia rodilla izq.' },
-    { id: 'j-6', nombres: 'Daniel', apellidos: 'Henao', dorsal: 7, posicion: 'Extremo Derecho', estado: 'PRESENTE' },
-    { id: 'j-7', nombres: 'Samuel', apellidos: 'Vásquez', dorsal: 3, posicion: 'Lateral Izquierdo', estado: 'FALTA' },
-    { id: 'j-8', nombres: 'Alejandro', apellidos: 'Ochoa', dorsal: 5, posicion: 'Defensa Central', estado: 'PRESENTE' },
-    { id: 'j-9', nombres: 'Juan David', apellidos: 'Castro', dorsal: 11, posicion: 'Extremo Izquierdo', estado: 'PRESENTE' },
-    { id: 'j-10', nombres: 'Andrés Felipe', apellidos: 'Marín', dorsal: 14, posicion: 'Lateral Derecho', estado: 'PRESENTE' },
-    { id: 'j-11', nombres: 'David', apellidos: 'Herrera', dorsal: 12, posicion: 'Portero Suplente', estado: 'PRESENTE' }
-  ]);
+  jugadores = signal<JugadorAsistencia[]>([]);
 
   jugadoresFiltrados = computed(() => {
     const filtro = this.filtroEstado();
@@ -986,13 +1104,66 @@ export class EntrenamientosMobileComponent implements OnInit {
     return Math.round((presentes / list.length) * 100);
   });
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.cargarCategoriasAsignadas();
+  }
+
+  cargarCategoriasAsignadas(): void {
+    const defaultCat = this.categoriasAsignadas()[0];
+    this.categoriaSeleccionada.set(defaultCat);
+    this.jugadores.set(defaultCat.plantel || []);
+
+    // Conectar a API para sincronizar categorías asignadas al usuario actual
+    this.http.get<any>(`${environment.apiUrl}/categorias`).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res) ? res : (res?.data || []);
+        if (rows && rows.length > 0) {
+          const mapped: CategoriaDeportivaItem[] = rows.map((c: any, index: number) => ({
+            id: c.id,
+            nombre: c.nombre,
+            codigo_categoria: c.codigo_categoria,
+            color_distintivo: c.color_distintivo || '#10b981',
+            total_jugadores: parseInt(c.total_jugadores || '0', 10),
+            cancha: index % 2 === 0 ? 'Sede Norte #2' : 'Cancha Sintética #1',
+            enfoque: index % 2 === 0 ? 'Fuerza & Presión Alta' : 'Táctica Fija & Transiciones',
+            plantel: this.generarPlantelMock(c.id, c.nombre)
+          }));
+          this.categoriasAsignadas.set(mapped);
+          this.seleccionarCategoria(mapped[0]);
+        }
+      },
+      error: () => {
+        // Fallback robusto usando los datos iniciales
+      }
+    });
+  }
+
+  seleccionarCategoria(cat: CategoriaDeportivaItem): void {
+    this.categoriaSeleccionada.set(cat);
+    this.jugadores.set(cat.plantel || []);
+    this.filtroEstado.set('TODOS');
+    this.alertService.info(`Categoría activa: ${cat.nombre}`);
+  }
+
+  generarPlantelMock(catId: string, catNombre: string): JugadorAsistencia[] {
+    const existing = this.categoriasAsignadas().find(c => c.id === catId);
+    if (existing && existing.plantel) return existing.plantel;
+
+    return [
+      { id: `${catId}-1`, nombres: 'Mateo', apellidos: 'Gómez Restrepo', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
+      { id: `${catId}-2`, nombres: 'Samuel', apellidos: 'Díaz Marín', dorsal: 7, posicion: 'Extremo', estado: 'PRESENTE' },
+      { id: `${catId}-3`, nombres: 'Esteban', apellidos: 'Pérez Salazar', dorsal: 4, posicion: 'Defensa Central', estado: 'PRESENTE' },
+      { id: `${catId}-4`, nombres: 'Sebastián', apellidos: 'Muñoz', dorsal: 1, posicion: 'Arquero', estado: 'RETRASO', observacion: 'Tráfico pesado' },
+      { id: `${catId}-5`, nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
+      { id: `${catId}-6`, nombres: 'Nicolás', apellidos: 'Zapata', dorsal: 3, posicion: 'Lateral Izquierdo', estado: 'EXCUSA', observacion: 'Cita médica' }
+    ];
+  }
 
   recargarAsistencia(): void {
     this.isRefreshing.set(true);
     setTimeout(() => {
       this.isRefreshing.set(false);
-      this.alertService.success('Planilla de asistencia sincronizada en tiempo real.');
+      this.alertService.success(`Planilla de ${this.categoriaSeleccionada()?.nombre || 'Categoría'} sincronizada.`);
     }, 500);
   }
 

@@ -18,18 +18,27 @@ export class CategoriasController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'rama', required: false, type: String })
+  @ApiQuery({ name: 'dtId', required: false, type: String })
   async getCategorias(
     @CurrentUser() user: any,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
     @Query('rama') rama?: string,
+    @Query('dtId') dtId?: string,
   ) {
+    // Si el usuario logueado es ENTRENADOR_DT, solo ve sus categorías asignadas por defecto
+    let targetDtId = dtId;
+    if (user.rol === 'ENTRENADOR_DT') {
+      targetDtId = user.id;
+    }
+
     return this.categoriasService.findByClub(user.clubId, {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       search,
       rama,
+      directorTecnicoId: targetDtId,
     });
   }
 

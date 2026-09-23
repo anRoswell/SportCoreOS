@@ -156,6 +156,15 @@ import { ApiService } from '../../core/services/api.service';
                     <label><i class="fa-solid fa-palette"></i> Color Distintivo</label>
                     <input type="color" [(ngModel)]="newCat.color_distintivo" name="color_distintivo" class="color-picker-input" />
                   </div>
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-user-tie"></i> Entrenador / DT Responsable</label>
+                    <select [(ngModel)]="newCat.director_tecnico_id" name="director_tecnico_id" class="sport-input">
+                      <option [ngValue]="null">-- Sin Director Técnico Asignado --</option>
+                      @for (dt of entrenadores(); track dt.id) {
+                        <option [value]="dt.id">{{ dt.nombre }} {{ dt.apellido }} ({{ dt.email }})</option>
+                      }
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -247,6 +256,15 @@ import { ApiService } from '../../core/services/api.service';
                   <div class="input-group">
                     <label><i class="fa-solid fa-palette"></i> Color Distintivo</label>
                     <input type="color" [(ngModel)]="editCat.color_distintivo" name="editColor" class="color-picker-input" />
+                  </div>
+                  <div class="input-group">
+                    <label><i class="fa-solid fa-user-tie"></i> Entrenador / DT Responsable</label>
+                    <select [(ngModel)]="editCat.director_tecnico_id" name="editDirectorTecnicoId" class="sport-input">
+                      <option [ngValue]="null">-- Sin Director Técnico Asignado --</option>
+                      @for (dt of entrenadores(); track dt.id) {
+                        <option [value]="dt.id">{{ dt.nombre }} {{ dt.apellido }} ({{ dt.email }})</option>
+                      }
+                    </select>
                   </div>
                 </div>
               </div>
@@ -654,6 +672,7 @@ export class CategoriasComponent implements OnInit {
   private api = inject(ApiService);
 
   readonly categorias = signal<any[]>([]);
+  readonly entrenadores = signal<any[]>([]);
   readonly selectedRama = signal<string>('TODAS');
   readonly showCreateModal = signal<boolean>(false);
   readonly showEditModal = signal<boolean>(false);
@@ -674,6 +693,7 @@ export class CategoriasComponent implements OnInit {
     nivel_competencia: 'FORMATIVO',
     color_distintivo: '#10B981',
     cupo_maximo: 25,
+    director_tecnico_id: null as string | null,
   };
 
   editCat = {
@@ -685,6 +705,7 @@ export class CategoriasComponent implements OnInit {
     nivel_competencia: 'FORMATIVO',
     color_distintivo: '#10B981',
     cupo_maximo: 25,
+    director_tecnico_id: null as string | null,
   };
 
   readonly filteredCategorias = computed(() => {
@@ -697,6 +718,7 @@ export class CategoriasComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategorias();
+    this.loadEntrenadores();
   }
 
   loadCategorias(): void {
@@ -706,7 +728,27 @@ export class CategoriasComponent implements OnInit {
     });
   }
 
+  loadEntrenadores(): void {
+    this.api.getUsersWithRoles().subscribe((users) => {
+      const list = Array.isArray(users) ? users : ((users as any)?.data || []);
+      // Filtrar usuarios con rol ENTRENADOR_DT o que sean técnicos/directores
+      const dts = list.filter((u: any) => u.rol === 'ENTRENADOR_DT' || u.rol_club === 'ENTRENADOR_DT' || u.rol === 'DIRECTOR_DEPORTIVO');
+      this.entrenadores.set(dts.length > 0 ? dts : list);
+    });
+  }
+
   openCreateModal(): void {
+    this.newCat = {
+      nombre: '',
+      codigo_categoria: '',
+      anio_nacimiento_min: 2011,
+      anio_nacimiento_max: 2011,
+      rama: 'MASCULINO',
+      nivel_competencia: 'FORMATIVO',
+      color_distintivo: '#10B981',
+      cupo_maximo: 25,
+      director_tecnico_id: null,
+    };
     this.showCreateModal.set(true);
   }
 
@@ -725,6 +767,7 @@ export class CategoriasComponent implements OnInit {
       nivel_competencia: cat.nivel_competencia || 'FORMATIVO',
       color_distintivo: cat.color_distintivo || '#10B981',
       cupo_maximo: cat.cupo_maximo || 25,
+      director_tecnico_id: cat.director_tecnico_id || cat.dt_id || null,
     };
     this.showEditModal.set(true);
   }
@@ -754,7 +797,7 @@ export class CategoriasComponent implements OnInit {
 
     this.api.createCategoria(this.newCat).subscribe({
       next: () => {
-        this.showToast('¡Categoría deportiva creada exitosamente!');
+        this.showToast('¡Categoría deportiva creada y DT asignado exitosamente!');
         this.closeCreateModal();
         this.loadCategorias();
         this.newCat = {
@@ -766,6 +809,7 @@ export class CategoriasComponent implements OnInit {
           nivel_competencia: 'FORMATIVO',
           color_distintivo: '#10B981',
           cupo_maximo: 25,
+          director_tecnico_id: null,
         };
       },
       error: () => {

@@ -31,12 +31,12 @@ VALUES
 ON CONFLICT (usuario_id, club_id) DO NOTHING;
 
 -- 4. SCHEMA DEPORTIVO: CATEGORÍAS
-INSERT INTO deportivo.categorias (id, club_id, nombre, codigo_categoria, anio_nacimiento_min, anio_nacimiento_max, rama, nivel_competencia, color_distintivo, cupo_maximo, activa)
+INSERT INTO deportivo.categorias (id, club_id, nombre, codigo_categoria, anio_nacimiento_min, anio_nacimiento_max, rama, nivel_competencia, color_distintivo, cupo_maximo, director_tecnico_id, activa)
 VALUES
-  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Sub-15 Élite A', 'SUB15-A', 2011, 2012, 'MASCULINO', 'COMPETITIVO', '#10B981', 25, true),
-  ('30000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'Sub-17 Nacional Pro', 'SUB17-PRO', 2009, 2010, 'MASCULINO', 'ALTO_RENDIMIENTO', '#3B82F6', 22, true),
-  ('30000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'Sub-13 Semillero Talentos', 'SUB13-TAL', 2013, 2014, 'MASCULINO', 'FORMATIVO', '#F59E0B', 28, true)
-ON CONFLICT (id) DO NOTHING;
+  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Sub-15 Élite A', 'SUB15-A', 2011, 2012, 'MASCULINO', 'COMPETITIVO', '#10B981', 25, '00000000-0000-0000-0000-000000000003', true),
+  ('30000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'Sub-17 Nacional Pro', 'SUB17-PRO', 2009, 2010, 'MASCULINO', 'ALTO_RENDIMIENTO', '#3B82F6', 22, '00000000-0000-0000-0000-000000000003', true),
+  ('30000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'Sub-13 Semillero Talentos', 'SUB13-TAL', 2013, 2014, 'MASCULINO', 'FORMATIVO', '#F59E0B', 28, null, true)
+ON CONFLICT (id) DO UPDATE SET director_tecnico_id = EXCLUDED.director_tecnico_id;
 
 -- 5. SCHEMA DEPORTIVO: JUGADORES
 INSERT INTO deportivo.jugadores (id, club_id, categoria_id, nombres, apellidos, tipo_documento, numero_documento, fecha_nacimiento, genero, posicion_principal, pierna_habil, numero_dorsal, eps, estado_matricula)
