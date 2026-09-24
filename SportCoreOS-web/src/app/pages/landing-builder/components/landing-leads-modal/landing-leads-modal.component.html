@@ -1,0 +1,101 @@
+<div class="leads-modal-backdrop">
+  <div class="leads-modal-card">
+    <div class="leads-modal-header">
+      <div class="header-info">
+        <div class="leads-icon-circle">
+          <i class="fa-solid fa-users text-amber"></i>
+        </div>
+        <div>
+          <h3 class="leads-modal-title">Leads & Pre-Inscripciones Recibidas</h3>
+          <span class="leads-landing-name">{{ landing?.titulo }}</span>
+        </div>
+      </div>
+
+      <div class="leads-header-actions">
+        <div class="leads-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input 
+            type="text" 
+            placeholder="Filtrar por nombre, deportista, teléfono..." 
+            [ngModel]="searchQuery" 
+            (ngModelChange)="searchQueryChange.emit($event)" />
+        </div>
+        <button class="btn-close-modal" (click)="close.emit()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="leads-modal-body">
+      <div class="leads-table-container" *ngIf="!loading && leads.length > 0">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>Fecha / Hora</th>
+              <th>Acudiente / Contacto</th>
+              <th>Deportista / Edad</th>
+              <th>Categoría Interés</th>
+              <th>Mensaje / Consulta</th>
+              <th>Acción Rápida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lead of leads">
+              <td class="date-cell">
+                {{ lead.created_at | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>
+                <strong class="lead-name">{{ lead.nombre_completo }}</strong>
+                <div class="lead-sub-contact">
+                  <span><i class="fa-regular fa-envelope"></i> {{ lead.email }}</span>
+                  <span><i class="fa-solid fa-phone"></i> {{ lead.telefono }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="athlete-pill">
+                  <i class="fa-solid fa-futbol text-emerald"></i>
+                  <span>{{ lead.nombre_deportista || 'N/A' }}</span>
+                  <span class="age-badge" *ngIf="lead.edad_deportista">{{ lead.edad_deportista }} años</span>
+                </div>
+              </td>
+              <td>
+                <span class="cat-badge">{{ lead.categoria_interes || 'General' }}</span>
+              </td>
+              <td class="msg-cell" [title]="lead.mensaje || ''">
+                {{ lead.mensaje || 'Sin mensaje adicional' }}
+              </td>
+              <td>
+                <button class="btn-wa-contact" (click)="contactWhatsApp.emit(lead)" title="Contactar por WhatsApp">
+                  <i class="fa-brands fa-whatsapp"></i>
+                  <span>Contactar</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Leads State -->
+      <div class="leads-empty-state" *ngIf="!loading && leads.length === 0">
+        <i class="fa-solid fa-clipboard-user"></i>
+        <h4>Aún no hay leads registrados</h4>
+        <p>Comparte el enlace público de esta landing en tus redes sociales y campañas de WhatsApp para captar prospectos.</p>
+      </div>
+
+      <!-- Loading Leads -->
+      <div class="leads-loading" *ngIf="loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span>Cargando lista de leads...</span>
+      </div>
+    </div>
+
+    <div class="leads-modal-footer">
+      <span class="leads-count-total">
+        Total de registros: <strong>{{ totalCount }}</strong>
+      </span>
+      <button class="btn btn-secondary btn-sm" (click)="close.emit()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

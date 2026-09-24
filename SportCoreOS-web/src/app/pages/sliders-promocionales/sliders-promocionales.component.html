@@ -1,0 +1,110 @@
+<div class="sliders-page-container">
+  
+  <!-- 1. HEADER & KPI DASHBOARD METRICS -->
+  <header class="page-header">
+    <div class="header-titles">
+      <div class="breadcrumb">
+        <span>SportCoreOS</span>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span>Marketing & Portal</span>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span class="active">Sliders Promocionales</span>
+      </div>
+      <h1 class="page-title">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber"></i>
+        Gestor de Sliders Promocionales & Onboarding
+      </h1>
+      <p class="page-desc">
+        Administra las pantallas de bienvenida, banners interactivos y recorridos guiados (Tour) que ven los deportistas, padres y entrenadores al iniciar la app.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="openSimulator()" [disabled]="activeSimulatorSliders().length === 0">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <span>Simulador Móvil en Vivo</span>
+      </button>
+
+      <button class="btn-primary" (click)="openCreateModal()">
+        <i class="fa-solid fa-plus"></i>
+        <span>Nuevo Slider</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. KPI METRIC CARDS -->
+  <app-slider-kpi-bar
+    [totalSliders]="totalSliders()"
+    [activeSlidersCount]="activeSlidersCount()"
+    [mobileSlidersCount]="mobileSlidersCount()"
+    [inactiveSlidersCount]="inactiveSlidersCount()"
+  ></app-slider-kpi-bar>
+
+  <!-- 3. CARDS GRID & FILTERS TOOLBAR -->
+  <app-slider-cards-grid
+    [sliders]="filteredSliders()"
+    [totalCount]="totalSliders()"
+    [activeCount]="activeSlidersCount()"
+    [inactiveCount]="inactiveSlidersCount()"
+    [loading]="loading()"
+    [searchQuery]="searchQuery()"
+    [filterPlatform]="filterPlatform()"
+    [filterStatus]="filterStatus()"
+    (searchChange)="searchQuery.set($event)"
+    (platformChange)="filterPlatform.set($event)"
+    (statusChange)="filterStatus.set($event)"
+    (openCreate)="openCreateModal()"
+    (edit)="openEditModal($event)"
+    (duplicate)="duplicateSlider($event)"
+    (delete)="openDeleteModal($event)"
+    (toggleActivo)="toggleActivo($event)"
+    (moveOrder)="onMoveOrder($event)"
+  ></app-slider-cards-grid>
+
+</div>
+
+<!-- 4. MODAL: CREAR / EDITAR SLIDER CON LIVE PREVIEW -->
+<app-slider-editor-modal
+  [showModal]="showEditModal()"
+  [isEditing]="isEditing()"
+  [saving]="saving()"
+  [modalActiveTab]="modalActiveTab()"
+  [currentForm]="currentForm"
+  [presetThemes]="presetThemes"
+  [iconPresets]="iconPresets"
+  (close)="closeEditModal()"
+  (save)="saveSlider()"
+  (tabChange)="modalActiveTab.set($event)"
+  (addHighlightEv)="addHighlight()"
+  (removeHighlightEv)="removeHighlight($event)"
+  (applyPresetEv)="applyThemePreset($event)"
+></app-slider-editor-modal>
+
+<!-- 5. MODAL: SIMULADOR MÓVIL INTERACTIVO -->
+@if (showSimulatorModal()) {
+  <app-slider-simulator-modal
+    [sliders]="activeSimulatorSliders()"
+    [activeIndex]="simulatorIndex()"
+    (close)="closeSimulator()"
+    (setSlide)="setSimulatorSlide($event)"
+    (nextSlide)="nextSimulatorSlide()"
+    (prevSlide)="prevSimulatorSlide()"
+  ></app-slider-simulator-modal>
+}
+
+<!-- 6. MODAL: CONFIRMAR ELIMINACIÓN -->
+@if (showDeleteModal()) {
+  <app-slider-delete-dialog
+    [item]="itemToDelete()"
+    (cancel)="closeDeleteModal()"
+    (confirm)="confirmDelete()"
+  ></app-slider-delete-dialog>
+}
+
+<!-- 7. TOAST NOTIFICATIONS POPUP -->
+@if (toastMessage()) {
+  <div class="toast-popup" [class.error]="isToastError()">
+    <i [class]="isToastError() ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check'"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}

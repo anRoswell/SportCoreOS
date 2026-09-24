@@ -1,0 +1,45 @@
+<section class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon icon-emerald">
+      <i class="fa-solid fa-globe"></i>
+    </div>
+    <div class="kpi-data">
+      <span class="kpi-label">Total Experiencias</span>
+      <h3 class="kpi-value">{{ stats.total }}</h3>
+      <span class="kpi-sub">{{ stats.publicadas }} activas / publicadas</span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon icon-blue">
+      <i class="fa-solid fa-eye"></i>
+    </div>
+    <div class="kpi-data">
+      <span class="kpi-label">Vistas & Tráfico</span>
+      <h3 class="kpi-value">{{ stats.vistasTotales | number }}</h3>
+      <span class="kpi-sub">Impresiones en portales y móvil</span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon icon-amber">
+      <i class="fa-solid fa-user-plus"></i>
+    </div>
+    <div class="kpi-data">
+      <span class="kpi-label">Leads Capturados</span>
+      <h3 class="kpi-value">{{ stats.leadsTotales | number }}</h3>
+      <span class="kpi-sub">Prospectos y pre-inscripciones</span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon icon-purple">
+      <i class="fa-solid fa-chart-line"></i>
+    </div>
+    <div class="kpi-data">
+      <span class="kpi-label">Conversión Promedio</span>
+      <h3 class="kpi-value">{{ stats.conversionPromedio | number:'1.1-1' }}%</h3>
+      <span class="kpi-sub">De visitante a lead calificado</span>
+    </div>
+  </div>
+</section>

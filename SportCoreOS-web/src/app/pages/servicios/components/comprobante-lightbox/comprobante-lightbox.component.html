@@ -1,0 +1,59 @@
+<div class="modal-overlay modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <div class="modal-dialog modal-card fut-card modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group modal-title-wrap">
+        <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2 class="modal-title">Soporte de Transferencia Nequi</h2>
+          <p class="modal-sub modal-subtitle">
+            Atleta: <strong>{{ data?.nombre_jugador }}</strong> • Monto: <strong>&#36;{{ formatNumber(data?.monto_pagado) }}</strong>
+          </p>
+        </div>
+      </div>
+      <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body text-center">
+      <div class="lightbox-img-container">
+        <img [src]="data?.comprobante_url" alt="Comprobante Nequi" class="lightbox-img" />
+      </div>
+
+      <div class="lightbox-meta-grid">
+        <div class="meta-row">
+          <span class="k">Método:</span>
+          <span class="v">{{ data?.metodo_pago }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="k">Referencia:</span>
+          <span class="v font-mono">{{ data?.referencia_transaccion || 'No especificada' }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="k">Acudiente:</span>
+          <span class="v">{{ data?.nombre_acudiente }} ({{ data?.telefono_acudiente }})</span>
+        </div>
+        <div class="meta-row">
+          <span class="k">Estado Actual:</span>
+          <span class="v font-bold" [ngClass]="data?.estado_pago === EstadoPago.APROBADO ? 'text-emerald' : 'text-amber'">
+            {{ data?.estado_pago || 'PENDIENTE_APROBACION' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrar()">Cerrar</button>
+      <ng-container *ngIf="data?.estado_pago === EstadoPago.PENDIENTE_APROBACION">
+        <button class="btn-danger-sm" [disabled]="isApproving" (click)="rechazar.emit(data)">
+          <i class="fa-solid fa-xmark"></i> Rechazar Soporte
+        </button>
+        <button class="btn-primary" [disabled]="isApproving" (click)="aprobar.emit(data?.id)">
+          <i class="fa-solid fa-check"></i> Aprobar Pago en Tesorería
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>

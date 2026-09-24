@@ -7,7 +7,7 @@
     <!-- Modal Transversal de Edición de Perfil -->
     <app-profile-modal></app-profile-modal>
 
-    @if (authService.isAuthenticated()) {
+    @if (authService.isAuthenticated() && !isPublicRoute()) {
       <div class="app-layout">
         <app-sidebar></app-sidebar>
         <div class="main-wrapper" [class.sidebar-collapsed]="api.sidebarCollapsed()">

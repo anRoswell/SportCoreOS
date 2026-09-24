@@ -1,0 +1,78 @@
+<section class="dt-certification-view">
+  <div class="dt-banner-hero">
+    <div class="dt-hero-icon">
+      <i class="fa-solid fa-clipboard-check"></i>
+    </div>
+    <div class="dt-hero-text">
+      <h3>Panel de Validación & Certificación en Cancha (Director Técnico)</h3>
+      <p>Revisa a los alumnos que están realizando sus retos físicos/técnicos delante tuyo en la sesión. <strong>Soporta Salto de Reto:</strong> Al aprobar un nivel superior (ej. 50 flexiones), el sistema aprueba automáticamente los niveles anteriores y suma el acumulado de XP en vivo.</p>
+    </div>
+    <div class="dt-hero-counter">
+      <span class="count-num">{{ pendientesCount }}</span>
+      <span class="count-lbl">Retos Esperando Verificación</span>
+    </div>
+  </div>
+
+  <!-- LISTA DE RETOS PENDIENTES DE EVALUACIÓN EN VIVO -->
+  <div class="pending-retos-list">
+    <ng-container *ngIf="retosPendientes.length > 0; else noPendientes">
+      <div 
+        *ngFor="let p of retosPendientes"
+        class="pending-eval-card" 
+        [class.is-jump-card]="(p.nivel_solicitado || p.nivelSolicitado) > 1">
+        <div class="player-eval-col">
+          <img [src]="p.jugador_foto || p.jugadorFoto || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200'" [alt]="p.jugador_nombre" class="player-eval-avatar" />
+          <div class="player-eval-info">
+            <span class="player-dorsal-tag">#{{ p.jugador_dorsal || p.jugadorDorsal || '10' }}</span>
+            <h4 class="player-eval-name">{{ p.jugador_nombre || p.jugadorNombre }} {{ p.jugador_apellidos || p.jugadorApellidos }}</h4>
+            <span class="player-eval-cat">{{ p.categoria_nombre || p.categoriaNombre || 'Categoría Principal' }}</span>
+          </div>
+        </div>
+
+        <div class="challenge-eval-col">
+          <div class="challenge-badge-wrap">
+            <span class="chal-icon"><i [class]="p.reto_icono || p.retoIcono || 'fa-solid fa-dumbbell'"></i></span>
+            <div>
+              <h4 class="chal-name">{{ p.reto_nombre || p.retoNombre }}</h4>
+              <p class="chal-target">
+                <strong>Meta: {{ p.meta_cantidad || p.metaCantidad }} {{ p.unidad_medida || p.unidadMedida }}</strong> • Nivel {{ p.nivel_solicitado || p.nivelSolicitado }}
+                <span *ngIf="(p.nivel_solicitado || p.nivelSolicitado) > 1" class="cascade-alert-pill"><i class="fa-solid fa-forward-fast"></i> Salto: Auto-aprueba niveles anteriores</span>
+              </p>
+            </div>
+          </div>
+          <div class="chal-xp-tag">
+            <i class="fa-solid fa-bolt"></i> +{{ p.xp_recompensa || p.xpRecompensa }} XP directos
+          </div>
+        </div>
+
+        <div class="actions-eval-col">
+          <button 
+            type="button" 
+            class="btn-approve-dt" 
+            (click)="evaluarReto.emit({ reto: p, aprobado: true })">
+            <i class="fa-solid fa-check-double"></i>
+            <span>✅ Aprobar en Cancha {{ (p.nivel_solicitado || p.nivelSolicitado) > 1 ? '& Cascada (+XP)' : '(+' + (p.xp_recompensa || p.xpRecompensa) + ' XP)' }}</span>
+          </button>
+          <button 
+            type="button" 
+            class="btn-reject-dt" 
+            (click)="evaluarReto.emit({ reto: p, aprobado: false })">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>❌ Corregir Técnica</span>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noPendientes>
+      <div class="empty-pending-box">
+        <div class="empty-icon"><i class="fa-solid fa-circle-check text-emerald"></i></div>
+        <h3>¡Todo al día en Cancha!</h3>
+        <p>No hay alumnos en cola esperando comprobación de retos individuales en este momento.</p>
+        <button type="button" class="btn-goto-retos" (click)="irARetos.emit()">
+          Ver Catálogo de Retos Individuales
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</section>

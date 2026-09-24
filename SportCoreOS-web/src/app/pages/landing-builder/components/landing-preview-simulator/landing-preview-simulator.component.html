@@ -1,0 +1,173 @@
+<div class="simulator-wrapper" [class.sim-tablet]="previewDevice === LandingDevicePreview.TABLET" [class.sim-mobile]="previewDevice === LandingDevicePreview.MOBILE">
+  <div class="simulator-device-frame">
+    <!-- Simulator Top Device Bar -->
+    <div class="sim-device-header">
+      <div class="sim-camera-notch"></div>
+      <div class="sim-browser-bar">
+        <i class="fa-solid fa-lock text-emerald"></i>
+        <span>sportcore.app/p/{{ currentForm?.slug || 'academia-elite' }}</span>
+      </div>
+    </div>
+
+    <!-- Simulator Viewport Content -->
+    <div class="sim-viewport-scroll" [class.theme-dark]="currentForm?.tema_modo === LandingThemeMode.DARK" [class.theme-light]="currentForm?.tema_modo === LandingThemeMode.LIGHT">
+      
+      <!-- Navbar Mockup -->
+      <nav class="sim-navbar">
+        <div class="sim-nav-brand">
+          <span class="sim-nav-dot" [style.background]="currentForm?.tema_color"></span>
+          <span class="sim-nav-title">{{ currentForm?.titulo || 'SportCore Academy' }}</span>
+        </div>
+        <button class="sim-nav-cta" [style.background]="currentForm?.tema_color">
+          Inscribirme
+        </button>
+      </nav>
+
+      <!-- RENDER SECTIONS DYNAMICALLY -->
+      <div class="sim-sections-container">
+        <ng-container *ngFor="let sec of currentForm?.secciones_json">
+          
+          <!-- HERO SECTION -->
+          <section *ngIf="sec.tipo === 'HERO'" class="sim-hero-sec" [style.background]="currentForm?.tema_gradient">
+            <div class="sim-hero-badge" *ngIf="sec.datos['tag']">
+              <i [class]="sec.datos['tag_icono'] || 'fa-solid fa-bolt'"></i>
+              {{ sec.datos['tag'] }}
+            </div>
+            <h1 class="sim-hero-title">{{ sec.titulo }}</h1>
+            <p class="sim-hero-sub">{{ sec.subtitulo }}</p>
+            <div class="sim-hero-actions">
+              <button class="sim-btn-primary" [style.background]="'#ffffff'" [style.color]="'#0f172a'">
+                {{ sec.datos['boton_cta_1_texto'] || 'Inscribirme Gratis' }}
+              </button>
+              <button class="sim-btn-outline" *ngIf="sec.datos['boton_cta_2_texto']">
+                {{ sec.datos['boton_cta_2_texto'] }}
+              </button>
+            </div>
+          </section>
+
+          <!-- STATS SECTION -->
+          <section *ngIf="sec.tipo === 'STATS'" class="sim-stats-sec">
+            <div class="sim-stats-grid">
+              <div class="sim-stat-box" *ngFor="let st of sec.datos['stats']">
+                <h3 class="sim-stat-num" [style.color]="currentForm?.tema_color">{{ st.numero }}</h3>
+                <span class="sim-stat-lbl">{{ st.etiqueta }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- PROGRAMAS SECTION -->
+          <section *ngIf="sec.tipo === 'PROGRAMAS'" class="sim-programs-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-programs-grid">
+              <div class="sim-prog-card" *ngFor="let prog of sec.datos['programas']">
+                <span class="sim-prog-tag" [style.color]="currentForm?.tema_color">{{ prog.tag || 'Formativo' }}</span>
+                <h4>{{ prog.titulo }}</h4>
+                <span class="sim-prog-age">{{ prog.edades }}</span>
+                <div class="sim-prog-bottom">
+                  <span class="sim-prog-price">{{ prog.precio }}</span>
+                  <button class="sim-prog-btn" [style.background]="currentForm?.tema_color">Cupo</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- PLANES SECTION -->
+          <section *ngIf="sec.tipo === 'PLANES'" class="sim-planes-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-planes-grid">
+              <div class="sim-plan-card" *ngFor="let pl of sec.datos['planes']" [class.featured]="pl.destacado" [style.border-color]="pl.destacado ? currentForm?.tema_color : ''">
+                <span class="sim-plan-badge" *ngIf="pl.destacado" [style.background]="currentForm?.tema_color">RECOMENDADO</span>
+                <h4>{{ pl.nombre }}</h4>
+                <div class="sim-plan-price-wrap">
+                  <span class="sim-plan-price" [style.color]="currentForm?.tema_color">{{ pl.precio }}</span>
+                  <span class="sim-plan-period">/ {{ pl.periodo }}</span>
+                </div>
+                <ul class="sim-plan-features">
+                  <li *ngFor="let feat of pl.beneficios">
+                    <i class="fa-solid fa-circle-check text-emerald mr-1"></i>
+                    {{ feat }}
+                  </li>
+                </ul>
+                <button class="sim-plan-btn" [style.background]="currentForm?.tema_color">{{ pl.boton_texto || 'Elegir Plan' }}</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- TESTIMONIOS SECTION -->
+          <section *ngIf="sec.tipo === 'TESTIMONIOS'" class="sim-test-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-test-grid">
+              <div class="sim-test-card" *ngFor="let t of sec.datos['testimonios']">
+                <div class="sim-test-stars text-amber">★★★★★</div>
+                <p class="sim-test-quote">“{{ t.texto }}”</p>
+                <div class="sim-test-author">
+                  <strong>{{ t.nombre }}</strong>
+                  <span>{{ t.rol }}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LEAD FORM SECTION -->
+          <section *ngIf="sec.tipo === 'LEAD_FORM'" class="sim-form-sec">
+            <div class="sim-form-card">
+              <div class="sim-form-header">
+                <h3>{{ sec.titulo }}</h3>
+                <p>{{ sec.subtitulo }}</p>
+              </div>
+              <div class="sim-mock-form">
+                <input type="text" placeholder="Nombre completo del Acudiente" disabled />
+                <input type="email" placeholder="Correo Electrónico" disabled />
+                <input type="tel" placeholder="Número de WhatsApp" disabled />
+                <input type="text" placeholder="Nombre del Deportista" disabled />
+                <button class="sim-submit-btn" [style.background]="currentForm?.tema_color">
+                  {{ sec.datos['boton_cta_texto'] || 'Completar Pre-Inscripción' }}
+                </button>
+                <span class="sim-form-guarantee">{{ sec.datos['texto_garantia'] }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- FAQ SECTION -->
+          <section *ngIf="sec.tipo === 'FAQ'" class="sim-faq-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+            </div>
+            <div class="sim-faq-list">
+              <div class="sim-faq-item" *ngFor="let q of sec.datos['preguntas']">
+                <div class="sim-faq-q">
+                  <span>{{ q.pregunta }}</span>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="sim-faq-a">{{ q.respuesta }}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FOOTER SECTION -->
+          <footer *ngIf="sec.tipo === 'FOOTER'" class="sim-footer-sec">
+            <p class="sim-foot-brand">{{ currentForm?.titulo }}</p>
+            <p class="sim-foot-addr">{{ sec.datos['direccion'] }}</p>
+            <p class="sim-foot-copy">© 2026 Powered by SportCoreOS</p>
+          </footer>
+
+        </ng-container>
+      </div>
+
+      <!-- Floating WhatsApp Sim -->
+      <div class="sim-float-wa" *ngIf="currentForm?.boton_contacto_whatsapp">
+        <i class="fa-brands fa-whatsapp"></i>
+      </div>
+
+    </div>
+  </div>
+</div>

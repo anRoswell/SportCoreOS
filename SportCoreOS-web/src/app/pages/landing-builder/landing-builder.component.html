@@ -1,0 +1,155 @@
+<div class="landing-builder-page">
+  <!-- Toast Notifier -->
+  <div class="toast-container" *ngIf="toastMessage()">
+    <div class="toast-card" [class.toast-error]="isToastError()">
+      <i class="fa-solid" [class.fa-circle-check]="!isToastError()" [class.fa-triangle-exclamation]="isToastError()"></i>
+      <span>{{ toastMessage() }}</span>
+    </div>
+  </div>
+
+  <!-- Header & Actions -->
+  <header class="page-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h1 class="page-title">
+          <i class="fa-solid fa-layer-group text-emerald mr-2"></i>
+          Creador de Landing Pages & Contenidos
+        </h1>
+        <span class="badge-tag badge-pro">Multi-Formato Pro</span>
+      </div>
+      <p class="page-subtitle">
+        Diseña páginas de captación, promos interactivas, reels deportivos y popups de preinscripción sin tocar código.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="loadLandings()" [disabled]="loading()">
+        <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="loading()"></i>
+        <span>Sincronizar</span>
+      </button>
+
+      <div class="create-dropdown-group">
+        <button class="btn btn-primary" (click)="openCreateModal('LANDING_PAGE')">
+          <i class="fa-solid fa-plus mr-1"></i>
+          <span>Nueva Experiencia</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUBCOMPONENTE 1: KPI METRICS BAR -->
+  <app-landing-kpi-bar [stats]="resumenStats()"></app-landing-kpi-bar>
+
+  <!-- Filters & Content Types Tabs -->
+  <section class="filter-toolbar">
+    <div class="type-filter-pills">
+      <button 
+        class="type-pill" 
+        [class.active]="filterType() === 'TODOS'"
+        (click)="filterType.set('TODOS')">
+        <i class="fa-solid fa-border-all"></i>
+        <span>Todos ({{ landingsList().length }})</span>
+      </button>
+
+      <button 
+        *ngFor="let t of contentTypes"
+        class="type-pill" 
+        [class.active]="filterType() === t.id"
+        (click)="filterType.set(t.id)">
+        <i [class]="t.icon"></i>
+        <span>{{ t.label }}</span>
+      </button>
+    </div>
+
+    <div class="search-and-status">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input 
+          type="text" 
+          placeholder="Buscar por título, slug o palabra clave..." 
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="searchQuery.set($event)" />
+        <button *ngIf="searchQuery()" class="btn-clear-search" (click)="searchQuery.set('')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="status-select-wrap">
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" class="status-select">
+          <option [value]="LandingEstadoFiltro.TODOS">Todos los Estados</option>
+          <option [value]="LandingEstadoFiltro.PUBLICADO">Publicados</option>
+          <option [value]="LandingEstadoFiltro.BORRADOR">Borradores</option>
+          <option [value]="LandingEstadoFiltro.ARCHIVADO">Archivados</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUBCOMPONENTE 2: CATALOG CARDS GRID -->
+  <app-landing-catalog-grid
+    [landings]="filteredLandings()"
+    [loading]="loading()"
+    (edit)="openEditModal($event)"
+    (openLeads)="openLeadsModal($event.item, $event.event)"
+    (copyUrl)="copyPublicUrl($event.slug, $event.event)"
+    (duplicate)="duplicateLanding($event.item, $event.event)"
+    (delete)="confirmDelete($event.item, $event.event)"
+    (toggleEstado)="toggleEstado($event.item, $event.event)"
+    (create)="openCreateModal('LANDING_PAGE')">
+  </app-landing-catalog-grid>
+
+  <!-- SUBCOMPONENTE 3: BUILDER VISUAL DE LANDINGS (STUDIO EDITOR + SIMULADOR) -->
+  <app-landing-editor-modal
+    *ngIf="showBuilderModal()"
+    [currentForm]="currentForm"
+    [isEditing]="isEditing()"
+    [saving]="saving()"
+    [activeTab]="builderActiveTab()"
+    [previewDevice]="previewDevice()"
+    [selectedBlockIndex]="selectedBlockIndex()"
+    [colorPresets]="colorPresets"
+    [contentTypes]="contentTypes"
+    [availableBlockTypes]="availableBlockTypes"
+    (activeTabChange)="builderActiveTab.set($event)"
+    (previewDeviceChange)="previewDevice.set($event)"
+    (selectedBlockIndexChange)="selectedBlockIndex.set($event)"
+    (generateSlug)="generateSlug()"
+    (applyColorPreset)="applyColorPreset($event)"
+    (addBlock)="addBlock($event)"
+    (moveBlock)="moveBlock($event.index, $event.direction, $event.event)"
+    (removeBlock)="removeBlock($event.index, $event.event)"
+    (addStatItem)="addStatItem()"
+    (removeStatItem)="removeStatItem($event)"
+    (addProgramItem)="addProgramItem()"
+    (removeProgramItem)="removeProgramItem($event)"
+    (addPlanItem)="addPlanItem()"
+    (removePlanItem)="removePlanItem($event)"
+    (addTestimonioItem)="addTestimonioItem()"
+    (removeTestimonioItem)="removeTestimonioItem($event)"
+    (addFaqItem)="addFaqItem()"
+    (removeFaqItem)="removeFaqItem($event)"
+    (close)="closeBuilderModal()"
+    (save)="saveLanding()">
+  </app-landing-editor-modal>
+
+  <!-- SUBCOMPONENTE 4: MODAL DE LEADS & PRE-INSCRIPCIONES -->
+  <app-landing-leads-modal
+    *ngIf="showLeadsModal()"
+    [landing]="currentLandingForLeads()"
+    [leads]="filteredLeads()"
+    [loading]="loadingLeads()"
+    [searchQuery]="leadsSearchQuery()"
+    [totalCount]="landingLeadsList().length"
+    (searchQueryChange)="leadsSearchQuery.set($event)"
+    (contactWhatsApp)="openWhatsAppLead($event)"
+    (close)="closeLeadsModal()">
+  </app-landing-leads-modal>
+
+  <!-- SUBCOMPONENTE 5: MODAL DE CONFIRMACIÓN DE ELIMINAR -->
+  <app-landing-delete-dialog
+    *ngIf="showDeleteModal()"
+    [item]="itemToDelete()"
+    (cancel)="showDeleteModal.set(false)"
+    (confirm)="deleteLandingConfirmed()">
+  </app-landing-delete-dialog>
+</div>

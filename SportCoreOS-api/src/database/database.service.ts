@@ -46,6 +46,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       connectionTimeoutMillis: 2000,
     });
 
+    this.pool.on('error', (err: Error) => {
+      this.logger.warn(`Aviso de desconexión o error en cliente inactivo de PostgreSQL: ${err.message}`);
+    });
+
     this.logger.log(`🔌 Conectando a Base de Datos PostgreSQL QA (${process.env.DB_HOST || '127.0.0.1'}:${process.env.DB_PORT || '55132'} / ${process.env.DB_NAME || 'sportcoreos_db_qa'})...`);
 
     try {
@@ -55,8 +59,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       
       // Intentar auto-migración DDL & Seed si existe schema.sql
       try {
-        const schemaPath = path.join(__dirname, 'schema.sql');
-        const seedPath = path.join(__dirname, 'seed.sql');
+        const schemaPath = fs.existsSync(path.join(__dirname, 'schema.sql'))
+          ? path.join(__dirname, 'schema.sql')
+          : path.join(process.cwd(), 'src', 'database', 'schema.sql');
+        const seedPath = fs.existsSync(path.join(__dirname, 'seed.sql'))
+          ? path.join(__dirname, 'seed.sql')
+          : path.join(process.cwd(), 'src', 'database', 'seed.sql');
         if (fs.existsSync(schemaPath)) {
           const schemaSql = fs.readFileSync(schemaPath, 'utf8');
           await client.query(schemaSql);

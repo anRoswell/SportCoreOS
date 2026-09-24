@@ -1,0 +1,90 @@
+@if (visible && jugador) {
+  <div class="modal-backdrop" (click)="cerrar()">
+    <div class="delete-confirm-modal-card modal-md" (click)="$event.stopPropagation()">
+      <!-- Header Destructivo -->
+      <div class="modal-header header-danger">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge badge-danger-glow">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2>Confirmar Retiro del Jugador</h2>
+            <p class="modal-subtitle">Trámite administrativo de baja deportiva y desafiliación del plantel</p>
+          </div>
+        </div>
+        <button class="modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Contenido Principal -->
+      <div class="delete-confirm-body">
+        <!-- Tarjeta de Resumen del Deportista -->
+        <div class="player-retire-card">
+          <div class="retire-avatar-wrap">
+            <img 
+              [src]="resolvePhotoUrl(jugador.foto_url, jugador.genero)" 
+              [alt]="jugador.nombres" />
+            <div class="retire-dorsal-tag">
+              #{{ jugador.numero_dorsal || '-' }}
+            </div>
+          </div>
+          <div class="retire-player-details">
+            <div class="retire-name-row">
+              <span class="retire-player-name">
+                {{ jugador.nombres }} {{ jugador.apellidos }}
+              </span>
+              <span class="status-badge" [class]="jugador.estado_matricula ? jugador.estado_matricula.toLowerCase() : 'activo'">
+                {{ jugador.estado_matricula || 'ACTIVO' }}
+              </span>
+            </div>
+            <div class="retire-meta-row">
+              <span class="meta-tag"><i class="fa-solid fa-id-card"></i> {{ jugador.tipo_documento }} {{ jugador.numero_documento }}</span>
+              <span class="meta-tag"><i class="fa-solid fa-users"></i> {{ jugador.categoria_nombre }}</span>
+              <span class="meta-tag"><i class="fa-solid fa-futbol"></i> {{ jugador.posicion_principal }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advertencia y Consecuencias -->
+        <div class="warning-callout">
+          <div class="warning-callout-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="warning-callout-content">
+            <h4>¿Estás seguro de formalizar la baja del deportista?</h4>
+            <ul>
+              <li>El alumno cambiará su estado a <strong>RETIRADO</strong> y quedará inhabilitado para futuras convocatorias oficiales.</li>
+              <li>Su expediente deportivo, histórico biométrico y registros de pagos permanecerán archivados para consulta histórica.</li>
+              <li>Esta acción liberará su número de dorsal (#{{ jugador.numero_dorsal || 'N/A' }}) para nuevas inscripciones.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer con Botones de Acción -->
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn-cancel" 
+          (click)="cerrar()"
+          [disabled]="deletingPlayer()">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Cancelar</span>
+        </button>
+        <button 
+          type="button" 
+          class="btn-confirm-delete" 
+          (click)="confirmRetireJugador()"
+          [disabled]="deletingPlayer()">
+          @if (deletingPlayer()) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fa-solid fa-user-minus"></i>
+          }
+          <span>{{ deletingPlayer() ? 'Procesando Baja...' : 'Confirmar Retiro Definitivo' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

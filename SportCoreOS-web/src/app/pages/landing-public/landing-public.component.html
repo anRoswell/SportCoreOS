@@ -1,0 +1,534 @@
+<div class="public-landing-container" *ngIf="landing() as page" [class.theme-dark]="page.tema_modo === 'DARK'" [class.theme-light]="page.tema_modo === 'LIGHT'">
+  
+  <!-- TOP NAVIGATION BAR -->
+  <header class="public-navbar">
+    <div class="navbar-container">
+      <div class="nav-brand">
+        <span class="brand-badge-dot" [style.background]="page.tema_color"></span>
+        <span class="brand-title">{{ page.titulo }}</span>
+      </div>
+
+      <nav class="nav-links">
+        <a (click)="scrollToSection('sec-programas')" class="nav-link">Programas</a>
+        <a (click)="scrollToSection('sec-planes')" class="nav-link">Planes</a>
+        <a (click)="scrollToSection('sec-testimonios')" class="nav-link">Testimonios</a>
+        <a (click)="scrollToSection('sec-faq')" class="nav-link">Preguntas</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-cta" [style.background]="page.tema_color" (click)="scrollToSection('sec-lead-form')">
+          <i class="fa-solid fa-bolt mr-1"></i>
+          <span>Inscribirme Ahora</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DYNAMIC SECTIONS RENDERER -->
+  <main class="landing-main-content">
+    <ng-container *ngFor="let sec of page.secciones_json">
+      
+      <!-- ===================================================================== -->
+      <!-- 1. HERO SECTION -->
+      <!-- ===================================================================== -->
+      <section 
+        *ngIf="sec.tipo === 'HERO'" 
+        id="sec-hero" 
+        class="landing-section hero-section"
+        [style.background]="page.tema_gradient">
+        
+        <div class="hero-overlay"></div>
+        
+        <div class="section-container hero-content">
+          <div class="hero-badge" *ngIf="sec.datos['tag']">
+            <i [class]="sec.datos['tag_icono'] || 'fa-solid fa-bolt'"></i>
+            <span>{{ sec.datos['tag'] }}</span>
+          </div>
+
+          <h1 class="hero-title">{{ sec.titulo }}</h1>
+          <p class="hero-subtitle">{{ sec.subtitulo }}</p>
+
+          <div class="hero-ctas">
+            <button 
+              class="btn btn-hero-primary" 
+              (click)="scrollToSection('sec-lead-form')">
+              <i class="fa-solid fa-calendar-check mr-1"></i>
+              <span>{{ sec.datos['boton_cta_1_texto'] || 'Separar Clase de Prueba Gratis' }}</span>
+            </button>
+
+            <button 
+              *ngIf="sec.datos['boton_cta_2_texto']"
+              class="btn btn-hero-outline" 
+              (click)="scrollToSection('sec-programas')">
+              <span>{{ sec.datos['boton_cta_2_texto'] }}</span>
+              <i class="fa-solid fa-arrow-down ml-1"></i>
+            </button>
+          </div>
+
+          <div class="hero-trust-bar">
+            <div class="trust-item">
+              <i class="fa-solid fa-shield-halved text-emerald"></i>
+              <span>Entrenadores Certificados UEFA / Conmebol</span>
+            </div>
+            <div class="trust-item">
+              <i class="fa-solid fa-heart-pulse text-emerald"></i>
+              <span>Monitoreo Biométrico & IA</span>
+            </div>
+            <div class="trust-item">
+              <i class="fa-solid fa-medal text-emerald"></i>
+              <span>Torneos Oficiales Federados</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 2. STATS COUNTER SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'STATS'" id="sec-stats" class="landing-section stats-section">
+        <div class="section-container">
+          <div class="stats-grid">
+            <div class="stat-card" *ngFor="let st of sec.datos['stats']">
+              <div class="stat-icon-wrap" [style.color]="page.tema_color">
+                <i [class]="st.icono || 'fa-solid fa-trophy'"></i>
+              </div>
+              <h3 class="stat-number" [style.color]="page.tema_color">{{ st.numero }}</h3>
+              <span class="stat-label">{{ st.etiqueta }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 3. PROGRAMAS & CATEGORÍAS SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'PROGRAMAS'" id="sec-programas" class="landing-section programs-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">FORMACIÓN DEPORTIVA</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="programs-grid">
+            <div class="program-card" *ngFor="let prog of sec.datos['programas']">
+              <div class="prog-top">
+                <span class="prog-tag" [style.background]="page.tema_color + '22'" [style.color]="page.tema_color">
+                  {{ prog.tag || 'Formativo' }}
+                </span>
+                <span class="prog-cupos">{{ prog.cupos || 'Cupos limitados' }}</span>
+              </div>
+
+              <h3 class="prog-title">{{ prog.titulo }}</h3>
+              
+              <div class="prog-meta-list">
+                <div class="meta-item">
+                  <i class="fa-regular fa-calendar-days text-emerald"></i>
+                  <span>{{ prog.edades }}</span>
+                </div>
+                <div class="meta-item">
+                  <i class="fa-regular fa-clock text-emerald"></i>
+                  <span>{{ prog.horario }}</span>
+                </div>
+              </div>
+
+              <div class="prog-footer">
+                <div class="prog-price-wrap">
+                  <span class="price-val">{{ prog.precio }}</span>
+                </div>
+                <button 
+                  class="btn btn-prog-action" 
+                  [style.background]="page.tema_color"
+                  (click)="leadForm.categoria_interes = prog.titulo; scrollToSection('sec-lead-form')">
+                  Apartar Cupo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 4. FIXTURE & EVENTOS SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'FIXTURE'" id="sec-fixture" class="landing-section fixture-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">COMPETICIONES</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="fixture-list">
+            <div class="fixture-card" *ngFor="let fix of sec.datos['partidos']">
+              <div class="fixture-date-box">
+                <i class="fa-solid fa-futbol text-emerald"></i>
+                <span class="fase-badge">{{ fix.fase }}</span>
+              </div>
+              <div class="fixture-info">
+                <span class="tournament-name">{{ fix.torneo }}</span>
+                <h4 class="match-teams">VS. {{ fix.rival }}</h4>
+                <div class="match-meta">
+                  <span><i class="fa-regular fa-clock"></i> {{ fix.fecha }}</span>
+                  <span><i class="fa-solid fa-location-dot"></i> {{ fix.lugar }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 5. PLANES & TARIFAS SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'PLANES'" id="sec-planes" class="landing-section planes-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">MEMBRESÍAS & CUOTAS</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="planes-grid">
+            <div 
+              class="plan-card" 
+              *ngFor="let pl of sec.datos['planes']"
+              [class.plan-featured]="pl.destacado"
+              [style.border-color]="pl.destacado ? page.tema_color : ''">
+              
+              <div class="plan-popular-ribbon" *ngIf="pl.destacado" [style.background]="page.tema_color">
+                ★ PLAN MÁS ELEGIDO
+              </div>
+
+              <h3 class="plan-name">{{ pl.nombre }}</h3>
+              
+              <div class="plan-price-block">
+                <span class="plan-price-num" [style.color]="page.tema_color">{{ pl.precio }}</span>
+                <span class="plan-period">/ {{ pl.periodo }}</span>
+              </div>
+
+              <ul class="plan-features-list">
+                <li *ngFor="let feat of pl.beneficios">
+                  <i class="fa-solid fa-circle-check text-emerald mr-2"></i>
+                  <span>{{ feat }}</span>
+                </li>
+              </ul>
+
+              <button 
+                class="btn btn-plan-select" 
+                [style.background]="page.tema_color"
+                (click)="leadForm.mensaje = 'Interesado en ' + pl.nombre; scrollToSection('sec-lead-form')">
+                {{ pl.boton_texto || 'Elegir Plan' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 6. TESTIMONIOS & SCOUTING SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'TESTIMONIOS'" id="sec-testimonios" class="landing-section testimonials-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">EXPERIENCIAS REALES</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="testimonials-grid">
+            <div class="testimonial-card" *ngFor="let t of sec.datos['testimonios']">
+              <div class="stars-row text-amber">
+                <i class="fa-solid fa-star" *ngFor="let s of [1,2,3,4,5]"></i>
+              </div>
+              <p class="testimonial-text">“{{ t.texto }}”</p>
+              
+              <div class="author-block">
+                <img [src]="t.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'" [alt]="t.nombre" class="author-avatar" />
+                <div class="author-meta">
+                  <strong class="author-name">{{ t.nombre }}</strong>
+                  <span class="author-role">{{ t.rol }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 7. STORIES & REELS GALLERY SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'STORIES'" id="sec-stories" class="landing-section stories-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">EN LA CANCHA</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="stories-reel-grid">
+            <div class="story-reel-card" *ngFor="let story of sec.datos['stories']">
+              <img [src]="story.imagen" [alt]="story.titulo" class="story-img" />
+              <div class="story-card-overlay">
+                <span class="story-cat-tag">{{ story.categoria }}</span>
+                <h4 class="story-title">{{ story.titulo }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 8. FORMULARIO DE CAPTACIÓN / LEAD FORM SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'LEAD_FORM'" id="sec-lead-form" class="landing-section lead-form-section">
+        <div class="section-container">
+          <div class="lead-form-box">
+            
+            <div class="lead-form-header">
+              <span class="form-badge" [style.color]="page.tema_color">
+                <i class="fa-solid fa-user-plus mr-1"></i> PRE-INSCRIPCIÓN
+              </span>
+              <h2 class="form-main-title">{{ sec.titulo }}</h2>
+              <p class="form-main-desc">{{ sec.subtitulo }}</p>
+            </div>
+
+            <!-- SUCCESS STATE -->
+            <div class="form-success-state" *ngIf="leadSubmitted()">
+              <div class="success-icon-circle">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <h3>¡Solicitud Recibida con Éxito!</h3>
+              <p>{{ leadSuccessMessage() }}</p>
+              <p class="success-sub">Nuestro coordinador deportivo se comunicará contigo vía WhatsApp o llamada en breve.</p>
+              
+              <div class="success-actions">
+                <button class="btn btn-wa-direct" (click)="openWhatsApp()">
+                  <i class="fa-brands fa-whatsapp"></i>
+                  <span>Confirmar por WhatsApp Ahora</span>
+                </button>
+                <button class="btn btn-outline-white" (click)="resetForm()">
+                  Registrar otro deportista
+                </button>
+              </div>
+            </div>
+
+            <!-- ACTIVE FORM -->
+            <form (ngSubmit)="submitLeadForm()" *ngIf="!leadSubmitted()" class="lead-capture-form">
+              
+              <div class="form-alert-error" *ngIf="formErrorMessage()">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ formErrorMessage() }}</span>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="input-field">
+                  <label>Nombre Completo del Acudiente / Padre *</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-regular fa-user"></i>
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Laura Ramírez" 
+                      [(ngModel)]="leadForm.nombre_completo" 
+                      name="nombre_completo" 
+                      required />
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <label>Correo Electrónico *</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input 
+                      type="email" 
+                      placeholder="laura@ejemplo.com" 
+                      [(ngModel)]="leadForm.email" 
+                      name="email" 
+                      required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="input-field">
+                  <label>WhatsApp / Teléfono de Contacto *</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-brands fa-whatsapp text-emerald"></i>
+                    <input 
+                      type="tel" 
+                      placeholder="+57 300 123 4567" 
+                      [(ngModel)]="leadForm.telefono" 
+                      name="telefono" 
+                      required />
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <label>Nombre del Deportista</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-solid fa-futbol"></i>
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Daniel Gómez" 
+                      [(ngModel)]="leadForm.nombre_deportista" 
+                      name="nombre_deportista" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="input-field">
+                  <label>Edad del Deportista</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-solid fa-cake-candles"></i>
+                    <input 
+                      type="number" 
+                      placeholder="Ej: 9" 
+                      [(ngModel)]="leadForm.edad_deportista" 
+                      name="edad_deportista" />
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <label>Categoría o Programa de Interés</label>
+                  <div class="field-icon-wrap">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Sub-11 Formativa" 
+                      [(ngModel)]="leadForm.categoria_interes" 
+                      name="categoria_interes" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-field">
+                <label>Pregunta o Consulta Adicional (Opcional)</label>
+                <textarea 
+                  rows="2" 
+                  placeholder="¿Deseas contarnos algo sobre la experiencia previa del deportista?"
+                  [(ngModel)]="leadForm.mensaje" 
+                  name="mensaje"></textarea>
+              </div>
+
+              <button 
+                type="submit" 
+                class="btn btn-form-submit" 
+                [style.background]="page.tema_color"
+                [disabled]="submittingLead()">
+                <i class="fa-solid fa-paper-plane mr-2" *ngIf="!submittingLead()"></i>
+                <i class="fa-solid fa-circle-notch fa-spin mr-2" *ngIf="submittingLead()"></i>
+                <span>{{ submittingLead() ? 'Enviando Solicitud...' : (sec.datos['boton_cta_texto'] || '¡Quiero mi Clase de Prueba Gratis!') }}</span>
+              </button>
+
+              <p class="form-guarantee-note">
+                {{ sec.datos['texto_garantia'] || '🔒 Cupos limitados. Tus datos son 100% confidenciales.' }}
+              </p>
+            </form>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 9. FAQ ACCORDION SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'FAQ'" id="sec-faq" class="landing-section faq-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">RESOLVEMOS TUS DUDAS</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="faq-accordion-list">
+            <div 
+              class="faq-item-card" 
+              *ngFor="let q of sec.datos['preguntas']; let qIdx = index"
+              [class.open]="activeFaqIndex() === qIdx">
+              
+              <button class="faq-question-btn" (click)="toggleFaq(qIdx)">
+                <span class="faq-question-text">{{ q.pregunta }}</span>
+                <i class="fa-solid fa-chevron-down faq-icon"></i>
+              </button>
+
+              <div class="faq-answer-collapse" *ngIf="activeFaqIndex() === qIdx">
+                <p class="faq-answer-text">{{ q.respuesta }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 10. FOOTER SECTION -->
+      <!-- ===================================================================== -->
+      <footer *ngIf="sec.tipo === 'FOOTER'" class="public-footer">
+        <div class="section-container footer-content">
+          <div class="footer-col-brand">
+            <h3 class="footer-club-name">{{ page.titulo }}</h3>
+            <p class="footer-addr"><i class="fa-solid fa-location-dot mr-1"></i> {{ sec.datos['direccion'] }}</p>
+            <p class="footer-time"><i class="fa-regular fa-clock mr-1"></i> {{ sec.datos['horario_atencion'] }}</p>
+          </div>
+
+          <div class="footer-col-contact">
+            <h4>Contacto Directo</h4>
+            <p><i class="fa-solid fa-phone mr-1"></i> {{ sec.datos['telefono'] }}</p>
+            <p><i class="fa-regular fa-envelope mr-1"></i> {{ sec.datos['email'] }}</p>
+          </div>
+
+          <div class="footer-col-social">
+            <h4>Síguenos</h4>
+            <div class="social-links">
+              <a [href]="sec.datos['instagram'] || 'https://instagram.com'" target="_blank" class="social-btn">
+                <i class="fa-brands fa-instagram"></i>
+              </a>
+              <a [href]="sec.datos['facebook'] || 'https://facebook.com'" target="_blank" class="social-btn">
+                <i class="fa-brands fa-facebook"></i>
+              </a>
+              <a [href]="sec.datos['youtube'] || 'https://youtube.com'" target="_blank" class="social-btn">
+                <i class="fa-brands fa-youtube"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+          <p>© 2026 {{ page.titulo }}. Todos los derechos reservados. Impulsado por <strong>SportCoreOS</strong>.</p>
+        </div>
+      </footer>
+
+    </ng-container>
+  </main>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <button 
+    class="floating-whatsapp-btn" 
+    *ngIf="page.boton_contacto_whatsapp" 
+    (click)="openWhatsApp()"
+    title="Hablar por WhatsApp con un asesor">
+    <i class="fa-brands fa-whatsapp"></i>
+    <span class="floating-tooltip">¿Dudas? Chatea con nosotros</span>
+  </button>
+
+</div>
+
+<!-- 404 / NOT FOUND STATE -->
+<div class="public-not-found" *ngIf="notFound() && !loading()">
+  <div class="not-found-card">
+    <div class="nf-icon">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+    <h2>Experiencia no encontrada o inactiva</h2>
+    <p>La página que buscas no existe o se encuentra temporalmente en borrador.</p>
+    <a routerLink="/dashboard" class="btn btn-primary mt-3">
+      Ir al Portal Principal
+    </a>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="public-loading" *ngIf="loading()">
+  <i class="fa-solid fa-circle-notch fa-spin"></i>
+  <span>Cargando experiencia...</span>
+</div>

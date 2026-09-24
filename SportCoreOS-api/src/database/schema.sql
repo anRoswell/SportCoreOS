@@ -511,4 +511,90 @@ CREATE INDEX IF NOT EXISTS idx_retos_catalogo_cat ON rendimiento.retos_catalogo(
 CREATE INDEX IF NOT EXISTS idx_retos_progreso_jug ON rendimiento.retos_jugador_progreso(jugador_id);
 CREATE INDEX IF NOT EXISTS idx_retos_progreso_estado ON rendimiento.retos_jugador_progreso(estado);
 
+-- ============================================================================
+-- SCHEMA: core (MÓDULO: SLIDERS PROMOCIONALES, MARKETING & ONBOARDING)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS core.sliders_promocionales (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+    titulo VARCHAR(150) NOT NULL,
+    subtitulo VARCHAR(255),
+    tag VARCHAR(80) NOT NULL DEFAULT 'Ecosistema Cloud',
+    tag_icono VARCHAR(50) DEFAULT '🏆',
+    badge_color VARCHAR(30) DEFAULT '#10b981',
+    accent_gradient VARCHAR(150) DEFAULT 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    icono VARCHAR(80) DEFAULT 'fa-solid fa-chart-line',
+    stat_numero VARCHAR(50) DEFAULT '100% Cloud',
+    stat_label VARCHAR(100) DEFAULT 'Sincronización en vivo',
+    card_preview_titulo VARCHAR(150) DEFAULT 'Panel Directivo & Metas',
+    card_preview_desc TEXT DEFAULT 'Visión consolidada de canteras, asistencias y alertas del club.',
+    highlights_json JSONB DEFAULT '[]'::jsonb,
+    boton_cta_texto VARCHAR(80) DEFAULT 'Siguiente',
+    boton_cta_url VARCHAR(150) DEFAULT '/auth/login',
+    imagen_url TEXT,
+    orden INT NOT NULL DEFAULT 1,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    plataforma_destino VARCHAR(50) NOT NULL DEFAULT 'TODAS', -- 'TODAS', 'MOBILE_APP', 'WEB_PORTAL'
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sliders_club ON core.sliders_promocionales(club_id);
+CREATE INDEX IF NOT EXISTS idx_sliders_activo ON core.sliders_promocionales(activo);
+CREATE INDEX IF NOT EXISTS idx_sliders_orden ON core.sliders_promocionales(orden);
+
+-- =============================================================================
+-- TABLA: LANDING PAGES & CREADOR DE CONTENIDOS MULTIPLATAFORMA
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS core.landing_pages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+    tipo_contenido VARCHAR(50) NOT NULL DEFAULT 'LANDING_PAGE', -- 'LANDING_PAGE', 'PROMO_HERO', 'STORIES_REEL', 'BANNER_TOP', 'POPUP_MODAL'
+    titulo VARCHAR(200) NOT NULL,
+    subtitulo TEXT,
+    slug VARCHAR(150) NOT NULL UNIQUE,
+    estado VARCHAR(30) NOT NULL DEFAULT 'PUBLICADO', -- 'PUBLICADO', 'BORRADOR', 'ARCHIVADO'
+    tema_color VARCHAR(30) DEFAULT '#10b981',
+    tema_gradient VARCHAR(200) DEFAULT 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    tema_modo VARCHAR(20) DEFAULT 'DARK', -- 'DARK', 'LIGHT'
+    meta_descripcion TEXT,
+    meta_keywords VARCHAR(255),
+    meta_og_imagen TEXT,
+    logo_url TEXT,
+    boton_contacto_whatsapp VARCHAR(50),
+    email_notificaciones VARCHAR(150),
+    vistas_count INT NOT NULL DEFAULT 0,
+    leads_count INT NOT NULL DEFAULT 0,
+    configuracion_json JSONB DEFAULT '{}'::jsonb,
+    secciones_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS core.landing_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    landing_id UUID REFERENCES core.landing_pages(id) ON DELETE CASCADE,
+    club_id UUID REFERENCES core.clubes(id) ON DELETE SET NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    telefono VARCHAR(50),
+    nombre_deportista VARCHAR(150),
+    edad_deportista INT,
+    categoria_interes VARCHAR(100),
+    mensaje TEXT,
+    estado VARCHAR(30) NOT NULL DEFAULT 'NUEVO', -- 'NUEVO', 'CONTACTADO', 'MATRICULADO', 'DESCARTADO'
+    ip_origen VARCHAR(60),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_landings_slug ON core.landing_pages(slug);
+CREATE INDEX IF NOT EXISTS idx_landings_club ON core.landing_pages(club_id);
+CREATE INDEX IF NOT EXISTS idx_landings_estado ON core.landing_pages(estado);
+CREATE INDEX IF NOT EXISTS idx_landings_tipo ON core.landing_pages(tipo_contenido);
+CREATE INDEX IF NOT EXISTS idx_leads_landing ON core.landing_leads(landing_id);
+
+
 

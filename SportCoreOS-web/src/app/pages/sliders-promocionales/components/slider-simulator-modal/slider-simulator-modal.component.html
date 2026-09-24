@@ -1,0 +1,136 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="simulator-modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Phone Mockup Frame -->
+    <div class="phone-frame">
+      
+      <!-- Dynamic Spotlight Ambient Glow -->
+      <div class="phone-ambient-glow" [style.background]="currentSlide?.badge_color || '#10b981'"></div>
+
+      <!-- Phone Notch / Status Bar -->
+      <div class="phone-top-notch">
+        <span class="phone-time">9:41</span>
+        <div class="phone-speaker"></div>
+        <div class="phone-icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </div>
+      </div>
+
+      <!-- App Header -->
+      <div class="sim-app-header">
+        <div class="sim-brand-pill">
+          <span class="sim-logo">⚽</span>
+          <span class="sim-brand-title">SportCore<strong class="text-emerald">OS</strong></span>
+        </div>
+        <button class="sim-skip-btn" (click)="close.emit()">
+          <span>Omitir</span>
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+      <!-- Phone Content -->
+      @if (currentSlide; as curSlide) {
+        <div class="sim-slide-viewport">
+          
+          <!-- Badge -->
+          <div class="sim-badge" [style.borderColor]="curSlide.badge_color || '#10b981'" [style.color]="curSlide.badge_color || '#10b981'">
+            <span>{{ curSlide.tag_icono || '🏆' }}</span>
+            <span>{{ curSlide.tag }}</span>
+          </div>
+
+          <!-- Card -->
+          <div class="sim-hero-card" [style.borderColor]="(curSlide.badge_color || '#10b981') + '60'">
+            <div class="sim-card-top">
+              <span class="sim-dot" [style.backgroundColor]="curSlide.badge_color || '#10b981'"></span>
+              <span class="sim-card-subtitle">{{ curSlide.card_preview_titulo || curSlide.titulo }}</span>
+              <span class="sim-status">En Vivo</span>
+            </div>
+
+            <div class="sim-centerpiece">
+              <div class="sim-avatar" [style.background]="curSlide.accent_gradient || 'linear-gradient(135deg, #10b981, #059669)'">
+                <i [class]="curSlide.icono || 'fa-solid fa-chart-line'"></i>
+              </div>
+              <div>
+                <h4>{{ curSlide.titulo }}</h4>
+                <p>{{ curSlide.card_preview_desc || curSlide.subtitulo }}</p>
+              </div>
+            </div>
+
+            <!-- Highlights -->
+            <div class="sim-highlights-list">
+              @for (h of getSimulatorHighlights(curSlide); track h.text) {
+                <div class="sim-chip">
+                  <span>{{ h.icon }}</span>
+                  <div>
+                    <strong>{{ h.text }}</strong>
+                    @if (h.subtext) {
+                      <small>{{ h.subtext }}</small>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Metric Ribbon -->
+            <div class="sim-metric-ribbon">
+              <span class="sim-metric-num" [style.color]="curSlide.badge_color || '#10b981'">{{ curSlide.stat_numero || '100% Pro' }}</span>
+              <span class="sim-metric-lbl">{{ curSlide.stat_label || 'Cloud Sync' }}</span>
+            </div>
+          </div>
+
+          <!-- Slide title & desc -->
+          <div class="sim-text-details">
+            <h3>{{ curSlide.titulo }}</h3>
+            <p>{{ curSlide.subtitulo }}</p>
+          </div>
+
+        </div>
+      }
+
+      <!-- Phone Footer & Navigation -->
+      <div class="sim-footer">
+        <!-- Dots Indicator -->
+        <div class="sim-dots-bar">
+          @for (s of sliders; track s.id; let i = $index) {
+            <button
+              class="sim-dot-btn"
+              [class.active]="i === activeIndex"
+              [style.backgroundColor]="i === activeIndex ? (currentSlide?.badge_color || '#10b981') : '#334155'"
+              (click)="setSlide.emit(i)"
+            ></button>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="sim-actions-row">
+          @if (activeIndex > 0) {
+            <button class="sim-btn-prev" (click)="prevSlide.emit()">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+          }
+
+          <button
+            class="sim-btn-next"
+            [style.background]="currentSlide?.accent_gradient || 'linear-gradient(135deg, #10b981, #059669)'"
+            (click)="nextSlide.emit()"
+          >
+            <span>{{ currentSlide?.boton_cta_texto || 'Siguiente' }}</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Phone Home Indicator Bar -->
+      <div class="phone-home-indicator"></div>
+
+    </div>
+
+    <!-- Close Simulator Button Floating -->
+    <button class="btn-close-simulator" (click)="close.emit()">
+      <i class="fa-solid fa-xmark"></i> Cerrar Simulador
+    </button>
+
+  </div>
+</div>

@@ -1,0 +1,397 @@
+@if (showModal) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <div class="modal-icon-circle" [style.background]="currentForm.badge_color">
+            <i [class]="isEditing ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-wand-magic-sparkles'"></i>
+          </div>
+          <div>
+            <h3>{{ isEditing ? 'Editar Slider Promocional' : 'Crear Nuevo Slider Promocional' }}</h3>
+            <p>Configura los textos, colores de acento, íconos y beneficios que se renderizarán en la app.</p>
+          </div>
+        </div>
+
+        <button class="btn-close-modal" (click)="onClose()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="modal-tabs">
+        <button
+          class="modal-tab-btn"
+          [class.active]="modalActiveTab === TabEnum.GENERAL"
+          (click)="setTab(TabEnum.GENERAL)"
+        >
+          <i class="fa-solid fa-file-lines"></i> 1. Contenido & Textos
+        </button>
+        <button
+          class="modal-tab-btn"
+          [class.active]="modalActiveTab === TabEnum.DISENO"
+          (click)="setTab(TabEnum.DISENO)"
+        >
+          <i class="fa-solid fa-palette"></i> 2. Diseño & Colores
+        </button>
+        <button
+          class="modal-tab-btn"
+          [class.active]="modalActiveTab === TabEnum.BENEFICIOS"
+          (click)="setTab(TabEnum.BENEFICIOS)"
+        >
+          <i class="fa-solid fa-list-check"></i> 3. Cifras & Beneficios
+        </button>
+      </div>
+
+      <!-- Modal Body (2 Columns: Form on Left, Live Simulator Card on Right) -->
+      <div class="modal-body-split">
+        
+        <!-- Left Column: Form Controls -->
+        <div class="form-scrollable-area">
+          
+          <!-- TAB 1: GENERAL -->
+          @if (modalActiveTab === TabEnum.GENERAL) {
+            <div class="form-tab-pane">
+              
+              <div class="form-group">
+                <label class="field-label">Título Principal de la Diapositiva <span class="required">*</span></label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="ej. Gestión Integral de Clubes"
+                  [(ngModel)]="currentForm.titulo"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Subtítulo Explicativo</label>
+                <textarea
+                  class="form-control"
+                  rows="3"
+                  placeholder="ej. Conecta a directores técnicos, atletas y directivos con métricas en vivo..."
+                  [(ngModel)]="currentForm.subtitulo"
+                ></textarea>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label">Etiqueta / Tag de Categoría <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. Ecosistema Cloud 360°"
+                    [(ngModel)]="currentForm.tag"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Emoji del Tag</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. 🏆, 📋, 💳, 🎮"
+                    [(ngModel)]="currentForm.tag_icono"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label">Plataforma Destino</label>
+                  <select class="form-control" [(ngModel)]="currentForm.plataforma_destino">
+                    <option value="TODAS">📱 Todas las Plataformas</option>
+                    <option value="MOBILE_APP">📲 App Móvil (iOS / Android)</option>
+                    <option value="WEB_PORTAL">💻 Portal Web / Landing</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Orden Secuencial (Posición)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    class="form-control"
+                    [(ngModel)]="currentForm.orden"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Estado de Publicación</label>
+                <div class="radio-toggle-group">
+                  <label class="radio-chip" [class.active]="currentForm.activo">
+                    <input type="radio" [value]="true" [(ngModel)]="currentForm.activo" />
+                    <i class="fa-solid fa-circle-check text-emerald"></i>
+                    <span>Activo en Vivo (Visible en Onboarding)</span>
+                  </label>
+                  <label class="radio-chip" [class.active]="!currentForm.activo">
+                    <input type="radio" [value]="false" [(ngModel)]="currentForm.activo" />
+                    <i class="fa-solid fa-pause text-muted"></i>
+                    <span>Borrador / Pausado</span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          }
+
+          <!-- TAB 2: DISENO & COLORES -->
+          @if (modalActiveTab === TabEnum.DISENO) {
+            <div class="form-tab-pane">
+              
+              <div class="form-group">
+                <label class="field-label">Paleta de Colores Predefinidos</label>
+                <div class="preset-colors-grid">
+                  @for (t of presetThemes; track t.name) {
+                    <button
+                      type="button"
+                      class="theme-preset-btn"
+                      [style.borderColor]="t.badgeColor"
+                      (click)="onApplyTheme(t)"
+                    >
+                      <span class="color-swatch" [style.background]="t.gradient"></span>
+                      <span class="preset-name">{{ t.name }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label">Color Distintivo HEX</label>
+                  <div class="color-picker-input">
+                    <input type="color" [(ngModel)]="currentForm.badge_color" />
+                    <input type="text" class="form-control" [(ngModel)]="currentForm.badge_color" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Gradiente CSS de Acento</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                    [(ngModel)]="currentForm.accent_gradient"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Icono Central FontAwesome</label>
+                <div class="icon-picker-grid">
+                  @for (p of iconPresets; track p.icon) {
+                    <button
+                      type="button"
+                      class="icon-select-btn"
+                      [class.active]="currentForm.icono === p.icon"
+                      (click)="currentForm.icono = p.icon"
+                    >
+                      <i [class]="p.icon"></i>
+                      <span>{{ p.label }}</span>
+                    </button>
+                  }
+                </div>
+                <input
+                  type="text"
+                  class="form-control mt-2"
+                  placeholder="O ingresa clase CSS personalizada ej. fa-solid fa-trophy"
+                  [(ngModel)]="currentForm.icono"
+                />
+              </div>
+
+            </div>
+          }
+
+          <!-- TAB 3: CIFRAS & BENEFICIOS -->
+          @if (modalActiveTab === TabEnum.BENEFICIOS) {
+            <div class="form-tab-pane">
+              
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label">Cifra o Métrica Destacada</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. 100% Cloud, $220,000 COP, Check-in QR"
+                    [(ngModel)]="currentForm.stat_numero"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Etiqueta de la Cifra</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. Sincronización en vivo, Registro en segundos"
+                    [(ngModel)]="currentForm.stat_label"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="d-flex justify-between align-center mb-2">
+                  <label class="field-label m-0">Lista de Beneficios Destacados (Highlights)</label>
+                  <button
+                    type="button"
+                    class="btn-sm btn-outline-emerald"
+                    (click)="onAddHighlight()"
+                    [disabled]="currentForm.highlights.length >= 5"
+                  >
+                    <i class="fa-solid fa-plus"></i> Añadir Beneficio
+                  </button>
+                </div>
+
+                <div class="highlights-editor-list">
+                  @for (h of currentForm.highlights; track $index; let hIdx = $index) {
+                    <div class="highlight-edit-row">
+                      <input
+                        type="text"
+                        class="h-input-icon"
+                        placeholder="⚡"
+                        [(ngModel)]="h.icon"
+                        title="Emoji / Icono"
+                      />
+                      <div class="h-inputs-col">
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          placeholder="Texto Principal del beneficio"
+                          [(ngModel)]="h.text"
+                        />
+                        <input
+                          type="text"
+                          class="form-control form-control-xs mt-1 text-muted"
+                          placeholder="Subtexto opcional..."
+                          [(ngModel)]="h.subtext"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        class="btn-remove-h"
+                        (click)="onRemoveHighlight(hIdx)"
+                        [disabled]="currentForm.highlights.length <= 1"
+                        title="Eliminar beneficio"
+                      >
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label">Texto del Botón CTA</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. Siguiente, ¡Entrar a la Cancha! ⚡"
+                    [(ngModel)]="currentForm.boton_cta_texto"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Ruta de Destino CTA</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ej. /auth/login, /servicios, /tienda"
+                    [(ngModel)]="currentForm.boton_cta_url"
+                  />
+                </div>
+              </div>
+
+            </div>
+          }
+
+        </div>
+
+        <!-- Right Column: Live Interactive Card Preview -->
+        <div class="preview-simulator-side">
+          <div class="preview-side-header">
+            <span class="preview-label">
+              <i class="fa-solid fa-eye text-emerald"></i> Vista Previa en Tiempo Real
+            </span>
+            <span class="preview-tag-pill">En Vivo</span>
+          </div>
+
+          <div class="mockup-frame">
+            
+            <!-- Slide Tag -->
+            <div class="slide-badge-mockup" [style.borderColor]="currentForm.badge_color" [style.color]="currentForm.badge_color">
+              <span>{{ currentForm.tag_icono || '🏆' }}</span>
+              <span>{{ currentForm.tag || 'Ecosistema Cloud' }}</span>
+            </div>
+
+            <!-- Hero Card Mockup -->
+            <div class="hero-card-mockup" [style.borderColor]="currentForm.badge_color + '55'">
+              
+              <div class="card-bar-mini">
+                <span class="pulse-dot-mini" [style.backgroundColor]="currentForm.badge_color"></span>
+                <span class="card-mini-label">{{ currentForm.titulo || 'Título del Módulo' }}</span>
+                <span class="status-pill-mini">En Vivo</span>
+              </div>
+
+              <div class="centerpiece-mini">
+                <div class="icon-avatar-mini" [style.background]="currentForm.accent_gradient">
+                  <i [class]="currentForm.icono || 'fa-solid fa-chart-line'"></i>
+                </div>
+                <div class="centerpiece-mini-text">
+                  <h5>{{ currentForm.titulo || 'Título de Diapositiva' }}</h5>
+                  <p>{{ currentForm.subtitulo || 'Descripción en tiempo real del slider...' }}</p>
+                </div>
+              </div>
+
+              <!-- Feature Chips -->
+              <div class="chips-mini-list">
+                @for (h of currentForm.highlights; track h.text) {
+                  <div class="chip-mini-item">
+                    <span>{{ h.icon }}</span>
+                    <div>
+                      <strong>{{ h.text }}</strong>
+                      @if (h.subtext) {
+                        <small>{{ h.subtext }}</small>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Metric Ribbon Mini -->
+              <div class="metric-mini-ribbon">
+                <span class="m-val" [style.color]="currentForm.badge_color">{{ currentForm.stat_numero || '100% Cloud' }}</span>
+                <span class="m-lbl">{{ currentForm.stat_label || 'Sincronizado' }}</span>
+              </div>
+
+            </div>
+
+            <!-- CTA Mockup Button -->
+            <div class="btn-cta-mockup" [style.background]="currentForm.accent_gradient">
+              <span>{{ currentForm.boton_cta_texto || 'Siguiente' }}</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="onClose()" [disabled]="saving">
+          Cancelar
+        </button>
+
+        <button class="btn-primary" (click)="onSave()" [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-sm"></span> Guardando...
+          } @else {
+            <i class="fa-solid fa-check"></i> {{ isEditing ? 'Guardar Cambios' : 'Crear Slider Promocional' }}
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

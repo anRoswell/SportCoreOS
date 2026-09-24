@@ -1,0 +1,19 @@
+<div class="delete-modal-backdrop">
+  <div class="delete-modal-card">
+    <div class="delete-icon-circle">
+      <i class="fa-solid fa-trash-can"></i>
+    </div>
+    <h3>¿Eliminar esta Landing Page?</h3>
+    <p>
+      Estás a punto de eliminar <strong>"{{ item?.titulo }}"</strong>. Esta acción no se puede deshacer y los enlaces públicos dejarán de funcionar.
+    </p>
+    <div class="delete-actions">
+      <button class="btn btn-secondary" (click)="cancel.emit()">
+        Cancelar
+      </button>
+      <button class="btn btn-danger" (click)="confirm.emit()">
+        Sí, Eliminar
+      </button>
+    </div>
+  </div>
+</div>

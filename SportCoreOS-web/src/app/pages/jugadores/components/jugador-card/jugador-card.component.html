@@ -1,0 +1,94 @@
+<div
+  class="player-fut-card"
+  [class.player-card-elite]="jugador.categoria_nombre?.toLowerCase()?.includes('profesional') || jugador.categoria_nombre?.toLowerCase()?.includes('élite') || jugador.categoria_nombre?.toLowerCase()?.includes('elite')"
+>
+  <!-- Header de la tarjeta: Categoría, Beca y Dorsal -->
+  <div class="pfc-top-bar">
+    <span class="pfc-cat-badge">
+      <span class="cat-dot" [style.background-color]="jugador.color_distintivo || '#10B981'"></span>
+      {{ jugador.categoria_nombre }}
+    </span>
+    <div class="pfc-top-tags">
+      @if (jugador.porcentaje_beca > 0) {
+        <span class="pfc-scholarship-tag">{{ jugador.porcentaje_beca }}% Beca</span>
+      }
+      <span class="pfc-dorsal-tag">#{{ jugador.numero_dorsal || '-' }}</span>
+    </div>
+  </div>
+
+  <!-- Cuerpo Principal: Foto, Nombre, Documento y Estado -->
+  <div class="pfc-body">
+    <div class="pfc-avatar-wrap" (click)="openExpediente.emit(jugador.id)">
+      <img [src]="resolvePhotoUrl(jugador.foto_url, jugador.genero)" [alt]="jugador.nombres" />
+      <span class="pfc-status-dot" [class]="jugador.estado_matricula ? jugador.estado_matricula.toLowerCase() : 'activo'" [title]="jugador.estado_matricula"></span>
+    </div>
+    
+    <div class="pfc-player-info">
+      <h3 class="pfc-name" (click)="openExpediente.emit(jugador.id)">{{ jugador.nombres }} {{ jugador.apellidos }}</h3>
+      <div class="pfc-meta-row">
+        <span class="pfc-doc">{{ jugador.tipo_documento }} {{ jugador.numero_documento }}</span>
+        <span class="pfc-age">• {{ getEdad(jugador.fecha_nacimiento) }} años</span>
+      </div>
+      <div class="pfc-eps-row">
+        <i class="fa-solid fa-hospital-user"></i> {{ jugador.eps || 'EPS Sanitas' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Posición & Perfil Táctico -->
+  <div class="pfc-tactics">
+    <div class="pfc-pos-pill">
+      <i class="fa-solid fa-futbol"></i>
+      <span>{{ jugador.posicion_principal }}</span>
+    </div>
+    @if (jugador.posicion_secundaria) {
+      <span class="pos-sec-badge" title="Posición Secundaria">
+        <i class="fa-solid fa-arrows-split-up-and-left"></i> {{ jugador.posicion_secundaria }}
+      </span>
+    }
+    <span class="pfc-foot-badge">
+      <i class="fa-solid fa-shoe-prints"></i> {{ jugador.pierna_habil || 'DIESTRO' }}
+    </span>
+  </div>
+
+  <!-- Radar Biométrico Resumen -->
+  <div class="pfc-bio-strip">
+    @if (jugador.talla_cm && jugador.peso_kg) {
+      <div class="pfc-bio-item">
+        <span class="lbl">Talla</span>
+        <strong>{{ jugador.talla_cm }} cm</strong>
+      </div>
+      <div class="pfc-bio-item">
+        <span class="lbl">Peso</span>
+        <strong>{{ jugador.peso_kg }} kg</strong>
+      </div>
+      <div class="pfc-bio-item">
+        <span class="lbl">IMC</span>
+        <span class="imc-badge" [class]="getImcClass(jugador.imc)">{{ jugador.imc }}</span>
+      </div>
+    } @else {
+      <button type="button" class="pfc-btn-add-bio" (click)="openBiometria.emit(jugador)">
+        <i class="fa-solid fa-plus"></i> Registrar Biometría
+      </button>
+    }
+  </div>
+
+  <!-- Footer con Acciones 360° -->
+  <div class="pfc-footer">
+    <button type="button" class="pfc-btn-view" (click)="openExpediente.emit(jugador.id)">
+      <i class="fa-solid fa-id-card"></i>
+      <span>Ficha 360°</span>
+    </button>
+    <div class="pfc-sub-actions">
+      <button type="button" class="action-btn btn-bio" (click)="openBiometria.emit(jugador)" title="Registrar Biometría">
+        <i class="fa-solid fa-heart-pulse"></i>
+      </button>
+      <button type="button" class="action-btn btn-edit" (click)="openEdit.emit(jugador)" title="Editar Jugador">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+      <button type="button" class="action-btn btn-delete" (click)="openDelete.emit(jugador)" title="Dar de Baja">
+        <i class="fa-solid fa-user-xmark"></i>
+      </button>
+    </div>
+  </div>
+</div>

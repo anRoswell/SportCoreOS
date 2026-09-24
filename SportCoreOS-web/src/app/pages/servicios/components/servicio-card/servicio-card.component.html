@@ -1,0 +1,127 @@
+<div
+  class="servicio-card fut-card"
+  [style.border-top-color]="servicio.color_tema || '#10b981'"
+>
+  <!-- CARD TOP BADGE -->
+  <div class="card-top-bar">
+    <div class="cat-badge" [style.color]="servicio.color_tema || '#10b981'" [style.background-color]="(servicio.color_tema || '#10b981') + '1a'">
+      <i class="fa-solid" [ngClass]="servicio.icono || 'fa-bolt'"></i>
+      <span>{{ getCategoriaLabel(servicio.categoria_servicio) }}</span>
+    </div>
+    <div class="badge-edad">
+      <i class="fa-solid fa-user-tag"></i> {{ servicio.edad_min }}-{{ servicio.edad_max }} Años
+    </div>
+  </div>
+
+  <!-- TITLE & SUBTITLE -->
+  <h3 class="servicio-title">{{ servicio.titulo }}</h3>
+  <p class="servicio-sub">{{ servicio.subtitulo }}</p>
+
+  <!-- COACH PROFILE -->
+  <div class="coach-box">
+    <img [src]="servicio.entrenador_avatar || defaultAvatar" [alt]="servicio.entrenador_nombre" class="coach-avatar" />
+    <div class="coach-details">
+      <div class="coach-name">{{ servicio.entrenador_nombre }}</div>
+      <div class="coach-badge">
+        <i class="fa-solid fa-certificate"></i> {{ servicio.entrenador_badge || 'Entrenador Certificado' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- VENUE & SCHEDULE -->
+  <div class="venue-info">
+    <div class="venue-item">
+      <i class="fa-solid fa-location-dot venue-icon text-emerald"></i>
+      <div class="venue-text">
+        <span class="venue-name">{{ servicio.cancha_nombre }}</span>
+        <span class="venue-dir">{{ servicio.cancha_direccion }}</span>
+      </div>
+      <a
+        *ngIf="servicio.cancha_gps_url"
+        [href]="servicio.cancha_gps_url"
+        target="_blank"
+        rel="noopener"
+        class="btn-gps"
+        title="Abrir ubicación en Google Maps / Waze"
+      >
+        <i class="fa-solid fa-diamond-turn-right"></i> GPS
+      </a>
+    </div>
+
+    <div class="schedule-item">
+      <i class="fa-solid fa-clock schedule-icon text-amber"></i>
+      <div>
+        <span class="schedule-days">{{ servicio.dias_semana }}</span>
+        <span class="schedule-time">{{ servicio.horario_rango }} ({{ servicio.duracion_minutos }} min)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUPOS PROGRESS -->
+  <div class="cupos-section">
+    <div class="cupos-header">
+      <span class="cupos-text">
+        <strong>{{ servicio.cupos_ocupados }}</strong> de {{ servicio.cupos_totales }} cupos inscritos
+      </span>
+      <span
+        class="cupos-badge"
+        [class.cupos-low]="(servicio.cupos_totales - servicio.cupos_ocupados) <= 3"
+      >
+        {{ (servicio.cupos_totales - servicio.cupos_ocupados) === 0 ? '¡AGOTADO!' : '¡Solo ' + (servicio.cupos_totales - servicio.cupos_ocupados) + ' cupos!' }}
+      </span>
+    </div>
+    <div class="progress-track">
+      <div
+        class="progress-fill"
+        [style.width.%]="(servicio.cupos_ocupados / servicio.cupos_totales) * 100"
+        [style.background-color]="servicio.color_tema || '#10b981'"
+      ></div>
+    </div>
+  </div>
+
+  <!-- INSIGNIA BADGE REWARD -->
+  <div class="reward-box">
+    <div class="reward-title">
+      <i class="fa-solid fa-award text-amber"></i> Desbloquea en Ficha 360°:
+    </div>
+    <div class="reward-pill">{{ servicio.insignia_obtenida }}</div>
+  </div>
+
+  <!-- BENEFITS LIST -->
+  <ul class="benefits-list" *ngIf="servicio.beneficios && servicio.beneficios.length > 0">
+    <li *ngFor="let b of servicio.beneficios | slice:0:3">
+      <i class="fa-solid fa-check-circle text-emerald"></i> {{ b }}
+    </li>
+  </ul>
+
+  <!-- PRICING & CTA -->
+  <div class="card-footer">
+    <div class="pricing-box">
+      <div class="price-single">
+        <span class="p-label">Sesión Individual:</span>
+        <span class="p-val">&#36;{{ formatNumber(servicio.precio_sesion_individual) }}</span>
+      </div>
+      <div class="price-bundle">
+        <span class="p-label">Paquete Mensual (Mes Completo):</span>
+        <span class="p-val-big">&#36;{{ formatNumber(servicio.precio_paquete_mensual) }}</span>
+        <span class="p-discount" *ngIf="servicio.descuento_hermanos_pct">
+          -{{ servicio.descuento_hermanos_pct }}% dto 2do hermano
+        </span>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button
+        class="btn-inscribir"
+        [disabled]="servicio.cupos_ocupados >= servicio.cupos_totales"
+        (click)="inscribir.emit(servicio)"
+      >
+        <i class="fa-solid fa-ticket"></i>
+        {{ servicio.cupos_ocupados >= servicio.cupos_totales ? 'Cupos Agotados' : 'Inscribirse / Pago PSE o Nequi' }}
+      </button>
+      <button class="btn-participantes" (click)="verParticipantes.emit(servicio)" title="Ver inscritos y validar pagos">
+        <i class="fa-solid fa-users"></i>
+      </button>
+    </div>
+  </div>
+</div>

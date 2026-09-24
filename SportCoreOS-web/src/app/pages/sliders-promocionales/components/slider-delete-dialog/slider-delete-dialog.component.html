@@ -1,0 +1,24 @@
+<div class="modal-overlay" (click)="cancel.emit()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-body-delete">
+      <div class="delete-icon-circle">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3>¿Eliminar Slider Promocional?</h3>
+      <p>
+        Estás a punto de eliminar permanentemente la diapositiva 
+        <strong>"{{ item?.titulo }}"</strong>. 
+        Esta acción no se puede deshacer.
+      </p>
+
+      <div class="modal-actions-dual">
+        <button class="btn-secondary" (click)="cancel.emit()">
+          Cancelar
+        </button>
+        <button class="btn-danger" (click)="confirm.emit()">
+          <i class="fa-solid fa-trash-can"></i> Sí, Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

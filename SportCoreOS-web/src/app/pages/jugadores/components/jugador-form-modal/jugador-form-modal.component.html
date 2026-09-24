@@ -1,0 +1,625 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <!-- MODO 1: EDICIÓN DE JUGADOR -->
+  <div *ngIf="mode === 'EDIT'" class="form-modal-card modal-lg edit-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge badge-amber">
+          <i class="fa-solid fa-user-pen"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Editar Ficha de Jugador</h2>
+          <p class="modal-subtitle">Atleta: <strong>{{ formData.nombres }} {{ formData.apellidos }}</strong> (Doc: {{ formData.numeroDocumento }})</p>
+        </div>
+      </div>
+      <button class="modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="submitForm()" class="modal-form">
+      <!-- Fotografía Oficial del Deportista -->
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-camera"></i> Fotografía Oficial del Atleta</span>
+        <div 
+          class="athlete-photo-uploader"
+          (paste)="handlePhotoBoxPaste($event)"
+          (dragover)="$event.preventDefault()"
+          (drop)="handlePhotoBoxDrop($event)">
+          <div class="photo-preview-box">
+            <img 
+              [src]="resolvePhotoUrl(formData.fotoUrl, formData.genero)" 
+              alt="Foto Atleta" 
+              class="athlete-photo-img" />
+            <div *ngIf="uploadingPhoto()" class="photo-loading-overlay">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
+          </div>
+          <div class="photo-controls">
+            <div class="photo-actions-row">
+              <input 
+                type="file" 
+                #editFileInput 
+                (change)="onPhotoSelected($event)" 
+                accept="image/*" 
+                style="display: none" />
+              <button 
+                type="button" 
+                class="btn-upload-photo" 
+                (click)="editFileInput.click()" 
+                [disabled]="uploadingPhoto()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ uploadingPhoto() ? 'Subiendo imagen...' : 'Seleccionar Archivo de Foto' }}</span>
+              </button>
+              <button 
+                *ngIf="formData.fotoUrl" 
+                type="button" 
+                class="btn-remove-photo" 
+                (click)="removePhoto()"
+                title="Quitar foto actual">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Quitar</span>
+              </button>
+            </div>
+            <p class="photo-hint">Formatos: PNG, JPG, WEBP. Arrastra una imagen o pega directamente (Ctrl+V).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 1: Datos Personales -->
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> 1. Datos Personales & Identificación</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="formData.nombres" name="epNombres" required class="sport-input" />
+          </div>
+          <div class="input-group">
+            <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="formData.apellidos" name="epApellidos" required class="sport-input" />
+          </div>
+        </div>
+
+        <div class="form-row g3">
+          <div class="input-group">
+            <label><i class="fa-solid fa-address-card"></i> Tipo Documento <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="formData.tipoDocumento" name="epTipoDoc" class="sport-input">
+                <option *ngFor="let td of tiposDocumento" [value]="td.codigo">{{ td.icono }} {{ td.nombre }}</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label><i class="fa-solid fa-barcode"></i> No. Documento <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="formData.numeroDocumento" name="epDoc" required class="sport-input" />
+          </div>
+          <div class="input-group">
+            <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
+            <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="formData.fechaNacimiento" name="epFechaNac" required class="sport-input" />
+          </div>
+        </div>
+
+        <div class="form-row g2">
+          <div class="input-group">
+            <label><i class="fa-solid fa-venus-mars"></i> Género / Rama</label>
+            <div class="segmented-pill-selector">
+              <button type="button" class="pill-btn" [class.active]="formData.genero === 'MASCULINO'" (click)="formData.genero = 'MASCULINO'">
+                <i class="fa-solid fa-mars"></i> Masculino
+              </button>
+              <button type="button" class="pill-btn" [class.active]="formData.genero === 'FEMENINO'" (click)="formData.genero = 'FEMENINO'">
+                <i class="fa-solid fa-venus"></i> Femenino
+              </button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS / Seguro Médico</label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="formData.eps" name="epEps" class="sport-input">
+                <option value="">-- Seleccionar EPS / Seguro Médico --</option>
+                <option *ngFor="let eps of epsList" [value]="eps.nombre">{{ eps.nombre }}</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Datos Deportivos & Matrícula -->
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> 2. Perfil Deportivo & Estado de Matrícula</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label><i class="fa-solid fa-layer-group"></i> Categoría Deportiva <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="formData.categoriaId" name="epCat" class="sport-input" required>
+                <option *ngFor="let c of categorias" [value]="c.id">🏆 {{ c.nombre }} ({{ c.codigo_categoria }} • {{ c.anio_nacimiento_min }}-{{ c.anio_nacimiento_max }})</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label><i class="fa-solid fa-toggle-on"></i> Estado de Matrícula <span class="required-star">*</span></label>
+            <div class="status-pills-selector">
+              <button type="button" class="status-btn" [class.active-activo]="formData.estadoMatricula === 'ACTIVO'" (click)="formData.estadoMatricula = 'ACTIVO'">
+                <span class="status-dot"></span> ACTIVO
+              </button>
+              <button type="button" class="status-btn" [class.active-lesionado]="formData.estadoMatricula === 'LESIONADO'" (click)="formData.estadoMatricula = 'LESIONADO'">
+                <span class="status-dot"></span> LESIÓN
+              </button>
+              <button type="button" class="status-btn" [class.active-inactivo]="formData.estadoMatricula === 'INACTIVO'" (click)="formData.estadoMatricula = 'INACTIVO'">
+                <span class="status-dot"></span> INACTIVO
+              </button>
+              <button type="button" class="status-btn" [class.active-retirado]="formData.estadoMatricula === 'RETIRADO'" (click)="formData.estadoMatricula = 'RETIRADO'">
+                <span class="status-dot"></span> RETIRO
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row g2">
+          <div class="input-group">
+            <label><i class="fa-solid fa-compass"></i> Posición Principal (Primaria) <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="formData.posicionPrincipal" name="epPos1" class="sport-input" required>
+                <optgroup label="🧤 PORTERÍA & ARQUEROS">
+                  <option value="Arquero">🧤 Portero / Arquero Titular</option>
+                  <option value="Portero">🧤 Guardameta</option>
+                </optgroup>
+                <optgroup label="🛡️ LÍNEA DEFENSIVA">
+                  <option value="Defensa Central">🛡️ Defensa Central (Zaguero)</option>
+                  <option value="Lateral Derecho">⚡ Lateral Derecho (Carrilero)</option>
+                  <option value="Lateral Izquierdo">⚡ Lateral Izquierdo (Carrilero)</option>
+                </optgroup>
+                <optgroup label="⚙️ MEDIOCAMPO & CREACIÓN">
+                  <option value="Volante de Marca">🛡️ Volante de Marca / Pivote (5)</option>
+                  <option value="Volante Mixto">⚙️ Volante Mixto / Interior (8)</option>
+                  <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo / Enganche (10)</option>
+                  <option value="Volante Creativo / 10">✨ Volante Creativo / Creador</option>
+                </optgroup>
+                <optgroup label="⚡ DELANTERA & ATAQUE">
+                  <option value="Extremo Derecho">⚡ Extremo Derecho (Punta)</option>
+                  <option value="Extremo Izquierdo">⚡ Extremo Izquierdo (Punta)</option>
+                  <option value="Delantero Centro">⚽ Delantero Centro (9 de Área)</option>
+                  <option value="Segundo Delantero">🎯 Segundo Delantero</option>
+                </optgroup>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label><i class="fa-solid fa-location-crosshairs"></i> Posición Secundaria (Polifuncionalidad)</label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="formData.posicionSecundaria" name="epPosSec" class="sport-input">
+                <option value="">— Ninguna (Especialista Único) —</option>
+                <option value="Arquero">🧤 Portero / Arquero</option>
+                <option value="Defensa Central">🛡️ Defensa Central</option>
+                <option value="Lateral Derecho">⚡ Lateral Derecho</option>
+                <option value="Lateral Izquierdo">⚡ Lateral Izquierdo</option>
+                <option value="Volante de Marca">🛡️ Volante de Marca</option>
+                <option value="Volante Mixto">⚙️ Volante Mixto</option>
+                <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo (10)</option>
+                <option value="Extremo Derecho">⚡ Extremo Derecho</option>
+                <option value="Extremo Izquierdo">⚡ Extremo Izquierdo</option>
+                <option value="Delantero Centro">⚽ Delantero Centro</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row g2">
+          <div class="input-group">
+            <label><i class="fa-solid fa-shoe-prints"></i> Pierna Hábil / Perfil</label>
+            <div class="segmented-pill-selector">
+              <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'DIESTRO'" (click)="formData.piernaHabil = 'DIESTRO'">
+                <i class="fa-solid fa-shoe-prints"></i> Diestro
+              </button>
+              <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'ZURDO'" (click)="formData.piernaHabil = 'ZURDO'">
+                <i class="fa-solid fa-shoe-prints fa-flip-horizontal"></i> Zurdo
+              </button>
+              <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'AMBIDIESTRO'" (click)="formData.piernaHabil = 'AMBIDIESTRO'">
+                <i class="fa-solid fa-repeat"></i> Ambidextro
+              </button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label><i class="fa-solid fa-shirt"></i> Número Dorsal Asignado</label>
+            <input type="number" [(ngModel)]="formData.numeroDorsal" name="epDorsal" min="1" max="99" class="sport-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label><i class="fa-solid fa-hand-holding-dollar"></i> Porcentaje de Beca (%)</label>
+            <input type="number" [(ngModel)]="formData.porcentajeBeca" name="epBeca" min="0" max="100" class="sport-input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary btn-cancel" (click)="cerrar()">
+          <i class="fa-solid fa-xmark"></i> Cancelar
+        </button>
+        <button type="submit" class="btn-primary btn-submit" [disabled]="savingPlayer">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>{{ savingPlayer ? 'Guardando...' : 'Guardar Cambios' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- MODO 2: INSCRIPCIÓN CON STEPPER DE 3 PASOS -->
+  <div *ngIf="mode === 'CREATE'" class="form-modal-card modal-xl stepper-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Inscribir Nuevo Jugador</h2>
+          <p class="modal-subtitle">Ficha integral de matrícula deportiva en 3 sencillos pasos</p>
+        </div>
+      </div>
+      <button class="modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- BARRA INDICADORA DEL STEPPER -->
+    <div class="modal-stepper-nav">
+      <div 
+        class="step-item" 
+        [class.active]="createStep() === 1" 
+        [class.completed]="createStep() > 1"
+        (click)="setCreateStep(1)">
+        <div class="step-circle">
+          <i *ngIf="createStep() > 1" class="fa-solid fa-check"></i>
+          <span *ngIf="createStep() <= 1">1</span>
+        </div>
+        <div class="step-label-wrap">
+          <span class="step-number">PASO 1</span>
+          <span class="step-title">Datos Personales & Foto</span>
+        </div>
+      </div>
+
+      <div class="step-connector" [class.filled]="createStep() > 1"></div>
+
+      <div 
+        class="step-item" 
+        [class.active]="createStep() === 2" 
+        [class.completed]="createStep() > 2"
+        (click)="setCreateStep(2)">
+        <div class="step-circle">
+          <i *ngIf="createStep() > 2" class="fa-solid fa-check"></i>
+          <span *ngIf="createStep() <= 2">2</span>
+        </div>
+        <div class="step-label-wrap">
+          <span class="step-number">PASO 2</span>
+          <span class="step-title">Perfil Deportivo & Dorsal</span>
+        </div>
+      </div>
+
+      <div class="step-connector" [class.filled]="createStep() > 2"></div>
+
+      <div 
+        class="step-item" 
+        [class.active]="createStep() === 3"
+        (click)="setCreateStep(3)">
+        <div class="step-circle">
+          <span>3</span>
+        </div>
+        <div class="step-label-wrap">
+          <span class="step-number">PASO 3</span>
+          <span class="step-title">Familia & Confirmación</span>
+        </div>
+      </div>
+    </div>
+
+    <form (ngSubmit)="submitForm()" class="modal-form">
+      <!-- PASO 1 -->
+      <div *ngIf="createStep() === 1" class="stepper-step-pane animate-fade">
+        <div class="modal-section">
+          <span class="modal-section-title"><i class="fa-solid fa-camera"></i> Fotografía Oficial del Atleta</span>
+          <div 
+            class="athlete-photo-uploader"
+            (paste)="handlePhotoBoxPaste($event)"
+            (dragover)="$event.preventDefault()"
+            (drop)="handlePhotoBoxDrop($event)">
+            <div class="photo-preview-box">
+              <img 
+                [src]="resolvePhotoUrl(formData.fotoUrl, formData.genero)" 
+                alt="Foto Atleta" 
+                class="athlete-photo-img" />
+              <div *ngIf="uploadingPhoto()" class="photo-loading-overlay">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              </div>
+            </div>
+            <div class="photo-controls">
+              <div class="photo-actions-row">
+                <input 
+                  type="file" 
+                  #createFileInput 
+                  (change)="onPhotoSelected($event)" 
+                  accept="image/*" 
+                  style="display: none" />
+                <button 
+                  type="button" 
+                  class="btn-upload-photo" 
+                  (click)="createFileInput.click()" 
+                  [disabled]="uploadingPhoto()">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>{{ uploadingPhoto() ? 'Subiendo imagen...' : 'Seleccionar Archivo de Foto' }}</span>
+                </button>
+                <button 
+                  *ngIf="formData.fotoUrl" 
+                  type="button" 
+                  class="btn-remove-photo" 
+                  (click)="removePhoto()"
+                  title="Quitar foto actual">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Quitar</span>
+                </button>
+              </div>
+              <p class="photo-hint">Formatos: PNG, JPG, WEBP. Arrastra una imagen o pega directamente (Ctrl+V).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> Datos Personales & Identificación Legal</span>
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-user"></i> Nombres <span class="required-star">*</span></label>
+              <input type="text" [(ngModel)]="formData.nombres" name="npNombres" placeholder="ej. Tomás Mateo" required class="sport-input" />
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-user"></i> Apellidos <span class="required-star">*</span></label>
+              <input type="text" [(ngModel)]="formData.apellidos" name="npApellidos" placeholder="ej. Gómez Restrepo" required class="sport-input" />
+            </div>
+          </div>
+
+          <div class="form-row g3">
+            <div class="input-group">
+              <label><i class="fa-solid fa-address-card"></i> Tipo Documento <span class="required-star">*</span></label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.tipoDocumento" name="npTipoDoc" class="sport-input">
+                  <option *ngFor="let td of tiposDocumento" [value]="td.codigo">{{ td.icono }} {{ td.nombre }}</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-barcode"></i> No. Documento <span class="required-star">*</span></label>
+              <input type="text" [(ngModel)]="formData.numeroDocumento" name="npDoc" placeholder="1023456789" required class="sport-input" />
+            </div>
+            <div class="input-group">
+              <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
+              <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="formData.fechaNacimiento" name="npFechaNac" required class="sport-input" />
+            </div>
+          </div>
+
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-venus-mars"></i> Rama / Género</label>
+              <div class="segmented-pill-selector">
+                <button type="button" class="pill-btn" [class.active]="formData.genero === 'MASCULINO'" (click)="formData.genero = 'MASCULINO'">
+                  <i class="fa-solid fa-mars"></i> Masculino
+                </button>
+                <button type="button" class="pill-btn" [class.active]="formData.genero === 'FEMENINO'" (click)="formData.genero = 'FEMENINO'">
+                  <i class="fa-solid fa-venus"></i> Femenino
+                </button>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-hospital-user"></i> Entidad EPS / Seguro Médico</label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.eps" name="npEps" class="sport-input">
+                  <option value="">-- Seleccionar EPS / Seguro Médico --</option>
+                  <option *ngFor="let eps of epsList" [value]="eps.nombre">{{ eps.nombre }}</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions step-actions">
+          <button type="button" class="btn-secondary btn-cancel" (click)="cerrar()">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="button" class="btn-primary" (click)="nextCreateStep()" [disabled]="!isStep1Valid()">
+            <span>Siguiente: Perfil Deportivo</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div *ngIf="createStep() === 2" class="stepper-step-pane animate-fade">
+        <div class="modal-section">
+          <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> Perfil Deportivo, Categoría & Dorsal</span>
+          
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-shield"></i> Categoría Deportiva <span class="required-star">*</span></label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.categoriaId" name="npCat" required class="sport-input">
+                  <option value="" disabled>Selecciona una categoría...</option>
+                  <option *ngFor="let cat of categorias" [value]="cat.id">🏆 {{ cat.nombre }} ({{ cat.codigo_categoria }} • {{ cat.anio_nacimiento_min }}-{{ cat.anio_nacimiento_max }})</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-shirt"></i> Número Dorsal Asignado (1-99)</label>
+              <input type="number" [(ngModel)]="formData.numeroDorsal" name="npDorsal" min="1" max="99" placeholder="ej. 10" class="sport-input" />
+            </div>
+          </div>
+
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-compass"></i> Posición Principal (Táctica) <span class="required-star">*</span></label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.posicionPrincipal" name="npPos" required class="sport-input">
+                  <optgroup label="🧤 PORTERÍA & ARQUEROS">
+                    <option value="Arquero">🧤 Portero / Arquero Titular</option>
+                    <option value="Portero">🧤 Guardameta</option>
+                  </optgroup>
+                  <optgroup label="🛡️ LÍNEA DEFENSIVA">
+                    <option value="Defensa Central">🛡️ Defensa Central (Zaguero)</option>
+                    <option value="Lateral Derecho">⚡ Lateral Derecho (Carrilero)</option>
+                    <option value="Lateral Izquierdo">⚡ Lateral Izquierdo (Carrilero)</option>
+                  </optgroup>
+                  <optgroup label="⚙️ MEDIOCAMPO & CREACIÓN">
+                    <option value="Volante de Marca">🛡️ Volante de Marca / Pivote (5)</option>
+                    <option value="Volante Mixto">⚙️ Volante Mixto / Interior (8)</option>
+                    <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo / Enganche (10)</option>
+                  </optgroup>
+                  <optgroup label="⚡ DELANTERA & ATAQUE">
+                    <option value="Extremo Derecho">⚡ Extremo Derecho (Punta)</option>
+                    <option value="Extremo Izquierdo">⚡ Extremo Izquierdo (Punta)</option>
+                    <option value="Delantero Centro">⚽ Delantero Centro (9 de Área)</option>
+                    <option value="Segundo Delantero">🎯 Segundo Delantero</option>
+                  </optgroup>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-location-crosshairs"></i> Posición Secundaria (Polifuncional)</label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.posicionSecundaria" name="npPosSec" class="sport-input">
+                  <option value="">— Ninguna (Especialista Único) —</option>
+                  <option value="Arquero">🧤 Portero / Arquero</option>
+                  <option value="Defensa Central">🛡️ Defensa Central</option>
+                  <option value="Lateral Derecho">⚡ Lateral Derecho</option>
+                  <option value="Lateral Izquierdo">⚡ Lateral Izquierdo</option>
+                  <option value="Volante de Marca">🛡️ Volante de Marca (5)</option>
+                  <option value="Volante Mixto">⚙️ Volante Mixto (8)</option>
+                  <option value="Volante Ofensivo (10)">🎯 Volante Ofensivo (10)</option>
+                  <option value="Extremo Derecho">⚡ Extremo Derecho</option>
+                  <option value="Extremo Izquierdo">⚡ Extremo Izquierdo</option>
+                  <option value="Delantero Centro">⚽ Delantero Centro</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-shoe-prints"></i> Pierna Hábil / Perfil</label>
+              <div class="segmented-pill-selector">
+                <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'DIESTRO'" (click)="formData.piernaHabil = 'DIESTRO'">
+                  <i class="fa-solid fa-shoe-prints"></i> Diestro
+                </button>
+                <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'ZURDO'" (click)="formData.piernaHabil = 'ZURDO'">
+                  <i class="fa-solid fa-shoe-prints fa-flip-horizontal"></i> Zurdo
+                </button>
+                <button type="button" class="pill-btn" [class.active]="formData.piernaHabil === 'AMBIDIESTRO'" (click)="formData.piernaHabil = 'AMBIDIESTRO'">
+                  <i class="fa-solid fa-repeat"></i> Ambidextro
+                </button>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-toggle-on"></i> Estado Inicial de Matrícula</label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.estadoMatricula" name="npEstado" class="sport-input">
+                  <option value="ACTIVO">🟢 ACTIVO — En competencia oficial</option>
+                  <option value="LESIONADO">🟡 LESIONADO — En departamento médico</option>
+                  <option value="INACTIVO">⚪ INACTIVO — En pausa administrativa</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions step-actions">
+          <button type="button" class="btn-secondary" (click)="prevCreateStep()">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Atrás: Datos Personales</span>
+          </button>
+          <button type="button" class="btn-primary" (click)="nextCreateStep()" [disabled]="!isStep2Valid()">
+            <span>Siguiente: Núcleo Familiar</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div *ngIf="createStep() === 3" class="stepper-step-pane animate-fade">
+        <div class="modal-section">
+          <span class="modal-section-title"><i class="fa-solid fa-people-roof"></i> Acudiente / Contacto Familiar Principal (Recomendado)</span>
+          <div class="form-row g2">
+            <div class="input-group">
+              <label><i class="fa-solid fa-user-tie"></i> Nombres del Acudiente</label>
+              <input type="text" [(ngModel)]="formData.acudienteNombres" name="npAcNom" placeholder="ej. Carlos Eduardo" class="sport-input" />
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-user-tie"></i> Apellidos del Acudiente</label>
+              <input type="text" [(ngModel)]="formData.acudienteApellidos" name="npAcApe" placeholder="ej. Gómez Palacio" class="sport-input" />
+            </div>
+          </div>
+
+          <div class="form-row g3">
+            <div class="input-group">
+              <label><i class="fa-solid fa-person-breastfeeding"></i> Parentesco</label>
+              <div class="sport-select-wrapper">
+                <select [(ngModel)]="formData.acudienteParentesco" name="npAcPar" class="sport-input">
+                  <option *ngFor="let par of parentescos" [value]="par.codigo">{{ par.nombre }}</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fa-brands fa-whatsapp"></i> Teléfono Móvil (WhatsApp)</label>
+              <input type="tel" [(ngModel)]="formData.acudienteTelefono" name="npAcTel" placeholder="+57 310 123 4567" class="sport-input" />
+            </div>
+            <div class="input-group">
+              <label><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+              <input type="email" [(ngModel)]="formData.acudienteEmail" name="npAcEmail" placeholder="padre.familia@gmail.com" class="sport-input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section preview-section">
+          <span class="modal-section-title"><i class="fa-solid fa-clipboard-check"></i> Resumen de Ficha Deportiva Pre-Inscripción</span>
+          <div class="pre-inscription-summary-card">
+            <div class="pisc-avatar">
+              <img [src]="resolvePhotoUrl(formData.fotoUrl, formData.genero)" alt="Atleta" />
+              <span class="pisc-dorsal">#{{ formData.numeroDorsal || '-' }}</span>
+            </div>
+            <div class="pisc-info">
+              <div class="pisc-name-row">
+                <h4>{{ formData.nombres || 'Nombre Atleta' }} {{ formData.apellidos || 'Apellidos' }}</h4>
+                <span class="status-badge activo"><span class="status-dot"></span> {{ formData.estadoMatricula }}</span>
+              </div>
+              <div class="pisc-pills-row">
+                <span class="meta-pill"><i class="fa-solid fa-id-card"></i> {{ formData.tipoDocumento }} {{ formData.numeroDocumento || 'Sin documento' }}</span>
+                <span class="meta-pill"><i class="fa-solid fa-cake-candles"></i> {{ getEdad(formData.fechaNacimiento) }} años</span>
+                <span class="meta-pill"><i class="fa-solid fa-shield"></i> {{ getSelectedCategoryNameForId(formData.categoriaId) }}</span>
+                <span class="meta-pill"><i class="fa-solid fa-futbol"></i> {{ formData.posicionPrincipal }} ({{ formData.piernaHabil }})</span>
+              </div>
+              <div *ngIf="formData.acudienteNombres" class="pisc-acudiente-note">
+                <i class="fa-solid fa-user-check"></i> Acudiente: <strong>{{ formData.acudienteNombres }} {{ formData.acudienteApellidos }}</strong> ({{ formData.acudienteParentesco }}) • Tel: {{ formData.acudienteTelefono || 'Sin tel' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions step-actions">
+          <button type="button" class="btn-secondary" (click)="prevCreateStep()">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Atrás: Perfil Deportivo</span>
+          </button>
+          <button type="submit" class="btn-primary btn-submit" [disabled]="savingPlayer">
+            <i class="fa-solid fa-user-check"></i>
+            <span>{{ savingPlayer ? 'Guardando en BD...' : '⚽ Confirmar e Inscribir Jugador' }}</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

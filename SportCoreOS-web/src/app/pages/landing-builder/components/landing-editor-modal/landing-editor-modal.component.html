@@ -1,0 +1,531 @@
+<div class="builder-modal-backdrop">
+  <div class="builder-modal-container">
+    
+    <!-- Top Studio Bar -->
+    <div class="builder-top-bar">
+      <div class="bar-left">
+        <div class="builder-logo-badge">
+          <i [class]="getTypeIcon(currentForm.tipo_contenido)"></i>
+        </div>
+        <div class="builder-title-meta">
+          <h2 class="builder-modal-title">
+            {{ isEditing ? 'Editar Experiencia' : 'Nueva Experiencia Deportiva' }}
+          </h2>
+          <span class="builder-slug-preview">
+            URL: <strong>https://sportcore.app/p/{{ currentForm.slug || 'mi-landing' }}</strong>
+          </span>
+        </div>
+      </div>
+
+      <div class="bar-device-switch">
+        <button 
+          class="device-btn" 
+          [class.active]="previewDevice === LandingDevicePreview.DESKTOP" 
+          (click)="previewDeviceChange.emit(LandingDevicePreview.DESKTOP)"
+          title="Vista de Escritorio">
+          <i class="fa-solid fa-desktop"></i>
+          <span>Desktop</span>
+        </button>
+        <button 
+          class="device-btn" 
+          [class.active]="previewDevice === LandingDevicePreview.TABLET" 
+          (click)="previewDeviceChange.emit(LandingDevicePreview.TABLET)"
+          title="Vista de Tablet">
+          <i class="fa-solid fa-tablet-screen-button"></i>
+          <span>Tablet</span>
+        </button>
+        <button 
+          class="device-btn" 
+          [class.active]="previewDevice === LandingDevicePreview.MOBILE" 
+          (click)="previewDeviceChange.emit(LandingDevicePreview.MOBILE)"
+          title="Vista de Móvil">
+          <i class="fa-solid fa-mobile-screen"></i>
+          <span>Móvil</span>
+        </button>
+      </div>
+
+      <div class="bar-actions">
+        <label class="status-chip-toggle">
+          <input 
+            type="checkbox" 
+            [checked]="currentForm.estado === 'PUBLICADO'" 
+            (change)="currentForm.estado = $any($event.target).checked ? 'PUBLICADO' : 'BORRADOR'" />
+          <span class="status-chip-text">{{ currentForm.estado }}</span>
+        </label>
+
+        <button class="btn btn-secondary btn-sm" (click)="close.emit()">
+          Cancelar
+        </button>
+
+        <button class="btn btn-primary btn-sm" (click)="save.emit()" [disabled]="saving">
+          @if (!saving) {
+            <i class="fa-solid fa-floppy-disk mr-1"></i>
+          } @else {
+            <i class="fa-solid fa-circle-notch fa-spin mr-1"></i>
+          }
+          <span>{{ saving ? 'Guardando...' : 'Guardar y Publicar' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Studio Body: 2 Columns (Controls + Live Simulator) -->
+    <div class="builder-studio-body">
+      
+      <!-- LEFT COLUMN: CONTROLS & SECTIONS STUDIO -->
+      <div class="builder-left-pane">
+        
+        <!-- Navigation Tabs -->
+        <div class="pane-tabs">
+          <button 
+            class="pane-tab" 
+            [class.active]="activeTab === LandingBuilderTab.GENERAL" 
+            (click)="activeTabChange.emit(LandingBuilderTab.GENERAL)">
+            <i class="fa-solid fa-sliders"></i>
+            <span>1. General</span>
+          </button>
+          <button 
+            class="pane-tab" 
+            [class.active]="activeTab === LandingBuilderTab.TEMA" 
+            (click)="activeTabChange.emit(LandingBuilderTab.TEMA)">
+            <i class="fa-solid fa-palette"></i>
+            <span>2. Estilo & Tema</span>
+          </button>
+          <button 
+            class="pane-tab" 
+            [class.active]="activeTab === LandingBuilderTab.BLOQUES" 
+            (click)="activeTabChange.emit(LandingBuilderTab.BLOQUES)">
+            <i class="fa-solid fa-cubes"></i>
+            <span>3. Secciones ({{ (currentForm.secciones_json || []).length }})</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: GENERAL SETTINGS -->
+        @if (activeTab === LandingBuilderTab.GENERAL) {
+          <div class="pane-content">
+            <div class="form-group">
+              <label class="field-label">Título Principal de la Experiencia *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Ej: Academia de Fútbol Élite Pro 2026" 
+                [(ngModel)]="currentForm.titulo"
+                (ngModelChange)="generateSlug.emit()" />
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Subtítulo / Propuesta de Valor</label>
+              <textarea 
+                class="form-control" 
+                rows="2" 
+                placeholder="Ej: Entrenamientos de alto rendimiento, análisis táctico con IA y proyección..." 
+                [(ngModel)]="currentForm.subtitulo"></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">Slug URL Público *</label>
+                <div class="input-prefix-group">
+                  <span class="prefix">/p/</span>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="academia-elite-2026" 
+                    [(ngModel)]="currentForm.slug" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Tipo de Contenido</label>
+                <select class="form-control" [(ngModel)]="currentForm.tipo_contenido">
+                  @for (t of contentTypes; track t.id) {
+                    <option [value]="t.id">{{ t.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">WhatsApp de Contacto Directo</label>
+                <div class="input-prefix-group">
+                  <span class="prefix"><i class="fa-brands fa-whatsapp text-emerald"></i></span>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="+573001234567" 
+                    [(ngModel)]="currentForm.boton_contacto_whatsapp" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Email Notificaciones de Leads</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  placeholder="admisiones@club.com" 
+                  [(ngModel)]="currentForm.email_notificaciones" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Meta Descripción (SEO & Redes Sociales)</label>
+              <textarea 
+                class="form-control" 
+                rows="2" 
+                placeholder="Descripción para cuando se comparta el enlace en WhatsApp o Facebook..." 
+                [(ngModel)]="currentForm.meta_descripcion"></textarea>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 2: TEMA & ESTILO -->
+        @if (activeTab === LandingBuilderTab.TEMA) {
+          <div class="pane-content">
+            <div class="form-group">
+              <label class="field-label">Modo Visual</label>
+              <div class="mode-toggle-group">
+                <button 
+                  class="mode-btn" 
+                  [class.active]="currentForm.tema_modo === LandingThemeMode.DARK" 
+                  (click)="currentForm.tema_modo = LandingThemeMode.DARK">
+                  <i class="fa-solid fa-moon"></i>
+                  <span>Dark Mode Deportivo</span>
+                </button>
+                <button 
+                  class="mode-btn" 
+                  [class.active]="currentForm.tema_modo === LandingThemeMode.LIGHT" 
+                  (click)="currentForm.tema_modo = LandingThemeMode.LIGHT">
+                  <i class="fa-solid fa-sun"></i>
+                  <span>Light Mode Limpio</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Paleta de Color Principal (Presets Deportivos)</label>
+              <div class="preset-colors-grid">
+                @for (p of colorPresets; track p.name) {
+                  <button 
+                    class="color-preset-card" 
+                    [class.selected]="currentForm.tema_color === p.color" 
+                    (click)="applyColorPreset.emit(p)">
+                    <span class="color-circle" [style.background]="p.color"></span>
+                    <span class="preset-name">{{ p.name }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">Color Primario HEX</label>
+                <div class="color-picker-input">
+                  <input type="color" [(ngModel)]="currentForm.tema_color" class="color-swatch" />
+                  <input type="text" class="form-control" [(ngModel)]="currentForm.tema_color" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Gradiente de Fondo</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                  [(ngModel)]="currentForm.tema_gradient" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">URL del Logo del Club</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="https://.../logo.png" 
+                [(ngModel)]="currentForm.logo_url" />
+            </div>
+          </div>
+        }
+
+        <!-- TAB 3: SECCIONES & BLOQUES -->
+        @if (activeTab === LandingBuilderTab.BLOQUES) {
+          <div class="pane-content pane-blocks-layout">
+            
+            <!-- Block List Side -->
+            <div class="blocks-sidebar">
+              <div class="blocks-sidebar-header">
+                <span class="section-title">Estructura de la Página</span>
+                
+                <!-- Add Block Dropdown -->
+                <div class="add-block-menu-wrap">
+                  <select 
+                    class="form-control form-control-sm" 
+                    #newBlockSelect 
+                    (change)="addBlock.emit($any($event.target).value); newBlockSelect.value = ''">
+                    <option value="" disabled selected>+ Añadir Bloque...</option>
+                    @for (b of availableBlockTypes; track b.type) {
+                      <option [value]="b.type">
+                        {{ b.label }}
+                      </option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="blocks-draggable-list">
+                @for (block of currentForm.secciones_json; track $index; let i = $index) {
+                  <div 
+                    class="block-item-card" 
+                    [class.active]="selectedBlockIndex === i" 
+                    (click)="selectedBlockIndexChange.emit(i)">
+                    
+                    <div class="block-drag-handle">
+                      <i class="fa-solid fa-grip-vertical"></i>
+                    </div>
+
+                    <div class="block-info">
+                      <span class="block-type-pill">{{ block.tipo }}</span>
+                      <h4 class="block-name">{{ block.titulo || 'Sección ' + (i + 1) }}</h4>
+                    </div>
+
+                    <div class="block-item-actions">
+                      <button 
+                        class="btn-icon-subtle" 
+                        [disabled]="i === 0" 
+                        (click)="moveBlock.emit({ index: i, direction: 'UP', event: $event })" 
+                        title="Subir">
+                        <i class="fa-solid fa-chevron-up"></i>
+                      </button>
+
+                      <button 
+                        class="btn-icon-subtle" 
+                        [disabled]="i === (currentForm.secciones_json?.length || 1) - 1" 
+                        (click)="moveBlock.emit({ index: i, direction: 'DOWN', event: $event })" 
+                        title="Bajar">
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+
+                      <button 
+                        class="btn-icon-subtle text-danger" 
+                        (click)="removeBlock.emit({ index: i, event: $event })" 
+                        title="Eliminar Bloque">
+                        <i class="fa-regular fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Block Inspector Properties Side -->
+            @if (getSelectedBlock(); as block) {
+              <div class="block-inspector">
+                <div class="inspector-header">
+                  <span class="inspector-badge">{{ block.tipo }}</span>
+                  <h3 class="inspector-title">Configuración del Bloque</h3>
+                </div>
+
+                <div class="inspector-fields">
+                  <div class="form-group">
+                    <label class="field-label">Título del Bloque</label>
+                    <input type="text" class="form-control" [(ngModel)]="block.titulo" />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="field-label">Subtítulo o Descripción</label>
+                    <input type="text" class="form-control" [(ngModel)]="block.subtitulo" />
+                  </div>
+
+                  <!-- SPECIFIC INSPECTOR FOR HERO -->
+                  @if (block.tipo === TipoBloqueLanding.HERO) {
+                    <div class="type-inspector-box">
+                      <div class="form-group">
+                        <label class="field-label">Badge Superior (Tag)</label>
+                        <input type="text" class="form-control" [(ngModel)]="block.datos['tag']" placeholder="Ej: Matrículas Abiertas 2026" />
+                      </div>
+
+                      <div class="form-row-2">
+                        <div class="form-group">
+                          <label class="field-label">Texto Botón CTA 1</label>
+                          <input type="text" class="form-control" [(ngModel)]="block.datos['boton_cta_1_texto']" />
+                        </div>
+                        <div class="form-group">
+                          <label class="field-label">Texto Botón CTA 2</label>
+                          <input type="text" class="form-control" [(ngModel)]="block.datos['boton_cta_2_texto']" />
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="field-label">Imagen de Fondo / Poster URL</label>
+                        <input type="text" class="form-control" [(ngModel)]="block.datos['imagen_fondo']" placeholder="https://..." />
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR STATS -->
+                  @if (block.tipo === TipoBloqueLanding.STATS) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Métricas Clave</span>
+                        <button class="btn btn-outline btn-xs" (click)="addStatItem.emit()">+ Añadir Métrica</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (stat of block.datos['stats']; track $index; let sIdx = $index) {
+                          <div class="subitem-row">
+                            <input type="text" class="form-control form-control-sm" placeholder="Número (+300)" [(ngModel)]="stat.numero" style="width: 100px;" />
+                            <input type="text" class="form-control form-control-sm" placeholder="Etiqueta (Deportistas)" [(ngModel)]="stat.etiqueta" />
+                            <button class="btn-icon-subtle text-danger" (click)="removeStatItem.emit(sIdx)">
+                              <i class="fa-solid fa-xmark"></i>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR PROGRAMAS -->
+                  @if (block.tipo === TipoBloqueLanding.PROGRAMAS) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Programas y Divisiones</span>
+                        <button class="btn btn-outline btn-xs" (click)="addProgramItem.emit()">+ Añadir Categoría</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (prog of block.datos['programas']; track $index; let pIdx = $index) {
+                          <div class="subitem-card">
+                            <div class="subitem-card-header">
+                              <input type="text" class="form-control form-control-sm" placeholder="Nombre Programa" [(ngModel)]="prog.titulo" />
+                              <button class="btn-icon-subtle text-danger" (click)="removeProgramItem.emit(pIdx)">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <div class="subitem-card-body">
+                              <input type="text" class="form-control form-control-sm" placeholder="Edades (Ej: 9 a 12 años)" [(ngModel)]="prog.edades" />
+                              <input type="text" class="form-control form-control-sm" placeholder="Horario" [(ngModel)]="prog.horario" />
+                              <input type="text" class="form-control form-control-sm" placeholder="Precio / Mensualidad" [(ngModel)]="prog.precio" />
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR PLANES -->
+                  @if (block.tipo === TipoBloqueLanding.PLANES) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Planes & Membresías</span>
+                        <button class="btn btn-outline btn-xs" (click)="addPlanItem.emit()">+ Añadir Plan</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (plan of block.datos['planes']; track $index; let plIdx = $index) {
+                          <div class="subitem-card">
+                            <div class="subitem-card-header">
+                              <input type="text" class="form-control form-control-sm" placeholder="Nombre Plan" [(ngModel)]="plan.nombre" />
+                              <button class="btn-icon-subtle text-danger" (click)="removePlanItem.emit(plIdx)">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <div class="subitem-card-body">
+                              <div class="form-row-2">
+                                <input type="text" class="form-control form-control-sm" placeholder="Precio ($190.000)" [(ngModel)]="plan.precio" />
+                                <input type="text" class="form-control form-control-sm" placeholder="Periodo (mensual)" [(ngModel)]="plan.periodo" />
+                              </div>
+                              <label class="checkbox-label mt-1">
+                                <input type="checkbox" [(ngModel)]="plan.destacado" />
+                                <span>Marcar como Plan Destacado / Más Popular</span>
+                              </label>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR TESTIMONIOS -->
+                  @if (block.tipo === TipoBloqueLanding.TESTIMONIOS) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Testimonios & Reseñas</span>
+                        <button class="btn btn-outline btn-xs" (click)="addTestimonioItem.emit()">+ Añadir Testimonio</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (test of block.datos['testimonios']; track $index; let tIdx = $index) {
+                          <div class="subitem-card">
+                            <div class="subitem-card-header">
+                              <input type="text" class="form-control form-control-sm" placeholder="Nombre del Padre/Scout" [(ngModel)]="test.nombre" />
+                              <button class="btn-icon-subtle text-danger" (click)="removeTestimonioItem.emit(tIdx)">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <div class="subitem-card-body">
+                              <input type="text" class="form-control form-control-sm" placeholder="Rol (Ej: Mamá de Mateo Sub-11)" [(ngModel)]="test.rol" />
+                              <textarea class="form-control form-control-sm" rows="2" placeholder="Cita o testimonio" [(ngModel)]="test.texto"></textarea>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR LEAD FORM -->
+                  @if (block.tipo === TipoBloqueLanding.LEAD_FORM) {
+                    <div class="type-inspector-box">
+                      <div class="form-group">
+                        <label class="field-label">Texto del Botón de Envío</label>
+                        <input type="text" class="form-control" [(ngModel)]="block.datos['boton_cta_texto']" placeholder="¡Quiero mi Clase de Prueba Gratis!" />
+                      </div>
+
+                      <div class="form-group">
+                        <label class="field-label">Texto de Garantía / Privacidad</label>
+                        <input type="text" class="form-control" [(ngModel)]="block.datos['texto_garantia']" />
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR FAQ -->
+                  @if (block.tipo === TipoBloqueLanding.FAQ) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Preguntas & Respuestas</span>
+                        <button class="btn btn-outline btn-xs" (click)="addFaqItem.emit()">+ Añadir FAQ</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (f of block.datos['preguntas']; track $index; let fIdx = $index) {
+                          <div class="subitem-card">
+                            <div class="subitem-card-header">
+                              <input type="text" class="form-control form-control-sm" placeholder="Pregunta" [(ngModel)]="f.pregunta" />
+                              <button class="btn-icon-subtle text-danger" (click)="removeFaqItem.emit(fIdx)">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <textarea class="form-control form-control-sm mt-1" rows="2" placeholder="Respuesta" [(ngModel)]="f.respuesta"></textarea>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- RIGHT COLUMN: LIVE MULTI-DEVICE SIMULATOR -->
+      <div class="builder-right-pane">
+        <app-landing-preview-simulator 
+          [currentForm]="currentForm" 
+          [previewDevice]="previewDevice">
+        </app-landing-preview-simulator>
+      </div>
+
+    </div>
+
+  </div>
+</div>

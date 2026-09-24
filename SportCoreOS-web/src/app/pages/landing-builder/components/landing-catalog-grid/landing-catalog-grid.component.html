@@ -1,0 +1,109 @@
+<!-- Catalog Cards Grid -->
+<section class="catalog-grid" *ngIf="!loading && landings.length > 0">
+  <div class="landing-card" *ngFor="let item of landings">
+    <!-- Card Banner / Theme Preview -->
+    <div class="card-cover" [style.background]="item.tema_gradient || 'linear-gradient(135deg, #10b981 0%, #059669 100%)'">
+      <div class="cover-overlay"></div>
+      <div class="cover-top">
+        <span class="content-type-badge" [class]="getTypeBadgeClass(item.tipo_contenido)">
+          <i [class]="getTypeIcon(item.tipo_contenido)"></i>
+          {{ getTypeLabel(item.tipo_contenido) }}
+        </span>
+
+        <label class="status-switch" (click)="$event.stopPropagation()">
+          <input 
+            type="checkbox" 
+            [checked]="item.estado === 'PUBLICADO'" 
+            (change)="toggleEstado.emit({ item: item, event: $event })" />
+          <span class="slider round"></span>
+          <span class="switch-label">{{ item.estado }}</span>
+        </label>
+      </div>
+
+      <div class="cover-body">
+        <h3 class="card-title">{{ item.titulo }}</h3>
+        <p class="card-sub" *ngIf="item.subtitulo">{{ item.subtitulo }}</p>
+      </div>
+    </div>
+
+    <!-- Card Middle Details -->
+    <div class="card-body">
+      <div class="slug-row">
+        <div class="slug-pill" (click)="copyUrl.emit({ slug: item.slug, event: $event })" title="Click para copiar enlace público">
+          <i class="fa-solid fa-link text-emerald"></i>
+          <span class="slug-text">/p/{{ item.slug }}</span>
+          <i class="fa-regular fa-copy ml-1"></i>
+        </div>
+
+        <span class="blocks-counter" title="Bloques activos">
+          <i class="fa-solid fa-cubes"></i>
+          {{ (item.secciones_json || []).length }} secciones
+        </span>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="card-metrics-row">
+        <div class="metric-item">
+          <span class="metric-val">{{ item.vistas_totales || 0 | number }}</span>
+          <span class="metric-lbl"><i class="fa-regular fa-eye"></i> Vistas</span>
+        </div>
+
+        <div class="metric-item highlight-leads" (click)="openLeads.emit({ item: item, event: $event })">
+          <span class="metric-val text-amber">{{ item.leads_totales || 0 }}</span>
+          <span class="metric-lbl"><i class="fa-solid fa-user-check"></i> Leads</span>
+        </div>
+
+        <div class="metric-item">
+          <span class="metric-val text-emerald">
+            {{ (item.vistas_totales ? ((item.leads_totales || 0) / item.vistas_totales * 100) : 0) | number:'1.1-1' }}%
+          </span>
+          <span class="metric-lbl"><i class="fa-solid fa-percent"></i> Conversión</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Footer Actions -->
+    <div class="card-footer-actions">
+      <button class="action-btn edit-btn" (click)="edit.emit(item)">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <span>Editar</span>
+      </button>
+
+      <button class="action-btn leads-btn" (click)="openLeads.emit({ item: item, event: $event })">
+        <i class="fa-solid fa-users"></i>
+        <span>Leads ({{ item.leads_totales || 0 }})</span>
+      </button>
+
+      <a [routerLink]="['/p', item.slug]" target="_blank" class="action-btn preview-btn" title="Ver Landing Pública">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </a>
+
+      <button class="action-btn duplicate-btn" (click)="duplicate.emit({ item: item, event: $event })" title="Duplicar como plantilla">
+        <i class="fa-regular fa-clone"></i>
+      </button>
+
+      <button class="action-btn delete-btn" (click)="delete.emit({ item: item, event: $event })" title="Eliminar">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Empty State -->
+<section class="empty-state" *ngIf="!loading && landings.length === 0">
+  <div class="empty-icon">
+    <i class="fa-solid fa-layer-group"></i>
+  </div>
+  <h3>No se encontraron experiencias</h3>
+  <p>Crea tu primera landing page deportiva, promo o reel para comenzar a captar prospectos y pre-inscripciones.</p>
+  <button class="btn btn-primary mt-3" (click)="create.emit()">
+    <i class="fa-solid fa-plus mr-1"></i>
+    <span>Crear Primera Landing Page</span>
+  </button>
+</section>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="loading">
+  <i class="fa-solid fa-circle-notch fa-spin"></i>
+  <span>Cargando catálogo de experiencias...</span>
+</div>

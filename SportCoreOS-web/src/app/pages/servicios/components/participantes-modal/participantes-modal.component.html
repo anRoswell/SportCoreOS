@@ -1,0 +1,164 @@
+@if (visible) {
+  <div class="modal-overlay modal-backdrop" (click)="cerrar()">
+    <div class="modal-dialog modal-card fut-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group modal-title-wrap">
+          <div class="modal-badge-icon modal-icon-badge bg-blue-glow">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2 class="modal-title">Participantes & Control Financiero</h2>
+            <p class="modal-sub modal-subtitle">
+              Clínica: <strong>{{ servicio?.titulo }}</strong> • <strong>{{ inscripcionesList.length }}</strong> inscripciones registradas
+            </p>
+          </div>
+        </div>
+        <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- TABS DE ESTADO DE PAGO -->
+        <div class="status-filter-tabs">
+          <button
+            class="tab-filter-btn"
+            [class.active]="filtroEstadoInscripciones() === EstadoPago.TODOS"
+            (click)="filtroEstadoInscripciones.set(EstadoPago.TODOS)"
+          >
+            <i class="fa-solid fa-list"></i> Todos ({{ inscripcionesList.length }})
+          </button>
+          <button
+            class="tab-filter-btn tab-pending"
+            [class.active]="filtroEstadoInscripciones() === EstadoPago.PENDIENTE_APROBACION"
+            (click)="filtroEstadoInscripciones.set(EstadoPago.PENDIENTE_APROBACION)"
+          >
+            <i class="fa-solid fa-clock-rotate-left"></i> Pendientes de Aprobación ({{ pendientesCount() }})
+          </button>
+          <button
+            class="tab-filter-btn tab-approved"
+            [class.active]="filtroEstadoInscripciones() === EstadoPago.APROBADO"
+            (click)="filtroEstadoInscripciones.set(EstadoPago.APROBADO)"
+          >
+            <i class="fa-solid fa-circle-check"></i> Aprobados
+          </button>
+          <button
+            class="tab-filter-btn tab-rejected"
+            [class.active]="filtroEstadoInscripciones() === EstadoPago.RECHAZADO"
+            (click)="filtroEstadoInscripciones.set(EstadoPago.RECHAZADO)"
+          >
+            <i class="fa-solid fa-ban"></i> Rechazados
+          </button>
+        </div>
+
+        @if (filteredList().length > 0) {
+          <div class="fut-table-container">
+            <table class="fut-table">
+              <thead>
+                <tr>
+                  <th>Atleta</th>
+                  <th>Acudiente / Contacto</th>
+                  <th>Plan & Monto</th>
+                  <th>Método & Estado</th>
+                  <th>Soporte / Comprobante</th>
+                  <th>Ticket / Pase QR</th>
+                  <th>Acciones Tesorería</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inc of filteredList(); track inc.id) {
+                  <tr>
+                    <td>
+                      <div class="player-cell">
+                        <i class="fa-solid fa-circle-user text-emerald player-cell-icon"></i>
+                        <strong class="player-cell-name">{{ inc.nombre_jugador }}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="guardian-name">{{ inc.nombre_acudiente }}</div>
+                      <small class="text-muted"><i class="fa-brands fa-whatsapp text-emerald"></i> {{ inc.telefono_acudiente }}</small>
+                    </td>
+                    <td>
+                      <div class="plan-cell">
+                        <span class="badge-plan" [class.badge-plan-bundle]="inc.tipo_plan === TipoPlanServicio.PAQUETE_MENSUAL">
+                          {{ inc.tipo_plan === TipoPlanServicio.PAQUETE_MENSUAL ? 'Paquete Mes' : 'Sesión Única' }}
+                        </span>
+                        <span class="text-emerald font-bold text-base">&#36;{{ formatNumber(inc.monto_pagado) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="status-cell">
+                        <span class="badge-payment">{{ inc.metodo_pago }}</span>
+                        @if (inc.estado_pago === EstadoPago.APROBADO) {
+                          <span class="status-badge status-approved">
+                            <i class="fa-solid fa-circle-check"></i> Aprobado
+                          </span>
+                        }
+                        @if (inc.estado_pago === EstadoPago.PENDIENTE_APROBACION) {
+                          <span class="status-badge status-pending-pulse">
+                            <i class="fa-solid fa-clock"></i> Pendiente
+                          </span>
+                        }
+                        @if (inc.estado_pago === EstadoPago.RECHAZADO) {
+                          <span class="status-badge status-rejected" [title]="inc.motivo_rechazo || 'Rechazado'">
+                            <i class="fa-solid fa-circle-xmark"></i> Rechazado
+                          </span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      @if (inc.comprobante_url) {
+                        <div class="voucher-cell">
+                          <button class="btn-view-voucher" (click)="verComprobante.emit(inc)">
+                            <i class="fa-solid fa-image"></i> Ver Soporte
+                          </button>
+                        </div>
+                      } @else {
+                        <span class="text-muted text-xs"><i class="fa-solid fa-minus"></i> PSE Directo</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="qr-token"><i class="fa-solid fa-qrcode"></i> {{ inc.codigo_qr_ticket?.substring(0, 14) }}...</span>
+                    </td>
+                    <td>
+                      @if (inc.estado_pago === EstadoPago.PENDIENTE_APROBACION) {
+                        <div class="treasury-actions">
+                          <button class="btn-approve-sm" [disabled]="isApproving" (click)="aprobar.emit(inc.id)">
+                            <i class="fa-solid fa-check"></i> Aprobar
+                          </button>
+                          <button class="btn-reject-sm" [disabled]="isApproving" (click)="rechazar.emit(inc)">
+                            <i class="fa-solid fa-xmark"></i> Rechazar
+                          </button>
+                        </div>
+                      }
+                      @if (inc.estado_pago === EstadoPago.APROBADO) {
+                        <div class="auditor-stamp">
+                          <small class="text-emerald"><i class="fa-solid fa-user-check"></i> {{ inc.aprobado_por_nombre || 'Tesorera' }}</small>
+                        </div>
+                      }
+                      @if (inc.estado_pago === EstadoPago.RECHAZADO) {
+                        <div class="rejected-stamp">
+                          <small class="text-rose"><i class="fa-solid fa-circle-xmark"></i> {{ inc.motivo_rechazo || 'Rechazado' }}</small>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state-mini">
+            <i class="fa-solid fa-user-plus empty-mini-icon"></i>
+            <h4>No se encontraron inscripciones con el filtro seleccionado</h4>
+            <p>Modifica el filtro de estado para visualizar otros participantes.</p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrar()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

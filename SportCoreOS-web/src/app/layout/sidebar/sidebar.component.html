@@ -106,6 +106,20 @@
           <span class="badge-app" style="background:linear-gradient(135deg,#f59e0b,#d97706);" *ngIf="!api.sidebarCollapsed()">Nuevo</span>
         </a>
 
+        <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">MARKETING & COMUNICACIÓN</div>
+
+        <a routerLink="/sliders-promocionales" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Sliders Promocionales' : ''">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Sliders Promocionales</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#f59e0b,#d97706);" *ngIf="!api.sidebarCollapsed()">Tour</span>
+        </a>
+
+        <a routerLink="/landing-builder" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Creador de Landings' : ''">
+          <i class="fa-solid fa-layer-group text-emerald"></i>
+          <span *ngIf="!api.sidebarCollapsed()">Creador de Landings & Contenido</span>
+          <span class="badge-app" style="background:linear-gradient(135deg,#10b981,#059669);" *ngIf="!api.sidebarCollapsed()">CMS</span>
+        </a>
+
         <div class="nav-group-title" *ngIf="!api.sidebarCollapsed()">PORTAL FAMILIAR</div>
 
         <a routerLink="/portal-padres" routerLinkActive="active" class="nav-item parent-portal-link" [title]="api.sidebarCollapsed() ? 'Portal Móvil Padres' : ''">

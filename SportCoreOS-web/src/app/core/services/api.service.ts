@@ -567,8 +567,9 @@ export class ApiService {
     );
   }
 
-  registrarBiometria(data: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/biometria/evaluacion`, data).pipe(
+  registrarBiometria(arg1: any, arg2?: any): Observable<any> {
+    const payload = arg2 ? { ...arg2, jugador_id: arg1 } : arg1;
+    return this.http.post<any>(`${this.apiUrl}/biometria/evaluacion`, payload).pipe(
       map(res => res.data || res)
     );
   }
@@ -1099,7 +1100,255 @@ export class ApiService {
       catchError(() => of(null))
     );
   }
+
+  // =========================================================================
+  // MÓDULO: SLIDERS PROMOCIONALES & ONBOARDING MARKETING CRUD
+  // =========================================================================
+
+  getSliders(plataforma?: string, soloActivos = false): Observable<SliderPromocional[]> {
+    let params = new HttpParams();
+    if (plataforma && plataforma !== 'TODAS') {
+      params = params.set('plataforma', plataforma);
+    }
+    if (soloActivos) {
+      params = params.set('soloActivos', 'true');
+    }
+    return this.http.get<any>(`${this.apiUrl}/sliders`, { params }).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  getSliderById(id: string): Observable<SliderPromocional> {
+    return this.http.get<any>(`${this.apiUrl}/sliders/${id}`).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  createSlider(dto: Partial<SliderPromocional>): Observable<SliderPromocional> {
+    return this.http.post<any>(`${this.apiUrl}/sliders`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  updateSlider(id: string, dto: Partial<SliderPromocional>): Observable<SliderPromocional> {
+    return this.http.put<any>(`${this.apiUrl}/sliders/${id}`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  toggleSliderActivo(id: string): Observable<SliderPromocional> {
+    return this.http.patch<any>(`${this.apiUrl}/sliders/${id}/toggle-activo`, {}).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  reorderSliders(ids: string[]): Observable<{ success: boolean; message: string }> {
+    return this.http.patch<any>(`${this.apiUrl}/sliders/reorder`, { ids }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  deleteSlider(id: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<any>(`${this.apiUrl}/sliders/${id}`).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  // =========================================================================
+  // MÓDULO: CREADOR DE LANDING PAGES & EXPERIENCIAS DE CONTENIDO
+  // =========================================================================
+
+  getLandings(tipo?: string, estado?: string): Observable<{ items: LandingPage[]; resumen: any }> {
+    let params = new HttpParams();
+    if (tipo && tipo !== 'TODOS') {
+      params = params.set('tipo', tipo);
+    }
+    if (estado && estado !== 'TODOS') {
+      params = params.set('estado', estado);
+    }
+    return this.http.get<any>(`${this.apiUrl}/landings`, { params }).pipe(
+      map(res => {
+        const items = (res.data || []).map((l: any) => ({
+          ...l,
+          vistas_totales: l.vistas_totales ?? l.vistas_count ?? 0,
+          leads_totales: l.leads_totales ?? l.leads_count ?? 0,
+        }));
+        const resumen = res.resumen ? {
+          total: res.resumen.total ?? items.length,
+          publicadas: res.resumen.publicadas ?? items.filter((i: any) => i.estado === 'PUBLICADO').length,
+          vistasTotales: res.resumen.totalVistas ?? res.resumen.vistasTotales ?? items.reduce((acc: number, i: any) => acc + (i.vistas_totales || 0), 0),
+          leadsTotales: res.resumen.totalLeads ?? res.resumen.leadsTotales ?? items.reduce((acc: number, i: any) => acc + (i.leads_totales || 0), 0),
+          conversionPromedio: res.resumen.conversionRate ?? res.resumen.conversionPromedio ?? 0,
+        } : {
+          total: items.length,
+          publicadas: items.filter((i: any) => i.estado === 'PUBLICADO').length,
+          vistasTotales: items.reduce((acc: number, i: any) => acc + (i.vistas_totales || 0), 0),
+          leadsTotales: items.reduce((acc: number, i: any) => acc + (i.leads_totales || 0), 0),
+          conversionPromedio: 0,
+        };
+        return { items, resumen };
+      }),
+      catchError(() => of({ items: [], resumen: { total: 0, publicadas: 0, vistasTotales: 0, leadsTotales: 0, conversionPromedio: 0 } }))
+    );
+  }
+
+  getLandingById(id: string): Observable<LandingPage> {
+    return this.http.get<any>(`${this.apiUrl}/landings/${id}`).pipe(
+      map(res => {
+        const l = res.data || res;
+        return {
+          ...l,
+          vistas_totales: l.vistas_totales ?? l.vistas_count ?? 0,
+          leads_totales: l.leads_totales ?? l.leads_count ?? 0,
+        };
+      })
+    );
+  }
+
+  getPublicLanding(slug: string): Observable<LandingPage> {
+    return this.http.get<any>(`${this.apiUrl}/landings/public/${slug}`).pipe(
+      map(res => {
+        const l = res.data || res;
+        return {
+          ...l,
+          vistas_totales: l.vistas_totales ?? l.vistas_count ?? 0,
+          leads_totales: l.leads_totales ?? l.leads_count ?? 0,
+        };
+      })
+    );
+  }
+
+  createLanding(dto: Partial<LandingPage>): Observable<LandingPage> {
+    return this.http.post<any>(`${this.apiUrl}/landings`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  updateLanding(id: string, dto: Partial<LandingPage>): Observable<LandingPage> {
+    return this.http.put<any>(`${this.apiUrl}/landings/${id}`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  toggleEstadoLanding(id: string): Observable<LandingPage> {
+    return this.http.patch<any>(`${this.apiUrl}/landings/${id}/toggle-estado`, {}).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  duplicateLanding(id: string): Observable<LandingPage> {
+    return this.http.post<any>(`${this.apiUrl}/landings/${id}/duplicate`, {}).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  deleteLanding(id: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<any>(`${this.apiUrl}/landings/${id}`).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  getLandingLeads(id: string): Observable<LandingLead[]> {
+    return this.http.get<any>(`${this.apiUrl}/landings/${id}/leads`).pipe(
+      map(res => res.data || res),
+      catchError(() => of([]))
+    );
+  }
+
+  submitLead(slug: string, lead: Partial<LandingLead>): Observable<{ success: boolean; message: string; data: LandingLead }> {
+    return this.http.post<any>(`${this.apiUrl}/landings/public/${slug}/leads`, lead);
+  }
 }
+
+export interface SliderHighlight {
+  icon: string;
+  text: string;
+  subtext?: string;
+}
+
+export interface SliderPromocional {
+  id: string;
+  club_id?: string | null;
+  titulo: string;
+  subtitulo?: string | null;
+  tag: string;
+  tag_icono?: string | null;
+  badge_color?: string | null;
+  accent_gradient?: string | null;
+  icono?: string | null;
+  stat_numero?: string | null;
+  stat_label?: string | null;
+  card_preview_titulo?: string | null;
+  card_preview_desc?: string | null;
+  highlights_json?: SliderHighlight[];
+  highlights?: SliderHighlight[];
+  boton_cta_texto?: string | null;
+  boton_cta_url?: string | null;
+  imagen_url?: string | null;
+  orden: number;
+  activo: boolean;
+  plataforma_destino: 'TODAS' | 'MOBILE_APP' | 'WEB_PORTAL';
+  fecha_inicio?: string | null;
+  fecha_fin?: string | null;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
+export type TipoContenidoLanding = 'LANDING_PAGE' | 'PROMO_HERO' | 'STORIES_REEL' | 'BANNER_TOP' | 'POPUP_MODAL';
+export type EstadoLanding = 'PUBLICADO' | 'BORRADOR' | 'ARCHIVADO';
+export type TipoBloqueSeccion = 'HERO' | 'STATS' | 'PROGRAMAS' | 'FIXTURE' | 'PLANES' | 'TESTIMONIOS' | 'LEAD_FORM' | 'FAQ' | 'FOOTER' | 'CUSTOM_HTML' | 'STORIES' | 'VIDEO_BANNER';
+
+export interface BloqueSeccionLanding {
+  id: string;
+  tipo: TipoBloqueSeccion;
+  titulo?: string;
+  subtitulo?: string;
+  orden: number;
+  visible: boolean;
+  datos: Record<string, any>;
+}
+
+export interface LandingPage {
+  id: string;
+  club_id?: string | null;
+  tipo_contenido: TipoContenidoLanding;
+  titulo: string;
+  subtitulo?: string | null;
+  slug: string;
+  estado: EstadoLanding;
+  tema_color: string;
+  tema_gradient: string;
+  tema_modo: 'DARK' | 'LIGHT';
+  meta_descripcion?: string | null;
+  meta_keywords?: string | null;
+  meta_og_imagen?: string | null;
+  logo_url?: string | null;
+  boton_contacto_whatsapp?: string | null;
+  email_notificaciones?: string | null;
+  configuracion_json?: Record<string, any>;
+  secciones_json?: BloqueSeccionLanding[];
+  vistas_totales?: number;
+  leads_totales?: number;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
+export interface LandingLead {
+  id: string;
+  landing_id: string;
+  nombre_completo: string;
+  email: string;
+  telefono: string;
+  nombre_deportista?: string;
+  edad_deportista?: number;
+  categoria_interes?: string;
+  mensaje?: string;
+  estado_lead?: 'NUEVO' | 'CONTACTADO' | 'INSCRITO' | 'DESCARTADO';
+  ip_registro?: string;
+  created_at?: string | Date;
+}
+
 
 
 

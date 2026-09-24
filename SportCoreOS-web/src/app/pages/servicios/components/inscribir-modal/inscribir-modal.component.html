@@ -1,0 +1,377 @@
+@if (visible) {
+  <div class="modal-overlay modal-backdrop" (click)="cerrar()">
+    <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group modal-title-wrap">
+          <div class="modal-badge-icon modal-icon-badge" [style.background]="(servicio?.color_tema || '#10b981') + '1a'" [style.color]="servicio?.color_tema || '#10b981'" [style.border-color]="(servicio?.color_tema || '#10b981') + '33'">
+            <i class="fa-solid" [ngClass]="servicio?.icono || 'fa-ticket'"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2 class="modal-title">Inscripción & Pase Digital</h2>
+            <p class="modal-sub modal-subtitle">
+              Clínica: <strong>{{ servicio?.titulo }}</strong> • Sede: <strong>{{ servicio?.cancha_nombre }}</strong>
+            </p>
+          </div>
+        </div>
+        <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- SUCCESS STATE: DIGITAL PASS TICKET -->
+      @if (ticketGenerated()) {
+        <div class="ticket-pass-container">
+          <app-digital-pass-ticket
+            [ticket]="{
+              title: servicio?.titulo,
+              category: servicio?.categoria_servicio,
+              athleteName: ticketData()?.nombre_jugador,
+              guardianName: ticketData()?.nombre_acudiente,
+              guardianPhone: ticketData()?.telefono_acudiente,
+              planName: ticketData()?.tipo_plan === TipoPlanServicio.PAQUETE_MENSUAL ? 'Paquete Mensual Completo' : 'Sesión Individual',
+              amountPaid: ticketData()?.monto_pagado,
+              paymentMethod: ticketData()?.metodo_pago,
+              paymentStatus: ticketData()?.estado_pago,
+              venueName: servicio?.cancha_nombre,
+              qrCodeToken: ticketData()?.codigo_qr_ticket,
+              referenceCode: ticketData()?.referencia_transaccion,
+              badgeName: servicio?.insignia_obtenida,
+              themeColor: servicio?.color_tema
+            }"
+            (finish)="cerrar()"
+            (shareWhatsApp)="shareWhatsApp()">
+          </app-digital-pass-ticket>
+        </div>
+      } @else {
+        <div class="modal-body">
+          <!-- PLAN SELECTOR -->
+          <div class="plan-selector">
+            <div
+              class="plan-option"
+              [class.selected]="tipoPlan() === TipoPlanServicio.PAQUETE_MENSUAL"
+              (click)="setPlanPaqueteMensual()"
+            >
+              <div class="plan-radio">
+                @if (tipoPlan() === TipoPlanServicio.PAQUETE_MENSUAL) {
+                  <i class="fa-solid fa-circle-check text-emerald"></i>
+                } @else {
+                  <i class="fa-regular fa-circle text-muted"></i>
+                }
+              </div>
+              <div class="plan-details">
+                <div class="plan-header-row">
+                  <span class="plan-name">Paquete Mensual Completo</span>
+                  <span class="plan-badge-popular"><i class="fa-solid fa-star"></i> Más Recomendado</span>
+                </div>
+                <div class="plan-desc">Incluye todas las sesiones del mes + kit de seguimiento, seguro y evaluación biomecánica final</div>
+              </div>
+              <div class="plan-price-wrap">
+                <span class="plan-price">&#36;{{ formatNumber(servicio?.precio_paquete_mensual) }}</span>
+                <span class="plan-period">/ mes completo</span>
+              </div>
+            </div>
+
+            <div
+              class="plan-option"
+              [class.selected]="tipoPlan() === TipoPlanServicio.SESION_INDIVIDUAL"
+              (click)="setPlanSesionIndividual()"
+            >
+              <div class="plan-radio">
+                @if (tipoPlan() === TipoPlanServicio.SESION_INDIVIDUAL) {
+                  <i class="fa-solid fa-circle-check text-emerald"></i>
+                } @else {
+                  <i class="fa-regular fa-circle text-muted"></i>
+                }
+              </div>
+              <div class="plan-details">
+                <div class="plan-header-row">
+                  <span class="plan-name">Sesión Individual de Prueba</span>
+                </div>
+                <div class="plan-desc">Acceso a 1 sesión intensiva de 90 minutos con test técnico</div>
+              </div>
+              <div class="plan-price-wrap">
+                <span class="plan-price">&#36;{{ formatNumber(servicio?.precio_sesion_individual) }}</span>
+                <span class="plan-period">/ sesión única</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM FIELDS -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="sport-label">
+                <i class="fa-solid fa-child-reaching text-emerald"></i> Nombre del Atleta / Niño <span class="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="nombreJugador()"
+                (ngModelChange)="nombreJugador.set($event)"
+                placeholder="ej. Mateo Valderrama"
+                class="sport-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="sport-label">
+                <i class="fa-solid fa-user-shield text-cyan"></i> Nombre del Acudiente / Padre <span class="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="nombreAcudiente()"
+                (ngModelChange)="nombreAcudiente.set($event)"
+                placeholder="ej. Carlos Valderrama"
+                class="sport-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="sport-label">
+                <i class="fa-brands fa-whatsapp text-emerald"></i> Teléfono WhatsApp de Contacto <span class="required-star">*</span>
+              </label>
+              <input
+                type="tel"
+                [ngModel]="telefonoAcudiente()"
+                (ngModelChange)="telefonoAcudiente.set($event)"
+                placeholder="ej. +57 300 123 4567"
+                class="sport-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="sport-label">
+                <i class="fa-solid fa-envelope text-amber"></i> Correo Electrónico (Envío de Ticket QR) <span class="required-star">*</span>
+              </label>
+              <input
+                type="email"
+                [ngModel]="emailAcudiente()"
+                (ngModelChange)="emailAcudiente.set($event)"
+                placeholder="ej. carlos.valderrama@gmail.com"
+                class="sport-input"
+              />
+            </div>
+          </div>
+
+          <!-- BROTHER DISCOUNT TOGGLE -->
+          <div class="discount-toggle" [class.active]="aplicaDescuentoHermano()">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [ngModel]="aplicaDescuentoHermano()"
+                (ngModelChange)="aplicaDescuentoHermano.set($event)"
+              />
+              <div class="discount-info">
+                <div class="discount-title">
+                  <i class="fa-solid fa-people-roof text-amber"></i> ¿Inscribes a 2 o más hermanos?
+                  <span class="discount-pill">-{{ servicio?.descuento_hermanos_pct || 15 }}% DTO</span>
+                </div>
+                <p class="discount-desc">Activa el beneficio familiar SportCoreOS y obtén tarifa especial en el valor liquidado.</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- PAYMENT METHOD SELECTOR -->
+          <div class="payment-method-section">
+            <label class="sport-label">
+              <i class="fa-solid fa-lock text-emerald"></i> Selecciona el Medio de Pago:
+            </label>
+            <div class="pay-methods-grid">
+              <div
+                class="pay-method-card"
+                [class.active]="metodoPago() === MetodoPago.WOMPI_PSE"
+                (click)="metodoPago.set(MetodoPago.WOMPI_PSE)"
+              >
+                <div class="pay-icon bg-emerald-glow"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="pay-text">
+                  <span class="pay-title">PSE / Wompi</span>
+                  <span class="pay-sub">Aprobación automática inmediata</span>
+                </div>
+                @if (metodoPago() === MetodoPago.WOMPI_PSE) {
+                  <i class="fa-solid fa-circle-check pay-check"></i>
+                }
+              </div>
+
+              <div
+                class="pay-method-card"
+                [class.active]="metodoPago() === MetodoPago.NEQUI"
+                (click)="metodoPago.set(MetodoPago.NEQUI)"
+              >
+                <div class="pay-icon bg-purple-glow"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="pay-text">
+                  <span class="pay-title">Nequi</span>
+                  <span class="pay-sub">Transferencia + Subir Comprobante</span>
+                </div>
+                @if (metodoPago() === MetodoPago.NEQUI) {
+                  <i class="fa-solid fa-circle-check pay-check"></i>
+                }
+              </div>
+
+              <div
+                class="pay-method-card"
+                [class.active]="metodoPago() === MetodoPago.DAVIPLATA"
+                (click)="metodoPago.set(MetodoPago.DAVIPLATA)"
+              >
+                <div class="pay-icon bg-amber-glow"><i class="fa-solid fa-wallet"></i></div>
+                <div class="pay-text">
+                  <span class="pay-title">DaviPlata</span>
+                  <span class="pay-sub">Transferencia + Subir Soporte</span>
+                </div>
+                @if (metodoPago() === MetodoPago.DAVIPLATA) {
+                  <i class="fa-solid fa-circle-check pay-check"></i>
+                }
+              </div>
+
+              <div
+                class="pay-method-card"
+                [class.active]="metodoPago() === MetodoPago.TRANSFERENCIA_BANCARIA"
+                (click)="metodoPago.set(MetodoPago.TRANSFERENCIA_BANCARIA)"
+              >
+                <div class="pay-icon bg-blue-glow"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <div class="pay-text">
+                  <span class="pay-title">Bancolombia</span>
+                  <span class="pay-sub">Transferencia cuenta de ahorros</span>
+                </div>
+                @if (metodoPago() === MetodoPago.TRANSFERENCIA_BANCARIA) {
+                  <i class="fa-solid fa-circle-check pay-check"></i>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- NEQUI & BANCOLOMBIA ACCOUNT DETAILS & VOUCHER DROPZONE -->
+          @if (metodoPago() === MetodoPago.NEQUI || metodoPago() === MetodoPago.DAVIPLATA || metodoPago() === MetodoPago.TRANSFERENCIA_BANCARIA) {
+            <div class="nequi-voucher-box">
+              <div class="accounts-header">
+                <div class="acc-badge"><i class="fa-solid fa-building-columns"></i> Cuentas Oficiales para Transferir</div>
+                <span class="acc-note">Realiza la transferencia por <strong>&#36;{{ formatNumber(montoFinalCalculado()) }}</strong> y adjunta el soporte</span>
+              </div>
+
+              <div class="bank-accounts-grid">
+                @if (metodoPago() === MetodoPago.NEQUI || metodoPago() === MetodoPago.DAVIPLATA) {
+                  <div class="bank-card bank-card-nequi">
+                    <div class="b-icon-holder"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div class="b-info">
+                      <span class="b-brand">Nequi / DaviPlata</span>
+                      <span class="b-number">310 987 6543</span>
+                      <span class="b-holder">SportCore Academy SAS • NIT 901.458.772-1</span>
+                    </div>
+                    <button type="button" class="btn-copy-acc" (click)="copiarTexto('3109876543')" title="Copiar número Nequi">
+                      <i class="fa-solid fa-copy"></i> Copiar
+                    </button>
+                  </div>
+                }
+
+                @if (metodoPago() === MetodoPago.TRANSFERENCIA_BANCARIA || metodoPago() === MetodoPago.NEQUI) {
+                  <div class="bank-card bank-card-banco">
+                    <div class="b-icon-holder"><i class="fa-solid fa-building-columns"></i></div>
+                    <div class="b-info">
+                      <span class="b-brand">Bancolombia • Ahorros</span>
+                      <span class="b-number">245-098765-12</span>
+                      <span class="b-holder">SportCore Academy SAS • NIT 901.458.772-1</span>
+                    </div>
+                    <button type="button" class="btn-copy-acc" (click)="copiarTexto('24509876512')" title="Copiar cuenta Bancolombia">
+                      <i class="fa-solid fa-copy"></i> Copiar
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <!-- VOUCHER UPLOAD DROPZONE -->
+              <div class="voucher-upload-section">
+                <label class="sport-label">
+                  <i class="fa-solid fa-receipt text-emerald"></i> Adjuntar Comprobante de Pago <span class="required-star">*</span>
+                </label>
+                
+                <div class="voucher-dropzone" [class.has-file]="comprobanteUrl()">
+                  <input
+                    type="file"
+                    id="comprobanteFileInput"
+                    accept="image/*,.pdf"
+                    class="file-input-hidden"
+                    (change)="onFileSelected($event)"
+                  />
+                  
+                  @if (!comprobanteUrl()) {
+                    <div class="dropzone-empty">
+                      <div class="dropzone-icon-wrap">
+                        <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                      </div>
+                      <h4 class="dropzone-title">Sube tu comprobante de Nequi o transferencia</h4>
+                      <p class="dropzone-sub">Formatos soportados: JPG, PNG, PDF o captura de pantalla</p>
+                      
+                      <div class="dropzone-actions">
+                        <button type="button" class="btn-dropzone-upload" (click)="triggerFileInput()">
+                          <i class="fa-solid fa-file-arrow-up"></i> Seleccionar Archivo
+                        </button>
+                        <button type="button" class="btn-dropzone-demo" (click)="usarComprobanteDemo()">
+                          <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Comprobante Demo
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="dropzone-preview">
+                      <div class="preview-thumb-box">
+                        <img [src]="comprobanteUrl()" alt="Soporte Nequi" class="preview-thumb-img" />
+                      </div>
+                      <div class="preview-info-box">
+                        <span class="preview-filename"><i class="fa-solid fa-file-invoice"></i> {{ comprobanteNombreArchivo() || 'comprobante_transferencia.png' }}</span>
+                        <span class="preview-status"><i class="fa-solid fa-circle-check text-emerald"></i> Soporte adjuntado para revisión de Tesorería</span>
+                      </div>
+                      <button type="button" class="btn-remove-voucher" (click)="quitarComprobante()" title="Quitar comprobante">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <div class="form-group mt-3">
+                  <label class="sport-label">
+                    <i class="fa-solid fa-hashtag text-cyan"></i> Número de Aprobación / Referencia (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    [ngModel]="referenciaManual()"
+                    (ngModelChange)="referenciaManual.set($event)"
+                    placeholder="ej. NQ-849201 o número de transacción"
+                    class="sport-input"
+                  />
+                </div>
+
+                <div class="treasury-info-pill">
+                  <i class="fa-solid fa-shield-halved text-amber"></i>
+                  <span><strong>Proceso de Aprobación:</strong> El pago quedará en estado <em>PENDIENTE DE APROBACIÓN</em>. La tesorera validará el depósito y tu pase QR digital quedará activo automáticamente.</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- TOTAL SUMMARY -->
+          <div class="total-bar">
+            <div class="total-text">
+              <span class="total-label">Total a Liquidar:</span>
+              <span class="total-sub"><i class="fa-solid fa-shield-halved text-emerald"></i> Sin costos ocultos • Incluye póliza de entrenamiento y ficha digital</span>
+            </div>
+            <div class="total-amount">
+              &#36;{{ formatNumber(montoFinalCalculado()) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="cerrar()">Cancelar</button>
+          <button
+            class="btn-primary"
+            [disabled]="isSubmitting() || !nombreJugador() || !nombreAcudiente() || !telefonoAcudiente() || ((metodoPago() === MetodoPago.NEQUI || metodoPago() === MetodoPago.DAVIPLATA) && !comprobanteUrl())"
+            (click)="submitInscripcion()"
+          >
+            @if (!isSubmitting()) {
+              <i class="fa-solid fa-shield-check"></i>
+            } @else {
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            }
+            {{ isSubmitting() ? 'Procesando Inscripción...' : (metodoPago() === MetodoPago.WOMPI_PSE ? 'Pagar $' + formatNumber(montoFinalCalculado()) + ' (PSE)' : 'Confirmar & Enviar Soporte') }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

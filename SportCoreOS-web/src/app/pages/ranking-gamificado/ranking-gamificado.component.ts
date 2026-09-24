@@ -3,8 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { CatalogosService } from '../../core/services/catalogos.service';
+import { 
+  TierRank, 
+  TabRanking, 
+  FiltroTemporalRanking, 
+  TipoNotificacionToast, 
+  SortOrder,
+  EstadoRetoJugador 
+} from '../../core/enums/domain.enums';
 
-export type TierRank = 'DIAMANTE' | 'ORO' | 'PLATA' | 'BRONCE';
+export { TierRank };
 
 export interface AlumnoRankItem {
   id: string;
@@ -40,13 +48,26 @@ export interface AlumnoRankItem {
   };
 }
 
-import { PaginationBarComponent } from '../../shared/components/pagination-bar/pagination-bar.component';
-import { FutPlayerCardComponent } from '../../shared/components/fut-player-card/fut-player-card.component';
+import { RankingPodiumComponent } from './components/ranking-podium/ranking-podium.component';
+import { RankingTableComponent } from './components/ranking-table/ranking-table.component';
+import { RankingRetosComponent } from './components/ranking-retos/ranking-retos.component';
+import { RankingCertificacionDtComponent } from './components/ranking-certificacion-dt/ranking-certificacion-dt.component';
+import { RankingFutDrawerComponent } from './components/ranking-fut-drawer/ranking-fut-drawer.component';
+import { RankingReglasModalComponent } from './components/ranking-reglas-modal/ranking-reglas-modal.component';
 
 @Component({
   selector: 'app-ranking-gamificado',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationBarComponent, FutPlayerCardComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RankingPodiumComponent,
+    RankingTableComponent,
+    RankingRetosComponent,
+    RankingCertificacionDtComponent,
+    RankingFutDrawerComponent,
+    RankingReglasModalComponent
+  ],
   templateUrl: './ranking-gamificado.component.html',
   styleUrl: './ranking-gamificado.component.scss'
 })
@@ -54,17 +75,21 @@ export class RankingGamificadoComponent implements OnInit {
   private api = inject(ApiService);
   private catalogos = inject(CatalogosService);
 
+  readonly TabRanking = TabRanking;
+  readonly FiltroTemporalRanking = FiltroTemporalRanking;
+  readonly TierRank = TierRank;
+
   isRefreshing = signal<boolean>(false);
   isLoading = signal<boolean>(false);
 
   // Pestaña Principal de la Vista
-  activeMainTab = signal<'LEADERBOARD' | 'RETOS' | 'CERTIFICACION_DT'>('LEADERBOARD');
+  activeMainTab = signal<TabRanking>(TabRanking.LEADERBOARD);
 
   // Filtros de Clasificación
   categoriaSeleccionada = signal<string>('TODAS');
-  tierSeleccionado = signal<string>('TODOS');
+  tierSeleccionado = signal<string>(TierRank.TODOS);
   posicionSeleccionada = signal<string>('TODAS');
-  filtroTemporal = signal<'TEMPORADA' | 'MES' | 'SEMANA'>('TEMPORADA');
+  filtroTemporal = signal<FiltroTemporalRanking>(FiltroTemporalRanking.TEMPORADA);
   busquedaTexto = '';
 
   // Filtros y Estado del Módulo de Retos Individuales Comprobables
@@ -74,11 +99,11 @@ export class RankingGamificadoComponent implements OnInit {
   jugadorParaRetos = signal<AlumnoRankItem | null>(null);
   retosDelJugador = signal<any[]>([]);
   metricasRetosJugador = signal<any>(null);
-  mensajeNotificacion = signal<{ texto: string; tipo: 'exito' | 'info' | 'alerta' } | null>(null);
+  mensajeNotificacion = signal<{ texto: string; tipo: TipoNotificacionToast } | null>(null);
   
   // Ordenamiento por columnas
   sortColumn = signal<string>('posicionRanking');
-  sortDirection = signal<'ASC' | 'DESC'>('ASC');
+  sortDirection = signal<SortOrder>(SortOrder.ASC);
 
   // Paginación conectada a Base de Datos
   currentPage = signal<number>(1);
@@ -281,10 +306,10 @@ export class RankingGamificadoComponent implements OnInit {
 
   private mapJugadorToRankItem(j: any, rankNumber: number): AlumnoRankItem {
     const nivel = Math.max(1, Math.floor((j.xp_total || 2000) / 250));
-    let tier: TierRank = 'BRONCE';
-    if (nivel >= 15) tier = 'DIAMANTE';
-    else if (nivel >= 12) tier = 'ORO';
-    else if (nivel >= 10) tier = 'PLATA';
+    let tier: TierRank = TierRank.BRONCE;
+    if (nivel >= 15) tier = TierRank.DIAMANTE;
+    else if (nivel >= 12) tier = TierRank.ORO;
+    else if (nivel >= 10) tier = TierRank.PLATA;
 
     return {
       id: j.id || `alm-${rankNumber}`,
@@ -328,7 +353,7 @@ export class RankingGamificadoComponent implements OnInit {
     if (this.categoriaSeleccionada() !== 'TODAS') {
       mockList = mockList.filter(a => a.categoriaId === this.categoriaSeleccionada());
     }
-    if (this.tierSeleccionado() !== 'TODOS') {
+    if (this.tierSeleccionado() !== TierRank.TODOS) {
       mockList = mockList.filter(a => a.tier === this.tierSeleccionado());
     }
     if (this.posicionSeleccionada() !== 'TODAS') {
@@ -346,7 +371,7 @@ export class RankingGamificadoComponent implements OnInit {
 
     // Ordenamiento local
     const col = this.sortColumn();
-    const isAsc = this.sortDirection() === 'ASC';
+    const isAsc = this.sortDirection() === SortOrder.ASC;
     mockList.sort((a: any, b: any) => {
       let valA = a[col];
       let valB = b[col];
@@ -366,13 +391,13 @@ export class RankingGamificadoComponent implements OnInit {
   // Métodos de Ordenamiento
   setSortColumn(col: string): void {
     if (this.sortColumn() === col) {
-      this.sortDirection.update(d => d === 'ASC' ? 'DESC' : 'ASC');
+      this.sortDirection.update(d => d === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       this.sortColumn.set(col);
       if (['xpTotal', 'overallRating', 'rachaEntrenamientos', 'asistenciasEfectividad', 'nivel'].includes(col)) {
-        this.sortDirection.set('DESC');
+        this.sortDirection.set(SortOrder.DESC);
       } else {
-        this.sortDirection.set('ASC');
+        this.sortDirection.set(SortOrder.ASC);
       }
     }
     this.currentPage.set(1);
@@ -383,7 +408,7 @@ export class RankingGamificadoComponent implements OnInit {
     if (this.sortColumn() !== col) {
       return 'fa-sort text-slate-300';
     }
-    return this.sortDirection() === 'ASC' 
+    return this.sortDirection() === SortOrder.ASC 
       ? 'fa-arrow-up-short-wide text-emerald' 
       : 'fa-arrow-down-wide-short text-emerald';
   }
@@ -473,16 +498,16 @@ export class RankingGamificadoComponent implements OnInit {
   // =========================================================================
   // GESTIÓN DE RETOS INDIVIDUALES COMPROBABLES (FLEXIONES, DOMINADAS, ETC.)
   // =========================================================================
-  setMainTab(tab: 'LEADERBOARD' | 'RETOS' | 'CERTIFICACION_DT'): void {
+  setMainTab(tab: TabRanking): void {
     this.activeMainTab.set(tab);
-    if (tab === 'RETOS') {
+    if (tab === TabRanking.RETOS) {
       if (!this.jugadorParaRetos()) {
         const primero = this.alumnos()[0] || this.top3()[0] || this.obtenerMockAlumnos()[0];
         if (primero) {
           this.seleccionarJugadorParaRetos(primero);
         }
       }
-    } else if (tab === 'CERTIFICACION_DT') {
+    } else if (tab === TabRanking.CERTIFICACION_DT) {
       this.cargarRetosPendientesDT();
     }
   }
@@ -592,7 +617,7 @@ export class RankingGamificadoComponent implements OnInit {
         totalNivelesCatalogo += 1;
 
         const prog = this.getProgresoNivel(c.id, Number(lvl.nivel));
-        if (prog.estado === 'APROBADO') {
+        if (prog.estado === EstadoRetoJugador.APROBADO) {
           catXpGanado += xp;
           catNivelesAprobados += 1;
         }
@@ -624,7 +649,7 @@ export class RankingGamificadoComponent implements OnInit {
       porcentajeXpRetos,
       porcentajeCatalogoCompletado,
       retosAprobadosCount,
-      retosPendientesCount: this.retosDelJugador().filter(p => p.estado === 'COMPROBABLE').length,
+      retosPendientesCount: this.retosDelJugador().filter(p => p.estado === EstadoRetoJugador.COMPROBABLE).length,
       totalNivelesCatalogo: totalNivelesCatalogo || 21,
       desgloseCategorias: desglose
     };
@@ -643,7 +668,7 @@ export class RankingGamificadoComponent implements OnInit {
       xp: nivel.xp,
     }).subscribe({
       next: () => {
-        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Realízalo en cancha delante de tu DT para certificar tus +${nivel.xp} XP.`, 'exito');
+        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Realízalo en cancha delante de tu DT para certificar tus +${nivel.xp} XP.`, TipoNotificacionToast.EXITO);
         this.cargarRetosJugador(jug.id);
         this.cargarRetosPendientesDT();
       },
@@ -671,7 +696,7 @@ export class RankingGamificadoComponent implements OnInit {
         };
         this.retosDelJugador.update(list => [nuevoProgreso, ...list]);
         this.retosPendientesDT.update(list => [nuevoProgreso, ...list]);
-        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Preséntalo delante del profe para validar tus +${nivel.xp} XP.`, 'exito');
+        this.mostrarNotificacion(`🎯 ¡Reto "${reto.nombre} - ${nivel.titulo}" marcado como COMPROBABLE! Preséntalo delante del profe para validar tus +${nivel.xp} XP.`, TipoNotificacionToast.EXITO);
       }
     });
   }
@@ -705,12 +730,12 @@ export class RankingGamificadoComponent implements OnInit {
       if (esSalto) {
         this.mostrarNotificacion(
           `🚀 ¡SALTO DE RETO APROBADO! Al superar el Nivel ${nivelTarget} (${progreso.meta_cantidad || 50} ${progreso.unidad_medida || 'rep'}), se aprobaron automáticamente todos los niveles anteriores sumando un acumulado total de +${totalXpGanado} XP a ${jugNombre}.`,
-          'exito'
+          TipoNotificacionToast.EXITO
         );
       } else {
         this.mostrarNotificacion(
           `🏆 ¡Reto Nivel ${nivelTarget} APROBADO por el DT! Se sumaron +${totalXpGanado} XP a ${jugNombre}.`,
-          'exito'
+          TipoNotificacionToast.EXITO
         );
       }
       
@@ -754,7 +779,7 @@ export class RankingGamificadoComponent implements OnInit {
           const def = nivelesDef.find((nd: any) => Number(nd.nivel) === l) || { xp: 30, meta: l * 5, unidad: 'repeticiones' };
           const existing = mapNiveles.get(l);
           if (existing) {
-            existing.estado = 'APROBADO';
+            existing.estado = EstadoRetoJugador.APROBADO;
             existing.xp_recompensa = def.xp;
             existing.fecha_evaluacion = new Date().toISOString();
           } else {
@@ -767,7 +792,7 @@ export class RankingGamificadoComponent implements OnInit {
               meta_cantidad: def.meta,
               unidad_medida: def.unidad,
               xp_recompensa: def.xp,
-              estado: 'APROBADO',
+              estado: EstadoRetoJugador.APROBADO,
               fecha_solicitud: new Date().toISOString(),
               fecha_evaluacion: new Date().toISOString(),
               evaluador_dt_nombre: 'Prof. Mario Yepes (DT Principal)',
@@ -779,7 +804,7 @@ export class RankingGamificadoComponent implements OnInit {
       });
 
     } else {
-      this.mostrarNotificacion(`⚠️ Reto devuelto a ${jugNombre} para perfeccionar técnica y volver a presentar.`, 'alerta');
+      this.mostrarNotificacion(`⚠️ Reto devuelto a ${jugNombre} para perfeccionar técnica y volver a presentar.`, TipoNotificacionToast.ALERTA);
     }
 
     this.retosPendientesDT.update(list => list.filter(p => p.id !== progreso.id));
@@ -794,7 +819,7 @@ export class RankingGamificadoComponent implements OnInit {
     
     const yaAprobados = new Set(
       this.retosDelJugador()
-        .filter(p => (p.reto_id === retoId || p.retoId === retoId) && p.estado === 'APROBADO')
+        .filter(p => (p.reto_id === retoId || p.retoId === retoId) && p.estado === EstadoRetoJugador.APROBADO)
         .map(p => Number(p.nivel_solicitado || p.nivelSolicitado))
     );
 
@@ -808,22 +833,22 @@ export class RankingGamificadoComponent implements OnInit {
     return sum > 0 ? sum : 50;
   }
 
-  getProgresoNivel(retoId: string, nivelNum: number): { estado: string; item?: any } {
+  getProgresoNivel(retoId: string, nivelNum: number): { estado: EstadoRetoJugador; item?: any } {
     const encontrados = this.retosDelJugador().filter(
       p => (p.reto_id === retoId || p.retoId === retoId) && 
            (p.nivel_solicitado === nivelNum || p.nivelSolicitado === nivelNum)
     );
-    if (encontrados.length === 0) return { estado: 'DISPONIBLE' };
-    const aprobado = encontrados.find(e => e.estado === 'APROBADO');
-    if (aprobado) return { estado: 'APROBADO', item: aprobado };
-    const comprobable = encontrados.find(e => e.estado === 'COMPROBABLE');
-    if (comprobable) return { estado: 'COMPROBABLE', item: comprobable };
-    const rechazado = encontrados.find(e => e.estado === 'RECHAZADO');
-    if (rechazado) return { estado: 'RECHAZADO', item: rechazado };
-    return { estado: 'DISPONIBLE' };
+    if (encontrados.length === 0) return { estado: EstadoRetoJugador.DISPONIBLE };
+    const aprobado = encontrados.find(e => e.estado === EstadoRetoJugador.APROBADO);
+    if (aprobado) return { estado: EstadoRetoJugador.APROBADO, item: aprobado };
+    const comprobable = encontrados.find(e => e.estado === EstadoRetoJugador.COMPROBABLE);
+    if (comprobable) return { estado: EstadoRetoJugador.COMPROBABLE, item: comprobable };
+    const rechazado = encontrados.find(e => e.estado === EstadoRetoJugador.RECHAZADO);
+    if (rechazado) return { estado: EstadoRetoJugador.RECHAZADO, item: rechazado };
+    return { estado: EstadoRetoJugador.DISPONIBLE };
   }
 
-  mostrarNotificacion(texto: string, tipo: 'exito' | 'info' | 'alerta'): void {
+  mostrarNotificacion(texto: string, tipo: TipoNotificacionToast): void {
     this.mensajeNotificacion.set({ texto, tipo });
     setTimeout(() => {
       this.mensajeNotificacion.set(null);
@@ -853,7 +878,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u15',
         categoriaNombre: 'Sub-15 Élite',
         fotoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200',
-        tier: 'ORO',
+        tier: TierRank.ORO,
         nivel: 14,
         overallRating: 88,
         xpTotal: 3450,
@@ -879,7 +904,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u17',
         categoriaNombre: 'Sub-17 Pro',
         fotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
-        tier: 'ORO',
+        tier: TierRank.ORO,
         nivel: 13,
         overallRating: 86,
         xpTotal: 3120,
@@ -905,7 +930,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u17',
         categoriaNombre: 'Sub-17 Pro',
         fotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-        tier: 'PLATA',
+        tier: TierRank.PLATA,
         nivel: 12,
         overallRating: 83,
         xpTotal: 2850,
@@ -931,7 +956,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u15',
         categoriaNombre: 'Sub-15 Élite',
         fotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-        tier: 'PLATA',
+        tier: TierRank.PLATA,
         nivel: 11,
         overallRating: 81,
         xpTotal: 2640,
@@ -957,7 +982,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u15',
         categoriaNombre: 'Sub-15 Élite',
         fotoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200',
-        tier: 'PLATA',
+        tier: TierRank.PLATA,
         nivel: 11,
         overallRating: 80,
         xpTotal: 2510,
@@ -983,7 +1008,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u15',
         categoriaNombre: 'Sub-15 Élite',
         fotoUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 9,
         overallRating: 77,
         xpTotal: 2190,
@@ -1009,7 +1034,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u17',
         categoriaNombre: 'Sub-17 Pro',
         fotoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 9,
         overallRating: 76,
         xpTotal: 2050,
@@ -1035,7 +1060,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u15',
         categoriaNombre: 'Sub-15 Élite',
         fotoUrl: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 7,
         overallRating: 72,
         xpTotal: 1580,
@@ -1061,7 +1086,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u13',
         categoriaNombre: 'Sub-13 Cantera',
         fotoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 8,
         overallRating: 75,
         xpTotal: 1980,
@@ -1087,7 +1112,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u13',
         categoriaNombre: 'Sub-13 Cantera',
         fotoUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 8,
         overallRating: 74,
         xpTotal: 1890,
@@ -1113,7 +1138,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u20',
         categoriaNombre: 'Sub-20 Primera',
         fotoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200',
-        tier: 'ORO',
+        tier: TierRank.ORO,
         nivel: 15,
         overallRating: 89,
         xpTotal: 3600,
@@ -1139,7 +1164,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-fem',
         categoriaNombre: 'Femenino Juvenil',
         fotoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200',
-        tier: 'ORO',
+        tier: TierRank.ORO,
         nivel: 14,
         overallRating: 87,
         xpTotal: 3380,
@@ -1165,7 +1190,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-fem',
         categoriaNombre: 'Femenino Juvenil',
         fotoUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200',
-        tier: 'PLATA',
+        tier: TierRank.PLATA,
         nivel: 12,
         overallRating: 82,
         xpTotal: 2790,
@@ -1191,7 +1216,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u11',
         categoriaNombre: 'Sub-11 Semillero',
         fotoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 6,
         overallRating: 71,
         xpTotal: 1450,
@@ -1217,7 +1242,7 @@ export class RankingGamificadoComponent implements OnInit {
         categoriaId: 'cat-u11',
         categoriaNombre: 'Sub-11 Semillero',
         fotoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200',
-        tier: 'BRONCE',
+        tier: TierRank.BRONCE,
         nivel: 6,
         overallRating: 70,
         xpTotal: 1390,
@@ -1332,7 +1357,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 15,
         unidad_medida: 'flexiones',
         xp_recompensa: 100,
-        estado: 'COMPROBABLE',
+        estado: EstadoRetoJugador.COMPROBABLE,
         fecha_solicitud: new Date(Date.now() - 3600000).toISOString(),
         reto_nombre: 'Flexiones de Pecho (Push-Ups)',
         reto_icono: 'fa-solid fa-dumbbell',
@@ -1353,7 +1378,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 25,
         unidad_medida: 'toques',
         xp_recompensa: 80,
-        estado: 'COMPROBABLE',
+        estado: EstadoRetoJugador.COMPROBABLE,
         fecha_solicitud: new Date(Date.now() - 7200000).toISOString(),
         reto_nombre: 'Dominadas de Balón (21s / Juggling)',
         reto_icono: 'fa-solid fa-futbol',
@@ -1378,7 +1403,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 5,
         unidad_medida: 'flexiones',
         xp_recompensa: 30,
-        estado: 'APROBADO',
+        estado: EstadoRetoJugador.APROBADO,
         fecha_evaluacion: '2026-03-10',
         evaluador_dt_nombre: 'Prof. Mario Yepes',
         observaciones_dt: 'Excelente técnica, pecho abajo y espalda recta.'
@@ -1391,7 +1416,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 10,
         unidad_medida: 'flexiones',
         xp_recompensa: 60,
-        estado: 'APROBADO',
+        estado: EstadoRetoJugador.APROBADO,
         fecha_evaluacion: '2026-03-18',
         evaluador_dt_nombre: 'Prof. Mario Yepes',
         observaciones_dt: 'Superó las 10 repeticiones continuas con solvencia.'
@@ -1404,7 +1429,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 15,
         unidad_medida: 'flexiones',
         xp_recompensa: 100,
-        estado: 'COMPROBABLE',
+        estado: EstadoRetoJugador.COMPROBABLE,
         fecha_solicitud: new Date().toISOString()
       },
       {
@@ -1415,7 +1440,7 @@ export class RankingGamificadoComponent implements OnInit {
         meta_cantidad: 10,
         unidad_medida: 'toques',
         xp_recompensa: 40,
-        estado: 'APROBADO',
+        estado: EstadoRetoJugador.APROBADO,
         fecha_evaluacion: '2026-03-12',
         evaluador_dt_nombre: 'Prof. Mario Yepes',
         observaciones_dt: 'Buen control de empeine y borde interno.'

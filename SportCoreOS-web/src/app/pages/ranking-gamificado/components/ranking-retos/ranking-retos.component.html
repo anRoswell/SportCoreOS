@@ -1,0 +1,190 @@
+<section class="retos-module-view">
+  <!-- SELECTOR DE ALUMNO ACTIVO / PROTAGONISTA -->
+  <div class="active-student-bar">
+    <div class="student-bar-info">
+      <span class="lbl"><i class="fa-solid fa-user-ninja text-emerald"></i> Alumno Evaluado:</span>
+      <div class="selected-student-chip">
+        <ng-container *ngIf="jugadorActivo">
+          <img [src]="jugadorActivo.fotoUrl" [alt]="jugadorActivo.nombres" class="mini-avatar" />
+          <div class="student-names">
+            <strong>{{ jugadorActivo.nombres }} {{ jugadorActivo.apellidos }}</strong>
+            <span>#{{ jugadorActivo.dorsal }} • {{ jugadorActivo.categoriaNombre }} • Nivel {{ jugadorActivo.nivel }} ({{ jugadorActivo.xpTotal | number }} XP Total)</span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Selector rápido para cambiar de alumno -->
+    <div class="switch-student-wrap">
+      <label><i class="fa-solid fa-arrows-rotate"></i> Cambiar Alumno:</label>
+      <select [ngModel]="jugadorActivo?.id" (ngModelChange)="seleccionarJugador.emit($event)" class="student-select">
+        <option *ngFor="let alm of todosAlumnos" [value]="alm.id">#{{ alm.dorsal }} {{ alm.nombres }} {{ alm.apellidos }} ({{ alm.categoriaNombre }})</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- PANEL DE MÉTRICAS & PORCENTAJE DE XP -->
+  <div class="retos-metrics-dashboard">
+    <div class="metrics-hero-gauge">
+      <div class="gauge-circle-wrap">
+        <div class="gauge-ring">
+          <span class="gauge-percent-value">{{ metricasRetos?.porcentajeXpRetos || 0 }}%</span>
+          <span class="gauge-percent-label">XP por Retos</span>
+        </div>
+      </div>
+      <div class="gauge-text-block">
+        <h4>Aporte de Retos al Nivel del Jugador</h4>
+        <p>El <strong>{{ metricasRetos?.porcentajeXpRetos || 0 }}%</strong> de la experiencia total de este alumno ({{ metricasRetos?.xpRetosObtenido || 0 | number }} de {{ metricasRetos?.xpTotalJugador || 3120 | number }} XP) ha sido comprobada presencialmente ante el Director Técnico.</p>
+        
+        <div class="xp-global-progress-track">
+          <div class="track-fill" [style.width.%]="metricasRetos?.porcentajeXpRetos || 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-kpis-grid">
+      <div class="kpi-box-metric green-kpi">
+        <div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">+{{ metricasRetos?.xpRetosObtenido || 0 | number }} XP</span>
+          <span class="kpi-lbl">Ganado en Retos</span>
+        </div>
+      </div>
+
+      <div class="kpi-box-metric cyan-kpi">
+        <div class="kpi-icon"><i class="fa-solid fa-certificate"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ metricasRetos?.retosAprobadosCount || 0 }} / {{ metricasRetos?.totalNivelesCatalogo || 21 }}</span>
+          <span class="kpi-lbl">Niveles Aprobados ({{ metricasRetos?.porcentajeCatalogoCompletado || 0 }}%)</span>
+        </div>
+      </div>
+
+      <div class="kpi-box-metric amber-kpi">
+        <div class="kpi-icon"><i class="fa-solid fa-stopwatch-20"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ metricasRetos?.retosPendientesCount || 0 }} en Cancha</span>
+          <span class="kpi-lbl">Listos para Probar al DT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESGLOSE POR DISCIPLINAS -->
+  <div *ngIf="metricasRetos?.desgloseCategorias?.length > 0" class="categories-progress-row">
+    <div class="cat-progress-card" *ngFor="let cat of metricasRetos.desgloseCategorias">
+      <div class="cat-card-top">
+        <span class="cat-name"><i [class]="cat.icono" [style.color]="cat.color"></i> {{ cat.nombre }}</span>
+        <span class="cat-pct" [style.color]="cat.color">{{ cat.porcentaje }}%</span>
+      </div>
+      <div class="cat-bar-track">
+        <div class="cat-bar-fill" [style.width.%]="cat.porcentaje" [style.background-color]="cat.color"></div>
+      </div>
+      <div class="cat-card-bottom">
+        <span>{{ cat.nivelesAprobados }}/{{ cat.nivelesTotales }} niveles</span>
+        <strong>+{{ cat.xpGanado }} / {{ cat.xpTotal }} XP</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS POR CATEGORÍA DE RETO -->
+  <div class="retos-filter-bar">
+    <div class="filter-chips-list">
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'TODOS'" (click)="filtroTipoRetoChange.emit('TODOS')">
+        <i class="fa-solid fa-layer-group"></i> Todos los Retos
+      </button>
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'FUERZA_CALISTENIA'" (click)="filtroTipoRetoChange.emit('FUERZA_CALISTENIA')">
+        <i class="fa-solid fa-dumbbell"></i> Fuerza (Flexiones)
+      </button>
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'TECNICA_CONTROL'" (click)="filtroTipoRetoChange.emit('TECNICA_CONTROL')">
+        <i class="fa-solid fa-futbol"></i> Técnica (21s Dominadas)
+      </button>
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'POTENCIA_VELOCIDAD'" (click)="filtroTipoRetoChange.emit('POTENCIA_VELOCIDAD')">
+        <i class="fa-solid fa-bolt"></i> Potencia (Saltos)
+      </button>
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'RESISTENCIA_CORE'" (click)="filtroTipoRetoChange.emit('RESISTENCIA_CORE')">
+        <i class="fa-solid fa-shield-halved"></i> Resistencia (Plancha)
+      </button>
+      <button type="button" class="reto-chip" [class.active]="filtroTipoReto === 'PRECISION_TIRO'" (click)="filtroTipoRetoChange.emit('PRECISION_TIRO')">
+        <i class="fa-solid fa-crosshairs"></i> Precisión (Largueros)
+      </button>
+    </div>
+
+    <div class="retos-info-legend">
+      <span class="info-pill cascade-info"><i class="fa-solid fa-rocket text-cyan"></i> <strong>Regla de Salto de Reto:</strong> Si demuestras directamente un nivel superior (ej. 50 flexiones), el DT aprobará automáticamente todos los niveles anteriores y sumará el acumulado de XP.</span>
+    </div>
+  </div>
+
+  <!-- GRID DE TARJETAS DE RETOS INDIVIDUALES -->
+  <div class="retos-cards-grid">
+    <div class="reto-card-card" *ngFor="let reto of retosFiltrados()">
+      <div class="reto-card-header" [style.borderLeftColor]="reto.color_distintivo || '#10b981'">
+        <div class="reto-icon-box" [style.background]="(reto.color_distintivo || '#10b981') + '15'" [style.color]="reto.color_distintivo || '#10b981'">
+          <i [class]="reto.icono"></i>
+        </div>
+        <div class="reto-header-text">
+          <h3>{{ reto.nombre }}</h3>
+          <p>{{ reto.descripcion }}</p>
+        </div>
+      </div>
+
+      <!-- LISTA DE NIVELES PROGRESIVOS -->
+      <div class="reto-tiers-container">
+        <div 
+          *ngFor="let nivel of reto.niveles"
+          class="tier-row-item" 
+          [class.tier-aprobado]="getProgresoNivel(reto.id, nivel.nivel).estado === 'APROBADO'"
+          [class.tier-comprobable]="getProgresoNivel(reto.id, nivel.nivel).estado === 'COMPROBABLE'"
+          [class.tier-rechazado]="getProgresoNivel(reto.id, nivel.nivel).estado === 'RECHAZADO'">
+          
+          <div class="tier-left-info">
+            <div class="tier-number-badge">
+              <span>Nivel {{ nivel.nivel }}</span>
+              <span *ngIf="nivel.nivel > 1 && getProgresoNivel(reto.id, nivel.nivel).estado !== 'APROBADO'" class="badge-jump-hint" title="Al aprobar este nivel, se aprueban automáticamente todos los niveles anteriores"><i class="fa-solid fa-forward-fast"></i> Salto</span>
+            </div>
+            <div class="tier-title-meta">
+              <strong class="tier-title">{{ nivel.titulo }}</strong>
+              <span class="tier-meta-sub">{{ nivel.meta }} {{ nivel.unidad }} • Dificultad {{ nivel.dificultad }}</span>
+            </div>
+          </div>
+
+          <div class="tier-right-action">
+            <div class="tier-xp-reward">
+              <i class="fa-solid fa-bolt"></i> +{{ nivel.xp }} XP
+            </div>
+
+            <!-- ESTADO 1: DISPONIBLE -->
+            <button 
+              *ngIf="getProgresoNivel(reto.id, nivel.nivel).estado === 'DISPONIBLE'"
+              type="button" 
+              class="btn-solicitar-comprobacion" 
+              [class.btn-jump-action]="nivel.nivel > 1"
+              (click)="solicitarComprobacion.emit({ reto: reto, nivel: nivel })"
+              [title]="nivel.nivel > 1 ? 'Saltar directamente a este nivel y desbloquear el acumulado' : 'Marcar para comprobar en cancha'">
+              <i class="fa-solid" [class.fa-hand]="nivel.nivel === 1" [class.fa-rocket]="nivel.nivel > 1"></i>
+              <span>{{ nivel.nivel > 1 ? 'Comprobar Nivel ' + nivel.nivel : 'Deseo Comprobar' }}</span>
+            </button>
+
+            <!-- ESTADO 2: COMPROBABLE -->
+            <div *ngIf="getProgresoNivel(reto.id, nivel.nivel).estado === 'COMPROBABLE'" class="badge-comprobable-live">
+              <span class="pulse-beacon"></span>
+              <i class="fa-solid fa-stopwatch-20"></i>
+              <span>Comprobable en Cancha</span>
+            </div>
+
+            <!-- ESTADO 3: APROBADO POR EL DT -->
+            <div *ngIf="getProgresoNivel(reto.id, nivel.nivel).estado === 'APROBADO'" class="badge-aprobado-certified" [title]="getProgresoNivel(reto.id, nivel.nivel).item?.observaciones_dt || 'Aprobado en entrenamiento'">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Certificado DT (+{{ nivel.xp }} XP)</span>
+            </div>
+
+            <!-- ESTADO 4: RECHAZADO -->
+            <div *ngIf="getProgresoNivel(reto.id, nivel.nivel).estado === 'RECHAZADO'" class="badge-rechazado-retry">
+              <span><i class="fa-solid fa-circle-exclamation"></i> Practicar técnica</span>
+              <button type="button" class="btn-retry-tier" (click)="solicitarComprobacion.emit({ reto: reto, nivel: nivel })">Reintentar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

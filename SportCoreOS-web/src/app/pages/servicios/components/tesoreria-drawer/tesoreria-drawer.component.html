@@ -1,0 +1,90 @@
+<div class="modal-overlay modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <div class="modal-dialog modal-card fut-card modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group modal-title-wrap">
+        <div class="modal-badge-icon modal-icon-badge bg-purple-glow">
+          <i class="fa-solid fa-vault"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2 class="modal-title">Bandeja de Tesorería & Aprobación de Pagos</h2>
+          <p class="modal-sub modal-subtitle">
+            Valida extractos bancarios y autoriza inscripciones pagadas por Nequi o Transferencia
+          </p>
+        </div>
+      </div>
+      <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="inscripcionesPendientes.length > 0; else noPendientesGlobal" class="fut-table-container">
+        <table class="fut-table">
+          <thead>
+            <tr>
+              <th>Clínica Especializada</th>
+              <th>Atleta</th>
+              <th>Acudiente / Teléfono</th>
+              <th>Monto</th>
+              <th>Método / Ref</th>
+              <th>Comprobante</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of inscripcionesPendientes">
+              <td>
+                <div class="service-cell-mini">
+                  <strong class="service-name-text">{{ item.servicio_titulo }}</strong>
+                  <small class="text-muted"><i class="fa-solid fa-location-dot"></i> {{ item.cancha_nombre }}</small>
+                </div>
+              </td>
+              <td>
+                <strong>{{ item.nombre_jugador }}</strong>
+              </td>
+              <td>
+                <div>{{ item.nombre_acudiente }}</div>
+                <small class="text-muted"><i class="fa-brands fa-whatsapp text-emerald"></i> {{ item.telefono_acudiente }}</small>
+              </td>
+              <td>
+                <strong class="text-emerald text-base">&#36;{{ formatNumber(item.monto_pagado) }}</strong>
+              </td>
+              <td>
+                <span class="badge-payment">{{ item.metodo_pago }}</span>
+                <div class="ref-mini" *ngIf="item.referencia_transaccion">Ref: {{ item.referencia_transaccion }}</div>
+              </td>
+              <td>
+                <button *ngIf="item.comprobante_url" class="btn-view-voucher" (click)="verComprobante.emit(item)">
+                  <i class="fa-solid fa-image"></i> Ver Soporte
+                </button>
+                <span *ngIf="!item.comprobante_url" class="text-muted text-xs">Sin imagen</span>
+              </td>
+              <td>
+                <div class="treasury-actions">
+                  <button class="btn-approve-sm" [disabled]="isApproving" (click)="aprobar.emit(item.id)">
+                    <i class="fa-solid fa-check"></i> Aprobar
+                  </button>
+                  <button class="btn-reject-sm" [disabled]="isApproving" (click)="rechazar.emit(item)">
+                    <i class="fa-solid fa-xmark"></i> Rechazar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noPendientesGlobal>
+        <div class="empty-state-mini">
+          <i class="fa-solid fa-circle-check empty-mini-icon text-emerald"></i>
+          <h4>¡Todo al día en Tesorería!</h4>
+          <p>No hay comprobantes pendientes de aprobación en este momento.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrar()">Cerrar</button>
+    </div>
+  </div>
+</div>

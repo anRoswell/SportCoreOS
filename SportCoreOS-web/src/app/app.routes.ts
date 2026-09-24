@@ -273,6 +273,54 @@ export const configuracionSaaSRoutes: Routes = [
 ];
 
 /* =============================================================================
+   11. MÓDULO DE MARKETING, SLIDERS & CREADOR DE LANDINGS
+   ============================================================================= */
+export const marketingRoutes: Routes = [
+  {
+    path: 'sliders-promocionales',
+    loadComponent: () =>
+      import('./pages/sliders-promocionales/sliders-promocionales.component').then((m) => m.SlidersPromocionalesComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'MARKETING_SLIDERS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Sliders Promocionales & Onboarding'
+    },
+  },
+  {
+    path: 'landing-builder',
+    loadComponent: () =>
+      import('./pages/landing-builder/landing-builder.component').then((m) => m.LandingBuilderComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'MARKETING_LANDINGS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Creador de Landing Pages & Contenidos'
+    },
+  },
+];
+
+/* =============================================================================
+   12. RUTAS PÚBLICAS (LANDINGS & FORMULARIOS DE CAPTACIÓN)
+   ============================================================================= */
+export const publicRoutes: Routes = [
+  {
+    path: 'p/:slug',
+    loadComponent: () =>
+      import('./pages/landing-public/landing-public.component').then((m) => m.LandingPublicComponent),
+    data: { 
+      module: 'PUBLIC_LANDING',
+      title: 'Academia Deportiva • SportCoreOS'
+    },
+  },
+  {
+    path: 'landings/:slug',
+    redirectTo: 'p/:slug',
+    pathMatch: 'full',
+  },
+];
+
+/* =============================================================================
    RUTAS PRINCIPALES DEL SISTEMA (COMPOSICIÓN DE MÓDULOS)
    ============================================================================= */
 export const routes: Routes = [
@@ -282,6 +330,7 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   ...authRoutes,
+  ...publicRoutes,
   ...dashboardRoutes,
   ...gestionDeportivaRoutes,
   ...competicionRoutes,
@@ -291,8 +340,10 @@ export const routes: Routes = [
   ...infraestructuraRoutes,
   ...portalPadresRoutes,
   ...configuracionSaaSRoutes,
+  ...marketingRoutes,
   {
     path: '**',
     redirectTo: 'dashboard',
   },
 ];
+

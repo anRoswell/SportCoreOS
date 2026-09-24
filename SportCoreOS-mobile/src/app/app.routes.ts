@@ -8,6 +8,10 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'onboarding',
+    loadComponent: () => import('./pages/onboarding/promo-slider.component').then(m => m.PromoSliderComponent)
+  },
+  {
     path: 'auth/login',
     loadComponent: () => import('./pages/auth/login.component').then(m => m.LoginComponent),
     canActivate: [guestGuard]

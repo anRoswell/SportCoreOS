@@ -1,0 +1,197 @@
+<div class="modal-overlay modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group modal-title-wrap">
+        <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+          <i class="fa-solid fa-plus-circle"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2 class="modal-title">Crear Nueva Clínica Especializada</h2>
+          <p class="modal-sub modal-subtitle">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
+        </div>
+      </div>
+      <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="sport-label">
+            <i class="fa-solid fa-heading text-emerald"></i> Título del Programa / Masterclass <span class="required-star">*</span>
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevoTitulo()"
+            (ngModelChange)="nuevoTitulo.set($event)"
+            placeholder="ej. Potencia de Salto & Cabezazo Defensivo"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label class="sport-label">
+            <i class="fa-solid fa-align-left text-cyan"></i> Subtítulo / Propósito Principal
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevoSubtitulo()"
+            (ngModelChange)="nuevoSubtitulo.set($event)"
+            placeholder="ej. Máxima elevación vertical, timing aéreo y despeje bajo presión"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-layer-group text-amber"></i> Categoría de Habilidad <span class="required-star">*</span>
+          </label>
+          <select
+            [ngModel]="nuevaCategoria()"
+            (ngModelChange)="nuevaCategoria.set($event)"
+            class="sport-input"
+          >
+            <option [value]="CategoriaServicio.VELOCIDAD_EXPLOSIVIDAD">⚡ Velocidad & Sprint</option>
+            <option [value]="CategoriaServicio.COORDINACION_AGILIDAD">🧠 Neuro-Motricidad & Luces</option>
+            <option [value]="CategoriaServicio.TECNICA_REGATE">🪄 Regate 1v1 & Dribbling</option>
+            <option [value]="CategoriaServicio.ARQUEROS_ELITE">🧤 Guante de Oro / Porteros</option>
+            <option [value]="CategoriaServicio.DEFINICION_TIRO">🎯 Definición Quirúrgica & Tiros Libres</option>
+            <option [value]="CategoriaServicio.PREVENCION_FISICA">🛡️ Fuerza Funcional & Prevención</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-user-tie text-emerald"></i> Entrenador Responsable <span class="required-star">*</span>
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevoEntrenador()"
+            (ngModelChange)="nuevoEntrenador.set($event)"
+            placeholder="ej. Prof. Walter Restrepo"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-location-dot text-emerald"></i> Nombre de la Cancha / Sede <span class="required-star">*</span>
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevaCanchaNombre()"
+            (ngModelChange)="nuevaCanchaNombre.set($event)"
+            placeholder="Cancha Sintética Pie de la Popa"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-map-pin text-cyan"></i> Dirección en Cartagena
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevaCanchaDireccion()"
+            (ngModelChange)="nuevaCanchaDireccion.set($event)"
+            placeholder="Calle 30 con Carrera 21, Cartagena"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-calendar-days text-amber"></i> Días de Entrenamiento
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevosDias()"
+            (ngModelChange)="nuevosDias.set($event)"
+            placeholder="ej. Martes y Jueves"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-clock text-amber"></i> Horario
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevoHorario()"
+            (ngModelChange)="nuevoHorario.set($event)"
+            placeholder="ej. 05:00 PM - 06:30 PM"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-ticket text-emerald"></i> Cupos Totales Máximos <span class="required-star">*</span>
+          </label>
+          <input
+            type="number"
+            [ngModel]="nuevosCupos()"
+            (ngModelChange)="nuevosCupos.set($event)"
+            min="1"
+            max="50"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-award text-amber"></i> Insignia Desbloqueable Ficha 360°
+          </label>
+          <input
+            type="text"
+            [ngModel]="nuevaInsignia()"
+            (ngModelChange)="nuevaInsignia.set($event)"
+            placeholder="ej. 🚀 Misil Aéreo Pro"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-tag text-emerald"></i> Precio Sesión Individual ($)
+          </label>
+          <input
+            type="number"
+            [ngModel]="nuevoPrecioIndividual()"
+            (ngModelChange)="nuevoPrecioIndividual.set($event)"
+            step="1000"
+            class="sport-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="sport-label">
+            <i class="fa-solid fa-tags text-emerald"></i> Precio Paquete Mensual ($)
+          </label>
+          <input
+            type="number"
+            [ngModel]="nuevoPrecioMensual()"
+            (ngModelChange)="nuevoPrecioMensual.set($event)"
+            step="1000"
+            class="sport-input"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrar()">Cancelar</button>
+      <button
+        class="btn-primary"
+        [disabled]="isSaving() || !nuevoTitulo() || !nuevoEntrenador() || !nuevaCanchaNombre()"
+        (click)="submitCrearServicio()"
+      >
+        <i class="fa-solid fa-check" *ngIf="!isSaving()"></i>
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving()"></i>
+        {{ isSaving() ? 'Publicando...' : 'Publicar Clínica' }}
+      </button>
+    </div>
+  </div>
+</div>

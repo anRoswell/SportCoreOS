@@ -10,6 +10,12 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
+  const seenOnboarding = typeof localStorage !== 'undefined' && localStorage.getItem('sportcore_seen_onboarding') === 'true';
+  if (!seenOnboarding) {
+    router.navigate(['/onboarding']);
+    return false;
+  }
+
   router.navigate(['/auth/login']);
   return false;
 };

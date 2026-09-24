@@ -1,0 +1,526 @@
+@if (visible && expediente) {
+  <div class="modal-backdrop" (click)="cerrar()">
+    <div class="expediente-modal" (click)="$event.stopPropagation()">
+      <!-- Header del Expediente -->
+      <div class="exp-header">
+        <div class="exp-player-banner">
+          <div class="exp-avatar-wrap">
+            <img 
+              [src]="resolvePhotoUrl(expediente.jugador.foto_url, expediente.jugador.genero)" 
+              [alt]="expediente.jugador.nombres" />
+            <div class="exp-dorsal-tag">
+              #{{ expediente.jugador.numero_dorsal || '-' }}
+            </div>
+          </div>
+          <div class="exp-main-info">
+            <div class="exp-title-row">
+              <h2>{{ expediente.jugador.nombres }} {{ expediente.jugador.apellidos }}</h2>
+              <span class="status-badge" [class]="expediente.jugador.estado_matricula.toLowerCase()">
+                <span class="status-dot"></span>
+                {{ expediente.jugador.estado_matricula }}
+              </span>
+            </div>
+            <div class="exp-meta-pills">
+              <span class="meta-pill"><i class="fa-solid fa-shield"></i> {{ expediente.jugador.categoria_nombre }}</span>
+              <span class="meta-pill"><i class="fa-solid fa-id-card"></i> {{ expediente.jugador.tipo_documento }} {{ expediente.jugador.numero_documento }}</span>
+              <span class="meta-pill"><i class="fa-solid fa-cake-candles"></i> {{ getEdad(expediente.jugador.fecha_nacimiento) }} años ({{ expediente.jugador.fecha_nacimiento | date:'dd/MM/yyyy' }})</span>
+              <span class="meta-pill"><i class="fa-solid fa-hospital-user"></i> {{ expediente.jugador.eps }}</span>
+            </div>
+          </div>
+        </div>
+        <button class="modal-close-btn" (click)="cerrar()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navegación por Pestañas del Expediente 360° -->
+      <div class="exp-tabs-nav">
+        <button 
+          class="exp-tab-btn" 
+          [class.active]="activeExpTab() === TabEnum.DEPORTIVO"
+          (click)="activeExpTab.set(TabEnum.DEPORTIVO)">
+          <i class="fa-solid fa-futbol"></i>
+          <span>1. Perfil Deportivo</span>
+        </button>
+        <button 
+          class="exp-tab-btn" 
+          [class.active]="activeExpTab() === TabEnum.FAMILIA"
+          (click)="activeExpTab.set(TabEnum.FAMILIA)">
+          <i class="fa-solid fa-people-roof"></i>
+          <span>2. Núcleo Familiar ({{ expediente.acudientes.length }})</span>
+        </button>
+        <button 
+          class="exp-tab-btn" 
+          [class.active]="activeExpTab() === TabEnum.BIOMETRIA"
+          (click)="activeExpTab.set(TabEnum.BIOMETRIA)">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>3. Radar Biométrico ({{ expediente.historialBiometrico.length }})</span>
+        </button>
+        <button 
+          class="exp-tab-btn" 
+          [class.active]="activeExpTab() === TabEnum.FINANZAS"
+          (click)="activeExpTab.set(TabEnum.FINANZAS)">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>4. Estado Financiero</span>
+        </button>
+        <button 
+          class="exp-tab-btn" 
+          [class.active]="activeExpTab() === TabEnum.SERVICIOS"
+          (click)="activeExpTab.set(TabEnum.SERVICIOS)">
+          <i class="fa-solid fa-graduation-cap text-amber"></i>
+          <span>5. Clínicas & Insignias Pro ({{ expediente.clinicasInsignias?.length || 0 }})</span>
+        </button>
+      </div>
+
+      <!-- Contenido de las Pestañas -->
+      <div class="exp-tab-content">
+        <!-- PESTAÑA 1: PERFIL DEPORTIVO -->
+        @if (activeExpTab() === TabEnum.DEPORTIVO) {
+          <div class="tab-pane">
+            <div class="profile-cards-grid">
+              <div class="info-card">
+                <div class="card-icon"><i class="fa-solid fa-compass"></i></div>
+                <div class="card-data">
+                  <span class="data-label">Posición Principal / Roles</span>
+                  <strong class="data-val">{{ expediente.jugador.posicion_principal }}</strong>
+                  @if (expediente.jugador.posicion_secundaria) {
+                    <span class="pos-sec-badge mt-1"><i class="fa-solid fa-arrows-split-up-and-left"></i> Sec: {{ expediente.jugador.posicion_secundaria }}</span>
+                  }
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="card-icon"><i class="fa-solid fa-shoe-prints"></i></div>
+                <div class="card-data">
+                  <span class="data-label">Pierna Hábil</span>
+                  <strong class="data-val">{{ expediente.jugador.pierna_habil || 'DIESTRO' }}</strong>
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="card-icon"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="card-data">
+                  <span class="data-label">Director Técnico (DT)</span>
+                  <strong class="data-val">{{ expediente.jugador.dt_nombre || 'Prof. Carlos Valderrama' }}</strong>
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="card-icon"><i class="fa-solid fa-shirt"></i></div>
+                <div class="card-data">
+                  <span class="data-label">Dorsal Asignado</span>
+                  <strong class="data-val highlight">#{{ expediente.jugador.numero_dorsal || '-' }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-box mt-3">
+              <h4 class="box-title"><i class="fa-solid fa-notes-medical"></i> Información Médica & Cobertura</h4>
+              <div class="grid-3-col">
+                <div class="meta-item">
+                  <span class="meta-label">Entidad Prestadora de Salud:</span>
+                  <strong class="meta-value">{{ expediente.jugador.eps || 'EPS Sanitas' }}</strong>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Género / Rama:</span>
+                  <strong class="meta-value">{{ expediente.jugador.genero }}</strong>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Fecha de Ingreso:</span>
+                  <strong class="meta-value">{{ expediente.jugador.created_at | date:'mediumDate' }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- PESTAÑA 2: NÚCLEO FAMILIAR & ACUDIENTES -->
+        @if (activeExpTab() === TabEnum.FAMILIA) {
+          <div class="tab-pane">
+            <div class="pane-header-action">
+              <div>
+                <h3 class="pane-title">Padres de Familia y Contactos de Emergencia</h3>
+                <p class="pane-desc">Personas autorizadas para retiro del jugador y notificaciones WhatsApp.</p>
+              </div>
+              <button class="btn-primary-sm" (click)="toggleAddAcudienteForm()">
+                <i class="fa-solid" [class.fa-plus]="!showAddAcudienteForm" [class.fa-minus]="showAddAcudienteForm"></i>
+                <span>{{ showAddAcudienteForm ? 'Cancelar' : 'Vincular Acudiente' }}</span>
+              </button>
+            </div>
+
+            <!-- Formulario para agregar Acudiente -->
+            @if (showAddAcudienteForm) {
+              <form (ngSubmit)="submitAddAcudiente()" class="inline-form-card">
+                <h4>Vincular Nuevo Acudiente / Familiar</h4>
+                <div class="grid-3-col">
+                  <div class="input-group">
+                    <label>Nombres *</label>
+                    <input type="text" [(ngModel)]="newAcudiente.nombres" name="acNombres" required class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Apellidos *</label>
+                    <input type="text" [(ngModel)]="newAcudiente.apellidos" name="acApellidos" required class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>No. Documento *</label>
+                    <input type="text" [(ngModel)]="newAcudiente.numeroDocumento" name="acDoc" required class="sport-input" />
+                  </div>
+                </div>
+                <div class="grid-3-col">
+                  <div class="input-group">
+                    <label>Teléfono Móvil (WhatsApp) *</label>
+                    <input type="tel" [(ngModel)]="newAcudiente.telefonoMovil" name="acTel" placeholder="+57 300 123 4567" required class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" [(ngModel)]="newAcudiente.email" name="acEmail" class="sport-input" />
+                  </div>
+                  <div class="input-group">
+                    <label>Parentesco</label>
+                    <div class="sport-select-wrapper">
+                      <select [(ngModel)]="newAcudiente.parentesco" name="acParentesco" class="sport-input">
+                        @for (par of parentescos; track par.codigo) {
+                          <option [value]="par.codigo">{{ par.nombre }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-actions-right">
+                  <button type="submit" class="btn-submit-sm" [disabled]="savingAcudiente">
+                    <i class="fa-solid fa-save"></i> Guardar Acudiente
+                  </button>
+                </div>
+              </form>
+            }
+
+            <!-- Lista de Acudientes -->
+            @if (expediente.acudientes.length === 0) {
+              <div class="empty-state-sm">
+                <i class="fa-solid fa-user-group"></i>
+                <p>No hay acudientes registrados para este jugador.</p>
+              </div>
+            } @else {
+              <div class="acudientes-list">
+                @for (a of expediente.acudientes; track a.id) {
+                  <div class="acudiente-card">
+                    <div class="acudiente-avatar">
+                      <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="acudiente-info">
+                      <div class="acudiente-header">
+                        <strong>{{ a.nombres }} {{ a.apellidos }}</strong>
+                        <span class="parentesco-badge">{{ a.parentesco }}</span>
+                        @if (a.es_contacto_principal) {
+                          <span class="badge-principal"><i class="fa-solid fa-star"></i> Principal</span>
+                        }
+                        @if (a.autorizado_recoger) {
+                          <span class="badge-pickup"><i class="fa-solid fa-shield-check"></i> Autorizado Recoger</span>
+                        }
+                      </div>
+                      <div class="acudiente-meta">
+                        <span><i class="fa-solid fa-id-badge"></i> {{ a.tipo_documento }} {{ a.numero_documento }}</span>
+                        <span><i class="fa-solid fa-phone"></i> {{ a.telefono_movil }}</span>
+                        @if (a.email) {
+                          <span><i class="fa-solid fa-envelope"></i> {{ a.email }}</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="acudiente-actions">
+                      <a 
+                        [href]="'https://wa.me/' + cleanPhone(a.telefono_movil)" 
+                        target="_blank" 
+                        class="btn-whatsapp" 
+                        title="Contactar por WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span>WhatsApp</span>
+                      </a>
+                      <button 
+                        class="btn-remove-ac" 
+                        (click)="eliminarAcudiente.emit(a.id)" 
+                        title="Desvincular">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- PESTAÑA 3: RADAR BIOMÉTRICO & TELEMETRÍA -->
+        @if (activeExpTab() === TabEnum.BIOMETRIA) {
+          <div class="tab-pane">
+            <div class="pane-header-action">
+              <div>
+                <h3 class="pane-title">Historial Antropométrico & Pruebas de Rendimiento</h3>
+                <p class="pane-desc">Evolución del peso, estatura, IMC y test aeróbicos/físicos del atleta.</p>
+              </div>
+              <button class="btn-primary-sm" (click)="openBiometria.emit(expediente.jugador)">
+                <i class="fa-solid fa-plus-circle"></i>
+                <span>Registrar Nueva Medición</span>
+              </button>
+            </div>
+
+            <!-- Métricas Actuales Resumen -->
+            @if (expediente.historialBiometrico.length > 0) {
+              <div class="biometria-kpi-grid">
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Estatura Actual</span>
+                  <strong class="bio-val">{{ expediente.historialBiometrico[0].talla_cm }} <small>cm</small></strong>
+                </div>
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Peso Corporal</span>
+                  <strong class="bio-val">{{ expediente.historialBiometrico[0].peso_kg }} <small>kg</small></strong>
+                </div>
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Índice Masa (IMC)</span>
+                  <strong class="bio-val highlight">{{ expediente.historialBiometrico[0].imc }}</strong>
+                  <span class="imc-sub" [class]="getImcClass(expediente.historialBiometrico[0].imc)">{{ getImcLabel(expediente.historialBiometrico[0].imc) }}</span>
+                </div>
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Test de Cooper</span>
+                  <strong class="bio-val">{{ expediente.historialBiometrico[0].test_cooper_metros || '-' }} <small>m</small></strong>
+                </div>
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Sprint 30m</span>
+                  <strong class="bio-val">{{ expediente.historialBiometrico[0].velocidad_30m_seg || '-' }} <small>seg</small></strong>
+                </div>
+                <div class="bio-kpi-card">
+                  <span class="bio-label">Salto Vertical</span>
+                  <strong class="bio-val">{{ expediente.historialBiometrico[0].salto_vertical_cm || '-' }} <small>cm</small></strong>
+                </div>
+              </div>
+            }
+
+            <!-- Historial de Evaluaciones -->
+            <div class="section-box mt-3">
+              <h4 class="box-title"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Evaluaciones</h4>
+              @if (expediente.historialBiometrico.length === 0) {
+                <div class="empty-state-sm">
+                  <p>No se han registrado evaluaciones antropométricas para este jugador.</p>
+                </div>
+              } @else {
+                <table class="fut-table-sub">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Talla</th>
+                      <th>Peso</th>
+                      <th>IMC</th>
+                      <th>Cooper (m)</th>
+                      <th>Sprint 30m</th>
+                      <th>Salto</th>
+                      <th>Evaluador / Observaciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (b of expediente.historialBiometrico; track $index) {
+                      <tr>
+                        <td><strong>{{ b.fecha_evaluacion | date:'dd/MM/yyyy' }}</strong></td>
+                        <td>{{ b.talla_cm }} cm</td>
+                        <td>{{ b.peso_kg }} kg</td>
+                        <td><span class="imc-pill" [class]="getImcClass(b.imc)">{{ b.imc }}</span></td>
+                        <td>{{ b.test_cooper_metros || '-' }} m</td>
+                        <td>{{ b.velocidad_30m_seg || '-' }} s</td>
+                        <td>{{ b.salto_vertical_cm || '-' }} cm</td>
+                        <td>
+                          <span class="evaluador-tag">{{ b.evaluador_nombre || 'DT Principal' }}</span>
+                          <small class="obs-text">{{ b.observaciones || 'Sin notas' }}</small>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- PESTAÑA 4: CONTROL FINANCIERO -->
+        @if (activeExpTab() === TabEnum.FINANZAS) {
+          <div class="tab-pane">
+            <div class="fin-summary-grid">
+              <div class="fin-stat-card">
+                <span class="fin-label">Total Facturado</span>
+                <strong class="fin-val">${{ expediente.resumenFinanciero.totalFacturado | number }}</strong>
+              </div>
+              <div class="fin-stat-card">
+                <span class="fin-label">Total Recaudado</span>
+                <strong class="fin-val emerald">${{ expediente.resumenFinanciero.totalPagado | number }}</strong>
+              </div>
+              <div class="fin-stat-card">
+                <span class="fin-label">Saldo Pendiente</span>
+                <strong class="fin-val" [class.rose]="expediente.resumenFinanciero.saldoPendiente > 0">
+                  ${{ expediente.resumenFinanciero.saldoPendiente | number }}
+                </strong>
+              </div>
+              <div class="fin-stat-card">
+                <span class="fin-label">Estado de Cartera</span>
+                <span class="status-badge-lg" [class]="expediente.resumenFinanciero.estadoCuenta === 'AL_DIA' ? 'al-dia' : 'en-mora'">
+                  {{ expediente.resumenFinanciero.estadoCuenta === 'AL_DIA' ? 'AL DÍA' : 'EN MORA' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="section-box mt-3">
+              <h4 class="box-title"><i class="fa-solid fa-receipt"></i> Detalle de Mensualidades & Cargos</h4>
+              @if (expediente.historialFinanciero.length === 0) {
+                <div class="empty-state-sm">
+                  <p>No hay cargos de pensión registrados actualmente.</p>
+                </div>
+              } @else {
+                <table class="fut-table-sub">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th>Concepto</th>
+                      <th>Monto Total</th>
+                      <th>Beca / Descuento</th>
+                      <th>Pagado</th>
+                      <th>Saldo</th>
+                      <th>Estado</th>
+                      <th>Vencimiento</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (f of expediente.historialFinanciero; track $index) {
+                      <tr>
+                        <td><strong>{{ f.periodo_mes }}/{{ f.periodo_anio }}</strong></td>
+                        <td>{{ f.concepto_nombre }}</td>
+                        <td>${{ f.monto_total | number }}</td>
+                        <td>${{ f.monto_descuento_beca | number }}</td>
+                        <td>${{ f.monto_pagado | number }}</td>
+                        <td><strong>${{ f.saldo_pendiente | number }}</strong></td>
+                        <td>
+                          <span class="badge" [class.badge-success]="f.estado_pago === 'PAGADO'" [class.badge-danger]="f.estado_pago === 'PENDIENTE'">
+                            {{ f.estado_pago }}
+                          </span>
+                        </td>
+                        <td>{{ f.fecha_limite_pago | date:'dd/MM/yyyy' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- PESTAÑA 5: CLÍNICAS ESPECIALIZADAS & INSIGNIAS PRO -->
+        @if (activeExpTab() === TabEnum.SERVICIOS) {
+          <div class="tab-pane">
+            <div class="pane-header-action">
+              <div>
+                <h3 class="pane-title">Clínicas de Micro-Habilidades & Insignias Élite</h3>
+                <p class="pane-desc">Programas de alto rendimiento completados, certificaciones y pases QR adquiridos.</p>
+              </div>
+              <a routerLink="/servicios" (click)="cerrar()" class="btn-primary-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                <i class="fa-solid fa-plus"></i>
+                <span>Inscribir a Clínica Élite</span>
+              </a>
+            </div>
+
+            <!-- INSIGNIAS DESBLOQUEADAS -->
+            <div class="section-box mt-2">
+              <h4 class="box-title"><i class="fa-solid fa-award text-amber"></i> Insignias Deportivas Desbloqueadas en Ficha 360°</h4>
+              <div class="insignias-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:1rem; margin-top:0.75rem;">
+                <div class="insignia-card" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                  <div style="font-size:1.8rem; background:rgba(16,185,129,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                    ⚡
+                  </div>
+                  <div>
+                    <strong style="color:#ffffff; font-size:0.95rem; display:block;">Rayo de Aceleración Sub-12</strong>
+                    <span style="color:#10b981; font-size:0.8rem; font-weight:700;">+4 Pliometría & Sprint 5m</span>
+                    <span style="display:inline-block; font-size:0.7rem; color:#a7f3d0; background:rgba(16,185,129,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">Certificado</span>
+                  </div>
+                </div>
+
+                <div class="insignia-card" style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                  <div style="font-size:1.8rem; background:rgba(6,182,212,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                    🧠
+                  </div>
+                  <div>
+                    <strong style="color:#ffffff; font-size:0.95rem; display:block;">Visión Periférica 360°</strong>
+                    <span style="color:#06b6d4; font-size:0.8rem; font-weight:700;">+5 Neuro-Agilidad Fitlight</span>
+                    <span style="display:inline-block; font-size:0.7rem; color:#bae6fd; background:rgba(6,182,212,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">Certificado</span>
+                  </div>
+                </div>
+
+                <div class="insignia-card" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:1rem; display:flex; gap:0.75rem; align-items:center;">
+                  <div style="font-size:1.8rem; background:rgba(245,158,11,0.2); width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                    🪄
+                  </div>
+                  <div>
+                    <strong style="color:#ffffff; font-size:0.95rem; display:block;">Maestro del Desborde 1v1</strong>
+                    <span style="color:#f59e0b; font-size:0.8rem; font-weight:700;">+6 Fintas & Cambio de Ritmo</span>
+                    <span style="display:inline-block; font-size:0.7rem; color:#fde68a; background:rgba(245,158,11,0.2); padding:0.15rem 0.4rem; border-radius:4px; margin-top:0.25rem;">En Progreso</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- HISTORIAL DE CLÍNICAS -->
+            <div class="section-box mt-3">
+              <h4 class="box-title"><i class="fa-solid fa-ticket text-emerald"></i> Historial de Inscripciones & Pases QR Oficiales</h4>
+              @if (expediente.clinicasInsignias && expediente.clinicasInsignias.length > 0) {
+                <div class="table-responsive">
+                  <table class="exp-fin-table">
+                    <thead>
+                      <tr>
+                        <th>Clínica Especializada</th>
+                        <th>Entrenador / Sede</th>
+                        <th>Plan</th>
+                        <th>Valor Pagado</th>
+                        <th>Pase QR Ticket</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (c of expediente.clinicasInsignias; track $index) {
+                        <tr>
+                          <td>
+                            <div class="font-bold text-white">{{ c.servicio_titulo }}</div>
+                            <small class="text-amber">{{ c.insignia_obtenida }}</small>
+                          </td>
+                          <td>
+                            <div>{{ c.entrenador_nombre }}</div>
+                            <small class="text-muted">{{ c.cancha_nombre }}</small>
+                          </td>
+                          <td><span class="badge badge-info">{{ c.tipo_plan }}</span></td>
+                          <td><strong>${{ c.monto_pagado | number }}</strong></td>
+                          <td>
+                            <span style="background:rgba(255,255,255,0.1); padding:0.2rem 0.5rem; border-radius:4px; font-family:monospace; font-size:0.8rem; color:#10b981;">
+                              <i class="fa-solid fa-qrcode"></i> {{ c.codigo_qr_ticket?.substring(0, 12) }}...
+                            </span>
+                          </td>
+                          <td>
+                            <span class="badge badge-success">{{ c.estado_pago }}</span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="empty-tab-state" style="padding:2rem; text-align:center; color:#94a3b8;">
+                  <i class="fa-solid fa-graduation-cap" style="font-size:2.5rem; margin-bottom:0.75rem; color:#64748b;"></i>
+                  <p>No registra inscripciones directas a clínicas este mes. Puedes inscribirlo desde el catálogo de Servicios.</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer del Expediente 360° -->
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrar()">
+          <i class="fa-solid fa-xmark"></i> Cerrar Expediente
+        </button>
+        <button type="button" class="btn-primary" (click)="openEdit.emit(expediente.jugador); cerrar()">
+          <i class="fa-solid fa-pen-to-square"></i> Editar Ficha del Jugador
+        </button>
+      </div>
+    </div>
+  </div>
+}

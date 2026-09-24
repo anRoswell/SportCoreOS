@@ -1,0 +1,278 @@
+<section class="leaderboard-table-card">
+  <!-- HEADER DE LA TABLA CON FILTROS SUPERIORES -->
+  <div class="table-card-header">
+    <div class="table-header-left">
+      <div class="table-icon-wrap">
+        <i class="fa-solid fa-ranking-star text-emerald"></i>
+      </div>
+      <div>
+        <h3>Tabla General de Posiciones ({{ totalFilteredCount }} Alumnos)</h3>
+        <p>Desglose transparente de experiencia acumulada, disciplina en cancha y evaluaciones DT</p>
+      </div>
+    </div>
+    
+    <div class="xp-legend">
+      <span class="legend-item"><span class="dot dot-pres"></span> +50 Asistencia</span>
+      <span class="legend-item"><span class="dot dot-dt"></span> +100 Destacado DT</span>
+      <span class="legend-item"><span class="dot dot-pen"></span> -30 Inasistencia</span>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS SUPERIORES DE LA TABLA -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <!-- Selector de Categoría Rápido -->
+      <div class="filter-dropdown-wrap">
+        <label><i class="fa-solid fa-layer-group"></i> Categoría:</label>
+        <select [ngModel]="categoriaSeleccionada" (ngModelChange)="categoriaChange.emit($event)" class="toolbar-select">
+          <option value="TODAS">⚡ Todas las Categorías (Global)</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro por Tier / Rango -->
+      <div class="filter-dropdown-wrap">
+        <label><i class="fa-solid fa-gem"></i> Tier / Rango:</label>
+        <select [ngModel]="tierSeleccionado" (ngModelChange)="tierChange.emit($event)" class="toolbar-select">
+          <option value="TODOS">Todos los Tiers</option>
+          <option value="DIAMANTE">💎 Diamante (Nivel 15+)</option>
+          <option value="ORO">🏆 Oro (Nivel 12 - 14)</option>
+          <option value="PLATA">🥈 Plata (Nivel 10 - 11)</option>
+          <option value="BRONCE">🥉 Bronce (Nivel 1 - 9)</option>
+        </select>
+      </div>
+
+      <!-- Filtro por Posición Táctica -->
+      <div class="filter-dropdown-wrap">
+        <label><i class="fa-solid fa-futbol"></i> Posición:</label>
+        <select [ngModel]="posicionSeleccionada" (ngModelChange)="posicionChange.emit($event)" class="toolbar-select">
+          <option value="TODAS">Todas las Posiciones</option>
+          <option value="Arquero">🧤 Arquero / Portero</option>
+          <option value="Defensa">🛡️ Defensas</option>
+          <option value="Volante">🎯 Volantes / Mediocampistas</option>
+          <option value="Delantero">⚽ Delanteros / Extremos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <!-- Buscador en tiempo real integrado -->
+      <div class="table-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input 
+          type="text" 
+          [ngModel]="busquedaTexto" 
+          (ngModelChange)="busquedaChange.emit($event)"
+          placeholder="Filtrar por nombre, dorsal..." 
+          class="table-search-input"
+        />
+        <button *ngIf="busquedaTexto" class="btn-clear" (click)="busquedaChange.emit('')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <button *ngIf="hasActiveFilters()" class="btn-reset-toolbar" (click)="resetFilters.emit()" title="Restablecer filtros">
+        <i class="fa-solid fa-rotate-left"></i> Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLA PRINCIPAL CON CABECERAS ORDENABLES -->
+  <div class="table-responsive">
+    <table class="gaming-table">
+      <thead>
+        <tr>
+          <th class="th-rank sortable" (click)="sortChange.emit('posicionRanking')">
+            <div class="th-sort-inner">
+              <span>Rank</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('posicionRanking')"></i>
+            </div>
+          </th>
+          <th class="th-player sortable" (click)="sortChange.emit('nombres')">
+            <div class="th-sort-inner">
+              <span>Alumno / Carta</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('nombres')"></i>
+            </div>
+          </th>
+          <th class="th-cat sortable" (click)="sortChange.emit('categoriaNombre')">
+            <div class="th-sort-inner">
+              <span>Categoría</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('categoriaNombre')"></i>
+            </div>
+          </th>
+          <th class="th-tier sortable" (click)="sortChange.emit('tier')">
+            <div class="th-sort-inner">
+              <span>Tier & Nivel</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('tier')"></i>
+            </div>
+          </th>
+          <th class="th-ovr sortable" (click)="sortChange.emit('overallRating')">
+            <div class="th-sort-inner">
+              <span>OVR</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('overallRating')"></i>
+            </div>
+          </th>
+          <th class="th-streak sortable" (click)="sortChange.emit('rachaEntrenamientos')">
+            <div class="th-sort-inner">
+              <span>Racha</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('rachaEntrenamientos')"></i>
+            </div>
+          </th>
+          <th class="th-asist sortable" (click)="sortChange.emit('asistenciasEfectividad')">
+            <div class="th-sort-inner">
+              <span>% Asist.</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('asistenciasEfectividad')"></i>
+            </div>
+          </th>
+          <th class="th-breakdown">Desglose XP (Asist / DT / Táctica / Pen.)</th>
+          <th class="th-total-xp sortable" (click)="sortChange.emit('xpTotal')">
+            <div class="th-sort-inner">
+              <span>XP Total</span>
+              <i class="fa-solid" [ngClass]="getSortIcon('xpTotal')"></i>
+            </div>
+          </th>
+          <th class="th-action">Ficha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="alumnos.length > 0; else noAlumnos">
+          <tr 
+            *ngFor="let alumno of alumnos"
+            class="player-row" 
+            [class.top-one]="alumno.posicionRanking === 1"
+            [class.top-two]="alumno.posicionRanking === 2"
+            [class.top-three]="alumno.posicionRanking === 3"
+            (click)="seleccionarAlumno.emit(alumno)">
+            
+            <!-- POSICIÓN & TENDENCIA -->
+            <td class="td-rank">
+              <div class="rank-box">
+                <span *ngIf="alumno.posicionRanking === 1" class="rank-number medal-gold"><i class="fa-solid fa-crown"></i> 1</span>
+                <span *ngIf="alumno.posicionRanking === 2" class="rank-number medal-silver"><i class="fa-solid fa-medal"></i> 2</span>
+                <span *ngIf="alumno.posicionRanking === 3" class="rank-number medal-bronze"><i class="fa-solid fa-award"></i> 3</span>
+                <span *ngIf="alumno.posicionRanking > 3" class="rank-number">#{{ alumno.posicionRanking }}</span>
+
+                <!-- Indicador de subida/bajada -->
+                <div class="trend-icon" [title]="getTrendTitle(alumno)">
+                  <i *ngIf="alumno.posicionAnterior > alumno.posicionRanking" class="fa-solid fa-caret-up text-emerald"></i>
+                  <i *ngIf="alumno.posicionAnterior < alumno.posicionRanking" class="fa-solid fa-caret-down text-rose"></i>
+                  <i *ngIf="alumno.posicionAnterior === alumno.posicionRanking" class="fa-solid fa-minus text-slate"></i>
+                </div>
+              </div>
+            </td>
+
+            <!-- ALUMNO / FOTO / DORSAL -->
+            <td class="td-player">
+              <div class="player-cell">
+                <div class="avatar-holder" [ngClass]="'ring-' + alumno.tier.toLowerCase()">
+                  <img [src]="alumno.fotoUrl" [alt]="alumno.nombres" />
+                  <span class="dorsal-tag">#{{ alumno.dorsal }}</span>
+                </div>
+                <div class="player-text">
+                  <div class="name-line">
+                    <strong class="player-full-name">{{ alumno.nombres }} {{ alumno.apellidos }}</strong>
+                    <span *ngIf="alumno.destacadoSemana" class="badge-fire-weekly" title="Destacado de la semana por el DT">
+                      <i class="fa-solid fa-fire"></i> MVP Semanal
+                    </span>
+                  </div>
+                  <span class="player-pos-text">{{ alumno.posicionCampo }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- CATEGORÍA -->
+            <td class="td-cat">
+              <span class="cat-pill-badge">{{ alumno.categoriaNombre }}</span>
+            </td>
+
+            <!-- TIER & NIVEL -->
+            <td class="td-tier">
+              <div class="tier-level-wrap">
+                <span class="tier-badge" [ngClass]="'tier-' + alumno.tier.toLowerCase()">
+                  <i class="fa-solid fa-gem" *ngIf="alumno.tier === 'DIAMANTE'"></i>
+                  <i class="fa-solid fa-shield" *ngIf="alumno.tier !== 'DIAMANTE'"></i>
+                  {{ alumno.tier }}
+                </span>
+                <span class="level-sub">Nivel {{ alumno.nivel }}</span>
+              </div>
+            </td>
+
+            <!-- OVERALL RATING -->
+            <td class="td-ovr">
+              <div class="ovr-badge-circle" [ngClass]="'ovr-' + alumno.tier.toLowerCase()">
+                {{ alumno.overallRating }}
+              </div>
+            </td>
+
+            <!-- RACHA DE ASISTENCIA / DISCIPLINA -->
+            <td class="td-streak">
+              <div class="streak-badge" [class.on-fire]="alumno.rachaEntrenamientos >= 5">
+                <i class="fa-solid fa-fire"></i>
+                <span>{{ alumno.rachaEntrenamientos }}d</span>
+              </div>
+            </td>
+
+            <!-- % EFECTIVIDAD ASISTENCIA -->
+            <td class="td-asist">
+              <div class="asist-meter-box">
+                <span class="asist-pct" [class.good]="alumno.asistenciasEfectividad >= 85" [class.warn]="alumno.asistenciasEfectividad < 85 && alumno.asistenciasEfectividad >= 75" [class.bad]="alumno.asistenciasEfectividad < 75">
+                  {{ alumno.asistenciasEfectividad }}%
+                </span>
+              </div>
+            </td>
+
+            <!-- DESGLOSE XP -->
+            <td class="td-breakdown">
+              <div class="breakdown-pills">
+                <span class="mini-xp-pill xp-asist" title="XP Asistencia"><i class="fa-solid fa-check"></i> +{{ alumno.xpAsistencia }}</span>
+                <span class="mini-xp-pill xp-dt" title="XP Destacado DT"><i class="fa-solid fa-bolt"></i> +{{ alumno.xpRendimientoDT }}</span>
+                <span class="mini-xp-pill xp-tact" title="XP Táctica / Minijuegos"><i class="fa-solid fa-brain"></i> +{{ alumno.xpTactica + alumno.xpMisiones }}</span>
+                <span *ngIf="alumno.xpPenalizaciones < 0" class="mini-xp-pill xp-pen" title="Penalización por Inasistencia Injustificada"><i class="fa-solid fa-circle-exclamation"></i> {{ alumno.xpPenalizaciones }}</span>
+              </div>
+            </td>
+
+            <!-- XP TOTAL -->
+            <td class="th-total-xp">
+              <div class="total-xp-cell">
+                <i class="fa-solid fa-bolt text-amber"></i>
+                <strong>{{ alumno.xpTotal | number }}</strong>
+                <span class="xp-unit">XP</span>
+              </div>
+            </td>
+
+            <!-- ACCIÓN / VER CARTA -->
+            <td class="td-action">
+              <button class="btn-inspect" (click)="$event.stopPropagation(); seleccionarAlumno.emit(alumno)" title="Ver Ficha y Estadísticas FUT">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+
+        <ng-template #noAlumnos>
+          <tr>
+            <td colspan="10" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="fa-solid fa-user-slash"></i>
+                <p>No se encontraron alumnos que coincidan con los filtros seleccionados.</p>
+                <button class="btn-reset-filters" (click)="resetFilters.emit()">
+                  Reiniciar Filtros
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BARRA DE PAGINACIÓN -->
+  <app-pagination-bar 
+    [currentPage]="currentPage" 
+    [totalPages]="totalPages" 
+    [totalRecords]="totalFilteredCount" 
+    [pageSize]="pageSize" 
+    [loading]="isLoading"
+    [pageSizeOptions]="[5, 8, 15, 25, 50]"
+    (pageChange)="pageChange.emit($event)" 
+    (pageSizeChange)="pageSizeChange.emit($event)">
+  </app-pagination-bar>
+</section>

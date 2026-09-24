@@ -256,6 +256,13 @@
       <div class="menu-section">
         <h4 class="section-title">Preferencias & Ajustes</h4>
         <div class="info-list">
+          <a routerLink="/onboarding" class="action-row">
+            <div class="info-left">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber"></i>
+              <span>Ver Tour Promocional & Novedades</span>
+            </div>
+            <span class="status-toggle" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">TOUR</span>
+          </a>
           <button class="action-row" (click)="themeService.toggleTheme()" [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
             <div class="info-left">
               <i class="fa-solid text-amber" [class.fa-sun]="themeService.isDark()" [class.fa-moon]="!themeService.isDark()"></i>

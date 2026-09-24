@@ -1,0 +1,46 @@
+<div class="modal-overlay modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <div class="modal-dialog modal-card fut-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group modal-title-wrap">
+        <div class="modal-badge-icon modal-icon-badge bg-rose-glow">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2 class="modal-title">Rechazar Comprobante</h2>
+          <p class="modal-sub modal-subtitle">Especifica el motivo de rechazo</p>
+        </div>
+      </div>
+      <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="sport-label">Motivo de Rechazo:</label>
+        <select class="sport-input mb-2" [ngModel]="motivo()" (ngModelChange)="motivo.set($event)">
+          <option value="">-- Seleccionar motivo común --</option>
+          <option value="Comprobante ilegible o borroso">Comprobante ilegible o borroso</option>
+          <option value="Monto transferido no coincide con la tarifa">Monto transferido no coincide con la tarifa</option>
+          <option value="Pago no reflejado en extracto bancario">Pago no reflejado en extracto bancario</option>
+          <option value="Número de cuenta o destinatario incorrecto">Número de cuenta o destinatario incorrecto</option>
+          <option value="Comprobante duplicado ya utilizado">Comprobante duplicado ya utilizado</option>
+        </select>
+        <textarea
+          class="sport-input textarea-field"
+          rows="3"
+          [ngModel]="motivo()"
+          (ngModelChange)="motivo.set($event)"
+          placeholder="Escribe el motivo detallado para notificar al acudiente..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrar()">Cancelar</button>
+      <button class="btn-danger-confirm" [disabled]="isApproving || !motivo()" (click)="confirmarRechazo()">
+        <i class="fa-solid fa-ban"></i> Confirmar Rechazo y Liberar Cupo
+      </button>
+    </div>
+  </div>
+</div>

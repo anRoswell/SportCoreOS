@@ -1,0 +1,200 @@
+<!-- Filters & Search Toolbar -->
+<section class="toolbar-card">
+  <div class="search-box">
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+    <input
+      type="text"
+      placeholder="Buscar por título, tag, métrica o beneficios..."
+      [ngModel]="searchQuery"
+      (ngModelChange)="searchChange.emit($event)"
+      class="search-input"
+    />
+    @if (searchQuery) {
+      <button class="clear-btn" (click)="searchChange.emit('')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    }
+  </div>
+
+  <div class="filter-controls">
+    <!-- Platform filter -->
+    <div class="select-wrapper">
+      <select
+        [ngModel]="filterPlatform"
+        (ngModelChange)="platformChange.emit($event)"
+        class="custom-select"
+      >
+        <option [value]="PlatformEnum.TODAS">📱 Todas las Plataformas</option>
+        <option [value]="PlatformEnum.MOBILE_APP">📲 App Móvil (iOS / Android)</option>
+        <option [value]="PlatformEnum.WEB_PORTAL">💻 Portal Web / Landing</option>
+      </select>
+    </div>
+
+    <!-- Status filter buttons -->
+    <div class="status-chip-group">
+      <button
+        class="status-chip"
+        [class.active]="filterStatus === StatusEnum.TODOS"
+        (click)="statusChange.emit(StatusEnum.TODOS)"
+      >
+        Todos ({{ totalCount }})
+      </button>
+      <button
+        class="status-chip chip-emerald"
+        [class.active]="filterStatus === StatusEnum.ACTIVOS"
+        (click)="statusChange.emit(StatusEnum.ACTIVOS)"
+      >
+        <i class="fa-solid fa-circle-check"></i> Activos ({{ activeCount }})
+      </button>
+      <button
+        class="status-chip chip-gray"
+        [class.active]="filterStatus === StatusEnum.INACTIVOS"
+        (click)="statusChange.emit(StatusEnum.INACTIVOS)"
+      >
+        <i class="fa-solid fa-pause"></i> Inactivos ({{ inactiveCount }})
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Loading State -->
+@if (loading) {
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando catálogo de sliders promocionales...</p>
+  </div>
+} @else if (sliders.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">
+      <i class="fa-solid fa-sliders"></i>
+    </div>
+    <h3>No se encontraron sliders promocionales</h3>
+    <p>No hay diapositivas que coincidan con los filtros aplicados o aún no has creado una.</p>
+    <button class="btn-primary" (click)="openCreate.emit()">
+      <i class="fa-solid fa-plus"></i> Crear Primer Slider
+    </button>
+  </div>
+} @else {
+  <div class="sliders-grid">
+    @for (slider of sliders; track slider.id; let idx = $index) {
+      <div class="slider-card" [class.inactive]="!slider.activo">
+        
+        <!-- Top Header of Card -->
+        <div class="card-header-bar">
+          <div class="order-badge-pill">
+            <span class="order-num">#{{ slider.orden }}</span>
+            <div class="order-actions">
+              <button
+                class="btn-order-arrow"
+                [disabled]="idx === 0"
+                (click)="moveOrder.emit({ slider: slider, direction: 'UP' })"
+                title="Subir posición"
+              >
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+              <button
+                class="btn-order-arrow"
+                [disabled]="idx === sliders.length - 1"
+                (click)="moveOrder.emit({ slider: slider, direction: 'DOWN' })"
+                title="Bajar posición"
+              >
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Platform & Active Badge -->
+          <div class="header-tags-group">
+            <span class="platform-tag" [class.mobile]="slider.plataforma_destino === PlatformEnum.MOBILE_APP">
+              <i [class]="slider.plataforma_destino === PlatformEnum.MOBILE_APP ? 'fa-solid fa-mobile-screen' : (slider.plataforma_destino === PlatformEnum.WEB_PORTAL ? 'fa-solid fa-globe' : 'fa-solid fa-layer-group')"></i>
+              {{ slider.plataforma_destino }}
+            </span>
+
+            <!-- Active switch toggle -->
+            <label class="switch-toggle" [title]="slider.activo ? 'Desactivar Slider' : 'Activar Slider'">
+              <input
+                type="checkbox"
+                [checked]="slider.activo"
+                (change)="toggleActivo.emit(slider)"
+              />
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Hero Mockup Center Display -->
+        <div class="slider-preview-mockup" [style.borderColor]="(slider.badge_color || '#10b981') + '60'">
+          
+          <!-- Badge pill -->
+          <div class="preview-badge" [style.borderColor]="slider.badge_color || '#10b981'" [style.color]="slider.badge_color || '#10b981'">
+            <span>{{ slider.tag_icono || '🏆' }}</span>
+            <strong>{{ slider.tag }}</strong>
+          </div>
+
+          <!-- Main Graphic info -->
+          <div class="preview-centerpiece">
+            <div class="icon-avatar" [style.background]="slider.accent_gradient || 'linear-gradient(135deg, #10b981, #059669)'">
+              <i [class]="slider.icono || 'fa-solid fa-chart-line'"></i>
+            </div>
+            <div class="centerpiece-text">
+              <h4 class="centerpiece-title">{{ slider.card_preview_titulo || slider.titulo }}</h4>
+              <p class="centerpiece-desc">{{ slider.card_preview_desc || slider.subtitulo }}</p>
+            </div>
+          </div>
+
+          <!-- Highlights list -->
+          <div class="preview-highlights">
+            @for (h of (slider.highlights || slider.highlights_json || []); track h.text) {
+              <div class="highlight-chip">
+                <span class="h-icon">{{ h.icon }}</span>
+                <div class="h-text">
+                  <strong class="h-main">{{ h.text }}</strong>
+                  @if (h.subtext) {
+                    <span class="h-sub">{{ h.subtext }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Metric ribbon -->
+          <div class="preview-metric-ribbon">
+            <span class="metric-val" [style.color]="slider.badge_color || '#10b981'">{{ slider.stat_numero || '100% Pro' }}</span>
+            <span class="metric-sub">{{ slider.stat_label || 'Sincronizado' }}</span>
+          </div>
+
+        </div>
+
+        <!-- Title & Description Info -->
+        <div class="slider-info-body">
+          <h3 class="slider-title">{{ slider.titulo }}</h3>
+          <p class="slider-desc">{{ slider.subtitulo }}</p>
+
+          <div class="cta-preview-badge">
+            <span class="cta-label">Botón Acción:</span>
+            <span class="cta-val">"{{ slider.boton_cta_texto || 'Siguiente' }}" ➔ {{ slider.boton_cta_url || '/auth/login' }}</span>
+          </div>
+        </div>
+
+        <!-- Footer Action Buttons -->
+        <div class="card-footer-actions">
+          <button class="btn-action-icon text-cyan" (click)="duplicate.emit(slider)" title="Duplicar Slider">
+            <i class="fa-solid fa-copy"></i>
+            <span>Duplicar</span>
+          </button>
+
+          <button class="btn-action-icon text-amber" (click)="edit.emit(slider)" title="Editar Configuración">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Editar</span>
+          </button>
+
+          <button class="btn-action-icon text-rose" (click)="delete.emit(slider)" title="Eliminar Slider">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Eliminar</span>
+          </button>
+        </div>
+
+      </div>
+    }
+  </div>
+}

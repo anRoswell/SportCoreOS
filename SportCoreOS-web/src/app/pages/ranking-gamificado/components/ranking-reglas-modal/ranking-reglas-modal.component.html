@@ -1,0 +1,60 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="rules-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="title-with-icon">
+        <i class="fa-solid fa-gamepad text-emerald"></i>
+        <div>
+          <h3>Sistema de Gamificación & Economía de XP</h3>
+          <p>Reglas oficiales para subir de nivel y evolucionar cartas de alumnos</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="rules-grid">
+        <div class="rule-box gain">
+          <div class="rule-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="rule-info">
+            <h4>Asistencia a Entrenamiento</h4>
+            <p>Presentarse a tiempo y completar la sesión oficial con el Director Técnico.</p>
+            <span class="rule-xp-badge">+50 XP</span>
+          </div>
+        </div>
+
+        <div class="rule-box gain">
+          <div class="rule-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="rule-info">
+            <h4>Jugador Destacado de la Sesión</h4>
+            <p>Bonificación por máxima intensidad, actitud y liderazgo en cancha otorgado por el DT.</p>
+            <span class="rule-xp-badge">+100 XP Extra</span>
+          </div>
+        </div>
+
+        <div class="rule-box penalty">
+          <div class="rule-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+          <div class="rule-info">
+            <h4>Inasistencia Sin Justificación</h4>
+            <p>Faltar al entrenamiento sin excusa médica o académica previa avalada.</p>
+            <span class="rule-xp-badge penalty-badge">-30 XP Descuento</span>
+          </div>
+        </div>
+
+        <div class="rule-box gain">
+          <div class="rule-icon"><i class="fa-solid fa-chess"></i></div>
+          <div class="rule-info">
+            <h4>Ronda Táctica & Minijuegos</h4>
+            <p>Acertar situaciones de juego en el Modo Carrera y desafíos de definición.</p>
+            <span class="rule-xp-badge">+40 a +150 XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-primary" (click)="close.emit()">Entendido</button>
+    </div>
+  </div>
+</div>

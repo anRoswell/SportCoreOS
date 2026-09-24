@@ -1,0 +1,109 @@
+@if (visible && jugador) {
+  <div class="modal-backdrop" (click)="cerrar()">
+    <div class="bio-modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge">
+            <i class="fa-solid fa-heart-pulse"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2>Evaluación Biométrica</h2>
+            <p class="modal-subtitle">Atleta: <strong>{{ jugador.nombres }} {{ jugador.apellidos }}</strong></p>
+          </div>
+        </div>
+        <button class="modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitBiometria()" class="modal-form">
+        <div class="modal-form-grid-2col">
+          <!-- Columna Izquierda: Antropometría Básica & Preview IMC -->
+          <div class="modal-col">
+            <div class="modal-section">
+              <span class="modal-section-title"><i class="fa-solid fa-weight-scale"></i> 1. Antropometría Básica</span>
+              <div class="form-row g2">
+                <div class="input-group">
+                  <label><i class="fa-solid fa-ruler-vertical"></i> Estatura / Talla (cm) <span class="required-star">*</span></label>
+                  <input 
+                    type="number" 
+                    step="0.1" 
+                    [(ngModel)]="newBioData.tallaCm" 
+                    name="bioTalla" 
+                    placeholder="ej. 168.5" 
+                    required 
+                    class="sport-input" />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa-solid fa-weight-hanging"></i> Peso Corporal (Kg) <span class="required-star">*</span></label>
+                  <input 
+                    type="number" 
+                    step="0.1" 
+                    [(ngModel)]="newBioData.pesoKg" 
+                    name="bioPeso" 
+                    placeholder="ej. 58.2" 
+                    required 
+                    class="sport-input" />
+                </div>
+              </div>
+
+              <!-- IMC Preview Calculado en Vivo -->
+              @if (newBioData.tallaCm > 0 && newBioData.pesoKg > 0) {
+                <div class="imc-live-preview">
+                  <span>Índice de Masa Corporal (IMC) Calculado:</span>
+                  <strong>{{ calculateLiveImc() }}</strong>
+                  <span class="imc-tag" [class]="getImcClass(calculateLiveImc())">
+                    {{ getImcLabel(calculateLiveImc()) }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Pruebas de Rendimiento & Observaciones -->
+          <div class="modal-col">
+            <div class="modal-section">
+              <span class="modal-section-title"><i class="fa-solid fa-gauge-high"></i> 2. Pruebas de Rendimiento Físico</span>
+              <div class="form-row g3">
+                <div class="input-group">
+                  <label><i class="fa-solid fa-person-running"></i> Test Cooper (m)</label>
+                  <input type="number" [(ngModel)]="newBioData.testCooperMetros" name="bioCooper" placeholder="ej. 2800" class="sport-input" />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa-solid fa-bolt"></i> Sprint 30m (s)</label>
+                  <input type="number" step="0.01" [(ngModel)]="newBioData.velocidad30mSeg" name="bioVel" placeholder="ej. 3.90" class="sport-input" />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa-solid fa-arrows-up-down"></i> Salto Vert. (cm)</label>
+                  <input type="number" step="0.5" [(ngModel)]="newBioData.saltoVerticalCm" name="bioSalto" placeholder="ej. 45.0" class="sport-input" />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-section">
+              <span class="modal-section-title"><i class="fa-solid fa-clipboard-user"></i> 3. Observaciones del DT / Evaluador</span>
+              <div class="input-group">
+                <textarea 
+                  [(ngModel)]="newBioData.observaciones" 
+                  name="bioObs" 
+                  rows="2" 
+                  placeholder="Notas sobre el estado físico, potencia o nutrición..." 
+                  class="sport-input"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary btn-cancel" (click)="cerrar()">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="submit" class="btn-primary btn-submit" [disabled]="savingBio">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>{{ savingBio ? 'Guardando...' : 'Registrar Medición' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

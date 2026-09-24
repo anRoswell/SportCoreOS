@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { NavbarComponent } from './layout/navbar/navbar.component';
 import { LoadingBarComponent } from './shared/components/loading-bar/loading-bar.component';
@@ -29,4 +29,20 @@ export class AppComponent {
   api = inject(ApiService);
   themeService = inject(ThemeService);
   authService = inject(AuthService);
+  private router = inject(Router);
+
+  currentUrl = signal<string>(this.router.url || '');
+
+  constructor() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects || event.url);
+      }
+    });
+  }
+
+  isPublicRoute = computed(() => {
+    const url = this.currentUrl();
+    return url.startsWith('/p/') || url.startsWith('/landings/') || url.startsWith('/login');
+  });
 }

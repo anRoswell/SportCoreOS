@@ -3,6 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { CategoriaServicio, EstadoPago } from '../../core/enums/domain.enums';
+
+// Subcomponentes modulares
+import { ServicioCardComponent } from './components/servicio-card/servicio-card.component';
+import { InscribirModalComponent } from './components/inscribir-modal/inscribir-modal.component';
+import { ParticipantesModalComponent } from './components/participantes-modal/participantes-modal.component';
+import { TesoreriaDrawerComponent } from './components/tesoreria-drawer/tesoreria-drawer.component';
+import { CrearServicioModalComponent } from './components/crear-servicio-modal/crear-servicio-modal.component';
+import { ComprobanteLightboxComponent } from './components/comprobante-lightbox/comprobante-lightbox.component';
+import { RechazoDialogComponent } from './components/rechazo-dialog/rechazo-dialog.component';
 
 export interface ServicioEspecializado {
   id: string;
@@ -35,26 +45,36 @@ export interface ServicioEspecializado {
   activo?: boolean;
 }
 
-import { DigitalPassTicketComponent } from '../../shared/components/digital-pass-ticket/digital-pass-ticket.component';
-
 @Component({
   selector: 'app-servicios',
   standalone: true,
-  imports: [CommonModule, FormsModule, DigitalPassTicketComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ServicioCardComponent,
+    InscribirModalComponent,
+    ParticipantesModalComponent,
+    TesoreriaDrawerComponent,
+    CrearServicioModalComponent,
+    ComprobanteLightboxComponent,
+    RechazoDialogComponent
+  ],
   templateUrl: './servicios.component.html',
   styleUrl: './servicios.component.scss'
 })
-
 export class ServiciosComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+
+  readonly CategoriaServicio = CategoriaServicio;
+  readonly EstadoPago = EstadoPago;
 
   defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face';
 
   // Signals
   servicios = signal<ServicioEspecializado[]>([]);
   searchQuery = signal<string>('');
-  selectedCategoria = signal<string>('TODAS');
+  selectedCategoria = signal<CategoriaServicio>(CategoriaServicio.TODAS);
 
   // Modal States
   showInscribirModal = signal<boolean>(false);
@@ -70,41 +90,7 @@ export class ServiciosComponent implements OnInit {
   comprobanteModalData = signal<any>(null);
   inscripcionParaRechazar = signal<any>(null);
 
-  // Form State Inscribir
-  tipoPlan = signal<'PAQUETE_MENSUAL' | 'SESION_INDIVIDUAL'>('PAQUETE_MENSUAL');
-  nombreJugador = signal<string>('');
-  nombreAcudiente = signal<string>('');
-  telefonoAcudiente = signal<string>('');
-  emailAcudiente = signal<string>('');
-  aplicaDescuentoHermano = signal<boolean>(false);
-  metodoPago = signal<string>('WOMPI_PSE');
-  comprobanteUrl = signal<string>('');
-  comprobanteNombreArchivo = signal<string>('');
-  referenciaManual = signal<string>('');
-
-  filtroEstadoInscripciones = signal<string>('TODOS');
-  motivoRechazoInput = signal<string>('');
-
-  isSubmitting = signal<boolean>(false);
   isApproving = signal<boolean>(false);
-  ticketGenerated = signal<boolean>(false);
-  ticketData = signal<any>(null);
-
-  // Form State Crear Clínica
-  nuevoTitulo = signal<string>('');
-  nuevoSubtitulo = signal<string>('');
-  nuevaCategoria = signal<string>('VELOCIDAD_EXPLOSIVIDAD');
-  nuevoEntrenador = signal<string>('');
-  nuevaCanchaNombre = signal<string>('');
-  nuevaCanchaDireccion = signal<string>('');
-  nuevosDias = signal<string>('Martes y Jueves');
-  nuevoHorario = signal<string>('04:30 PM - 06:00 PM');
-  nuevosCupos = signal<number>(15);
-  nuevaInsignia = signal<string>('');
-  nuevoPrecioIndividual = signal<number>(38000);
-  nuevoPrecioMensual = signal<number>(145000);
-  nuevaDescripcion = signal<string>('');
-  isSaving = signal<boolean>(false);
 
   // Computed
   filteredServicios = computed(() => {
@@ -112,7 +98,7 @@ export class ServiciosComponent implements OnInit {
     const cat = this.selectedCategoria();
     const query = this.searchQuery().toLowerCase().trim();
 
-    if (cat !== 'TODAS') {
+    if (cat !== CategoriaServicio.TODAS) {
       list = list.filter(s => s.categoria_servicio === cat);
     }
 
@@ -146,30 +132,6 @@ export class ServiciosComponent implements OnInit {
     return this.inscripcionesPendientes().length;
   });
 
-  pendientesCountModal = computed(() => {
-    return this.inscripcionesList().filter(i => i.estado_pago === 'PENDIENTE_APROBACION').length;
-  });
-
-  filteredInscripcionesList = computed(() => {
-    const filtro = this.filtroEstadoInscripciones();
-    const list = this.inscripcionesList();
-    if (filtro === 'TODOS') return list;
-    return list.filter(i => (i.estado_pago || 'APROBADO') === filtro);
-  });
-
-  montoFinalCalculado = computed(() => {
-    const s = this.selectedServicio();
-    if (!s) return 0;
-    let base = this.tipoPlan() === 'PAQUETE_MENSUAL'
-      ? Number(s.precio_paquete_mensual)
-      : Number(s.precio_sesion_individual);
-
-    if (this.aplicaDescuentoHermano() && s.descuento_hermanos_pct) {
-      base = base * (1 - (s.descuento_hermanos_pct / 100));
-    }
-    return Math.round(base);
-  });
-
   ngOnInit() {
     this.cargarServicios();
     this.cargarPendientes();
@@ -197,151 +159,30 @@ export class ServiciosComponent implements OnInit {
     });
   }
 
-  getCategoriaLabel(cat: string): string {
-    switch (cat) {
-      case 'VELOCIDAD_EXPLOSIVIDAD': return '⚡ Velocidad & Sprint';
-      case 'COORDINACION_AGILIDAD': return '🧠 Neuro-Motricidad';
-      case 'TECNICA_REGATE': return '🪄 Regate 1v1 Pro';
-      case 'ARQUEROS_ELITE': return '🧤 Guante de Oro';
-      case 'DEFINICION_TIRO': return '🎯 Definición & Gol';
-      case 'PREVENCION_FISICA': return '🛡️ Fuerza & Prevención';
-      default: return 'Clínica Pro';
-    }
-  }
-
-  formatNumber(val: any): string {
-    if (!val) return '0';
-    return Number(val).toLocaleString('es-CO');
-  }
-
   resetFilters() {
-    this.selectedCategoria.set('TODAS');
+    this.selectedCategoria.set(CategoriaServicio.TODAS);
     this.searchQuery.set('');
-  }
-
-  copiarTexto(texto: string) {
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(texto);
-      alert('Copiado al portapapeles: ' + texto);
-    }
-  }
-
-  triggerFileInput() {
-    const input = document.getElementById('comprobanteFileInput') as HTMLInputElement;
-    if (input) input.click();
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target?.files?.[0];
-    if (file) {
-      this.comprobanteNombreArchivo.set(file.name);
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.comprobanteUrl.set(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  usarComprobanteDemo() {
-    this.comprobanteUrl.set('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80');
-    this.comprobanteNombreArchivo.set('comprobante_nequi_transferencia.png');
-    if (!this.referenciaManual()) {
-      this.referenciaManual.set('NQ-' + Math.floor(100000 + Math.random() * 900000));
-    }
-  }
-
-  quitarComprobante() {
-    this.comprobanteUrl.set('');
-    this.comprobanteNombreArchivo.set('');
   }
 
   // --- MODAL INSCRIBIRSE ---
   openInscribirModal(servicio: ServicioEspecializado) {
     this.selectedServicio.set(servicio);
-    this.tipoPlan.set('PAQUETE_MENSUAL');
-    this.nombreJugador.set('');
-    this.nombreAcudiente.set('');
-    this.telefonoAcudiente.set('');
-    this.emailAcudiente.set('');
-    this.aplicaDescuentoHermano.set(false);
-    this.metodoPago.set('WOMPI_PSE');
-    this.comprobanteUrl.set('');
-    this.comprobanteNombreArchivo.set('');
-    this.referenciaManual.set('');
-    this.ticketGenerated.set(false);
-    this.ticketData.set(null);
     this.showInscribirModal.set(true);
   }
 
   closeInscribirModal() {
     this.showInscribirModal.set(false);
     this.selectedServicio.set(null);
-    this.ticketGenerated.set(false);
-    this.ticketData.set(null);
   }
 
-  submitInscripcion() {
-    const s = this.selectedServicio();
-    if (!s) return;
-
-    this.isSubmitting.set(true);
-
-    const dto: any = {
-      nombre_jugador: this.nombreJugador(),
-      nombre_acudiente: this.nombreAcudiente(),
-      telefono_acudiente: this.telefonoAcudiente(),
-      email_acudiente: this.emailAcudiente(),
-      tipo_plan: this.tipoPlan(),
-      monto_pagado: this.montoFinalCalculado(),
-      metodo_pago: this.metodoPago(),
-    };
-
-    if (this.comprobanteUrl()) {
-      dto.comprobante_url = this.comprobanteUrl();
-    }
-    if (this.referenciaManual()) {
-      dto.referencia_transaccion = this.referenciaManual();
-    }
-
-    this.api.inscribirServicio(s.id, dto).subscribe({
-      next: (res) => {
-        this.isSubmitting.set(false);
-        this.ticketGenerated.set(true);
-        this.ticketData.set(res.inscripcion || res);
-        this.cargarServicios(); // Refrescar cupos
-        this.cargarPendientes(); // Refrescar pendientes
-      },
-      error: (err: any) => {
-        this.isSubmitting.set(false);
-        alert(err?.error?.message || 'Ocurrió un error al procesar la inscripción');
-      }
-    });
-  }
-
-  shareWhatsApp() {
-    const s = this.selectedServicio();
-    const t = this.ticketData();
-    if (!s || !t) return;
-
-    const text = encodeURIComponent(
-      '⚽ *Pase Digital SportCoreOS*\n' +
-      'Clínica: *' + s.titulo + '*\n' +
-      'Atleta: ' + t.nombre_jugador + '\n' +
-      'Cancha: ' + s.cancha_nombre + '\n' +
-      'Horario: ' + s.dias_semana + ' (' + s.horario_rango + ')\n' +
-      'Ticket Pass: ' + t.codigo_qr_ticket + '\n' +
-      'Estado: ' + (t.estado_pago || 'APROBADO') + '\n' +
-      'Ref: ' + t.referencia_transaccion
-    );
-
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  onInscripcionExitosa() {
+    this.cargarServicios();
+    this.cargarPendientes();
   }
 
   // --- MODAL PARTICIPANTES ---
   openParticipantesModal(servicio: ServicioEspecializado) {
     this.selectedServicio.set(servicio);
-    this.filtroEstadoInscripciones.set('TODOS');
     this.api.getInscripcionesServicio(servicio.id).subscribe({
       next: (data) => {
         this.inscripcionesList.set(data || []);
@@ -385,7 +226,7 @@ export class ServiciosComponent implements OnInit {
   // --- ACCIONES TESORERÍA (APROBAR / RECHAZAR) ---
   aprobarPago(inscripcionId: string) {
     this.isApproving.set(true);
-    this.api.aprobarInscripcion(inscripcionId, { estado: 'APROBADO' }).subscribe({
+    this.api.aprobarInscripcion(inscripcionId, { estado: EstadoPago.APROBADO }).subscribe({
       next: () => {
         this.isApproving.set(false);
         const currentUser = this.auth.currentUser();
@@ -393,7 +234,7 @@ export class ServiciosComponent implements OnInit {
 
         // Actualizar lista de participantes
         this.inscripcionesList.update(list =>
-          list.map(item => item.id === inscripcionId ? { ...item, estado_pago: 'APROBADO', aprobado_por_nombre: auditorName } : item)
+          list.map(item => item.id === inscripcionId ? { ...item, estado_pago: EstadoPago.APROBADO, aprobado_por_nombre: auditorName } : item)
         );
 
         // Remover de pendientes
@@ -413,20 +254,19 @@ export class ServiciosComponent implements OnInit {
 
   solicitarRechazo(inc: any) {
     this.inscripcionParaRechazar.set(inc);
-    this.motivoRechazoInput.set('');
     this.showRechazoDialog.set(true);
   }
 
-  confirmarRechazo() {
+  confirmarRechazo(motivo: string) {
     const inc = this.inscripcionParaRechazar();
     if (!inc) return;
 
     this.isApproving.set(true);
-    const motivo = this.motivoRechazoInput() || 'Comprobante no válido o pago no reflejado';
+    const motivoFinal = motivo || 'Comprobante no válido o pago no reflejado';
 
     this.api.aprobarInscripcion(inc.id, {
-      estado: 'RECHAZADO',
-      motivo_rechazo: motivo
+      estado: EstadoPago.RECHAZADO,
+      motivo_rechazo: motivoFinal
     }).subscribe({
       next: () => {
         this.isApproving.set(false);
@@ -435,7 +275,7 @@ export class ServiciosComponent implements OnInit {
 
         // Actualizar lista de participantes
         this.inscripcionesList.update(list =>
-          list.map(item => item.id === inc.id ? { ...item, estado_pago: 'RECHAZADO', motivo_rechazo: motivo } : item)
+          list.map(item => item.id === inc.id ? { ...item, estado_pago: EstadoPago.RECHAZADO, motivo_rechazo: motivoFinal } : item)
         );
 
         // Remover de pendientes
@@ -455,19 +295,6 @@ export class ServiciosComponent implements OnInit {
 
   // --- MODAL CREAR CLÍNICA ---
   openCrearModal() {
-    this.nuevoTitulo.set('');
-    this.nuevoSubtitulo.set('');
-    this.nuevaCategoria.set('VELOCIDAD_EXPLOSIVIDAD');
-    this.nuevoEntrenador.set('');
-    this.nuevaCanchaNombre.set('');
-    this.nuevaCanchaDireccion.set('');
-    this.nuevosDias.set('Martes y Jueves');
-    this.nuevoHorario.set('04:30 PM - 06:00 PM');
-    this.nuevosCupos.set(15);
-    this.nuevaInsignia.set('');
-    this.nuevoPrecioIndividual.set(38000);
-    this.nuevoPrecioMensual.set(145000);
-    this.nuevaDescripcion.set('');
     this.showCrearModal.set(true);
   }
 
@@ -475,46 +302,7 @@ export class ServiciosComponent implements OnInit {
     this.showCrearModal.set(false);
   }
 
-  submitCrearServicio() {
-    if (!this.nuevoTitulo() || !this.nuevoEntrenador() || !this.nuevaCanchaNombre()) {
-      alert('Por favor completa todos los campos requeridos (*)');
-      return;
-    }
-
-    this.isSaving.set(true);
-
-    const dto = {
-      titulo: this.nuevoTitulo(),
-      subtitulo: this.nuevoSubtitulo(),
-      categoria_servicio: this.nuevaCategoria(),
-      entrenador_nombre: this.nuevoEntrenador(),
-      cancha_nombre: this.nuevaCanchaNombre(),
-      cancha_direccion: this.nuevaCanchaDireccion(),
-      dias_semana: this.nuevosDias(),
-      horario_rango: this.nuevoHorario(),
-      cupos_totales: Number(this.nuevosCupos()) || 15,
-      insignia_obtenida: this.nuevaInsignia() || '🏅 Atleta Élite Graduado',
-      precio_sesion_individual: Number(this.nuevoPrecioIndividual()) || 35000,
-      precio_paquete_mensual: Number(this.nuevoPrecioMensual()) || 140000,
-      descripcion: this.nuevaDescripcion() || this.nuevoSubtitulo(),
-      beneficios: [
-        'Metodología de alto impacto',
-        'Evaluación biomecánica continua',
-        'Certificado e insignia para el perfil del atleta'
-      ]
-    };
-
-    this.api.createServicio(dto).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.closeCrearModal();
-        this.cargarServicios();
-      },
-      error: (err: any) => {
-        this.isSaving.set(false);
-        alert(err?.error?.message || 'Error al crear la clínica');
-      }
-    });
+  onServicioCreado() {
+    this.cargarServicios();
   }
 }
-
