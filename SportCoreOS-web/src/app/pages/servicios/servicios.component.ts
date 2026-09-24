@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -59,6 +59,7 @@ export interface ServicioEspecializado {
     ComprobanteLightboxComponent,
     RechazoDialogComponent
   ],
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './servicios.component.html',
   styleUrl: './servicios.component.scss'
 })

@@ -25,8 +25,10 @@
       <div class="filter-dropdown-wrap">
         <label><i class="fa-solid fa-layer-group"></i> Categoría:</label>
         <select [ngModel]="categoriaSeleccionada" (ngModelChange)="categoriaChange.emit($event)" class="toolbar-select">
-          <option value="TODAS">⚡ Todas las Categorías (Global)</option>
-          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+          <option [value]="RankingFiltroCategoria.TODAS">⚡ Todas las Categorías (Global)</option>
+          @for (cat of categorias; track cat.id) {
+            <option [value]="cat.id">{{ cat.nombre }}</option>
+          }
         </select>
       </div>
 
@@ -34,11 +36,11 @@
       <div class="filter-dropdown-wrap">
         <label><i class="fa-solid fa-gem"></i> Tier / Rango:</label>
         <select [ngModel]="tierSeleccionado" (ngModelChange)="tierChange.emit($event)" class="toolbar-select">
-          <option value="TODOS">Todos los Tiers</option>
-          <option value="DIAMANTE">💎 Diamante (Nivel 15+)</option>
-          <option value="ORO">🏆 Oro (Nivel 12 - 14)</option>
-          <option value="PLATA">🥈 Plata (Nivel 10 - 11)</option>
-          <option value="BRONCE">🥉 Bronce (Nivel 1 - 9)</option>
+          <option [value]="TierRank.TODOS">Todos los Tiers</option>
+          <option [value]="TierRank.DIAMANTE">💎 Diamante (Nivel 15+)</option>
+          <option [value]="TierRank.ORO">🏆 Oro (Nivel 12 - 14)</option>
+          <option [value]="TierRank.PLATA">🥈 Plata (Nivel 10 - 11)</option>
+          <option [value]="TierRank.BRONCE">🥉 Bronce (Nivel 1 - 9)</option>
         </select>
       </div>
 
@@ -46,13 +48,14 @@
       <div class="filter-dropdown-wrap">
         <label><i class="fa-solid fa-futbol"></i> Posición:</label>
         <select [ngModel]="posicionSeleccionada" (ngModelChange)="posicionChange.emit($event)" class="toolbar-select">
-          <option value="TODAS">Todas las Posiciones</option>
-          <option value="Arquero">🧤 Arquero / Portero</option>
-          <option value="Defensa">🛡️ Defensas</option>
-          <option value="Volante">🎯 Volantes / Mediocampistas</option>
-          <option value="Delantero">⚽ Delanteros / Extremos</option>
+          <option [value]="RankingFiltroPosicion.TODAS">Todas las Posiciones</option>
+          <option [value]="RankingFiltroPosicion.ARQUERO">🧤 Arquero / Portero</option>
+          <option [value]="RankingFiltroPosicion.DEFENSA">🛡️ Defensas</option>
+          <option [value]="RankingFiltroPosicion.VOLANTE">🎯 Volantes / Mediocampistas</option>
+          <option [value]="RankingFiltroPosicion.DELANTERO">⚽ Delanteros / Extremos</option>
         </select>
       </div>
+
     </div>
 
     <div class="toolbar-right">
@@ -66,12 +69,16 @@
           placeholder="Filtrar por nombre, dorsal..." 
           class="table-search-input"
         />
-        <button *ngIf="busquedaTexto" class="btn-clear" (click)="busquedaChange.emit('')"><i class="fa-solid fa-xmark"></i></button>
+        @if (busquedaTexto) {
+          <button class="btn-clear" (click)="busquedaChange.emit('')"><i class="fa-solid fa-xmark"></i></button>
+        }
       </div>
 
-      <button *ngIf="hasActiveFilters()" class="btn-reset-toolbar" (click)="resetFilters.emit()" title="Restablecer filtros">
-        <i class="fa-solid fa-rotate-left"></i> Limpiar
-      </button>
+      @if (hasActiveFilters()) {
+        <button class="btn-reset-toolbar" (click)="resetFilters.emit()" title="Restablecer filtros">
+          <i class="fa-solid fa-rotate-left"></i> Limpiar
+        </button>
+      }
     </div>
   </div>
 
@@ -133,121 +140,141 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngIf="alumnos.length > 0; else noAlumnos">
-          <tr 
-            *ngFor="let alumno of alumnos"
-            class="player-row" 
-            [class.top-one]="alumno.posicionRanking === 1"
-            [class.top-two]="alumno.posicionRanking === 2"
-            [class.top-three]="alumno.posicionRanking === 3"
-            (click)="seleccionarAlumno.emit(alumno)">
-            
-            <!-- POSICIÓN & TENDENCIA -->
-            <td class="td-rank">
-              <div class="rank-box">
-                <span *ngIf="alumno.posicionRanking === 1" class="rank-number medal-gold"><i class="fa-solid fa-crown"></i> 1</span>
-                <span *ngIf="alumno.posicionRanking === 2" class="rank-number medal-silver"><i class="fa-solid fa-medal"></i> 2</span>
-                <span *ngIf="alumno.posicionRanking === 3" class="rank-number medal-bronze"><i class="fa-solid fa-award"></i> 3</span>
-                <span *ngIf="alumno.posicionRanking > 3" class="rank-number">#{{ alumno.posicionRanking }}</span>
+        @if (alumnos.length > 0) {
+          @for (alumno of alumnos; track alumno.id) {
+            <tr 
+              class="player-row" 
+              [class.top-one]="alumno.posicionRanking === 1"
+              [class.top-two]="alumno.posicionRanking === 2"
+              [class.top-three]="alumno.posicionRanking === 3"
+              (click)="seleccionarAlumno.emit(alumno)">
+              
+              <!-- POSICIÓN & TENDENCIA -->
+              <td class="td-rank">
+                <div class="rank-box">
+                  @if (alumno.posicionRanking === 1) {
+                    <span class="rank-number medal-gold"><i class="fa-solid fa-crown"></i> 1</span>
+                  }
+                  @if (alumno.posicionRanking === 2) {
+                    <span class="rank-number medal-silver"><i class="fa-solid fa-medal"></i> 2</span>
+                  }
+                  @if (alumno.posicionRanking === 3) {
+                    <span class="rank-number medal-bronze"><i class="fa-solid fa-award"></i> 3</span>
+                  }
+                  @if (alumno.posicionRanking > 3) {
+                    <span class="rank-number">#{{ alumno.posicionRanking }}</span>
+                  }
 
-                <!-- Indicador de subida/bajada -->
-                <div class="trend-icon" [title]="getTrendTitle(alumno)">
-                  <i *ngIf="alumno.posicionAnterior > alumno.posicionRanking" class="fa-solid fa-caret-up text-emerald"></i>
-                  <i *ngIf="alumno.posicionAnterior < alumno.posicionRanking" class="fa-solid fa-caret-down text-rose"></i>
-                  <i *ngIf="alumno.posicionAnterior === alumno.posicionRanking" class="fa-solid fa-minus text-slate"></i>
-                </div>
-              </div>
-            </td>
-
-            <!-- ALUMNO / FOTO / DORSAL -->
-            <td class="td-player">
-              <div class="player-cell">
-                <div class="avatar-holder" [ngClass]="'ring-' + alumno.tier.toLowerCase()">
-                  <img [src]="alumno.fotoUrl" [alt]="alumno.nombres" />
-                  <span class="dorsal-tag">#{{ alumno.dorsal }}</span>
-                </div>
-                <div class="player-text">
-                  <div class="name-line">
-                    <strong class="player-full-name">{{ alumno.nombres }} {{ alumno.apellidos }}</strong>
-                    <span *ngIf="alumno.destacadoSemana" class="badge-fire-weekly" title="Destacado de la semana por el DT">
-                      <i class="fa-solid fa-fire"></i> MVP Semanal
-                    </span>
+                  <!-- Indicador de subida/bajada -->
+                  <div class="trend-icon" [title]="getTrendTitle(alumno)">
+                    @if (alumno.posicionAnterior > alumno.posicionRanking) {
+                      <i class="fa-solid fa-caret-up text-emerald"></i>
+                    }
+                    @if (alumno.posicionAnterior < alumno.posicionRanking) {
+                      <i class="fa-solid fa-caret-down text-rose"></i>
+                    }
+                    @if (alumno.posicionAnterior === alumno.posicionRanking) {
+                      <i class="fa-solid fa-minus text-slate"></i>
+                    }
                   </div>
-                  <span class="player-pos-text">{{ alumno.posicionCampo }}</span>
                 </div>
-              </div>
-            </td>
+              </td>
 
-            <!-- CATEGORÍA -->
-            <td class="td-cat">
-              <span class="cat-pill-badge">{{ alumno.categoriaNombre }}</span>
-            </td>
+              <!-- ALUMNO / FOTO / DORSAL -->
+              <td class="td-player">
+                <div class="player-cell">
+                  <div class="avatar-holder" [ngClass]="'ring-' + alumno.tier.toLowerCase()">
+                    <img [src]="alumno.fotoUrl" [alt]="alumno.nombres" />
+                    <span class="dorsal-tag">#{{ alumno.dorsal }}</span>
+                  </div>
+                  <div class="player-text">
+                    <div class="name-line">
+                      <strong class="player-full-name">{{ alumno.nombres }} {{ alumno.apellidos }}</strong>
+                      @if (alumno.destacadoSemana) {
+                        <span class="badge-fire-weekly" title="Destacado de la semana por el DT">
+                          <i class="fa-solid fa-fire"></i> MVP Semanal
+                        </span>
+                      }
+                    </div>
+                    <span class="player-pos-text">{{ alumno.posicionCampo }}</span>
+                  </div>
+                </div>
+              </td>
 
-            <!-- TIER & NIVEL -->
-            <td class="td-tier">
-              <div class="tier-level-wrap">
-                <span class="tier-badge" [ngClass]="'tier-' + alumno.tier.toLowerCase()">
-                  <i class="fa-solid fa-gem" *ngIf="alumno.tier === 'DIAMANTE'"></i>
-                  <i class="fa-solid fa-shield" *ngIf="alumno.tier !== 'DIAMANTE'"></i>
-                  {{ alumno.tier }}
-                </span>
-                <span class="level-sub">Nivel {{ alumno.nivel }}</span>
-              </div>
-            </td>
+              <!-- CATEGORÍA -->
+              <td class="td-cat">
+                <span class="cat-pill-badge">{{ alumno.categoriaNombre }}</span>
+              </td>
 
-            <!-- OVERALL RATING -->
-            <td class="td-ovr">
-              <div class="ovr-badge-circle" [ngClass]="'ovr-' + alumno.tier.toLowerCase()">
-                {{ alumno.overallRating }}
-              </div>
-            </td>
+              <!-- TIER & NIVEL -->
+              <td class="td-tier">
+                <div class="tier-level-wrap">
+                  <span class="tier-badge" [ngClass]="'tier-' + alumno.tier.toLowerCase()">
+                    @if (alumno.tier === TierRank.DIAMANTE) {
+                      <i class="fa-solid fa-gem"></i>
+                    } @else {
+                      <i class="fa-solid fa-shield"></i>
+                    }
+                    {{ alumno.tier }}
+                  </span>
+                  <span class="level-sub">Nivel {{ alumno.nivel }}</span>
+                </div>
+              </td>
 
-            <!-- RACHA DE ASISTENCIA / DISCIPLINA -->
-            <td class="td-streak">
-              <div class="streak-badge" [class.on-fire]="alumno.rachaEntrenamientos >= 5">
-                <i class="fa-solid fa-fire"></i>
-                <span>{{ alumno.rachaEntrenamientos }}d</span>
-              </div>
-            </td>
+              <!-- OVERALL RATING -->
+              <td class="td-ovr">
+                <div class="ovr-badge-circle" [ngClass]="'ovr-' + alumno.tier.toLowerCase()">
+                  {{ alumno.overallRating }}
+                </div>
+              </td>
 
-            <!-- % EFECTIVIDAD ASISTENCIA -->
-            <td class="td-asist">
-              <div class="asist-meter-box">
-                <span class="asist-pct" [class.good]="alumno.asistenciasEfectividad >= 85" [class.warn]="alumno.asistenciasEfectividad < 85 && alumno.asistenciasEfectividad >= 75" [class.bad]="alumno.asistenciasEfectividad < 75">
-                  {{ alumno.asistenciasEfectividad }}%
-                </span>
-              </div>
-            </td>
+              <!-- RACHA DE ASISTENCIA / DISCIPLINA -->
+              <td class="td-streak">
+                <div class="streak-badge" [class.on-fire]="alumno.rachaEntrenamientos >= 5">
+                  <i class="fa-solid fa-fire"></i>
+                  <span>{{ alumno.rachaEntrenamientos }}d</span>
+                </div>
+              </td>
 
-            <!-- DESGLOSE XP -->
-            <td class="td-breakdown">
-              <div class="breakdown-pills">
-                <span class="mini-xp-pill xp-asist" title="XP Asistencia"><i class="fa-solid fa-check"></i> +{{ alumno.xpAsistencia }}</span>
-                <span class="mini-xp-pill xp-dt" title="XP Destacado DT"><i class="fa-solid fa-bolt"></i> +{{ alumno.xpRendimientoDT }}</span>
-                <span class="mini-xp-pill xp-tact" title="XP Táctica / Minijuegos"><i class="fa-solid fa-brain"></i> +{{ alumno.xpTactica + alumno.xpMisiones }}</span>
-                <span *ngIf="alumno.xpPenalizaciones < 0" class="mini-xp-pill xp-pen" title="Penalización por Inasistencia Injustificada"><i class="fa-solid fa-circle-exclamation"></i> {{ alumno.xpPenalizaciones }}</span>
-              </div>
-            </td>
+              <!-- % EFECTIVIDAD ASISTENCIA -->
+              <td class="td-asist">
+                <div class="asist-meter-box">
+                  <span class="asist-pct" [class.good]="alumno.asistenciasEfectividad >= 85" [class.warn]="alumno.asistenciasEfectividad < 85 && alumno.asistenciasEfectividad >= 75" [class.bad]="alumno.asistenciasEfectividad < 75">
+                    {{ alumno.asistenciasEfectividad }}%
+                  </span>
+                </div>
+              </td>
 
-            <!-- XP TOTAL -->
-            <td class="th-total-xp">
-              <div class="total-xp-cell">
-                <i class="fa-solid fa-bolt text-amber"></i>
-                <strong>{{ alumno.xpTotal | number }}</strong>
-                <span class="xp-unit">XP</span>
-              </div>
-            </td>
+              <!-- DESGLOSE XP -->
+              <td class="td-breakdown">
+                <div class="breakdown-pills">
+                  <span class="mini-xp-pill xp-asist" title="XP Asistencia"><i class="fa-solid fa-check"></i> +{{ alumno.xpAsistencia }}</span>
+                  <span class="mini-xp-pill xp-dt" title="XP Destacado DT"><i class="fa-solid fa-bolt"></i> +{{ alumno.xpRendimientoDT }}</span>
+                  <span class="mini-xp-pill xp-tact" title="XP Táctica / Minijuegos"><i class="fa-solid fa-brain"></i> +{{ alumno.xpTactica + alumno.xpMisiones }}</span>
+                  @if (alumno.xpPenalizaciones < 0) {
+                    <span class="mini-xp-pill xp-pen" title="Penalización por Inasistencia Injustificada"><i class="fa-solid fa-circle-exclamation"></i> {{ alumno.xpPenalizaciones }}</span>
+                  }
+                </div>
+              </td>
 
-            <!-- ACCIÓN / VER CARTA -->
-            <td class="td-action">
-              <button class="btn-inspect" (click)="$event.stopPropagation(); seleccionarAlumno.emit(alumno)" title="Ver Ficha y Estadísticas FUT">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </td>
-          </tr>
-        </ng-container>
+              <!-- XP TOTAL -->
+              <td class="th-total-xp">
+                <div class="total-xp-cell">
+                  <i class="fa-solid fa-bolt text-amber"></i>
+                  <strong>{{ alumno.xpTotal | number }}</strong>
+                  <span class="xp-unit">XP</span>
+                </div>
+              </td>
 
-        <ng-template #noAlumnos>
+              <!-- ACCIÓN / VER CARTA -->
+              <td class="td-action">
+                <button class="btn-inspect" (click)="$event.stopPropagation(); seleccionarAlumno.emit(alumno)" title="Ver Ficha y Estadísticas FUT">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        } @else {
           <tr>
             <td colspan="10" class="empty-table-cell">
               <div class="empty-state-box">
@@ -259,7 +286,7 @@
               </div>
             </td>
           </tr>
-        </ng-template>
+        }
       </tbody>
     </table>
   </div>

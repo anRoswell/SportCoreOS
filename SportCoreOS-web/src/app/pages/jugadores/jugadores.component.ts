@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, JugadorExpediente360 } from '../../core/services/api.service';
@@ -23,6 +23,7 @@ import { JugadorDeleteDialogComponent } from './components/jugador-delete-dialog
     JugadorBiometriaModalComponent,
     JugadorDeleteDialogComponent
   ],
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './jugadores.component.html',
   styleUrl: './jugadores.component.scss'
 })

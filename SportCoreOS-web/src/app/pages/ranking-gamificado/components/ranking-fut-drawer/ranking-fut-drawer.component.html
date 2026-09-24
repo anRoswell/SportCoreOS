@@ -1,86 +1,90 @@
-<div class="modal-backdrop" *ngIf="alumno" (click)="close.emit()">
-  <div class="fut-inspect-drawer" (click)="$event.stopPropagation()">
-    <div class="drawer-header">
-      <div class="drawer-title-wrap">
-        <i class="fa-solid fa-id-card-clip text-emerald"></i>
-        <div>
-          <h3>Expediente de Jugador & Atributos FUT</h3>
-          <p>{{ alumno.nombres }} {{ alumno.apellidos }} • Rank #{{ alumno.posicionRanking }}</p>
-        </div>
-      </div>
-      <button class="btn-close-drawer" (click)="close.emit()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <div class="drawer-body">
-      <!-- CARTA FUT REUTILIZABLE -->
-      <app-fut-player-card [player]="alumno"></app-fut-player-card>
-
-      <!-- DESGLOSE HISTÓRICO DE XP -->
-      <div class="xp-detailed-card">
-        <h4 class="box-subtitle"><i class="fa-solid fa-chart-pie text-emerald"></i> Desglose de Experiencia Acumulada</h4>
-        <div class="xp-stat-rows">
-          <div class="xp-row">
-            <span class="lbl"><i class="fa-solid fa-calendar-check text-emerald"></i> Entrenamientos & Puntualidad:</span>
-            <strong class="val text-emerald">+{{ alumno.xpAsistencia }} XP</strong>
-          </div>
-          <div class="xp-row">
-            <span class="lbl"><i class="fa-solid fa-star text-amber"></i> Evaluaciones Sobresalientes DT:</span>
-            <strong class="val text-amber">+{{ alumno.xpRendimientoDT }} XP</strong>
-          </div>
-          <div class="xp-row">
-            <span class="lbl"><i class="fa-solid fa-bullseye text-blue"></i> Misiones & Minijuegos:</span>
-            <strong class="val text-blue">+{{ alumno.xpMisiones }} XP</strong>
-          </div>
-          <div class="xp-row">
-            <span class="lbl"><i class="fa-solid fa-chess-knight text-purple"></i> Decisiones Tácticas:</span>
-            <strong class="val text-purple">+{{ alumno.xpTactica }} XP</strong>
-          </div>
-          <div *ngIf="(alumno.xpPenalizaciones || 0) < 0" class="xp-row row-penalty">
-            <span class="lbl"><i class="fa-solid fa-triangle-exclamation text-rose"></i> Penalizaciones Inasistencia Injustificada:</span>
-            <strong class="val text-rose">{{ alumno.xpPenalizaciones }} XP</strong>
-          </div>
-          <div class="xp-row row-total">
-            <span class="lbl">TOTAL EXPERIENCIA TEMPORADA:</span>
-            <strong class="val text-emerald">{{ alumno.xpTotal | number }} XP</strong>
+@if (alumno) {
+  <div class="modal-backdrop" (click)="close.emit()">
+    <div class="fut-inspect-drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title-wrap">
+          <i class="fa-solid fa-id-card-clip text-emerald"></i>
+          <div>
+            <h3>Expediente de Jugador & Atributos FUT</h3>
+            <p>{{ alumno.nombres }} {{ alumno.apellidos }} • Rank #{{ alumno.posicionRanking }}</p>
           </div>
         </div>
+        <button class="btn-close-drawer" (click)="close.emit()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
-      <!-- RETOS INDIVIDUALES COMPROBADOS & CERTIFICADOS POR DT -->
-      <div class="xp-detailed-card mt-3">
-        <h4 class="box-subtitle"><i class="fa-solid fa-medal text-amber"></i> Retos Comprobables Certificados por DT</h4>
-        <div class="certified-retos-badges">
-          <div class="certified-badge-pill">
-            <i class="fa-solid fa-dumbbell text-emerald"></i>
-            <div>
-              <strong>Flexiones de Pecho (Push-Ups)</strong>
-              <span>15 flexiones • Aprobado por Prof. Yepes (+100 XP)</span>
+      <div class="drawer-body">
+        <!-- CARTA FUT REUTILIZABLE -->
+        <app-fut-player-card [player]="alumno"></app-fut-player-card>
+
+        <!-- DESGLOSE HISTÓRICO DE XP -->
+        <div class="xp-detailed-card">
+          <h4 class="box-subtitle"><i class="fa-solid fa-chart-pie text-emerald"></i> Desglose de Experiencia Acumulada</h4>
+          <div class="xp-stat-rows">
+            <div class="xp-row">
+              <span class="lbl"><i class="fa-solid fa-calendar-check text-emerald"></i> Entrenamientos & Puntualidad:</span>
+              <strong class="val text-emerald">+{{ alumno.xpAsistencia }} XP</strong>
             </div>
-          </div>
-          <div class="certified-badge-pill">
-            <i class="fa-solid fa-futbol text-blue"></i>
-            <div>
-              <strong>Dominadas de Balón (21s)</strong>
-              <span>25 toques • Aprobado por DT (+80 XP)</span>
+            <div class="xp-row">
+              <span class="lbl"><i class="fa-solid fa-star text-amber"></i> Evaluaciones Sobresalientes DT:</span>
+              <strong class="val text-amber">+{{ alumno.xpRendimientoDT }} XP</strong>
             </div>
-          </div>
-          <div class="certified-badge-pill">
-            <i class="fa-solid fa-bolt text-amber"></i>
-            <div>
-              <strong>Sentadillas con Salto</strong>
-              <span>20 saltos • Aprobado en entrenamiento (+80 XP)</span>
+            <div class="xp-row">
+              <span class="lbl"><i class="fa-solid fa-bullseye text-blue"></i> Misiones & Minijuegos:</span>
+              <strong class="val text-blue">+{{ alumno.xpMisiones }} XP</strong>
+            </div>
+            <div class="xp-row">
+              <span class="lbl"><i class="fa-solid fa-chess-knight text-purple"></i> Decisiones Tácticas:</span>
+              <strong class="val text-purple">+{{ alumno.xpTactica }} XP</strong>
+            </div>
+            @if ((alumno.xpPenalizaciones || 0) < 0) {
+              <div class="xp-row row-penalty">
+                <span class="lbl"><i class="fa-solid fa-triangle-exclamation text-rose"></i> Penalizaciones Inasistencia Injustificada:</span>
+                <strong class="val text-rose">{{ alumno.xpPenalizaciones }} XP</strong>
+              </div>
+            }
+            <div class="xp-row row-total">
+              <span class="lbl">TOTAL EXPERIENCIA TEMPORADA:</span>
+              <strong class="val text-emerald">{{ alumno.xpTotal | number }} XP</strong>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="drawer-footer">
-      <button class="btn-primary" (click)="close.emit()">
-        <i class="fa-solid fa-check"></i> Cerrar Ficha
-      </button>
+        <!-- RETOS INDIVIDUALES COMPROBADOS & CERTIFICADOS POR DT -->
+        <div class="xp-detailed-card mt-3">
+          <h4 class="box-subtitle"><i class="fa-solid fa-medal text-amber"></i> Retos Comprobables Certificados por DT</h4>
+          <div class="certified-retos-badges">
+            <div class="certified-badge-pill">
+              <i class="fa-solid fa-dumbbell text-emerald"></i>
+              <div>
+                <strong>Flexiones de Pecho (Push-Ups)</strong>
+                <span>15 flexiones • Aprobado por Prof. Yepes (+100 XP)</span>
+              </div>
+            </div>
+            <div class="certified-badge-pill">
+              <i class="fa-solid fa-futbol text-blue"></i>
+              <div>
+                <strong>Dominadas de Balón (21s)</strong>
+                <span>25 toques • Aprobado por DT (+80 XP)</span>
+              </div>
+            </div>
+            <div class="certified-badge-pill">
+              <i class="fa-solid fa-bolt text-amber"></i>
+              <div>
+                <strong>Sentadillas con Salto</strong>
+                <span>20 saltos • Aprobado en entrenamiento (+80 XP)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn-primary" (click)="close.emit()">
+          <i class="fa-solid fa-check"></i> Cerrar Ficha
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

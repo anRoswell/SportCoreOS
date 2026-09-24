@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { REGLAS_ECONOMIA_XP, ReglaEconomiaXP } from '../../data/ranking-reglas.data';
 
 @Component({
   selector: 'app-ranking-reglas-modal',
@@ -10,4 +11,5 @@ import { CommonModule } from '@angular/common';
 })
 export class RankingReglasModalComponent {
   readonly close = output<void>();
+  readonly reglas: ReglaEconomiaXP[] = REGLAS_ECONOMIA_XP;
 }

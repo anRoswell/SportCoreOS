@@ -1,0 +1,51 @@
+<div class="stock-section fut-card">
+  <div class="section-title-wrap">
+    <i class="fa-solid fa-warehouse"></i>
+    <h2>Control de Existencias & Bodega por Tallas</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="fut-table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Producto</th>
+          <th>Talla</th>
+          <th>Stock Actual</th>
+          <th>Alerta Mínima</th>
+          <th>Nivel de Stock</th>
+          <th>Ajustar Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of catalogoList; track p.id) {
+          @for (v of p.variantes; track v.id) {
+            <tr>
+              <td><code>{{ p.codigo_sku }}</code></td>
+              <td><strong>{{ p.nombre }}</strong></td>
+              <td><span class="badge badge-blue">{{ v.talla }}</span></td>
+              <td><strong class="stock-num">{{ v.stock_actual }}</strong> unidades</td>
+              <td>{{ v.stock_minimo_alerta }} unidades</td>
+              <td>
+                @if (v.stock_actual === 0) {
+                  <span class="badge badge-danger">Agotado</span>
+                } @else if (v.stock_actual <= v.stock_minimo_alerta) {
+                  <span class="badge badge-warning">Alerta Baja</span>
+                } @else {
+                  <span class="badge badge-success">Óptimo</span>
+                }
+              </td>
+              <td>
+                <div class="quick-stock-adjust">
+                  <button class="btn-qty" (click)="ajustarStock.emit({ variante: v, delta: -1 })">-</button>
+                  <span class="qty-display">{{ v.stock_actual }}</span>
+                  <button class="btn-qty" (click)="ajustarStock.emit({ variante: v, delta: 1 })">+</button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

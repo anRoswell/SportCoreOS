@@ -1,0 +1,69 @@
+<div class="filters-card">
+  <div class="filters-top">
+    <!-- Buscador de texto -->
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery" 
+        (ngModelChange)="onSearchInput($event)"
+        placeholder="Buscar por jugador, dorsal o notas del PF..." 
+        class="search-input" />
+      @if (searchQuery) {
+        <button class="clear-search-btn" (click)="clearSearch()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      }
+    </div>
+
+    <!-- Filtro por Diagnóstico / Nivel -->
+    <div class="filter-select-wrap">
+      <select [ngModel]="selectedDiagnostico" (ngModelChange)="onDiagnosticoSelect($event)" class="filter-select">
+        @for (opt of diagnosticoOptions; track opt.id) {
+          <option [value]="opt.id">{{ opt.label }}</option>
+        }
+      </select>
+      <i class="fa-solid fa-chevron-down select-chevron"></i>
+    </div>
+
+    <!-- Ordenamiento -->
+    <div class="filter-select-wrap">
+      <select [ngModel]="sortBy" (ngModelChange)="onSortSelect($event)" class="filter-select">
+        @for (opt of sortOptions; track opt.id) {
+          <option [value]="opt.id">{{ opt.label }}</option>
+        }
+      </select>
+      <i class="fa-solid fa-chevron-down select-chevron"></i>
+    </div>
+
+    <!-- Botón de Limpiar Filtros -->
+    @if (hasActiveFilters) {
+      <button class="btn-clear-all-filters" (click)="onReset()" title="Restablecer todos los filtros">
+        <i class="fa-solid fa-filter-circle-xmark"></i>
+        <span>Restablecer</span>
+      </button>
+    }
+  </div>
+
+  <!-- Categorías Pills Bar -->
+  <div class="category-pills">
+    <button 
+      class="pill" 
+      [class.active]="selectedCategoriaId === BiometriaCategoriaFiltro.TODAS"
+      (click)="onSelectCategoria(BiometriaCategoriaFiltro.TODAS)">
+      <span>Todas las Categorías</span>
+      <span class="pill-count">({{ totalRecords }})</span>
+    </button>
+    @for (cat of categorias; track cat.id) {
+      <button 
+      class="pill" 
+      [class.active]="selectedCategoriaId === cat.id"
+      (click)="onSelectCategoria(cat.id)">
+        <span class="cat-dot" [style.background-color]="cat.color_distintivo || '#10B981'"></span>
+        <span>{{ cat.nombre }}</span>
+        <span class="pill-count">({{ getCategoryCount(cat.id) }})</span>
+      </button>
+    }
+  </div>
+</div>
+

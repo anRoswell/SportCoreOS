@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -47,6 +47,7 @@ export type { ColorPreset };
     LandingDeleteDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './landing-builder.component.html',
   styleUrl: './landing-builder.component.scss',
 })
@@ -247,6 +248,20 @@ export class LandingBuilderComponent implements OnInit {
     });
   }
 
+  onSetPortada({ item, event }: { item: LandingPage; event: Event }): void {
+    event.stopPropagation();
+    this.api.setPortadaLanding(item.id).subscribe({
+      next: (res) => {
+        this.showToast(`¡"${res.titulo}" fijada como Portada Oficial del Sitio Web (/)!`);
+        this.loadLandings();
+      },
+      error: (err) => {
+        console.error('Error al fijar portada:', err);
+        this.showToast('Error al fijar portada oficial', true);
+      },
+    });
+  }
+
   duplicateLanding(landing: LandingPage, event: Event): void {
     event.stopPropagation();
     this.api.duplicateLanding(landing.id).subscribe({
@@ -345,29 +360,36 @@ export class LandingBuilderComponent implements OnInit {
   }
 
   addBlock(type: TipoBloqueSeccion): void {
-    if (!this.currentForm.secciones_json) {
-      this.currentForm.secciones_json = [];
-    }
-
-    const newBlock: BloqueSeccionLanding = createDefaultLandingBlock(type, this.currentForm.secciones_json.length + 1);
-    this.currentForm.secciones_json.push(newBlock);
-    this.selectedBlockIndex.set(this.currentForm.secciones_json.length - 1);
+    const currentSections = this.currentForm.secciones_json ? [...this.currentForm.secciones_json] : [];
+    const newBlock: BloqueSeccionLanding = createDefaultLandingBlock(type, currentSections.length + 1);
+    currentSections.push(newBlock);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: currentSections,
+    };
+    this.selectedBlockIndex.set(currentSections.length - 1);
     this.showToast(`Bloque "${newBlock.titulo || type}" añadido`);
   }
 
   removeBlock(index: number, event?: Event): void {
     if (event) event.stopPropagation();
     if (!this.currentForm.secciones_json) return;
-    this.currentForm.secciones_json.splice(index, 1);
-    if (this.selectedBlockIndex() >= this.currentForm.secciones_json.length) {
-      this.selectedBlockIndex.set(Math.max(0, this.currentForm.secciones_json.length - 1));
+    const currentSections = [...this.currentForm.secciones_json];
+    currentSections.splice(index, 1);
+    currentSections.forEach((sec, idx) => (sec.orden = idx + 1));
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: currentSections,
+    };
+    if (this.selectedBlockIndex() >= currentSections.length) {
+      this.selectedBlockIndex.set(Math.max(0, currentSections.length - 1));
     }
   }
 
   moveBlock(index: number, direction: 'UP' | 'DOWN', event?: Event): void {
     if (event) event.stopPropagation();
-    const sections = this.currentForm.secciones_json;
-    if (!sections) return;
+    const sections = this.currentForm.secciones_json ? [...this.currentForm.secciones_json] : [];
+    if (!sections.length) return;
 
     const targetIndex = direction === 'UP' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= sections.length) return;
@@ -378,6 +400,10 @@ export class LandingBuilderComponent implements OnInit {
 
     // update orden values
     sections.forEach((sec, idx) => (sec.orden = idx + 1));
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: sections,
+    };
     this.selectedBlockIndex.set(targetIndex);
   }
 
@@ -389,7 +415,7 @@ export class LandingBuilderComponent implements OnInit {
     return this.currentForm.secciones_json[idx] || null;
   }
 
-  // Nested block item helpers (e.g. stats, programs, FAQs, plans)
+  // Nested block item helpers (e.g. stats, programs, FAQs, plans, gallery, stories)
   addStatItem(): void {
     const block = this.getSelectedBlock();
     if (!block || block.tipo !== TipoBloqueLanding.STATS) return;
@@ -399,12 +425,20 @@ export class LandingBuilderComponent implements OnInit {
       etiqueta: 'Nuevo Logro',
       icono: 'fa-solid fa-trophy',
     });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   removeStatItem(idx: number): void {
     const block = this.getSelectedBlock();
     if (!block || !block.datos['stats']) return;
     block.datos['stats'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   addProgramItem(): void {
@@ -420,12 +454,20 @@ export class LandingBuilderComponent implements OnInit {
       icono: 'fa-solid fa-futbol',
       tag: 'Competitivo',
     });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   removeProgramItem(idx: number): void {
     const block = this.getSelectedBlock();
     if (!block || !block.datos['programas']) return;
     block.datos['programas'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   addFaqItem(): void {
@@ -436,12 +478,20 @@ export class LandingBuilderComponent implements OnInit {
       pregunta: '¿Cuáles son los requisitos de matrícula?',
       respuesta: 'Documento de identidad del deportista, certificado médico y carnet de EPS o seguro escolar.',
     });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   removeFaqItem(idx: number): void {
     const block = this.getSelectedBlock();
     if (!block || !block.datos['preguntas']) return;
     block.datos['preguntas'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   addPlanItem(): void {
@@ -461,12 +511,20 @@ export class LandingBuilderComponent implements OnInit {
       ],
       boton_texto: 'Inscribirme al Plan',
     });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   removePlanItem(idx: number): void {
     const block = this.getSelectedBlock();
     if (!block || !block.datos['planes']) return;
     block.datos['planes'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   addTestimonioItem(): void {
@@ -480,12 +538,70 @@ export class LandingBuilderComponent implements OnInit {
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120',
       estrellas: 5,
     });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   removeTestimonioItem(idx: number): void {
     const block = this.getSelectedBlock();
     if (!block || !block.datos['testimonios']) return;
     block.datos['testimonios'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
+  }
+
+  addImageItem(): void {
+    const block = this.getSelectedBlock();
+    if (!block || (block.tipo !== TipoBloqueLanding.GALERIA && (block.tipo as string) !== 'GALERIA')) return;
+    if (!block.datos['imagenes']) block.datos['imagenes'] = [];
+    block.datos['imagenes'].push({
+      url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800',
+      titulo: 'Nueva Foto',
+      categoria: 'Sede Principal',
+    });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
+  }
+
+  removeImageItem(idx: number): void {
+    const block = this.getSelectedBlock();
+    if (!block || !block.datos['imagenes']) return;
+    block.datos['imagenes'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
+  }
+
+  addStoryItem(): void {
+    const block = this.getSelectedBlock();
+    if (!block || block.tipo !== TipoBloqueLanding.STORIES) return;
+    if (!block.datos['stories']) block.datos['stories'] = [];
+    block.datos['stories'].push({
+      titulo: 'Nueva Historia',
+      categoria: 'Sub-15 Élite',
+      imagen: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&auto=format&fit=crop&q=80',
+    });
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
+  }
+
+  removeStoryItem(idx: number): void {
+    const block = this.getSelectedBlock();
+    if (!block || !block.datos['stories']) return;
+    block.datos['stories'].splice(idx, 1);
+    this.currentForm = {
+      ...this.currentForm,
+      secciones_json: [...(this.currentForm.secciones_json || [])],
+    };
   }
 
   // Toast notifier

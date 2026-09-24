@@ -15,7 +15,8 @@
       <!-- Navbar Mockup -->
       <nav class="sim-navbar">
         <div class="sim-nav-brand">
-          <span class="sim-nav-dot" [style.background]="currentForm?.tema_color"></span>
+          <img *ngIf="currentForm?.logo_url" [src]="currentForm.logo_url" alt="Logo" class="sim-nav-logo" />
+          <span *ngIf="!currentForm?.logo_url" class="sim-nav-dot" [style.background]="currentForm?.tema_color"></span>
           <span class="sim-nav-title">{{ currentForm?.titulo || 'SportCore Academy' }}</span>
         </div>
         <button class="sim-nav-cta" [style.background]="currentForm?.tema_color">
@@ -28,7 +29,7 @@
         <ng-container *ngFor="let sec of currentForm?.secciones_json">
           
           <!-- HERO SECTION -->
-          <section *ngIf="sec.tipo === 'HERO'" class="sim-hero-sec" [style.background]="currentForm?.tema_gradient">
+          <section *ngIf="sec.tipo === 'HERO'" class="sim-hero-sec" [style.background]="getHeroBackground(sec)">
             <div class="sim-hero-badge" *ngIf="sec.datos['tag']">
               <i [class]="sec.datos['tag_icono'] || 'fa-solid fa-bolt'"></i>
               {{ sec.datos['tag'] }}
@@ -64,11 +65,36 @@
             <div class="sim-programs-grid">
               <div class="sim-prog-card" *ngFor="let prog of sec.datos['programas']">
                 <span class="sim-prog-tag" [style.color]="currentForm?.tema_color">{{ prog.tag || 'Formativo' }}</span>
-                <h4>{{ prog.titulo }}</h4>
-                <span class="sim-prog-age">{{ prog.edades }}</span>
+                <h4>{{ prog.titulo || prog.nombre }}</h4>
+                <p class="sim-prog-desc" *ngIf="prog.descripcion">{{ prog.descripcion }}</p>
+                <span class="sim-prog-age" *ngIf="prog.edades || prog.horario">{{ prog.edades || prog.horario }}</span>
                 <div class="sim-prog-bottom">
-                  <span class="sim-prog-price">{{ prog.precio }}</span>
+                  <span class="sim-prog-price" *ngIf="prog.precio">{{ prog.precio }}</span>
                   <button class="sim-prog-btn" [style.background]="currentForm?.tema_color">Cupo</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FIXTURE SECTION -->
+          <section *ngIf="sec.tipo === 'FIXTURE'" class="sim-fixture-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-fixture-list">
+              <div class="sim-fixture-card" *ngFor="let fix of sec.datos['partidos']">
+                <div class="sim-fixture-date">
+                  <i class="fa-solid fa-futbol text-emerald"></i>
+                  <span class="sim-fase-badge">{{ fix.fase }}</span>
+                </div>
+                <div class="sim-fixture-info">
+                  <span class="sim-fixture-tourn">{{ fix.torneo }}</span>
+                  <h4 class="sim-fixture-teams">VS. {{ fix.rival }}</h4>
+                  <div class="sim-fixture-meta">
+                    <span><i class="fa-regular fa-clock mr-1"></i>{{ fix.fecha }}</span>
+                    <span><i class="fa-solid fa-location-dot mr-1"></i>{{ fix.lugar }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -117,22 +143,107 @@
             </div>
           </section>
 
+          <!-- STORIES & REELS SECTION -->
+          <section *ngIf="sec.tipo === 'STORIES'" class="sim-stories-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-stories-grid">
+              <div class="sim-story-card" *ngFor="let st of (sec.datos['stories'] || [])">
+                <img [src]="st.imagen || st.media_url || st.url || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600'" [alt]="st.titulo" />
+                <div class="sim-story-overlay">
+                  <span class="sim-story-tag">{{ st.categoria || st.autor }}</span>
+                  <p class="sim-story-title">{{ st.titulo }}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- GALERIA DE IMAGENES SECTION -->
+          <section *ngIf="sec.tipo === 'GALERIA'" class="sim-galeria-sec">
+            <div class="sim-sec-header">
+              <h2>{{ sec.titulo }}</h2>
+              <p>{{ sec.subtitulo }}</p>
+            </div>
+            <div class="sim-galeria-grid">
+              <div class="sim-galeria-card" *ngFor="let img of (sec.datos['imagenes'] || [])">
+                <img [src]="img.url || img.imagen || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600'" [alt]="img.titulo || 'Foto'" />
+                <div class="sim-galeria-overlay" *ngIf="img.titulo || img.categoria">
+                  <span class="sim-galeria-tag" *ngIf="img.categoria">{{ img.categoria }}</span>
+                  <p class="sim-galeria-title" *ngIf="img.titulo">{{ img.titulo }}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <!-- LEAD FORM SECTION -->
           <section *ngIf="sec.tipo === 'LEAD_FORM'" class="sim-form-sec">
             <div class="sim-form-card">
               <div class="sim-form-header">
+                <span class="sim-form-badge" [style.color]="currentForm?.tema_color">
+                  <i class="fa-solid fa-user-plus mr-1"></i> PRE-INSCRIPCIÓN
+                </span>
                 <h3>{{ sec.titulo }}</h3>
                 <p>{{ sec.subtitulo }}</p>
               </div>
               <div class="sim-mock-form">
-                <input type="text" placeholder="Nombre completo del Acudiente" disabled />
-                <input type="email" placeholder="Correo Electrónico" disabled />
-                <input type="tel" placeholder="Número de WhatsApp" disabled />
-                <input type="text" placeholder="Nombre del Deportista" disabled />
+                <div class="sim-form-grid-2">
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">Nombre del Acudiente</span>
+                    <div class="sim-input-box">
+                      <i class="fa-regular fa-user"></i>
+                      <input type="text" placeholder="Ej: Laura Ramírez" disabled />
+                    </div>
+                  </div>
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">Correo Electrónico</span>
+                    <div class="sim-input-box">
+                      <i class="fa-regular fa-envelope"></i>
+                      <input type="email" placeholder="laura@ejemplo.com" disabled />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sim-form-grid-2">
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">WhatsApp de Contacto</span>
+                    <div class="sim-input-box">
+                      <i class="fa-brands fa-whatsapp text-emerald"></i>
+                      <input type="tel" placeholder="+57 300 123 4567" disabled />
+                    </div>
+                  </div>
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">Nombre del Deportista</span>
+                    <div class="sim-input-box">
+                      <i class="fa-solid fa-futbol"></i>
+                      <input type="text" placeholder="Ej: Daniel Gómez" disabled />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sim-form-grid-2">
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">Edad del Deportista</span>
+                    <div class="sim-input-box">
+                      <i class="fa-solid fa-cake-candles"></i>
+                      <input type="text" placeholder="Ej: 9 años" disabled />
+                    </div>
+                  </div>
+                  <div class="sim-input-group">
+                    <span class="sim-field-label">Categoría de Interés</span>
+                    <div class="sim-input-box">
+                      <i class="fa-solid fa-layer-group"></i>
+                      <input type="text" placeholder="Ej: Sub-11 Formativa" disabled />
+                    </div>
+                  </div>
+                </div>
+
                 <button class="sim-submit-btn" [style.background]="currentForm?.tema_color">
-                  {{ sec.datos['boton_cta_texto'] || 'Completar Pre-Inscripción' }}
+                  <i class="fa-solid fa-paper-plane mr-1"></i>
+                  {{ sec.datos['boton_cta_texto'] || '¡Quiero mi Clase de Prueba Gratis!' }}
                 </button>
-                <span class="sim-form-guarantee">{{ sec.datos['texto_garantia'] }}</span>
+                <span class="sim-form-guarantee">{{ sec.datos['texto_garantia'] || '🔒 Cupos limitados por categoría. Sin compromiso de pago inicial.' }}</span>
               </div>
             </div>
           </section>
@@ -155,7 +266,10 @@
 
           <!-- FOOTER SECTION -->
           <footer *ngIf="sec.tipo === 'FOOTER'" class="sim-footer-sec">
-            <p class="sim-foot-brand">{{ currentForm?.titulo }}</p>
+            <div class="sim-foot-brand-wrap">
+              <img *ngIf="currentForm?.logo_url" [src]="currentForm.logo_url" alt="Logo" class="sim-foot-logo" />
+              <p class="sim-foot-brand">{{ currentForm?.titulo }}</p>
+            </div>
             <p class="sim-foot-addr">{{ sec.datos['direccion'] }}</p>
             <p class="sim-foot-copy">© 2026 Powered by SportCoreOS</p>
           </footer>

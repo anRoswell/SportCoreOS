@@ -65,6 +65,10 @@
           }
           <span>{{ saving ? 'Guardando...' : 'Guardar y Publicar' }}</span>
         </button>
+
+        <button class="btn-close-modal ml-1" (click)="close.emit()" title="Cerrar Editor">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
     </div>
 
@@ -175,6 +179,28 @@
                 placeholder="Descripción para cuando se comparta el enlace en WhatsApp o Facebook..." 
                 [(ngModel)]="currentForm.meta_descripcion"></textarea>
             </div>
+
+            <!-- Toggle Portada Principal de Inicio '/' -->
+            <div class="portada-toggle-card">
+              <div class="portada-toggle-info">
+                <div class="portada-icon-circle">
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <div class="portada-text-block">
+                  <h4 class="portada-toggle-title">Portada Oficial del Sitio Web (Ruta '/')</h4>
+                  <p class="portada-toggle-sub">
+                    Si está activo, los visitantes que ingresen a la dirección web principal verán automáticamente esta landing page.
+                  </p>
+                </div>
+              </div>
+              <label class="status-switch">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="currentForm.es_pagina_inicio" />
+                <span class="slider round"></span>
+                <span class="switch-label">{{ currentForm.es_pagina_inicio ? 'PORTADA ACTIVA' : 'INACTIVA' }}</span>
+              </label>
+            </div>
           </div>
         }
 
@@ -236,12 +262,28 @@
             </div>
 
             <div class="form-group">
-              <label class="field-label">URL del Logo del Club</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                placeholder="https://.../logo.png" 
-                [(ngModel)]="currentForm.logo_url" />
+              <label class="field-label">Logo del Club (URL & Vista Previa)</label>
+              <div class="image-field-card">
+                <div class="image-thumb-preview logo-preview" *ngIf="currentForm.logo_url">
+                  <img [src]="currentForm.logo_url" alt="Logo preview" />
+                </div>
+                <div class="image-thumb-empty" *ngIf="!currentForm.logo_url">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="image-field-body">
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="https://images.unsplash.com/... o https://.../logo.png" 
+                    [(ngModel)]="currentForm.logo_url" />
+                  <div class="quick-preset-btns">
+                    <span class="quick-lbl">Sugeridos:</span>
+                    <button type="button" class="quick-btn" (click)="currentForm.logo_url = 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200'">⚽ Balón HD</button>
+                    <button type="button" class="quick-btn" (click)="currentForm.logo_url = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=200'">🏆 Escudo</button>
+                    <button type="button" class="quick-btn text-danger" *ngIf="currentForm.logo_url" (click)="currentForm.logo_url = ''">✕ Limpiar</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         }
@@ -356,7 +398,28 @@
 
                       <div class="form-group">
                         <label class="field-label">Imagen de Fondo / Poster URL</label>
-                        <input type="text" class="form-control" [(ngModel)]="block.datos['imagen_fondo']" placeholder="https://..." />
+                        <div class="image-field-card">
+                          <div class="image-thumb-preview hero-preview" *ngIf="block.datos['imagen_fondo']">
+                            <img [src]="block.datos['imagen_fondo']" alt="Fondo Hero Preview" />
+                          </div>
+                          <div class="image-thumb-empty hero-empty" *ngIf="!block.datos['imagen_fondo']">
+                            <i class="fa-regular fa-image"></i>
+                          </div>
+                          <div class="image-field-body">
+                            <input 
+                              type="text" 
+                              class="form-control" 
+                              [(ngModel)]="block.datos['imagen_fondo']" 
+                              placeholder="https://images.unsplash.com/..." />
+                            <div class="quick-preset-btns">
+                              <span class="quick-lbl">Fondos HD:</span>
+                              <button type="button" class="quick-btn" (click)="block.datos['imagen_fondo'] = 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1200'">🏟 Estadio Élite</button>
+                              <button type="button" class="quick-btn" (click)="block.datos['imagen_fondo'] = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1200'">⚽ Táctico</button>
+                              <button type="button" class="quick-btn" (click)="block.datos['imagen_fondo'] = 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1200'">🌿 Césped</button>
+                              <button type="button" class="quick-btn text-danger" *ngIf="block.datos['imagen_fondo']" (click)="block.datos['imagen_fondo'] = ''">✕ Solo Gradiente</button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   }
@@ -474,14 +537,33 @@
                   <!-- SPECIFIC INSPECTOR FOR LEAD FORM -->
                   @if (block.tipo === TipoBloqueLanding.LEAD_FORM) {
                     <div class="type-inspector-box">
-                      <div class="form-group">
-                        <label class="field-label">Texto del Botón de Envío</label>
-                        <input type="text" class="form-control" [(ngModel)]="block.datos['boton_cta_texto']" placeholder="¡Quiero mi Clase de Prueba Gratis!" />
+                      <div class="form-row-2">
+                        <div class="form-group">
+                          <label class="field-label">Texto Botón de Envío</label>
+                          <input type="text" class="form-control form-control-sm" [(ngModel)]="block.datos['boton_cta_texto']" placeholder="¡Quiero mi Clase de Prueba Gratis!" />
+                        </div>
+                        <div class="form-group">
+                          <label class="field-label">Texto de Garantía / Privacidad</label>
+                          <input type="text" class="form-control form-control-sm" [(ngModel)]="block.datos['texto_garantia']" placeholder="🔒 Cupos limitados..." />
+                        </div>
                       </div>
 
-                      <div class="form-group">
-                        <label class="field-label">Texto de Garantía / Privacidad</label>
-                        <input type="text" class="form-control" [(ngModel)]="block.datos['texto_garantia']" />
+                      <div class="form-group mb-0">
+                        <label class="field-label">Campos Opcionales a Capturar</label>
+                        <div class="lead-fields-toggles">
+                          <label class="checkbox-label">
+                            <input type="checkbox" [(ngModel)]="block.datos['mostrar_edad']" />
+                            <span>Edad del Deportista</span>
+                          </label>
+                          <label class="checkbox-label">
+                            <input type="checkbox" [(ngModel)]="block.datos['mostrar_categoria']" />
+                            <span>Categoría de Interés</span>
+                          </label>
+                          <label class="checkbox-label">
+                            <input type="checkbox" [(ngModel)]="block.datos['mostrar_mensaje']" />
+                            <span>Mensaje / Consulta</span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   }
@@ -504,6 +586,78 @@
                               </button>
                             </div>
                             <textarea class="form-control form-control-sm mt-1" rows="2" placeholder="Respuesta" [(ngModel)]="f.respuesta"></textarea>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR GALERIA -->
+                  @if (block.tipo === TipoBloqueLanding.GALERIA) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Fotos de la Galería ({{ (block.datos['imagenes'] || []).length }})</span>
+                        <button class="btn btn-outline btn-xs" (click)="addImageItem.emit()">+ Añadir Foto</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (img of (block.datos['imagenes'] || []); track $index; let imgIdx = $index) {
+                          <div class="subitem-card image-edit-card">
+                            <div class="subitem-card-header">
+                              <div class="image-thumb-preview">
+                                <img [src]="img.url || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200'" [alt]="img.titulo || 'Foto'" (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200'" />
+                              </div>
+                              <input type="text" class="form-control form-control-sm" placeholder="Título / Pie de foto" [(ngModel)]="img.titulo" />
+                              <button class="btn-icon-subtle text-danger" (click)="removeImageItem.emit(imgIdx)" title="Eliminar Foto">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <div class="subitem-card-body">
+                              <div class="form-group mb-1">
+                                <label class="field-label-sm">URL de la Imagen</label>
+                                <input type="text" class="form-control form-control-sm" placeholder="https://images.unsplash.com/..." [(ngModel)]="img.url" />
+                              </div>
+                              <div class="form-group mb-0">
+                                <label class="field-label-sm">Categoría / Etiqueta</label>
+                                <input type="text" class="form-control form-control-sm" placeholder="Ej: Sede Norte, Entrenamientos..." [(ngModel)]="img.categoria" />
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- SPECIFIC INSPECTOR FOR STORIES -->
+                  @if (block.tipo === TipoBloqueLanding.STORIES) {
+                    <div class="type-inspector-box">
+                      <div class="subitems-header">
+                        <span class="subitems-title">Historias / Reels ({{ (block.datos['stories'] || []).length }})</span>
+                        <button class="btn btn-outline btn-xs" (click)="addStoryItem.emit()">+ Añadir Historia</button>
+                      </div>
+
+                      <div class="subitems-list">
+                        @for (story of (block.datos['stories'] || []); track $index; let stIdx = $index) {
+                          <div class="subitem-card image-edit-card">
+                            <div class="subitem-card-header">
+                              <div class="image-thumb-preview">
+                                <img [src]="story.imagen || story.media_url || story.url || 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=200'" [alt]="story.titulo || 'Historia'" (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=200'" />
+                              </div>
+                              <input type="text" class="form-control form-control-sm" placeholder="Título de la Historia" [(ngModel)]="story.titulo" />
+                              <button class="btn-icon-subtle text-danger" (click)="removeStoryItem.emit(stIdx)" title="Eliminar Historia">
+                                <i class="fa-regular fa-trash-can"></i>
+                              </button>
+                            </div>
+                            <div class="subitem-card-body">
+                              <div class="form-group mb-1">
+                                <label class="field-label-sm">URL de la Imagen / Video</label>
+                                <input type="text" class="form-control form-control-sm" placeholder="https://..." [(ngModel)]="story.imagen" />
+                              </div>
+                              <div class="form-group mb-0">
+                                <label class="field-label-sm">Categoría / Autor</label>
+                                <input type="text" class="form-control form-control-sm" placeholder="Ej: Sub-15 Élite" [(ngModel)]="story.categoria" />
+                              </div>
+                            </div>
                           </div>
                         }
                       </div>

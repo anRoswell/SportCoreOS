@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -15,6 +15,11 @@ import { ApiService, LandingPage, LandingLead } from '../../core/services/api.se
 export class LandingPublicComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
+
+  @Input() isModal = false;
+  @Input() customSlug?: string;
+  @Output() openLogin = new EventEmitter<void>();
+  @Output() closeLanding = new EventEmitter<void>();
 
   landing = signal<LandingPage | null>(null);
   loading = signal<boolean>(true);
@@ -43,14 +48,39 @@ export class LandingPublicComponent implements OnInit {
   activeStoryIndex = signal<number>(0);
 
   ngOnInit(): void {
+    if (this.customSlug) {
+      this.loadLanding(this.customSlug);
+      return;
+    }
     this.route.params.subscribe((params) => {
       const slug = params['slug'];
       if (slug) {
         this.loadLanding(slug);
       } else {
+        this.loadHomePortada();
+      }
+    });
+  }
+
+  loadHomePortada(): void {
+    this.loading.set(true);
+    this.notFound.set(false);
+
+    this.api.getPublicHomeLanding().subscribe({
+      next: (data) => {
+        if (data && data.titulo) {
+          this.landing.set(data);
+          document.title = `${data.titulo} • SportCore`;
+        } else {
+          this.notFound.set(true);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar portada pública:', err);
         this.notFound.set(true);
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -148,5 +178,14 @@ export class LandingPublicComponent implements OnInit {
       categoria_interes: '',
       mensaje: '',
     };
+  }
+
+  getHeroBackground(sec: any, page: LandingPage): string {
+    const bgImg = sec?.datos?.['imagen_fondo'] || sec?.datos?.['poster_url'];
+    const gradient = page?.tema_gradient || 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+    if (bgImg) {
+      return `linear-gradient(180deg, rgba(7, 11, 20, 0.72) 0%, rgba(7, 11, 20, 0.88) 100%), url('${bgImg}') center/cover no-repeat`;
+    }
+    return gradient;
   }
 }

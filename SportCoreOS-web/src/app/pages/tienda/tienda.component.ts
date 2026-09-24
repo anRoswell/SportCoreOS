@@ -1,34 +1,54 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { TiendaTab, TiendaCategoriaProducto } from '../../core/enums/domain.enums';
+import { ProductoTienda, PedidoTienda, VarianteTienda, CreatePedidoTiendaDto, CreateProductoTiendaDto } from '../../core/models/tienda.model';
+import { TiendaCatalogoComponent } from './components/tienda-catalogo/tienda-catalogo.component';
+import { TiendaPedidosComponent } from './components/tienda-pedidos/tienda-pedidos.component';
+import { TiendaStockComponent } from './components/tienda-stock/tienda-stock.component';
+import { TiendaBuyModalComponent } from './components/tienda-buy-modal/tienda-buy-modal.component';
+import { TiendaDespachoModalComponent } from './components/tienda-despacho-modal/tienda-despacho-modal.component';
+import { TiendaProductFormModalComponent } from './components/tienda-product-form-modal/tienda-product-form-modal.component';
+import { TiendaDeleteModalComponent } from './components/tienda-delete-modal/tienda-delete-modal.component';
 
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    TiendaCatalogoComponent,
+    TiendaPedidosComponent,
+    TiendaStockComponent,
+    TiendaBuyModalComponent,
+    TiendaDespachoModalComponent,
+    TiendaProductFormModalComponent,
+    TiendaDeleteModalComponent
+  ],
   templateUrl: './tienda.component.html',
   styleUrl: './tienda.component.scss'
 })
 export class TiendaComponent implements OnInit {
   private api = inject(ApiService);
 
-  readonly activeTab = signal<'catalogo' | 'pedidos' | 'stock'>('catalogo');
-  readonly selectedCatFilter = signal<string>('TODAS');
+  readonly TiendaTab = TiendaTab;
 
-  readonly catalogoList = signal<any[]>([]);
-  readonly pedidosList = signal<any[]>([]);
+  readonly activeTab = signal<TiendaTab>(TiendaTab.CATALOGO);
+  readonly selectedCatFilter = signal<string>(TiendaCategoriaProducto.TODAS);
+
+  readonly catalogoList = signal<ProductoTienda[]>([]);
+  readonly pedidosList = signal<PedidoTienda[]>([]);
   readonly loading = signal<boolean>(false);
 
-  readonly selectedProduct = signal<any | null>(null);
-  readonly selectedPedidoToDeliver = signal<any | null>(null);
+  readonly selectedProduct = signal<ProductoTienda | null>(null);
+  readonly selectedPedidoToDeliver = signal<PedidoTienda | null>(null);
 
   readonly showBuyModal = signal<boolean>(false);
   readonly showDespachoModal = signal<boolean>(false);
   readonly showCreateProductModal = signal<boolean>(false);
   readonly showEditProductModal = signal<boolean>(false);
   readonly showDeleteProductModal = signal<boolean>(false);
-  readonly productToDelete = signal<any | null>(null);
+  readonly productToEdit = signal<ProductoTienda | null>(null);
+  readonly productToDelete = signal<ProductoTienda | null>(null);
   readonly toastMessage = signal<string>('');
 
   // Paginación Server-Side
@@ -47,50 +67,22 @@ export class TiendaComponent implements OnInit {
     return Math.min(end, this.totalRecords());
   });
 
-  isEditingProduct: boolean = false;
-  editingProductId: string | null = null;
-  recibidoPorNombre: string = '';
-
-  pedidoForm = {
-    variante_id: '',
-    cantidad: 1,
-    estampado_nombre: '',
-    estampado_dorsal: null,
-    comprador_nombre: '',
-    comprador_telefono: '',
-    metodo_pago: 'WOMPI_PSE',
-  };
-
-  productForm = {
-    codigo_sku: '',
-    nombre: '',
-    categoria: 'uniforme_oficial',
-    precio_venta: 120000,
-    personalizable: false,
-    variantes: [
-      { talla: '8', stock_actual: 10 },
-      { talla: '10', stock_actual: 15 },
-      { talla: '12', stock_actual: 15 },
-      { talla: 'M', stock_actual: 10 },
-    ] as any[],
-  };
-
   ngOnInit(): void {
     this.loadData();
   }
 
   loadData(): void {
-    if (this.activeTab() === 'catalogo' || this.activeTab() === 'stock') {
+    if (this.activeTab() === TiendaTab.CATALOGO || this.activeTab() === TiendaTab.STOCK) {
       this.loadCatalogo();
-    } else if (this.activeTab() === 'pedidos') {
+    } else if (this.activeTab() === TiendaTab.PEDIDOS) {
       this.loadPedidos();
     }
   }
 
-  onTabChange(tab: 'catalogo' | 'pedidos' | 'stock'): void {
+  onTabChange(tab: TiendaTab): void {
     this.activeTab.set(tab);
     this.currentPage.set(1);
-    this.pageSize.set(tab === 'catalogo' ? 8 : 10);
+    this.pageSize.set(tab === TiendaTab.CATALOGO ? 8 : 10);
     this.loadData();
   }
 
@@ -102,7 +94,7 @@ export class TiendaComponent implements OnInit {
 
   loadCatalogo(): void {
     this.loading.set(true);
-    const cat = this.selectedCatFilter() !== 'TODAS' ? this.selectedCatFilter() : undefined;
+    const cat = this.selectedCatFilter() !== TiendaCategoriaProducto.TODAS ? this.selectedCatFilter() : undefined;
     this.api.getCatalogoTienda({
       page: this.currentPage(),
       limit: this.pageSize(),
@@ -163,52 +155,8 @@ export class TiendaComponent implements OnInit {
     this.loadData();
   }
 
-  getVisiblePages(): number[] {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const maxVisible = 5;
-
-    if (total <= maxVisible) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    let start = Math.max(1, current - 2);
-    let end = Math.min(total, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    const pages: number[] = [];
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  formatCategoria(cat: string): string {
-    switch (cat) {
-      case 'uniforme_oficial': return 'Uniforme Oficial';
-      case 'entrenamiento': return 'Entrenamiento';
-      case 'balones': return 'Balones';
-      case 'accesorios': return 'Accesorios';
-      default: return cat;
-    }
-  }
-
-  formatCurrency(val: any): string {
-    if (val === null || val === undefined || val === '') return '$ 0';
-    const num = Number(val);
-    if (isNaN(num)) return '$ 0';
-    return '$ ' + Math.round(num).toLocaleString('es-CO');
-  }
-
-  openBuyModal(producto: any): void {
+  openBuyModal(producto: ProductoTienda): void {
     this.selectedProduct.set(producto);
-    if (producto.variantes && producto.variantes.length > 0) {
-      const firstDisp = producto.variantes.find((v: any) => v.stock_actual > 0) || producto.variantes[0];
-      this.pedidoForm.variante_id = firstDisp.id;
-    }
     this.showBuyModal.set(true);
   }
 
@@ -217,13 +165,8 @@ export class TiendaComponent implements OnInit {
     this.selectedProduct.set(null);
   }
 
-  submitPedido(): void {
-    if (!this.pedidoForm.variante_id || this.pedidoForm.cantidad < 1) {
-      this.showToast('Selecciona una talla válida');
-      return;
-    }
-
-    this.api.createPedidoTienda(this.pedidoForm).subscribe({
+  submitPedido(dto: CreatePedidoTiendaDto): void {
+    this.api.createPedidoTienda(dto).subscribe({
       next: () => {
         this.showToast('¡Pedido registrado con éxito! QR de despacho generado.');
         this.closeBuyModal();
@@ -237,9 +180,8 @@ export class TiendaComponent implements OnInit {
     });
   }
 
-  openDespacharModal(ped: any): void {
+  openDespacharModal(ped: PedidoTienda): void {
     this.selectedPedidoToDeliver.set(ped);
-    this.recibidoPorNombre = ped.comprador_nombre || '';
     this.showDespachoModal.set(true);
   }
 
@@ -248,14 +190,8 @@ export class TiendaComponent implements OnInit {
     this.selectedPedidoToDeliver.set(null);
   }
 
-  submitDespacho(): void {
-    const ped = this.selectedPedidoToDeliver();
-    if (!ped || !this.recibidoPorNombre) {
-      this.showToast('Por favor indica quién recibe la indumentaria');
-      return;
-    }
-
-    this.api.despacharPedidoTienda(ped.id, this.recibidoPorNombre).subscribe({
+  submitDespacho(event: { id: string; recibidoPor: string }): void {
+    this.api.despacharPedidoTienda(event.id, event.recibidoPor).subscribe({
       next: () => {
         this.showToast('¡Indumentaria entregada y registrada en utilería!');
         this.closeDespachoModal();
@@ -267,11 +203,12 @@ export class TiendaComponent implements OnInit {
     });
   }
 
-  ajustarStockRapido(variante: any, delta: number): void {
-    const nuevoStock = Math.max(0, variante.stock_actual + delta);
-    this.api.ajustarStockVariante(variante.id, nuevoStock).subscribe({
+  ajustarStockRapido(event: { variante: VarianteTienda; delta: number }): void {
+    if (!event.variante.id) return;
+    const nuevoStock = Math.max(0, event.variante.stock_actual + event.delta);
+    this.api.ajustarStockVariante(event.variante.id, nuevoStock).subscribe({
       next: () => {
-        variante.stock_actual = nuevoStock;
+        event.variante.stock_actual = nuevoStock;
         this.showToast(`Stock actualizado: ${nuevoStock} unidades`);
       },
       error: () => {
@@ -280,49 +217,14 @@ export class TiendaComponent implements OnInit {
     });
   }
 
-  addVariantRow(): void {
-    this.productForm.variantes.push({ talla: '', stock_actual: 10 });
-  }
-
-  removeVariantRow(index: number): void {
-    if (this.productForm.variantes.length > 1) {
-      this.productForm.variantes.splice(index, 1);
-    }
-  }
-
   openCreateProductModal(): void {
-    this.isEditingProduct = false;
-    this.editingProductId = null;
-    this.productForm = {
-      codigo_sku: '',
-      nombre: '',
-      categoria: 'uniforme_oficial',
-      precio_venta: 120000,
-      personalizable: false,
-      variantes: [
-        { talla: '8', stock_actual: 10 },
-        { talla: '10', stock_actual: 15 },
-        { talla: '12', stock_actual: 15 },
-        { talla: 'M', stock_actual: 10 },
-      ],
-    };
+    this.productToEdit.set(null);
     this.showCreateProductModal.set(true);
     this.showEditProductModal.set(false);
   }
 
-  openEditProductModal(producto: any): void {
-    this.isEditingProduct = true;
-    this.editingProductId = producto.id;
-    this.productForm = {
-      codigo_sku: producto.codigo_sku,
-      nombre: producto.nombre,
-      categoria: producto.categoria || 'uniforme_oficial',
-      precio_venta: Number(producto.precio_venta) || 0,
-      personalizable: !!producto.personalizable,
-      variantes: producto.variantes && producto.variantes.length > 0 
-        ? producto.variantes.map((v: any) => ({ talla: v.talla, stock_actual: v.stock_actual }))
-        : [{ talla: 'Única', stock_actual: 10 }],
-    };
+  openEditProductModal(producto: ProductoTienda): void {
+    this.productToEdit.set(producto);
     this.showEditProductModal.set(true);
     this.showCreateProductModal.set(false);
   }
@@ -330,18 +232,12 @@ export class TiendaComponent implements OnInit {
   closeProductFormModal(): void {
     this.showCreateProductModal.set(false);
     this.showEditProductModal.set(false);
-    this.isEditingProduct = false;
-    this.editingProductId = null;
+    this.productToEdit.set(null);
   }
 
-  submitProductForm(): void {
-    if (!this.productForm.codigo_sku || !this.productForm.nombre) {
-      this.showToast('Completa los campos obligatorios');
-      return;
-    }
-
-    if (this.isEditingProduct && this.editingProductId) {
-      this.api.updateProductoTienda(this.editingProductId, this.productForm).subscribe({
+  submitProductForm(event: { id: string | null; form: CreateProductoTiendaDto }): void {
+    if (event.id) {
+      this.api.updateProductoTienda(event.id, event.form).subscribe({
         next: () => {
           this.showToast('¡Producto actualizado exitosamente!');
           this.closeProductFormModal();
@@ -352,7 +248,7 @@ export class TiendaComponent implements OnInit {
         }
       });
     } else {
-      this.api.createProductoTienda(this.productForm).subscribe({
+      this.api.createProductoTienda(event.form).subscribe({
         next: () => {
           this.showToast('¡Producto agregado al catálogo exitosamente!');
           this.closeProductFormModal();
@@ -365,7 +261,7 @@ export class TiendaComponent implements OnInit {
     }
   }
 
-  eliminarProducto(producto: any): void {
+  eliminarProducto(producto: ProductoTienda): void {
     this.productToDelete.set(producto);
     this.showDeleteProductModal.set(true);
   }
@@ -375,11 +271,9 @@ export class TiendaComponent implements OnInit {
     this.productToDelete.set(null);
   }
 
-  confirmarEliminarProducto(): void {
-    const prod = this.productToDelete();
-    if (!prod) return;
-
-    this.api.deleteProductoTienda(prod.id).subscribe({
+  confirmarEliminarProducto(producto: ProductoTienda): void {
+    if (!producto.id) return;
+    this.api.deleteProductoTienda(producto.id).subscribe({
       next: () => {
         this.showToast('Producto desactivado del catálogo.');
         this.closeDeleteProductModal();

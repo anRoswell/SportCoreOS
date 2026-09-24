@@ -1,17 +1,29 @@
 <div class="login-wrapper">
-      <!-- Botón Flotante para cambiar Tema (Light / Dark) -->
-      <button 
-        class="theme-toggle-floating" 
-        (click)="themeService.toggleTheme()" 
-        [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
-        @if (themeService.isDark()) {
-          <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
-          <span>Modo Claro</span>
-        } @else {
-          <i class="fa-solid fa-moon" style="color: #38bdf8;"></i>
-          <span>Modo Oscuro</span>
-        }
-      </button>
+      <!-- Barra Superior Flotante: Ver Landing Page + Tema -->
+      <div class="login-floating-actions">
+        <button 
+          type="button"
+          class="landing-toggle-floating" 
+          (click)="openLandingModal()" 
+          title="Ver Landing Page Oficial del Club a Pantalla Completa">
+          <i class="fa-solid fa-globe"></i>
+          <span>Ver Landing Page del Club</span>
+          <span class="live-dot-mini"></span>
+        </button>
+
+        <button 
+          class="theme-toggle-floating" 
+          (click)="themeService.toggleTheme()" 
+          [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+          @if (themeService.isDark()) {
+            <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
+            <span>Modo Claro</span>
+          } @else {
+            <i class="fa-solid fa-moon" style="color: #38bdf8;"></i>
+            <span>Modo Oscuro</span>
+          }
+        </button>
+      </div>
 
       <div class="login-container">
         <!-- COLUMNA IZQUIERDA: HERO SPORT BRANDING -->
@@ -30,6 +42,14 @@
             <p class="hero-subtitle">
               Automatiza la cobranza de pensiones vía PSE/Wompi, organiza convocatorias por WhatsApp en 1 toque, gestiona expedientes 360° y visualiza biometría y telemetría de tus futuras estrellas.
             </p>
+
+            <div class="hero-landing-cta-wrap">
+              <button type="button" class="btn-open-landing-hero" (click)="openLandingModal()">
+                <i class="fa-solid fa-layer-group mr-2"></i>
+                <span>Explorar Landing Page de la Cantera</span>
+                <i class="fa-solid fa-arrow-right ml-2"></i>
+              </button>
+            </div>
 
             <!-- Grid de Métricas de Confianza -->
             <div class="hero-stats-grid">
@@ -245,6 +265,32 @@
               <p>© 2026 SportCoreOS by SECTIC S.A.S. • Infraestructura Cloud Deportiva • Todos los derechos reservados</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- MODAL FULLSCREEN DE LA LANDING PAGE EN EL LOGIN / HOME -->
+      <div class="landing-fullscreen-modal-overlay" *ngIf="showLandingModal()">
+        <div class="landing-modal-top-control-bar">
+          <div class="control-left">
+            <div class="live-dot-wrap">
+              <span class="live-pulse-dot"></span>
+              <span class="control-badge-text">PORTADA WEB OFICIAL DE LA ACADEMIA</span>
+            </div>
+          </div>
+
+          <div class="control-actions">
+            <button type="button" class="btn-modal-to-login" (click)="closeLandingModal()">
+              <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+              <span>Acceso Staff & Login</span>
+            </button>
+            <button type="button" class="btn-modal-close" (click)="closeLandingModal()" title="Cerrar modal y volver al Login">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="landing-modal-viewport">
+          <app-landing-public [isModal]="true" (openLogin)="closeLandingModal()" (closeLanding)="closeLandingModal()"></app-landing-public>
         </div>
       </div>
     </div>

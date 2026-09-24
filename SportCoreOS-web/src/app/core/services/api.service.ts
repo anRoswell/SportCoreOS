@@ -82,7 +82,7 @@ export const DEFAULT_CLUBS: Club[] = [
     id: '10000000-0000-0000-0000-000000000004',
     nombre: 'Academia Atlético Nacional Cantera',
     slug: 'atletico-nacional-cantera',
-    logo: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=200',
+    logo: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=200',
     plan: 'Plan Club Élite Pro',
     sigla: 'ANC',
     ciudad: 'Barranquilla',
@@ -1219,6 +1219,27 @@ export class ApiService {
     );
   }
 
+  getPublicHomeLanding(clubId?: string): Observable<LandingPage> {
+    let params = new HttpParams();
+    if (clubId) params = params.set('clubId', clubId);
+    return this.http.get<any>(`${this.apiUrl}/landings/public/portada/home`, { params }).pipe(
+      map(res => {
+        const l = res.data || res;
+        return {
+          ...l,
+          vistas_totales: l.vistas_totales ?? l.vistas_count ?? 0,
+          leads_totales: l.leads_totales ?? l.leads_count ?? 0,
+        };
+      })
+    );
+  }
+
+  setPortadaLanding(id: string): Observable<LandingPage> {
+    return this.http.patch<any>(`${this.apiUrl}/landings/${id}/set-portada`, {}).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   createLanding(dto: Partial<LandingPage>): Observable<LandingPage> {
     return this.http.post<any>(`${this.apiUrl}/landings`, dto).pipe(
       map(res => res.data || res)
@@ -1297,7 +1318,7 @@ export interface SliderPromocional {
 
 export type TipoContenidoLanding = 'LANDING_PAGE' | 'PROMO_HERO' | 'STORIES_REEL' | 'BANNER_TOP' | 'POPUP_MODAL';
 export type EstadoLanding = 'PUBLICADO' | 'BORRADOR' | 'ARCHIVADO';
-export type TipoBloqueSeccion = 'HERO' | 'STATS' | 'PROGRAMAS' | 'FIXTURE' | 'PLANES' | 'TESTIMONIOS' | 'LEAD_FORM' | 'FAQ' | 'FOOTER' | 'CUSTOM_HTML' | 'STORIES' | 'VIDEO_BANNER';
+export type TipoBloqueSeccion = 'HERO' | 'STATS' | 'PROGRAMAS' | 'FIXTURE' | 'PLANES' | 'TESTIMONIOS' | 'LEAD_FORM' | 'FAQ' | 'FOOTER' | 'CUSTOM_HTML' | 'STORIES' | 'GALERIA' | 'VIDEO_BANNER';
 
 export interface BloqueSeccionLanding {
   id: string;
@@ -1326,6 +1347,7 @@ export interface LandingPage {
   logo_url?: string | null;
   boton_contacto_whatsapp?: string | null;
   email_notificaciones?: string | null;
+  es_pagina_inicio?: boolean;
   configuracion_json?: Record<string, any>;
   secciones_json?: BloqueSeccionLanding[];
   vistas_totales?: number;

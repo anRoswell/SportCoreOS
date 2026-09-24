@@ -292,7 +292,7 @@ export class PartidosComponent implements OnInit {
   }
 
   goToConvocatoria(partido: any): void {
-    this.router.navigate(['/convocatorias'], { queryParams: { partidoId: partido.id } });
+    this.router.navigate(['/competicion/convocatorias'], { queryParams: { partidoId: partido.id } });
   }
 
   openActaModal(partido: any): void {

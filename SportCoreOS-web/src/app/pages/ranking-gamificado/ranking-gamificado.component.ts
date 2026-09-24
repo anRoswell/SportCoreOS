@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -68,6 +68,7 @@ import { RankingReglasModalComponent } from './components/ranking-reglas-modal/r
     RankingFutDrawerComponent,
     RankingReglasModalComponent
   ],
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './ranking-gamificado.component.html',
   styleUrl: './ranking-gamificado.component.scss'
 })

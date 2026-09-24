@@ -31,8 +31,9 @@ export const LANDING_AVAILABLE_BLOCKS: { type: TipoBloqueSeccion; label: string;
   { type: TipoBloqueLanding.FIXTURE, label: 'Próximos Partidos & Torneos', icon: 'fa-solid fa-futbol', desc: 'Calendario de eventos y torneos destacados' },
   { type: TipoBloqueLanding.PLANES, label: 'Planes & Tarifas', icon: 'fa-solid fa-tags', desc: 'Tabla de precios y beneficios de membresía' },
   { type: TipoBloqueLanding.TESTIMONIOS, label: 'Testimonios & Scouting', icon: 'fa-solid fa-star', desc: 'Reseñas de padres y cazatalentos' },
+  { type: TipoBloqueLanding.GALERIA, label: 'Galería de Imágenes', icon: 'fa-solid fa-images', desc: 'Mosaico de fotos del club, instalaciones y entrenamientos' },
+  { type: TipoBloqueLanding.STORIES, label: 'Galería de Historias / Reels', icon: 'fa-solid fa-photo-film', desc: 'Reels y momentos deportivos en formato vertical' },
   { type: TipoBloqueLanding.LEAD_FORM, label: 'Formulario de Captación', icon: 'fa-solid fa-clipboard-list', desc: 'Formulario para captar prospectos y pre-inscripciones' },
   { type: TipoBloqueLanding.FAQ, label: 'Preguntas Frecuentes', icon: 'fa-solid fa-circle-question', desc: 'Acordeón interactivo con dudas comunes' },
-  { type: TipoBloqueLanding.STORIES, label: 'Galería de Historias', icon: 'fa-solid fa-photo-film', desc: 'Reels y momentos deportivos en video/imagen' },
   { type: TipoBloqueLanding.FOOTER, label: 'Pie de Página & Sedes', icon: 'fa-solid fa-map-location-dot', desc: 'Dirección, horarios, redes y contacto' },
 ];

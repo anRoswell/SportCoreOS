@@ -8,111 +8,117 @@
 
   <div class="podium-container">
     <!-- 2do LUGAR: PLATA -->
-    <div class="podium-column place-2" *ngIf="top3.length >= 2">
-      <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[1])">
-        <div class="rank-crown-badge silver">
-          <i class="fa-solid fa-medal"></i>
-          <span>#2</span>
+    @if (top3.length >= 2) {
+      <div class="podium-column place-2">
+        <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[1])">
+          <div class="rank-crown-badge silver">
+            <i class="fa-solid fa-medal"></i>
+            <span>#2</span>
+          </div>
+          
+          <!-- MINI CARTA FUT HOLOGRÁFICA PLATA -->
+          <div class="mini-fut-card tier-plata">
+            <div class="card-ovr-box">
+              <span class="ovr-num">{{ top3[1].overallRating }}</span>
+              <span class="pos-code">{{ top3[1].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+            </div>
+            <div class="card-avatar-wrap">
+              <img [src]="top3[1].fotoUrl" [alt]="top3[1].nombres" />
+            </div>
+            <div class="card-info-wrap">
+              <span class="card-player-name">{{ top3[1].nombres }} {{ top3[1].apellidos }}</span>
+              <span class="card-player-cat">{{ top3[1].categoriaNombre }} • #{{ top3[1].dorsal }}</span>
+            </div>
+            <div class="card-xp-badge">
+              <i class="fa-solid fa-bolt"></i> {{ top3[1].xpTotal | number }} XP
+            </div>
+          </div>
         </div>
-        
-        <!-- MINI CARTA FUT HOLOGRÁFICA PLATA -->
-        <div class="mini-fut-card tier-plata">
-          <div class="card-ovr-box">
-            <span class="ovr-num">{{ top3[1].overallRating }}</span>
-            <span class="pos-code">{{ top3[1].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-          </div>
-          <div class="card-avatar-wrap">
-            <img [src]="top3[1].fotoUrl" [alt]="top3[1].nombres" />
-          </div>
-          <div class="card-info-wrap">
-            <span class="card-player-name">{{ top3[1].nombres }} {{ top3[1].apellidos }}</span>
-            <span class="card-player-cat">{{ top3[1].categoriaNombre }} • #{{ top3[1].dorsal }}</span>
-          </div>
-          <div class="card-xp-badge">
-            <i class="fa-solid fa-bolt"></i> {{ top3[1].xpTotal | number }} XP
+        <div class="podium-pedestal silver-pedestal">
+          <div class="pedestal-rank">2</div>
+          <div class="pedestal-meta">
+            <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[1].rachaEntrenamientos }} días racha</span>
+            <span class="level">Nivel {{ top3[1].nivel }}</span>
           </div>
         </div>
       </div>
-      <div class="podium-pedestal silver-pedestal">
-        <div class="pedestal-rank">2</div>
-        <div class="pedestal-meta">
-          <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[1].rachaEntrenamientos }} días racha</span>
-          <span class="level">Nivel {{ top3[1].nivel }}</span>
-        </div>
-      </div>
-    </div>
+    }
 
     <!-- 1er LUGAR: ORO (CAMPEÓN / MVP) -->
-    <div class="podium-column place-1" *ngIf="top3.length >= 1">
-      <div class="champion-halo"></div>
-      <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[0])">
-        <div class="rank-crown-badge gold">
-          <i class="fa-solid fa-crown"></i>
-          <span>#1 MVP</span>
+    @if (top3.length >= 1) {
+      <div class="podium-column place-1">
+        <div class="champion-halo"></div>
+        <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[0])">
+          <div class="rank-crown-badge gold">
+            <i class="fa-solid fa-crown"></i>
+            <span>#1 MVP</span>
+          </div>
+          
+          <!-- CARTA FUT HOLOGRÁFICA ORO -->
+          <div class="mini-fut-card tier-oro main-mvp">
+            <div class="card-prism-shine"></div>
+            <div class="card-ovr-box">
+              <span class="ovr-num">{{ top3[0].overallRating }}</span>
+              <span class="pos-code">{{ top3[0].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+            </div>
+            <div class="card-avatar-wrap">
+              <img [src]="top3[0].fotoUrl" [alt]="top3[0].nombres" />
+              <span class="mvp-star-badge"><i class="fa-solid fa-star"></i></span>
+            </div>
+            <div class="card-info-wrap">
+              <span class="card-player-name">{{ top3[0].nombres }} {{ top3[0].apellidos }}</span>
+              <span class="card-player-cat">{{ top3[0].categoriaNombre }} • #{{ top3[0].dorsal }}</span>
+            </div>
+            <div class="card-xp-badge gold-xp">
+              <i class="fa-solid fa-bolt"></i> {{ top3[0].xpTotal | number }} XP
+            </div>
+          </div>
         </div>
-        
-        <!-- CARTA FUT HOLOGRÁFICA ORO -->
-        <div class="mini-fut-card tier-oro main-mvp">
-          <div class="card-prism-shine"></div>
-          <div class="card-ovr-box">
-            <span class="ovr-num">{{ top3[0].overallRating }}</span>
-            <span class="pos-code">{{ top3[0].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-          </div>
-          <div class="card-avatar-wrap">
-            <img [src]="top3[0].fotoUrl" [alt]="top3[0].nombres" />
-            <span class="mvp-star-badge"><i class="fa-solid fa-star"></i></span>
-          </div>
-          <div class="card-info-wrap">
-            <span class="card-player-name">{{ top3[0].nombres }} {{ top3[0].apellidos }}</span>
-            <span class="card-player-cat">{{ top3[0].categoriaNombre }} • #{{ top3[0].dorsal }}</span>
-          </div>
-          <div class="card-xp-badge gold-xp">
-            <i class="fa-solid fa-bolt"></i> {{ top3[0].xpTotal | number }} XP
+        <div class="podium-pedestal gold-pedestal">
+          <div class="pedestal-rank">1</div>
+          <div class="pedestal-meta">
+            <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[0].rachaEntrenamientos }} días racha</span>
+            <span class="level text-amber">Nivel {{ top3[0].nivel }} Pro</span>
           </div>
         </div>
       </div>
-      <div class="podium-pedestal gold-pedestal">
-        <div class="pedestal-rank">1</div>
-        <div class="pedestal-meta">
-          <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[0].rachaEntrenamientos }} días racha</span>
-          <span class="level text-amber">Nivel {{ top3[0].nivel }} Pro</span>
-        </div>
-      </div>
-    </div>
+    }
 
     <!-- 3er LUGAR: BRONCE -->
-    <div class="podium-column place-3" *ngIf="top3.length >= 3">
-      <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[2])">
-        <div class="rank-crown-badge bronze">
-          <i class="fa-solid fa-award"></i>
-          <span>#3</span>
+    @if (top3.length >= 3) {
+      <div class="podium-column place-3">
+        <div class="podium-card-holder" (click)="seleccionarAlumno.emit(top3[2])">
+          <div class="rank-crown-badge bronze">
+            <i class="fa-solid fa-award"></i>
+            <span>#3</span>
+          </div>
+          
+          <!-- MINI CARTA FUT HOLOGRÁFICA BRONCE -->
+          <div class="mini-fut-card tier-bronce">
+            <div class="card-ovr-box">
+              <span class="ovr-num">{{ top3[2].overallRating }}</span>
+              <span class="pos-code">{{ top3[2].posicionCampo.substring(0, 3).toUpperCase() }}</span>
+            </div>
+            <div class="card-avatar-wrap">
+              <img [src]="top3[2].fotoUrl" [alt]="top3[2].nombres" />
+            </div>
+            <div class="card-info-wrap">
+              <span class="card-player-name">{{ top3[2].nombres }} {{ top3[2].apellidos }}</span>
+              <span class="card-player-cat">{{ top3[2].categoriaNombre }} • #{{ top3[2].dorsal }}</span>
+            </div>
+            <div class="card-xp-badge">
+              <i class="fa-solid fa-bolt"></i> {{ top3[2].xpTotal | number }} XP
+            </div>
+          </div>
         </div>
-        
-        <!-- MINI CARTA FUT HOLOGRÁFICA BRONCE -->
-        <div class="mini-fut-card tier-bronce">
-          <div class="card-ovr-box">
-            <span class="ovr-num">{{ top3[2].overallRating }}</span>
-            <span class="pos-code">{{ top3[2].posicionCampo.substring(0, 3).toUpperCase() }}</span>
-          </div>
-          <div class="card-avatar-wrap">
-            <img [src]="top3[2].fotoUrl" [alt]="top3[2].nombres" />
-          </div>
-          <div class="card-info-wrap">
-            <span class="card-player-name">{{ top3[2].nombres }} {{ top3[2].apellidos }}</span>
-            <span class="card-player-cat">{{ top3[2].categoriaNombre }} • #{{ top3[2].dorsal }}</span>
-          </div>
-          <div class="card-xp-badge">
-            <i class="fa-solid fa-bolt"></i> {{ top3[2].xpTotal | number }} XP
+        <div class="podium-pedestal bronze-pedestal">
+          <div class="pedestal-rank">3</div>
+          <div class="pedestal-meta">
+            <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[2].rachaEntrenamientos }} días racha</span>
+            <span class="level">Nivel {{ top3[2].nivel }}</span>
           </div>
         </div>
       </div>
-      <div class="podium-pedestal bronze-pedestal">
-        <div class="pedestal-rank">3</div>
-        <div class="pedestal-meta">
-          <span class="streak"><i class="fa-solid fa-fire text-amber"></i> {{ top3[2].rachaEntrenamientos }} días racha</span>
-          <span class="level">Nivel {{ top3[2].nivel }}</span>
-        </div>
-      </div>
-    </div>
+    }
   </div>
 </section>

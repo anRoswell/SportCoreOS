@@ -10,6 +10,11 @@
           {{ getTypeLabel(item.tipo_contenido) }}
         </span>
 
+        <span class="home-portada-badge" *ngIf="item.es_pagina_inicio" title="Esta es la Portada Principal del Sitio Web (Ruta '/')">
+          <i class="fa-solid fa-star text-amber"></i>
+          <span>Portada Web (/)</span>
+        </span>
+
         <label class="status-switch" (click)="$event.stopPropagation()">
           <input 
             type="checkbox" 
@@ -67,6 +72,15 @@
       <button class="action-btn edit-btn" (click)="edit.emit(item)">
         <i class="fa-solid fa-pen-to-square"></i>
         <span>Editar</span>
+      </button>
+
+      <button 
+        class="action-btn portada-btn" 
+        [class.is-portada]="item.es_pagina_inicio"
+        (click)="setPortada.emit({ item: item, event: $event })" 
+        [title]="item.es_pagina_inicio ? 'Esta es la Portada Principal del Sitio Web' : 'Fijar como Portada Principal al entrar a la web (Ruta /)'">
+        <i class="fa-solid fa-star" [class.text-amber]="item.es_pagina_inicio"></i>
+        <span *ngIf="item.es_pagina_inicio">Portada</span>
       </button>
 
       <button class="action-btn leads-btn" (click)="openLeads.emit({ item: item, event: $event })">

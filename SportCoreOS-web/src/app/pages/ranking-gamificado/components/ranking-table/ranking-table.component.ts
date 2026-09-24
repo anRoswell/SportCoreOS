@@ -1,22 +1,32 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlumnoRankItem } from '../../ranking-gamificado.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
-import { SortOrder, TierRank } from '../../../../core/enums/domain.enums';
+import {
+  SortOrder,
+  TierRank,
+  RankingFiltroPosicion,
+  RankingFiltroCategoria,
+} from '../../../../core/enums/domain.enums';
 
 @Component({
   selector: 'app-ranking-table',
   standalone: true,
   imports: [CommonModule, FormsModule, PaginationBarComponent],
-  templateUrl: './ranking-table.component.html'
+  templateUrl: './ranking-table.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RankingTableComponent {
+  readonly TierRank = TierRank;
+  readonly RankingFiltroPosicion = RankingFiltroPosicion;
+  readonly RankingFiltroCategoria = RankingFiltroCategoria;
+
   @Input({ required: true }) alumnos: AlumnoRankItem[] = [];
   @Input() categorias: { id: string; nombre: string; color: string }[] = [];
-  @Input() categoriaSeleccionada = 'TODAS';
+  @Input() categoriaSeleccionada: string = RankingFiltroCategoria.TODAS;
   @Input() tierSeleccionado: string = TierRank.TODOS;
-  @Input() posicionSeleccionada = 'TODAS';
+  @Input() posicionSeleccionada: string = RankingFiltroPosicion.TODAS;
   @Input() busquedaTexto = '';
   @Input() sortColumn = 'posicionRanking';
   @Input() sortDirection: SortOrder = SortOrder.ASC;
@@ -38,7 +48,7 @@ export class RankingTableComponent {
 
   getSortIcon(col: string): string {
     if (this.sortColumn !== col) return 'fa-sort text-slate';
-    return this.sortDirection === 'ASC' ? 'fa-sort-up text-emerald' : 'fa-sort-down text-emerald';
+    return this.sortDirection === SortOrder.ASC ? 'fa-sort-up text-emerald' : 'fa-sort-down text-emerald';
   }
 
   getTrendTitle(a: AlumnoRankItem): string {
@@ -51,9 +61,9 @@ export class RankingTableComponent {
   }
 
   hasActiveFilters(): boolean {
-    return this.categoriaSeleccionada !== 'TODAS' ||
-      this.tierSeleccionado !== 'TODOS' ||
-      this.posicionSeleccionada !== 'TODAS' ||
+    return this.categoriaSeleccionada !== RankingFiltroCategoria.TODAS ||
+      this.tierSeleccionado !== TierRank.TODOS ||
+      this.posicionSeleccionada !== RankingFiltroPosicion.TODAS ||
       this.busquedaTexto.trim() !== '';
   }
 }

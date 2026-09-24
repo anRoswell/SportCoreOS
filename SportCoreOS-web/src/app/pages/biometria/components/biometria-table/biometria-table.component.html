@@ -1,0 +1,188 @@
+<div class="fut-table-container">
+  @if (loading) {
+    <div class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+      <p>Cargando evaluaciones antropométricas y físicas...</p>
+    </div>
+  } @else if (mediciones.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      <h3>No se encontraron evaluaciones</h3>
+      <p>No hay mediciones antropométricas que coincidan con los filtros seleccionados.</p>
+      <div class="empty-actions">
+        @if (hasActiveFilters) {
+          <button class="btn-secondary" (click)="resetFilters.emit()">
+            <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
+          </button>
+        }
+        <button class="btn-primary" (click)="createNew.emit()">
+          <i class="fa-solid fa-plus"></i> Registrar Primera Medición
+        </button>
+      </div>
+    </div>
+  } @else {
+    <table class="fut-table">
+      <thead>
+        <tr>
+          <th>Deportista / Dorsal</th>
+          <th>Categoría</th>
+          <th>Fecha Medición</th>
+          <th>Estatura</th>
+          <th>Peso</th>
+          <th>IMC</th>
+          <th>Test Cooper</th>
+          <th>Sprint 30m</th>
+          <th>Salto Vertical</th>
+          <th>Diagnóstico</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of mediciones; track b.id) {
+          <tr class="bio-row" (click)="onRowClick(b)">
+            <td>
+              <div class="player-cell">
+                <div class="player-avatar-mini">
+                  <img [src]="b.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'" [alt]="b.jugador_nombre" />
+                  @if (b.numero_dorsal) {
+                    <span class="dorsal-tag">#{{ b.numero_dorsal }}</span>
+                  }
+                </div>
+                <div class="player-text">
+                  <strong class="player-name">{{ b.jugador_nombre }}</strong>
+                  <small class="player-pos">{{ b.posicion_principal || 'Posición por asignar' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge badge-blue">
+                {{ b.categoria_nombre || 'Categoría' }}
+              </span>
+            </td>
+            <td>
+              <div class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                <span>{{ b.fecha_evaluacion | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="measurement-val"><strong>{{ b.talla_cm }}</strong> <small>cm</small></span>
+            </td>
+            <td>
+              <span class="measurement-val"><strong>{{ b.peso_kg }}</strong> <small>kg</small></span>
+            </td>
+            <td>
+              <div class="imc-cell">
+                <strong class="imc-number">{{ b.imc }}</strong>
+                <span class="imc-status" [class]="getImcClass(b.imc)">{{ getImcLabel(b.imc) }}</span>
+              </div>
+            </td>
+            <td>
+              @if (b.test_cooper_metros) {
+                <span class="badge-cooper" [class.high]="b.test_cooper_metros >= 2800" [class.med]="b.test_cooper_metros >= 2400 && b.test_cooper_metros < 2800">
+                  <i class="fa-solid fa-person-running"></i>
+                  {{ b.test_cooper_metros }} m
+                </span>
+              } @else {
+                <span class="text-muted-dash">-</span>
+              }
+            </td>
+            <td>
+              @if (b.velocidad_30m_seg) {
+                <span class="metric-chip">
+                  <i class="fa-solid fa-bolt"></i>
+                  {{ b.velocidad_30m_seg }} s
+                </span>
+              } @else {
+                <span class="text-muted-dash">-</span>
+              }
+            </td>
+            <td>
+              @if (b.salto_vertical_cm) {
+                <span class="metric-chip">
+                  <i class="fa-solid fa-arrows-up-down"></i>
+                  {{ b.salto_vertical_cm }} cm
+                </span>
+              } @else {
+                <span class="text-muted-dash">-</span>
+              }
+            </td>
+            <td>
+              <span class="badge" [class.badge-success]="getDiagnostico(b).tipo === 'success'" [class.badge-blue]="getDiagnostico(b).tipo === 'blue'" [class.badge-warning]="getDiagnostico(b).tipo === 'warning'">
+                {{ getDiagnostico(b).label }}
+              </span>
+            </td>
+            <td class="text-right" (click)="$event.stopPropagation()">
+              <div class="table-actions">
+                <button class="action-btn btn-view" (click)="onRowClick(b)" title="Ver Radar & Ficha Biométrica">
+                  <i class="fa-solid fa-chart-pie"></i>
+                  <span>Radar</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- BARRA DE PAGINACIÓN COMPLETA -->
+    <div class="pagination-bar">
+      <div class="pagination-info">
+        <span>Mostrando <strong>{{ showingStart }} - {{ showingEnd }}</strong> de <strong>{{ totalRecords }}</strong> evaluaciones</span>
+        <div class="page-size-selector">
+          <label>Por página:</label>
+          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="page-size-select">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="pagination-controls">
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === 1" 
+          (click)="setPage(1)" 
+          title="Primera Página">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === 1" 
+          (click)="prevPage()" 
+          title="Página Anterior">
+          <i class="fa-solid fa-angle-left"></i>
+          <span>Anterior</span>
+        </button>
+
+        <div class="page-numbers">
+          @for (p of getVisiblePages(); track p) {
+            <button 
+              class="page-btn num-btn" 
+              [class.active]="currentPage === p" 
+              (click)="setPage(p)">
+              {{ p }}
+            </button>
+          }
+        </div>
+
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === totalPages" 
+          (click)="nextPage()" 
+          title="Página Siguiente">
+          <span>Siguiente</span>
+          <i class="fa-solid fa-angle-right"></i>
+        </button>
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === totalPages" 
+          (click)="setPage(totalPages)" 
+          title="Última Página">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+    </div>
+  }
+</div>

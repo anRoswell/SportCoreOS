@@ -107,6 +107,22 @@ export class LandingsService {
     return this.repo.registerLead(landing.id, dto, ip);
   }
 
+  async getPublicHomeLanding(clubId?: string): Promise<LandingPageEntity> {
+    const landing = await this.repo.findPortada(clubId);
+    if (!landing) {
+      throw new NotFoundException(`No hay una landing page configurada como portada principal.`);
+    }
+    return landing;
+  }
+
+  async setPortada(id: string, clubId?: string): Promise<LandingPageEntity> {
+    const landing = await this.repo.setPortada(id, clubId);
+    if (!landing) {
+      throw new NotFoundException(`Landing con ID ${id} no encontrada`);
+    }
+    return landing;
+  }
+
   async getLeadsByLanding(id: string): Promise<LandingLeadEntity[]> {
     await this.getLandingById(id);
     return this.repo.getLeadsByLanding(id);

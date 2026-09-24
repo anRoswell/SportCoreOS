@@ -83,7 +83,7 @@ export class NavbarComponent implements OnInit {
     event.stopPropagation();
     this.closeClubDropdown();
     this.closeDropdown();
-    this.router.navigate(['/modulos-escuela']);
+    this.router.navigate(['/configuracion/modulos']);
   }
 
   toggleUserDropdown(): void {

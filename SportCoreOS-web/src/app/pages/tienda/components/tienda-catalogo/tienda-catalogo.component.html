@@ -1,0 +1,136 @@
+<div class="catalogo-section">
+  <div class="categories-filter-bar">
+    @for (cat of categories; track cat.id) {
+      <button
+        class="cat-filter-btn"
+        [class.active]="selectedCatFilter === cat.id"
+        (click)="catFilterChange.emit(cat.id)"
+      >
+        {{ cat.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="empty-state fut-card">
+      <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+      <p>Consultando catálogo en la Base de Datos...</p>
+    </div>
+  } @else {
+    <div class="products-grid">
+      @for (p of catalogoList; track p.id) {
+        <div class="product-card fut-card">
+          <div class="product-img-wrap">
+            <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=300'" alt="{{ p.nombre }}" />
+            <span class="badge-cat">{{ formatCategoria(p.categoria) }}</span>
+            @if (p.personalizable) {
+              <span class="badge-custom"><i class="fa-solid fa-signature"></i> Personalizable</span>
+            }
+          </div>
+
+          <div class="product-info">
+            <span class="product-sku">{{ p.codigo_sku }}</span>
+            <h3 class="product-title">{{ p.nombre }}</h3>
+            <div class="product-price">${{ p.precio_venta | number }} COP</div>
+
+            <!-- VARIANTES DE TALLAS DISPONIBLES -->
+            <div class="variants-wrap">
+              <label class="tallas-label">Tallas disponibles:</label>
+              <div class="tallas-pills">
+                @for (v of p.variantes; track v.id) {
+                  <span
+                    class="talla-pill"
+                    [class.talla-low]="v.stock_actual > 0 && v.stock_actual <= (v.stock_minimo_alerta || 5)"
+                    [class.talla-out]="v.stock_actual === 0"
+                  >
+                    {{ v.talla }}
+                    <small>({{ v.stock_actual }})</small>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="product-card-actions">
+              <button class="btn-primary btn-buy" (click)="buy.emit(p)">
+                <i class="fa-solid fa-cart-shopping"></i> Pedido
+              </button>
+              <button class="btn-secondary btn-icon-only" (click)="edit.emit(p)" title="Editar Producto">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button class="btn-secondary btn-icon-only btn-danger-hover" (click)="delete.emit(p)" title="Desactivar Producto">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state fut-card">
+          <i class="fa-solid fa-shirt"></i>
+          <p>No se encontraron productos en esta categoría.</p>
+        </div>
+      }
+    </div>
+
+    <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+    <div class="pagination-bar fut-card mt-3">
+      <div class="pagination-info">
+        <span>Mostrando <strong>{{ showingStart }} - {{ showingEnd }}</strong> de <strong>{{ totalRecords }}</strong> artículos</span>
+        <div class="page-size-selector">
+          <label>Por página:</label>
+          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="page-size-select">
+            <option [value]="4">4</option>
+            <option [value]="8">8</option>
+            <option [value]="16">16</option>
+            <option [value]="32">32</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pagination-controls">
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === 1 || loading" 
+          (click)="setPage(1)" 
+          title="Primera Página">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === 1 || loading" 
+          (click)="setPage(currentPage - 1)" 
+          title="Página Anterior">
+          <i class="fa-solid fa-angle-left"></i>
+          <span>Anterior</span>
+        </button>
+
+        <div class="page-numbers">
+          @for (p of getVisiblePages(); track p) {
+            <button 
+              class="page-btn num-btn" 
+              [class.active]="currentPage === p" 
+              [disabled]="loading"
+              (click)="setPage(p)">
+              {{ p }}
+            </button>
+          }
+        </div>
+
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+          (click)="setPage(currentPage + 1)" 
+          title="Página Siguiente">
+          <span>Siguiente</span>
+          <i class="fa-solid fa-angle-right"></i>
+        </button>
+        <button 
+          class="page-btn nav-btn" 
+          [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+          (click)="setPage(totalPages)" 
+          title="Última Página">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+    </div>
+  }
+</div>

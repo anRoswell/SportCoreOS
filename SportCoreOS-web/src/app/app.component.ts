@@ -43,6 +43,14 @@ export class AppComponent {
 
   isPublicRoute = computed(() => {
     const url = this.currentUrl();
-    return url.startsWith('/p/') || url.startsWith('/landings/') || url.startsWith('/login');
+    return (
+      url === '/' ||
+      url === '' ||
+      url.startsWith('/home') ||
+      url.startsWith('/p/') ||
+      url.startsWith('/landings/') ||
+      url.startsWith('/login') ||
+      url.startsWith('/portal')
+    );
   });
 }

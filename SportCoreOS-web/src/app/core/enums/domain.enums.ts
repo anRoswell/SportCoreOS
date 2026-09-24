@@ -159,7 +159,20 @@ export enum TierRank {
   BRONCE = 'BRONCE',
 }
 
+export enum RankingFiltroPosicion {
+  TODAS = 'TODAS',
+  ARQUERO = 'Arquero',
+  DEFENSA = 'Defensa',
+  VOLANTE = 'Volante',
+  DELANTERO = 'Delantero',
+}
+
+export enum RankingFiltroCategoria {
+  TODAS = 'TODAS',
+}
+
 export enum TabRanking {
+
   LEADERBOARD = 'LEADERBOARD',
   RETOS = 'RETOS',
   CERTIFICACION_DT = 'CERTIFICACION_DT',
@@ -179,7 +192,17 @@ export enum EstadoRetoJugador {
   RECHAZADO = 'RECHAZADO',
 }
 
+export enum CategoriaHabilidadReto {
+  TODOS = 'TODOS',
+  FUERZA_CALISTENIA = 'FUERZA_CALISTENIA',
+  TECNICA_CONTROL = 'TECNICA_CONTROL',
+  POTENCIA_VELOCIDAD = 'POTENCIA_VELOCIDAD',
+  RESISTENCIA_CORE = 'RESISTENCIA_CORE',
+  PRECISION_TIRO = 'PRECISION_TIRO',
+}
+
 export enum TipoNotificacionToast {
+
   EXITO = 'exito',
   INFO = 'info',
   ALERTA = 'alerta',
@@ -268,6 +291,7 @@ export enum TipoBloqueLanding {
   FOOTER = 'FOOTER',
   CUSTOM_HTML = 'CUSTOM_HTML',
   STORIES = 'STORIES',
+  GALERIA = 'GALERIA',
   VIDEO_BANNER = 'VIDEO_BANNER',
 }
 
@@ -326,6 +350,10 @@ export enum RangoImcCssClass {
 // ==========================================
 // BIOMETRÍA & TESTS FÍSICOS
 // ==========================================
+export enum BiometriaCategoriaFiltro {
+  TODAS = 'TODAS',
+}
+
 export enum BiometriaDiagnosticoFiltro {
   TODOS = 'TODOS',
   SOBRESALIENTE = 'SOBRESALIENTE',
@@ -347,4 +375,42 @@ export enum BiometriaDiagnosticoTipo {
   BLUE = 'blue',
   WARNING = 'warning',
 }
+
+export enum BiometriaDiagnosticoLabel {
+  SOBRESALIENTE = 'Sobresaliente',
+  OPTIMO = 'Óptimo',
+  DESARROLLO = 'En Desarrollo',
+}
+
+// ==========================================
+// TIENDA & INDUMENTARIA OFICIAL
+// ==========================================
+export enum TiendaTab {
+  CATALOGO = 'catalogo',
+  PEDIDOS = 'pedidos',
+  STOCK = 'stock',
+}
+
+export enum TiendaCategoriaProducto {
+  TODAS = 'TODAS',
+  UNIFORME_OFICIAL = 'uniforme_oficial',
+  ENTRENAMIENTO = 'entrenamiento',
+  BALONES = 'balones',
+  ACCESORIOS = 'accesorios',
+}
+
+export enum EstadoDespachoPedido {
+  ENTREGADO = 'ENTREGADO',
+  PENDIENTE_ENTREGA = 'PENDIENTE_ENTREGA',
+}
+
+export enum MetodoPagoTienda {
+  WOMPI_PSE = 'WOMPI_PSE',
+  EFECTIVO_CAJA = 'EFECTIVO_CAJA',
+  TRANSFERENCIA = 'TRANSFERENCIA',
+}
+
+
+
+
 

@@ -247,6 +247,50 @@ export function createDefaultLandingBlock(type: TipoBloqueSeccion, orden: number
         },
       };
 
+    case TipoBloqueLanding.GALERIA:
+      return {
+        id: `galeria-${Date.now()}`,
+        tipo: TipoBloqueLanding.GALERIA,
+        titulo: 'Galería de Fotos & Instalaciones',
+        subtitulo: 'Conoce nuestras sedes, canchas reglamentarias y el día a día de nuestros deportistas.',
+        orden,
+        visible: true,
+        datos: {
+          imagenes: [
+            {
+              url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800',
+              titulo: 'Cancha Principal Sintética',
+              categoria: 'Sede Norte',
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&auto=format&fit=crop&q=80',
+              titulo: 'Entrenamiento Físico & Coordinación',
+              categoria: 'Preparación Física',
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800',
+              titulo: 'Trabajo Específico de Porteros',
+              categoria: 'Academia de Arqueros',
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800',
+              titulo: 'Celebración de Gol en Semifinal',
+              categoria: 'Torneo Nacional',
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800',
+              titulo: 'Charla Táctica Pre-Partido',
+              categoria: 'Cuerpo Técnico',
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=800',
+              titulo: 'Gimnasio & Biomecánica Deportiva',
+              categoria: 'Alto Rendimiento',
+            },
+          ],
+        },
+      };
+
     case TipoBloqueLanding.STORIES:
       return {
         id: `stories-${Date.now()}`,
@@ -260,7 +304,7 @@ export function createDefaultLandingBlock(type: TipoBloqueSeccion, orden: number
             {
               titulo: 'Entrenamiento Táctico',
               categoria: 'Sub-15 Élite',
-              imagen: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600',
+              imagen: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&auto=format&fit=crop&q=80',
             },
             {
               titulo: 'Campeones Copa Oro',

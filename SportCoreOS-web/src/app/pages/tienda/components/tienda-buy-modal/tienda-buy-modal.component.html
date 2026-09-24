@@ -1,0 +1,89 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-cart-plus"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Registrar Pedido de Indumentaria</h2>
+          <p class="modal-subtitle">{{ producto.nombre }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-ruler"></i> Talla & Cantidad</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Seleccionar Talla <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="pedidoForm.variante_id" name="variante_id" class="sport-input" required>
+                @for (v of producto.variantes; track v.id) {
+                  <option [value]="v.id" [disabled]="v.stock_actual === 0">
+                    Talla {{ v.talla }} ({{ v.stock_actual > 0 ? v.stock_actual + ' disp.' : 'AGOTADO' }})
+                  </option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Cantidad de Unidades <span class="required-star">*</span></label>
+            <input type="number" [(ngModel)]="pedidoForm.cantidad" name="cantidad" min="1" class="sport-input" required />
+          </div>
+        </div>
+      </div>
+
+      @if (producto.personalizable) {
+        <div class="modal-section">
+          <span class="modal-section-title"><i class="fa-solid fa-signature"></i> Estampado & Dorsal (Opcional)</span>
+          <div class="form-row g2">
+            <div class="input-group">
+              <label>Nombre a Estampar</label>
+              <input type="text" [(ngModel)]="pedidoForm.estampado_nombre" name="estampado_nombre" placeholder="ej. DÍAZ" class="sport-input" />
+            </div>
+            <div class="input-group">
+              <label>Número de Camiseta (1 al 99)</label>
+              <input type="number" [(ngModel)]="pedidoForm.estampado_dorsal" name="estampado_dorsal" min="1" max="99" class="sport-input" />
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-user"></i> Datos del Comprador</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Nombre del Padre / Comprador</label>
+            <input type="text" [(ngModel)]="pedidoForm.comprador_nombre" name="comprador_nombre" placeholder="ej. Carlos Pérez" class="sport-input" />
+          </div>
+          <div class="input-group">
+            <label>Teléfono WhatsApp</label>
+            <input type="text" [(ngModel)]="pedidoForm.comprador_telefono" name="comprador_telefono" placeholder="+57 310..." class="sport-input" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Método de Pago</label>
+          <div class="sport-select-wrapper">
+            <select [(ngModel)]="pedidoForm.metodo_pago" name="metodo_pago" class="sport-input">
+              <option [value]="MetodoPagoTienda.WOMPI_PSE">Pasarela Wompi / PSE</option>
+              <option [value]="MetodoPagoTienda.EFECTIVO_CAJA">Efectivo en Caja</option>
+              <option [value]="MetodoPagoTienda.TRANSFERENCIA">Transferencia / Nequi</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="close.emit()">Cancelar</button>
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Confirmar y Generar Orden
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

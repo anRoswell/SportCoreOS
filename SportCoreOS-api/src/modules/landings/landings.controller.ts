@@ -26,6 +26,18 @@ export class LandingsController {
   constructor(private readonly landingsService: LandingsService) {}
 
   @Public()
+  @Get('public/portada/home')
+  @ApiOperation({ summary: 'Obtener landing page configurada como portada de inicio (ruta /)' })
+  async getPublicPortada(@Query('clubId') clubId?: string) {
+    const landing = await this.landingsService.getPublicHomeLanding(clubId);
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      data: landing,
+    };
+  }
+
+  @Public()
   @Get('public/:slug')
   @ApiOperation({ summary: 'Obtener landing page pública por slug (visitantes/móvil)' })
   async getPublicLanding(@Param('slug') slug: string) {
@@ -33,6 +45,24 @@ export class LandingsController {
     return {
       success: true,
       statusCode: HttpStatus.OK,
+      data: landing,
+    };
+  }
+
+  @Public()
+  @Patch(':id/set-portada')
+  @ApiOperation({ summary: 'Establecer esta landing page como portada oficial del club (Ruta /)' })
+  async setPortada(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Query('clubId') queryClubId?: string,
+  ) {
+    const clubId = user?.clubId || user?.club_id || queryClubId;
+    const landing = await this.landingsService.setPortada(id, clubId);
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: `¡Landing '${landing.titulo}' configurada como Portada Principal del Club!`,
       data: landing,
     };
   }

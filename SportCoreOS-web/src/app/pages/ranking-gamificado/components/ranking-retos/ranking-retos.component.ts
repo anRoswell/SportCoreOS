@@ -1,22 +1,27 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlumnoRankItem } from '../../ranking-gamificado.component';
-import { EstadoRetoJugador } from '../../../../core/enums/domain.enums';
+import { EstadoRetoJugador, CategoriaHabilidadReto } from '../../../../core/enums/domain.enums';
 
 @Component({
   selector: 'app-ranking-retos',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ranking-retos.component.html'
 })
 export class RankingRetosComponent {
+  readonly EstadoRetoJugador = EstadoRetoJugador;
+  readonly CategoriaHabilidadReto = CategoriaHabilidadReto;
+
   @Input() jugadorActivo: AlumnoRankItem | null = null;
   @Input() todosAlumnos: AlumnoRankItem[] = [];
   @Input() metricasRetos: any = null;
   @Input() retosCatalogo: any[] = [];
   @Input() retosDelJugador: any[] = [];
-  @Input() filtroTipoReto = 'TODOS';
+  @Input() filtroTipoReto: string = CategoriaHabilidadReto.TODOS;
+
 
   @Output() seleccionarJugador = new EventEmitter<string>();
   @Output() filtroTipoRetoChange = new EventEmitter<string>();

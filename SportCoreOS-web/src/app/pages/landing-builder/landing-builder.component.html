@@ -95,6 +95,7 @@
     (duplicate)="duplicateLanding($event.item, $event.event)"
     (delete)="confirmDelete($event.item, $event.event)"
     (toggleEstado)="toggleEstado($event.item, $event.event)"
+    (setPortada)="onSetPortada($event)"
     (create)="openCreateModal('LANDING_PAGE')">
   </app-landing-catalog-grid>
 
@@ -128,6 +129,10 @@
     (removeTestimonioItem)="removeTestimonioItem($event)"
     (addFaqItem)="addFaqItem()"
     (removeFaqItem)="removeFaqItem($event)"
+    (addImageItem)="addImageItem()"
+    (removeImageItem)="removeImageItem($event)"
+    (addStoryItem)="addStoryItem()"
+    (removeStoryItem)="removeStoryItem($event)"
     (close)="closeBuilderModal()"
     (save)="saveLanding()">
   </app-landing-editor-modal>

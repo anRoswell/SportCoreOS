@@ -4,7 +4,8 @@
   <header class="public-navbar">
     <div class="navbar-container">
       <div class="nav-brand">
-        <span class="brand-badge-dot" [style.background]="page.tema_color"></span>
+        <img *ngIf="page.logo_url" [src]="page.logo_url" [alt]="page.titulo" class="brand-logo-img" />
+        <span *ngIf="!page.logo_url" class="brand-badge-dot" [style.background]="page.tema_color"></span>
         <span class="brand-title">{{ page.titulo }}</span>
       </div>
 
@@ -16,6 +17,14 @@
       </nav>
 
       <div class="nav-actions">
+        <a *ngIf="!isModal" [routerLink]="['/login']" class="btn-login-link" title="Ingresar a la Plataforma">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+          <span>Portal Staff & Login</span>
+        </a>
+        <button *ngIf="isModal" type="button" class="btn-login-link" (click)="openLogin.emit()" title="Ingresar a la Plataforma">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+          <span>Portal Staff & Login</span>
+        </button>
         <button class="btn btn-cta" [style.background]="page.tema_color" (click)="scrollToSection('sec-lead-form')">
           <i class="fa-solid fa-bolt mr-1"></i>
           <span>Inscribirme Ahora</span>
@@ -35,7 +44,7 @@
         *ngIf="sec.tipo === 'HERO'" 
         id="sec-hero" 
         class="landing-section hero-section"
-        [style.background]="page.tema_gradient">
+        [style.background]="getHeroBackground(sec, page)">
         
         <div class="hero-overlay"></div>
         
@@ -119,27 +128,28 @@
                 <span class="prog-cupos">{{ prog.cupos || 'Cupos limitados' }}</span>
               </div>
 
-              <h3 class="prog-title">{{ prog.titulo }}</h3>
+              <h3 class="prog-title">{{ prog.titulo || prog.nombre }}</h3>
+              <p class="prog-desc" *ngIf="prog.descripcion">{{ prog.descripcion }}</p>
               
               <div class="prog-meta-list">
-                <div class="meta-item">
+                <div class="meta-item" *ngIf="prog.edades">
                   <i class="fa-regular fa-calendar-days text-emerald"></i>
                   <span>{{ prog.edades }}</span>
                 </div>
-                <div class="meta-item">
+                <div class="meta-item" *ngIf="prog.horario">
                   <i class="fa-regular fa-clock text-emerald"></i>
                   <span>{{ prog.horario }}</span>
                 </div>
               </div>
 
               <div class="prog-footer">
-                <div class="prog-price-wrap">
+                <div class="prog-price-wrap" *ngIf="prog.precio">
                   <span class="price-val">{{ prog.precio }}</span>
                 </div>
                 <button 
                   class="btn btn-prog-action" 
                   [style.background]="page.tema_color"
-                  (click)="leadForm.categoria_interes = prog.titulo; scrollToSection('sec-lead-form')">
+                  (click)="leadForm.categoria_interes = prog.titulo || prog.nombre; scrollToSection('sec-lead-form')">
                   Apartar Cupo
                 </button>
               </div>
@@ -267,11 +277,43 @@
           </div>
 
           <div class="stories-reel-grid">
-            <div class="story-reel-card" *ngFor="let story of sec.datos['stories']">
-              <img [src]="story.imagen" [alt]="story.titulo" class="story-img" />
+            <div class="story-reel-card" *ngFor="let story of (sec.datos['stories'] || [])">
+              <img 
+                [src]="story.imagen || story.media_url || story.url || story.foto || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&auto=format&fit=crop&q=80'" 
+                [alt]="story.titulo || 'Momento Deportivo'" 
+                class="story-img" />
               <div class="story-card-overlay">
-                <span class="story-cat-tag">{{ story.categoria }}</span>
+                <span class="story-cat-tag">{{ story.categoria || story.autor || 'Momento Cantera' }}</span>
                 <h4 class="story-title">{{ story.titulo }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 7B. GALERIA DE FOTOS SECTION -->
+      <!-- ===================================================================== -->
+      <section *ngIf="sec.tipo === 'GALERIA'" id="sec-galeria" class="landing-section galeria-section">
+        <div class="section-container">
+          <div class="section-header-center">
+            <span class="section-badge" [style.color]="page.tema_color">INSTALACIONES & ACCIÓN</span>
+            <h2 class="section-title">{{ sec.titulo }}</h2>
+            <p class="section-subtitle">{{ sec.subtitulo }}</p>
+          </div>
+
+          <div class="galeria-photos-grid">
+            <div class="galeria-photo-card" *ngFor="let photo of (sec.datos['imagenes'] || [])">
+              <div class="galeria-img-wrap">
+                <img 
+                  [src]="photo.url || photo.imagen || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&auto=format&fit=crop&q=80'" 
+                  [alt]="photo.titulo || 'Foto Galería'" 
+                  class="galeria-img" 
+                  loading="lazy" />
+                <div class="galeria-img-overlay" *ngIf="photo.titulo || photo.categoria">
+                  <span class="galeria-cat-badge" *ngIf="photo.categoria" [style.background]="page.tema_color">{{ photo.categoria }}</span>
+                  <h4 class="galeria-img-title" *ngIf="photo.titulo">{{ photo.titulo }}</h4>
+                </div>
               </div>
             </div>
           </div>
@@ -466,7 +508,10 @@
       <footer *ngIf="sec.tipo === 'FOOTER'" class="public-footer">
         <div class="section-container footer-content">
           <div class="footer-col-brand">
-            <h3 class="footer-club-name">{{ page.titulo }}</h3>
+            <div class="footer-brand-header">
+              <img *ngIf="page.logo_url" [src]="page.logo_url" [alt]="page.titulo" class="footer-logo-img" />
+              <h3 class="footer-club-name">{{ page.titulo }}</h3>
+            </div>
             <p class="footer-addr"><i class="fa-solid fa-location-dot mr-1"></i> {{ sec.datos['direccion'] }}</p>
             <p class="footer-time"><i class="fa-regular fa-clock mr-1"></i> {{ sec.datos['horario_atencion'] }}</p>
           </div>

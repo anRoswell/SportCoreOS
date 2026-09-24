@@ -21,6 +21,7 @@ export interface LandingPageEntity {
   email_notificaciones: string;
   vistas_count: number;
   leads_count: number;
+  es_pagina_inicio: boolean;
   configuracion_json: Record<string, any>;
   secciones_json: any[];
   created_at: Date;
@@ -51,6 +52,16 @@ export class LandingsRepository {
 
   constructor(private readonly db: DatabaseService) {
     this.seedDefaultLandings();
+    this.initDatabaseSchema();
+  }
+
+  private async initDatabaseSchema() {
+    try {
+      await this.db.query(`ALTER TABLE core.landing_pages ADD COLUMN IF NOT EXISTS es_pagina_inicio BOOLEAN DEFAULT FALSE;`);
+      await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = TRUE WHERE slug = 'academia-elite-2026' AND NOT EXISTS (SELECT 1 FROM core.landing_pages WHERE es_pagina_inicio = TRUE);`);
+    } catch (e: any) {
+      // Ignorar si la BD no está disponible o la columna ya existe
+    }
   }
 
   async findAll(clubId?: string, tipo?: string, estado?: string): Promise<LandingPageEntity[]> {
@@ -172,9 +183,88 @@ export class LandingsRepository {
     }
   }
 
+  async findPortada(clubId?: string): Promise<LandingPageEntity | null> {
+    try {
+      let query = `
+        SELECT * FROM core.landing_pages 
+        WHERE es_pagina_inicio = TRUE AND estado = 'PUBLICADO'
+      `;
+      const params: any[] = [];
+      if (clubId) {
+        params.push(clubId);
+        query += ` AND (club_id = $${params.length} OR club_id IS NULL)`;
+      }
+      query += ` ORDER BY updated_at DESC LIMIT 1`;
+      const res = await this.db.query<LandingPageEntity>(query, params);
+      if (res.rows.length > 0) {
+        return res.rows[0];
+      }
+
+      // Fallback: any published LANDING_PAGE
+      const fallback = await this.db.query<LandingPageEntity>(
+        `SELECT * FROM core.landing_pages WHERE estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE' ORDER BY updated_at DESC LIMIT 1`
+      );
+      if (fallback.rows.length > 0) return fallback.rows[0];
+    } catch (e: any) {
+      this.logger.warn(`Error en findPortada: ${e.message}`);
+    }
+
+    const memPortada = this.memoryLandings.find(l => l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO);
+    if (memPortada) return memPortada;
+    return this.memoryLandings.find(l => l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE) || this.memoryLandings[0] || null;
+  }
+
+  async setPortada(id: string, clubId?: string): Promise<LandingPageEntity | null> {
+    const now = new Date();
+    try {
+      if (clubId) {
+        await this.db.query(
+          `UPDATE core.landing_pages SET es_pagina_inicio = FALSE WHERE club_id = $1 OR club_id IS NULL`,
+          [clubId]
+        );
+      } else {
+        await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = FALSE`);
+      }
+
+      const res = await this.db.query<LandingPageEntity>(
+        `UPDATE core.landing_pages SET es_pagina_inicio = TRUE, estado = 'PUBLICADO', updated_at = $1 WHERE id = $2 RETURNING *`,
+        [now, id]
+      );
+      if (res.rows[0]) {
+        return res.rows[0];
+      }
+    } catch (e: any) {
+      this.logger.warn(`Error en setPortada DB (${e.message}), actualizando en memoria.`);
+    }
+
+    this.memoryLandings.forEach(l => {
+      if (!clubId || !l.club_id || l.club_id === clubId) {
+        l.es_pagina_inicio = (l.id === id);
+        if (l.id === id) {
+          l.estado = EstadoLanding.PUBLICADO;
+          l.updated_at = now;
+        }
+      }
+    });
+    return this.findById(id);
+  }
+
   async create(dto: CreateLandingDto, clubId?: string): Promise<LandingPageEntity> {
     const id = `l-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const now = new Date();
+
+    if (dto.es_pagina_inicio) {
+      try {
+        if (clubId) {
+          await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = FALSE WHERE club_id = $1 OR club_id IS NULL`, [clubId]);
+        } else {
+          await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = FALSE`);
+        }
+      } catch (e) {}
+      this.memoryLandings.forEach(l => {
+        if (!clubId || !l.club_id || l.club_id === clubId) l.es_pagina_inicio = false;
+      });
+    }
 
     try {
       const res = await this.db.query<LandingPageEntity>(
@@ -182,10 +272,10 @@ export class LandingsRepository {
           club_id, tipo_contenido, titulo, subtitulo, slug, estado,
           tema_color, tema_gradient, tema_modo, meta_descripcion,
           meta_keywords, meta_og_imagen, logo_url, boton_contacto_whatsapp,
-          email_notificaciones, vistas_count, leads_count, configuracion_json, secciones_json,
+          email_notificaciones, vistas_count, leads_count, es_pagina_inicio, configuracion_json, secciones_json,
           created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 0, 0, $16, $17, $18, $19
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 0, 0, $16, $17, $18, $19, $20
         ) RETURNING *`,
         [
           clubId || null,
@@ -203,6 +293,7 @@ export class LandingsRepository {
           dto.logo_url || '',
           dto.boton_contacto_whatsapp || '+573001234567',
           dto.email_notificaciones || 'admisiones@sportcore.com',
+          dto.es_pagina_inicio || false,
           JSON.stringify(dto.configuracion_json || {}),
           JSON.stringify(dto.secciones_json || []),
           now,
@@ -231,6 +322,7 @@ export class LandingsRepository {
         email_notificaciones: dto.email_notificaciones || 'admisiones@sportcore.com',
         vistas_count: 0,
         leads_count: 0,
+        es_pagina_inicio: dto.es_pagina_inicio || false,
         configuracion_json: dto.configuracion_json || {},
         secciones_json: dto.secciones_json || [],
         created_at: now,
@@ -241,8 +333,21 @@ export class LandingsRepository {
     }
   }
 
-  async update(id: string, dto: UpdateLandingDto): Promise<LandingPageEntity | null> {
+  async update(id: string, dto: UpdateLandingDto, clubId?: string): Promise<LandingPageEntity | null> {
     const now = new Date();
+    if (dto.es_pagina_inicio) {
+      try {
+        if (clubId) {
+          await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = FALSE WHERE (club_id = $1 OR club_id IS NULL) AND id != $2`, [clubId, id]);
+        } else {
+          await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = FALSE WHERE id != $1`, [id]);
+        }
+      } catch (e) {}
+      this.memoryLandings.forEach(l => {
+        if (l.id !== id && (!clubId || !l.club_id || l.club_id === clubId)) l.es_pagina_inicio = false;
+      });
+    }
+
     try {
       const res = await this.db.query<LandingPageEntity>(
         `UPDATE core.landing_pages SET
@@ -260,10 +365,11 @@ export class LandingsRepository {
           logo_url = COALESCE($12, logo_url),
           boton_contacto_whatsapp = COALESCE($13, boton_contacto_whatsapp),
           email_notificaciones = COALESCE($14, email_notificaciones),
-          configuracion_json = COALESCE($15, configuracion_json),
-          secciones_json = COALESCE($16, secciones_json),
-          updated_at = $17
-        WHERE id = $18 RETURNING *`,
+          es_pagina_inicio = COALESCE($15, es_pagina_inicio),
+          configuracion_json = COALESCE($16, configuracion_json),
+          secciones_json = COALESCE($17, secciones_json),
+          updated_at = $18
+        WHERE id = $19 RETURNING *`,
         [
           dto.tipo_contenido,
           dto.titulo,
@@ -279,6 +385,7 @@ export class LandingsRepository {
           dto.logo_url,
           dto.boton_contacto_whatsapp,
           dto.email_notificaciones,
+          dto.es_pagina_inicio,
           dto.configuracion_json ? JSON.stringify(dto.configuracion_json) : undefined,
           dto.secciones_json ? JSON.stringify(dto.secciones_json) : undefined,
           now,
@@ -292,6 +399,7 @@ export class LandingsRepository {
       Object.assign(item, {
         ...dto,
         slug: dto.slug ? dto.slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-') : item.slug,
+        es_pagina_inicio: dto.es_pagina_inicio !== undefined ? dto.es_pagina_inicio : item.es_pagina_inicio,
         updated_at: now,
       });
       return item;
@@ -485,6 +593,7 @@ export class LandingsRepository {
         email_notificaciones: 'admisiones@futuroscracksfc.com',
         vistas_count: 1420,
         leads_count: 86,
+        es_pagina_inicio: true,
         configuracion_json: {
           navbar_logo: 'SportCoreOS FCFC',
           navbar_cta: '¡Inscríbete Ahora! ⚡',
@@ -621,6 +730,7 @@ export class LandingsRepository {
         email_notificaciones: 'clinicas@sportcore.com',
         vistas_count: 830,
         leads_count: 42,
+        es_pagina_inicio: false,
         configuracion_json: {},
         secciones_json: [
           {
@@ -671,6 +781,7 @@ export class LandingsRepository {
         email_notificaciones: 'comunicaciones@sportcore.com',
         vistas_count: 2100,
         leads_count: 115,
+        es_pagina_inicio: false,
         configuracion_json: {},
         secciones_json: [
           {

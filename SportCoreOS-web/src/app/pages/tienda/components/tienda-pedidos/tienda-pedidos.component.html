@@ -1,0 +1,146 @@
+<div class="pedidos-section fut-card">
+  <div class="section-title-wrap">
+    <i class="fa-solid fa-boxes-packing"></i>
+    <h2>Órdenes de Indumentaria & Entregas en Utilería</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="fut-table">
+      <thead>
+        <tr>
+          <th>Código QR / Ref</th>
+          <th>Artículo & Talla</th>
+          <th>Personalización</th>
+          <th>Comprador / Jugador</th>
+          <th>Total</th>
+          <th>Estado Entrega</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading) {
+          <tr>
+            <td colspan="7" class="empty-table-cell text-center py-4">
+              <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+              <p>Consultando órdenes en la Base de Datos...</p>
+            </td>
+          </tr>
+        } @else {
+          @for (ped of pedidosList; track ped.id) {
+            <tr>
+              <td>
+                <div class="qr-code-pill">
+                  <i class="fa-solid fa-qrcode"></i>
+                  <span>{{ ped.codigo_qr }}</span>
+                </div>
+              </td>
+              <td>
+                <strong>{{ ped.producto_nombre }}</strong>
+                <div><small class="text-muted">Talla: {{ ped.talla }} • {{ ped.cantidad }} un.</small></div>
+              </td>
+              <td>
+                @if (ped.estampado_nombre || ped.estampado_dorsal) {
+                  <div class="dorsal-tag">
+                    <span>#{{ ped.estampado_dorsal }}</span>
+                    <strong>{{ ped.estampado_nombre }}</strong>
+                  </div>
+                } @else {
+                  <span class="text-muted">Estándar (Sin dorsal)</span>
+                }
+              </td>
+              <td>
+                <div><strong>{{ ped.comprador_nombre || 'Particular' }}</strong></div>
+                <small class="text-muted">{{ ped.comprador_telefono || '-' }}</small>
+              </td>
+              <td><strong>\${{ ped.monto_total | number }}</strong></td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-success]="ped.estado_despacho === EstadoDespachoPedido.ENTREGADO"
+                  [class.badge-warning]="ped.estado_despacho === EstadoDespachoPedido.PENDIENTE_ENTREGA"
+                >
+                  {{ ped.estado_despacho === EstadoDespachoPedido.ENTREGADO ? 'Entregado' : 'Pendiente Entrega' }}
+                </span>
+              </td>
+              <td>
+                @if (ped.estado_despacho === EstadoDespachoPedido.PENDIENTE_ENTREGA) {
+                  <button class="btn-secondary btn-sm" (click)="despachar.emit(ped)">
+                    <i class="fa-solid fa-truck-ramp-box"></i> Despachar
+                  </button>
+                } @else {
+                  <small class="text-muted"><i class="fa-solid fa-check"></i> {{ ped.recibido_por || 'Entregado' }}</small>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center py-4">No hay órdenes registradas actualmente.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+  <div class="pagination-bar">
+    <div class="pagination-info">
+      <span>Mostrando <strong>{{ showingStart }} - {{ showingEnd }}</strong> de <strong>{{ totalRecords }}</strong> pedidos</span>
+      <div class="page-size-selector">
+        <label>Por página:</label>
+        <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="page-size-select">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pagination-controls">
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === 1 || loading" 
+        (click)="setPage(1)" 
+        title="Primera Página">
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === 1 || loading" 
+        (click)="setPage(currentPage - 1)" 
+        title="Página Anterior">
+        <i class="fa-solid fa-angle-left"></i>
+        <span>Anterior</span>
+      </button>
+
+      <div class="page-numbers">
+        @for (p of getVisiblePages(); track p) {
+          <button 
+            class="page-btn num-btn" 
+            [class.active]="currentPage === p" 
+            [disabled]="loading"
+            (click)="setPage(p)">
+            {{ p }}
+          </button>
+        }
+      </div>
+
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+        (click)="setPage(currentPage + 1)" 
+        title="Página Siguiente">
+        <span>Siguiente</span>
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+        (click)="setPage(totalPages)" 
+        title="Última Página">
+        <i class="fa-solid fa-angles-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

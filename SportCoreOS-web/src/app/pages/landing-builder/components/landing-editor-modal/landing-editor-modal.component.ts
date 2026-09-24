@@ -16,7 +16,6 @@ export interface ColorPreset {
   standalone: true,
   imports: [CommonModule, FormsModule, LandingPreviewSimulatorComponent],
   templateUrl: './landing-editor-modal.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingEditorModalComponent {
   @Input({ required: true }) currentForm: any = null;
@@ -47,6 +46,10 @@ export class LandingEditorModalComponent {
   @Output() removeTestimonioItem = new EventEmitter<number>();
   @Output() addFaqItem = new EventEmitter<void>();
   @Output() removeFaqItem = new EventEmitter<number>();
+  @Output() addImageItem = new EventEmitter<void>();
+  @Output() removeImageItem = new EventEmitter<number>();
+  @Output() addStoryItem = new EventEmitter<void>();
+  @Output() removeStoryItem = new EventEmitter<number>();
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
 

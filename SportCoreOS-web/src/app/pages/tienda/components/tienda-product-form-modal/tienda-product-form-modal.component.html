@@ -1,0 +1,101 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge badge-blue">
+          <i class="fa-solid" [class.fa-shirt]="!isEditing" [class.fa-pen-to-square]="isEditing"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>{{ isEditing ? 'Editar Artículo de Indumentaria' : 'Nuevo Artículo de Indumentaria' }}</h2>
+          <p class="modal-subtitle">Registra o actualiza los datos y catálogo de productos</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-tag"></i> Datos del Producto</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Código SKU <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="productForm.codigo_sku" name="pSku" placeholder="ej. MEDIAS-NEG-2026" class="sport-input" required />
+          </div>
+          <div class="input-group">
+            <label>Nombre del Producto <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="productForm.nombre" name="pNombre" placeholder="ej. Medias de Competencia Negras" class="sport-input" required />
+          </div>
+        </div>
+
+        <div class="form-row g3">
+          <div class="input-group">
+            <label>Categoría <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="productForm.categoria" name="pCategoria" class="sport-input">
+                <option [value]="TiendaCategoriaProducto.UNIFORME_OFICIAL">Uniforme Oficial</option>
+                <option [value]="TiendaCategoriaProducto.ENTRENAMIENTO">Ropa Entrenamiento</option>
+                <option [value]="TiendaCategoriaProducto.BALONES">Balones</option>
+                <option [value]="TiendaCategoriaProducto.ACCESORIOS">Accesorios</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Precio Venta ($ COP) <span class="required-star">*</span></label>
+            <div class="currency-input-wrap">
+              <span class="currency-prefix">$</span>
+              <input type="number" [(ngModel)]="productForm.precio_venta" name="pPrecio" min="0" class="sport-input" required />
+            </div>
+            <div class="currency-preview-badge">
+              <i class="fa-solid fa-tag"></i> {{ formatCurrency(productForm.precio_venta) }} COP
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Personalizable</label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="productForm.personalizable" name="pCustom" class="sport-input">
+                <option [ngValue]="false">No</option>
+                <option [ngValue]="true">Sí (Dorsal/Nombre)</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE VARIANTES & TALLAS -->
+      <div class="modal-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <span class="modal-section-title" style="margin:0;"><i class="fa-solid fa-ruler-combined"></i> Tallas & Existencias</span>
+          <button type="button" class="btn-secondary btn-sm" (click)="addVariantRow()">
+            <i class="fa-solid fa-plus"></i> Añadir Talla
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.65rem;">
+          @for (v of productForm.variantes; track $index) {
+            <div class="form-row g3" style="align-items:flex-end;margin-bottom:0;">
+              <div class="input-group">
+                <label>Talla / Medida</label>
+                <input type="text" [(ngModel)]="v.talla" [name]="'talla_' + $index" placeholder="ej. M, 10, Única" class="sport-input" required />
+              </div>
+              <div class="input-group">
+                <label>Stock Disponible</label>
+                <input type="number" [(ngModel)]="v.stock_actual" [name]="'stock_' + $index" min="0" class="sport-input" required />
+              </div>
+              <div class="input-group" style="padding-bottom:0.25rem;">
+                <button type="button" class="btn-secondary btn-sm" (click)="removeVariantRow($index)" [disabled]="productForm.variantes.length <= 1" title="Eliminar Talla" style="height:42px;width:100%;color:#ef4444;border-color:rgba(239,68,68,0.3);">
+                  <i class="fa-solid fa-trash-can"></i> Quitar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="close.emit()">Cancelar</button>
+        <button type="submit" class="btn-primary">{{ isEditing ? 'Actualizar Producto' : 'Guardar Producto' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

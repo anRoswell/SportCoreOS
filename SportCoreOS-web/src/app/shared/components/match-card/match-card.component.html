@@ -86,7 +86,7 @@
   </div>
 
   <div class="match-actions-grid">
-    <a routerLink="/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-action-primary">
+    <a routerLink="/competicion/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-action-primary">
       <i class="fa-solid fa-clipboard-user"></i>
       <span>Ver Convocatoria (Titulares / Suplentes)</span>
     </a>
@@ -133,7 +133,7 @@
       <button class="btn-icon-gps" (click)="openGps(match.sede_cancha)" title="Abrir GPS">
         <i class="fa-solid fa-diamond-turn-right"></i>
       </button>
-      <a routerLink="/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-view-lineup">
+      <a routerLink="/competicion/convocatorias" [queryParams]="{ partidoId: match.id }" class="btn-view-lineup">
         Convocatoria <i class="fa-solid fa-chevron-right"></i>
       </a>
     </div>

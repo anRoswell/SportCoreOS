@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, SliderPromocional, SliderHighlight } from '../../core/services/api.service';
@@ -38,6 +38,7 @@ export interface IconPreset {
     SliderDeleteDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './sliders-promocionales.component.html',
   styleUrl: './sliders-promocionales.component.scss',
 })

@@ -1,16 +1,23 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  width: 100%;
+}
+
 .navbar {
-      height: 70px;
-      background: var(--bg-header);
-      border-bottom: 1px solid var(--border-color);
-      padding: 0 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      transition: background-color 0.25s ease, border-color 0.25s ease;
-    }
+  height: 70px;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  backdrop-filter: blur(12px);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
 
     .navbar-left {
       display: flex;

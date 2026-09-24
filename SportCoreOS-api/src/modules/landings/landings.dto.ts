@@ -87,6 +87,9 @@ export class CreateLandingDto {
   @IsArray()
   @IsOptional()
   secciones_json?: BloqueSeccionLanding[];
+
+  @IsOptional()
+  es_pagina_inicio?: boolean = false;
 }
 
 export class UpdateLandingDto extends CreateLandingDto {}

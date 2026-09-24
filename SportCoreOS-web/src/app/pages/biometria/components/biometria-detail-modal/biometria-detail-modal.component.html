@@ -1,0 +1,104 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Ficha Antropométrica & Radar Físico</h2>
+          <p class="modal-subtitle">
+            {{ medicion.jugador_nombre }} • {{ medicion.categoria_nombre }}
+          </p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body modal-body-detail">
+      <!-- Resumen del Atleta -->
+      <div class="detail-header-card">
+        <div class="athlete-badge-row">
+          <div class="athlete-avatar-lg">
+            <img [src]="medicion.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'" alt="Avatar" />
+          </div>
+          <div class="athlete-info-col">
+            <h3>{{ medicion.jugador_nombre }}</h3>
+            <div class="tags-row">
+              <span class="badge badge-blue">{{ medicion.categoria_nombre }}</span>
+              <span class="badge badge-dark">#{{ medicion.numero_dorsal || '-' }} • {{ medicion.posicion_principal }}</span>
+              <span class="badge" [class.badge-success]="getDiagnostico(medicion).tipo === 'success'" [class.badge-blue]="getDiagnostico(medicion).tipo === 'blue'" [class.badge-warning]="getDiagnostico(medicion).tipo === 'warning'">
+                {{ getDiagnostico(medicion).label }}
+              </span>
+            </div>
+          </div>
+          <div class="eval-date-badge">
+            <i class="fa-regular fa-calendar"></i>
+            <span>Evaluado el {{ medicion.fecha_evaluacion | date:'dd MMMM yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de Métricas Antropométricas y Rendimiento en 2 Columnas Widescreen -->
+      <div class="modal-form-grid-2col">
+        <!-- Tarjeta Antropometría -->
+        <div class="metric-box">
+          <div class="metric-box-header">
+            <i class="fa-solid fa-weight-scale"></i>
+            <span>Composición Corporal</span>
+          </div>
+          <div class="metric-box-content">
+            <div class="stat-row">
+              <span class="stat-label">Estatura / Talla:</span>
+              <strong class="stat-val">{{ medicion.talla_cm }} cm</strong>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Peso Corporal:</span>
+              <strong class="stat-val">{{ medicion.peso_kg }} kg</strong>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Índice Masa Corporal:</span>
+              <strong class="stat-val highlight">{{ medicion.imc }} ({{ getImcLabel(medicion.imc) }})</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Batería de Tests -->
+        <div class="metric-box">
+          <div class="metric-box-header">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Pruebas Físicas & Tests</span>
+          </div>
+          <div class="metric-box-content">
+            <div class="stat-row">
+              <span class="stat-label">Test de Cooper:</span>
+              <strong class="stat-val">{{ medicion.test_cooper_metros ? medicion.test_cooper_metros + ' m' : 'No registrado' }}</strong>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Velocidad Sprint 30m:</span>
+              <strong class="stat-val">{{ medicion.velocidad_30m_seg ? medicion.velocidad_30m_seg + ' s' : 'No registrado' }}</strong>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Salto Vertical Pliométrico:</span>
+              <strong class="stat-val">{{ medicion.salto_vertical_cm ? medicion.salto_vertical_cm + ' cm' : 'No registrado' }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observaciones del Preparador Físico -->
+      <div class="detail-section">
+        <h4><i class="fa-solid fa-notes-medical"></i> Dictamen & Observaciones Fisiológicas</h4>
+        <div class="observations-box">
+          <p>{{ medicion.observaciones || 'Sin observaciones adicionales registradas por el cuerpo técnico.' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" (click)="onClose()">
+        <i class="fa-solid fa-check"></i> Entendido / Cerrar
+      </button>
+    </div>
+  </div>
+</div>

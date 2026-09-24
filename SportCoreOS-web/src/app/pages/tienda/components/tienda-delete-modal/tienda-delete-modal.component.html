@@ -1,0 +1,30 @@
+@if (producto) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-card danger-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="danger-icon-circle">
+          <i class="ri-delete-bin-line"></i>
+        </div>
+        <div>
+          <h3>Eliminar Producto</h3>
+          <p class="subtitle">Esta acción no se puede deshacer</p>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas eliminar permanentemente el producto <strong>"{{ producto.nombre }}"</strong> del catálogo e inventario?</p>
+        <div class="delete-warning-box">
+          <i class="ri-error-warning-line"></i>
+          <span>Se perderá el registro de inventario y configuración de stock para este ítem.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="onClose()">Cancelar</button>
+        <button type="button" class="btn-confirm-delete" (click)="onConfirm()">
+          <i class="ri-delete-bin-line"></i> Eliminar Definitivamente
+        </button>
+      </div>
+    </div>
+  </div>
+}
