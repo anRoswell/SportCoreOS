@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Club {
@@ -106,6 +106,9 @@ export class ApiService {
   // Control de Sidebar colapsable
   readonly sidebarCollapsed = signal<boolean>(false);
 
+  private clubsLoaded = false;
+  private clubsLoading = false;
+
   constructor(private http: HttpClient) {
     this.loadClubs();
   }
@@ -124,14 +127,22 @@ export class ApiService {
     return DEFAULT_CLUBS[0];
   }
 
-  loadClubs(): void {
+  loadClubs(force = false): void {
+    if (this.clubsLoading) return;
+    if (this.clubsLoaded && !force) return;
+
+    this.clubsLoading = true;
     this.http.get<any>(`${this.apiUrl}/clubes`).pipe(
       map(res => {
         const payload = res?.data !== undefined ? res.data : res;
         return Array.isArray(payload) ? payload : (payload?.data || []);
       }),
-      catchError(() => of([]))
+      catchError(() => of([])),
+      finalize(() => {
+        this.clubsLoading = false;
+      })
     ).subscribe((clubs) => {
+      this.clubsLoaded = true;
       if (clubs && Array.isArray(clubs) && clubs.length > 0) {
         const mapped: Club[] = clubs.map((c: any) => ({
           id: c.id,

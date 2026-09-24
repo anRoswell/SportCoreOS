@@ -1,16 +1,15 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService, DemoPersona } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { LandingPublicComponent } from '../landing-public/landing-public.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, LandingPublicComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -19,7 +18,6 @@ export class LoginComponent implements OnInit {
   api = inject(ApiService);
   themeService = inject(ThemeService);
   router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   email = 'carlos.valderrama@sportcore.com';
   password = 'sportcore2026';
@@ -29,24 +27,8 @@ export class LoginComponent implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly toastMessage = signal<string>('');
   readonly isToastError = signal<boolean>(false);
-  readonly showLandingModal = signal<boolean>(false);
 
-  ngOnInit(): void {
-    this.api.loadClubs();
-    this.route.queryParams.subscribe((params) => {
-      if (params['landing'] === '1' || params['landing'] === 'true' || params['showLanding'] === 'true') {
-        this.showLandingModal.set(true);
-      }
-    });
-  }
-
-  openLandingModal(): void {
-    this.showLandingModal.set(true);
-  }
-
-  closeLandingModal(): void {
-    this.showLandingModal.set(false);
-  }
+  ngOnInit(): void {}
 
   togglePasswordVisibility(): void {
     this.showPassword.update((val) => !val);

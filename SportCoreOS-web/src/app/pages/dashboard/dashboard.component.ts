@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, KPIStats } from '../../core/services/api.service';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ApiService, KPIStats, LandingPage } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
+import { LandingPublicComponent } from '../landing-public/landing-public.component';
 
 interface MatchItem {
   id: string;
@@ -51,17 +53,20 @@ interface TopPlayer {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, FlatpickrDirective],
+  imports: [CommonModule, FormsModule, RouterLink, FlatpickrDirective, LandingPublicComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   api = inject(ApiService);
   authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
 
   readonly stats = signal<KPIStats | null>(null);
   readonly activeTab = signal<'partidos' | 'convocatoria' | 'recaudo' | 'biometria'>('partidos');
   readonly showScheduleModal = signal<boolean>(false);
+  readonly showLandingModal = signal<boolean>(false);
+  readonly activeClubLanding = signal<LandingPage | null>(null);
   readonly toastMessage = signal<string>('');
   readonly categorias = signal<any[]>([]);
 
@@ -80,8 +85,49 @@ export class DashboardComponent implements OnInit {
     condicion: 'LOCAL' as 'LOCAL' | 'VISITANTE',
   };
 
+  constructor() {
+    // Escuchar cambios de club activo para refrescar la landing correspondiente
+    effect(() => {
+      const activeClub = this.api.activeClub();
+      if (activeClub?.id) {
+        this.loadActiveClubLanding(activeClub.id);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadDashboardData();
+    this.loadActiveClubLanding();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['landing'] === '1' || params['landing'] === 'true' || params['showLanding'] === 'true') {
+        this.showLandingModal.set(true);
+      }
+    });
+  }
+
+  loadActiveClubLanding(clubId?: string): void {
+    const targetClubId = clubId || this.api.activeClub()?.id;
+    this.api.getPublicHomeLanding(targetClubId).subscribe({
+      next: (landing) => {
+        if (landing && landing.titulo) {
+          this.activeClubLanding.set(landing);
+        } else {
+          this.activeClubLanding.set(null);
+        }
+      },
+      error: () => {
+        this.activeClubLanding.set(null);
+      },
+    });
+  }
+
+  openLandingModal(): void {
+    this.showLandingModal.set(true);
+  }
+
+  closeLandingModal(): void {
+    this.showLandingModal.set(false);
   }
 
   loadDashboardData(): void {

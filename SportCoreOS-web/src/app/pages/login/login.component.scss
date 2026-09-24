@@ -194,6 +194,39 @@
       margin: 0;
     }
 
+    .hero-landing-cta-wrap {
+      margin: 0.25rem 0;
+    }
+
+    .btn-open-landing-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      border-radius: var(--radius-full);
+      color: #34d399;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25);
+      backdrop-filter: blur(8px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        border-color: #10b981;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+      }
+
+      i {
+        font-size: 0.85rem;
+      }
+    }
+
     .hero-stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -1124,3 +1157,134 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* =========================================================================
+       MODAL FULLSCREEN DE LA LANDING PAGE EN EL LOGIN
+       ========================================================================= */
+    .landing-fullscreen-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--bg-main, #070b14);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .landing-modal-top-control-bar {
+      height: 60px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      flex-shrink: 0;
+      z-index: 10001;
+
+      .control-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .live-dot-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          padding: 0.3rem 0.75rem;
+          border-radius: var(--radius-full, 9999px);
+
+          .live-pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulseLiveDot 2s infinite;
+          }
+
+          .control-badge-text {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #34d399;
+            letter-spacing: 0.06em;
+          }
+        }
+      }
+
+      .control-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .btn-modal-to-login {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border: none;
+          color: #ffffff;
+          padding: 0.45rem 1.15rem;
+          border-radius: var(--radius-full, 9999px);
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+          }
+        }
+
+        .btn-modal-close {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+            transform: rotate(90deg);
+          }
+        }
+      }
+    }
+
+    .landing-modal-viewport {
+      flex: 1;
+      overflow-y: auto;
+      height: calc(100vh - 60px);
+
+      app-landing-public {
+        display: block;
+        min-height: 100%;
+      }
+    }
+

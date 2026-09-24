@@ -200,18 +200,23 @@ export class LandingsRepository {
         return res.rows[0];
       }
 
-      // Fallback: any published LANDING_PAGE
-      const fallback = await this.db.query<LandingPageEntity>(
-        `SELECT * FROM core.landing_pages WHERE estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE' ORDER BY updated_at DESC LIMIT 1`
-      );
+      // Fallback: any published LANDING_PAGE for this club (or global)
+      let fallbackQuery = `SELECT * FROM core.landing_pages WHERE estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE'`;
+      const fallbackParams: any[] = [];
+      if (clubId) {
+        fallbackParams.push(clubId);
+        fallbackQuery += ` AND (club_id = $${fallbackParams.length} OR club_id IS NULL)`;
+      }
+      fallbackQuery += ` ORDER BY updated_at DESC LIMIT 1`;
+      const fallback = await this.db.query<LandingPageEntity>(fallbackQuery, fallbackParams);
       if (fallback.rows.length > 0) return fallback.rows[0];
     } catch (e: any) {
       this.logger.warn(`Error en findPortada: ${e.message}`);
     }
 
-    const memPortada = this.memoryLandings.find(l => l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO);
+    const memPortada = this.memoryLandings.find(l => (!clubId || !l.club_id || l.club_id === clubId) && l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO);
     if (memPortada) return memPortada;
-    return this.memoryLandings.find(l => l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE) || this.memoryLandings[0] || null;
+    return this.memoryLandings.find(l => (!clubId || !l.club_id || l.club_id === clubId) && l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE) || this.memoryLandings[0] || null;
   }
 
   async setPortada(id: string, clubId?: string): Promise<LandingPageEntity | null> {

@@ -18,6 +18,7 @@ export class LandingPublicComponent implements OnInit {
 
   @Input() isModal = false;
   @Input() customSlug?: string;
+  @Input() clubId?: string;
   @Output() openLogin = new EventEmitter<void>();
   @Output() closeLanding = new EventEmitter<void>();
 
@@ -57,20 +58,24 @@ export class LandingPublicComponent implements OnInit {
       if (slug) {
         this.loadLanding(slug);
       } else {
-        this.loadHomePortada();
+        const effectiveClubId = this.clubId || this.api.activeClub()?.id;
+        this.loadHomePortada(effectiveClubId);
       }
     });
   }
 
-  loadHomePortada(): void {
+  loadHomePortada(targetClubId?: string): void {
     this.loading.set(true);
     this.notFound.set(false);
 
-    this.api.getPublicHomeLanding().subscribe({
+    const club = targetClubId || this.clubId || this.api.activeClub()?.id;
+    this.api.getPublicHomeLanding(club).subscribe({
       next: (data) => {
         if (data && data.titulo) {
           this.landing.set(data);
-          document.title = `${data.titulo} • SportCore`;
+          if (!this.isModal) {
+            document.title = `${data.titulo} • SportCore`;
+          }
         } else {
           this.notFound.set(true);
         }
