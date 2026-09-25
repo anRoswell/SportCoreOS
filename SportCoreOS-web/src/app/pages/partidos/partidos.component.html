@@ -249,7 +249,7 @@
                 <div class="form-row g3">
                   <div class="input-group">
                     <label><i class="fa-regular fa-calendar"></i> Fecha de Juego *</label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newMatch.fecha_partido" name="fecha_partido" class="sport-input" required />
+                    <input type="text" appFlatpickr [altInput]="false" placeholder="YYYY-MM-DD" [(ngModel)]="newMatch.fecha_partido" name="fecha_partido" class="sport-input" required />
                   </div>
                   <div class="input-group">
                     <label><i class="fa-regular fa-clock"></i> Hora Partido *</label>
@@ -494,8 +494,12 @@
                         <span class="minute-badge">{{ ev.minuto_juego }}'</span>
                         <div class="event-desc">
                           <strong>{{ ev.tipo_evento }}</strong>
-                          <span *ngIf="ev.jugador_nombre"> - {{ ev.jugador_nombre }} (#{{ ev.numero_dorsal }})</span>
-                          <small *ngIf="ev.descripcion">({{ ev.descripcion }})</small>
+                          @if (ev.jugador_nombre) {
+                            <span> - {{ ev.jugador_nombre }} (#{{ ev.numero_dorsal }})</span>
+                          }
+                          @if (ev.descripcion) {
+                            <small>({{ ev.descripcion }})</small>
+                          }
                         </div>
                       </div>
                     }

@@ -7,25 +7,38 @@ test.describe('MÓDULO 2: CATEGORÍAS & PLANTELES DEPORTIVOS - E2E EXHAUSTIVO', 
   test.beforeEach(async ({ page }) => {
     // Autenticación con Director Deportivo
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const demoDirBtn = page.locator('.persona-btn', { hasText: 'Carlos Valderrama' }).first();
     await expect(demoDirBtn).toBeVisible({ timeout: 10000 });
     await demoDirBtn.click();
     await page.waitForURL('**/dashboard', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+
+    console.log('CURRENT URL AFTER LOGIN:', page.url());
+    const bodyHtml = await page.locator('body').innerHTML();
+    console.log('SIDEBAR COUNT:', await page.locator('app-sidebar').count());
+    console.log('NAV ITEMS COUNT:', await page.locator('.nav-item').count());
+    if (await page.locator('app-sidebar').count() === 0) {
+      console.log('BODY HTML SNIPPET:', bodyHtml.slice(0, 500));
+    }
+
+    // Navegar a Categorías desde el menú lateral
+    const catNavBtn = page.locator('.nav-item', { hasText: 'Categorías' });
+    await expect(catNavBtn).toBeVisible({ timeout: 5000 });
+    await catNavBtn.click();
+    await page.waitForURL('**/categorias', { timeout: 10000 });
   });
 
   test('1. Carga inicial de Categorías, tarjetas deportivas y ausencia estricta de errores JS', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
-
-    await page.goto('/categorias');
-    await page.waitForLoadState('networkidle');
 
     // Validar encabezado
     await expect(page.locator('.page-title')).toContainText('Categorías por Edades');
 
     // Validar tarjetas de categorías desde la BD
     const cards = page.locator('.cat-card');
+    await expect(cards.first()).toBeVisible({ timeout: 10000 });
     const cardCount = await cards.count();
     expect(cardCount).toBeGreaterThanOrEqual(1);
 
@@ -38,9 +51,6 @@ test.describe('MÓDULO 2: CATEGORÍAS & PLANTELES DEPORTIVOS - E2E EXHAUSTIVO', 
 
   test('2. Filtro por Rama (Masculino, Femenino, Mixto, Todas)', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
-
-    await page.goto('/categorias');
-    await page.waitForLoadState('networkidle');
 
     const ramaSelect = page.locator('.sport-select');
     await expect(ramaSelect).toBeVisible();
@@ -66,9 +76,6 @@ test.describe('MÓDULO 2: CATEGORÍAS & PLANTELES DEPORTIVOS - E2E EXHAUSTIVO', 
 
   test('3. Ciclo de vida completo del Modal "Nueva Categoría" y persistencia directa en PostgreSQL', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
-
-    await page.goto('/categorias');
-    await page.waitForLoadState('networkidle');
 
     // 1. Abrir Modal
     const newBtn = page.locator('button', { hasText: 'Nueva Categoría' });
@@ -102,7 +109,9 @@ test.describe('MÓDULO 2: CATEGORÍAS & PLANTELES DEPORTIVOS - E2E EXHAUSTIVO', 
     await saveBtn.click();
 
     // 5. Esperar confirmación
-    await expect(page.locator('.toast-floating-alert')).toBeVisible({ timeout: 5000 });
+    const toast = page.locator('.toast-floating-alert');
+    await expect(toast).toBeVisible({ timeout: 5000 });
+    console.log('TOAST TEXT RECEIVED:', await toast.innerText());
     await expect(modal).not.toBeVisible();
 
     // 6. Verificar persistencia directa en PostgreSQL QA
@@ -125,9 +134,6 @@ test.describe('MÓDULO 2: CATEGORÍAS & PLANTELES DEPORTIVOS - E2E EXHAUSTIVO', 
 
   test('4. Apertura de Modal "Ver Plantel", consulta de jugadores y cierre de modal', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
-
-    await page.goto('/categorias');
-    await page.waitForLoadState('networkidle');
 
     // Click en "Ver Plantel" de la primera categoría
     const plantelBtn = page.locator('.cat-card').first().locator('button', { hasText: 'Ver Plantel' });

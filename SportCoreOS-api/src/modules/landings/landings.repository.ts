@@ -58,9 +58,61 @@ export class LandingsRepository {
   private async initDatabaseSchema() {
     try {
       await this.db.query(`ALTER TABLE core.landing_pages ADD COLUMN IF NOT EXISTS es_pagina_inicio BOOLEAN DEFAULT FALSE;`);
-      await this.db.query(`UPDATE core.landing_pages SET es_pagina_inicio = TRUE WHERE slug = 'academia-elite-2026' AND NOT EXISTS (SELECT 1 FROM core.landing_pages WHERE es_pagina_inicio = TRUE);`);
+      
+      // Update each school's portada landing in database
+      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000001', es_pagina_inicio = TRUE WHERE slug = 'academia-elite-2026';`);
+      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000002', es_pagina_inicio = TRUE WHERE slug = 'semillero-santa-fe';`);
+      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000003', es_pagina_inicio = TRUE WHERE slug = 'millonarios-cantera-norte';`);
+      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000004', es_pagina_inicio = TRUE WHERE slug = 'atletico-nacional-cantera';`);
+
+      for (const item of this.memoryLandings) {
+        try {
+          await this.db.query(
+            `INSERT INTO core.landing_pages (
+              id, club_id, tipo_contenido, titulo, subtitulo, slug, estado,
+              tema_color, tema_gradient, tema_modo, meta_descripcion, meta_keywords,
+              meta_og_imagen, logo_url, boton_contacto_whatsapp, email_notificaciones,
+              vistas_count, leads_count, es_pagina_inicio, configuracion_json, secciones_json
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+            ON CONFLICT (slug) DO UPDATE SET
+              club_id = EXCLUDED.club_id,
+              es_pagina_inicio = EXCLUDED.es_pagina_inicio,
+              titulo = EXCLUDED.titulo,
+              subtitulo = EXCLUDED.subtitulo,
+              tema_color = EXCLUDED.tema_color,
+              tema_gradient = EXCLUDED.tema_gradient,
+              logo_url = EXCLUDED.logo_url,
+              secciones_json = EXCLUDED.secciones_json`,
+            [
+              item.id,
+              item.club_id,
+              item.tipo_contenido,
+              item.titulo,
+              item.subtitulo,
+              item.slug,
+              item.estado,
+              item.tema_color,
+              item.tema_gradient,
+              item.tema_modo,
+              item.meta_descripcion,
+              item.meta_keywords,
+              item.meta_og_imagen,
+              item.logo_url,
+              item.boton_contacto_whatsapp,
+              item.email_notificaciones,
+              item.vistas_count || 0,
+              item.leads_count || 0,
+              item.es_pagina_inicio || false,
+              JSON.stringify(item.configuracion_json || {}),
+              JSON.stringify(item.secciones_json || []),
+            ]
+          );
+        } catch (insertErr) {
+          // ignore seed conflict
+        }
+      }
     } catch (e: any) {
-      // Ignorar si la BD no está disponible o la columna ya existe
+      // Ignorar si la BD no está disponible
     }
   }
 
@@ -85,55 +137,14 @@ export class LandingsRepository {
         query += ` AND estado = $${params.length}`;
       }
 
-      query += ` ORDER BY updated_at DESC`;
+      query += ` ORDER BY es_pagina_inicio DESC, updated_at DESC`;
       const res = await this.db.query<LandingPageEntity>(query, params);
-      
-      if (res.rows.length === 0 && (!tipo || tipo === 'TODOS') && (!estado || estado === 'TODOS')) {
-        // Seed default templates into PostgreSQL for immediate availability
-        for (const item of this.memoryLandings) {
-          try {
-            await this.db.query(
-              `INSERT INTO core.landing_pages (
-                id, club_id, tipo_contenido, titulo, subtitulo, slug, estado,
-                tema_color, tema_gradient, tema_modo, meta_descripcion, meta_keywords,
-                meta_og_imagen, logo_url, boton_contacto_whatsapp, email_notificaciones,
-                vistas_count, leads_count, configuracion_json, secciones_json
-              ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
-              ON CONFLICT (slug) DO NOTHING`,
-              [
-                item.id,
-                clubId || item.club_id,
-                item.tipo_contenido,
-                item.titulo,
-                item.subtitulo,
-                item.slug,
-                item.estado,
-                item.tema_color,
-                item.tema_gradient,
-                item.tema_modo,
-                item.meta_descripcion,
-                item.meta_keywords,
-                item.meta_og_imagen,
-                item.logo_url,
-                item.boton_contacto_whatsapp,
-                item.email_notificaciones,
-                item.vistas_count,
-                item.leads_count,
-                JSON.stringify(item.configuracion_json || {}),
-                JSON.stringify(item.secciones_json || []),
-              ]
-            );
-          } catch (insertErr) {
-            // Ignore seed conflict
-          }
-        }
-        const seededRes = await this.db.query<LandingPageEntity>(query, params);
-        if (seededRes.rows.length > 0) {
-          return seededRes.rows;
-        }
-      }
-
-      return res.rows.length > 0 ? res.rows : this.memoryLandings;
+      return res.rows.length > 0 ? res.rows : this.memoryLandings.filter(l => {
+        if (clubId && l.club_id && l.club_id !== clubId) return false;
+        if (tipo && tipo !== 'TODOS' && l.tipo_contenido !== tipo) return false;
+        if (estado && estado !== 'TODOS' && l.estado !== estado) return false;
+        return true;
+      });
     } catch (e: any) {
       this.logger.warn(`Postgres error en findAll landings (${e.message}), usando memoria.`);
       return this.memoryLandings.filter(l => {
@@ -185,38 +196,65 @@ export class LandingsRepository {
 
   async findPortada(clubId?: string): Promise<LandingPageEntity | null> {
     try {
-      let query = `
-        SELECT * FROM core.landing_pages 
-        WHERE es_pagina_inicio = TRUE AND estado = 'PUBLICADO'
-      `;
-      const params: any[] = [];
       if (clubId) {
-        params.push(clubId);
-        query += ` AND (club_id = $${params.length} OR club_id IS NULL)`;
-      }
-      query += ` ORDER BY updated_at DESC LIMIT 1`;
-      const res = await this.db.query<LandingPageEntity>(query, params);
-      if (res.rows.length > 0) {
-        return res.rows[0];
+        // 1. Try finding explicitly the portada of this specific club
+        const resClub = await this.db.query<LandingPageEntity>(
+          `SELECT * FROM core.landing_pages 
+           WHERE club_id = $1 AND es_pagina_inicio = TRUE AND estado = 'PUBLICADO'
+           ORDER BY updated_at DESC LIMIT 1`,
+          [clubId]
+        );
+        if (resClub.rows.length > 0) return resClub.rows[0];
+
+        // 2. Try any published LANDING_PAGE for this specific club
+        const fallbackClub = await this.db.query<LandingPageEntity>(
+          `SELECT * FROM core.landing_pages 
+           WHERE club_id = $1 AND estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE'
+           ORDER BY updated_at DESC LIMIT 1`,
+          [clubId]
+        );
+        if (fallbackClub.rows.length > 0) return fallbackClub.rows[0];
       }
 
-      // Fallback: any published LANDING_PAGE for this club (or global)
-      let fallbackQuery = `SELECT * FROM core.landing_pages WHERE estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE'`;
-      const fallbackParams: any[] = [];
-      if (clubId) {
-        fallbackParams.push(clubId);
-        fallbackQuery += ` AND (club_id = $${fallbackParams.length} OR club_id IS NULL)`;
-      }
-      fallbackQuery += ` ORDER BY updated_at DESC LIMIT 1`;
-      const fallback = await this.db.query<LandingPageEntity>(fallbackQuery, fallbackParams);
-      if (fallback.rows.length > 0) return fallback.rows[0];
+      // 3. Fallback to global or default portada
+      const resGlobal = await this.db.query<LandingPageEntity>(
+        `SELECT * FROM core.landing_pages 
+         WHERE es_pagina_inicio = TRUE AND estado = 'PUBLICADO'
+         ORDER BY (CASE WHEN club_id IS NULL THEN 0 ELSE 1 END), updated_at DESC LIMIT 1`
+      );
+      if (resGlobal.rows.length > 0) return resGlobal.rows[0];
+
+      // 4. Fallback to any published landing
+      const fallbackGlobal = await this.db.query<LandingPageEntity>(
+        `SELECT * FROM core.landing_pages 
+         WHERE estado = 'PUBLICADO' AND tipo_contenido = 'LANDING_PAGE'
+         ORDER BY updated_at DESC LIMIT 1`
+      );
+      if (fallbackGlobal.rows.length > 0) return fallbackGlobal.rows[0];
     } catch (e: any) {
-      this.logger.warn(`Error en findPortada: ${e.message}`);
+      this.logger.warn(`Error en findPortada DB: ${e.message}`);
     }
 
-    const memPortada = this.memoryLandings.find(l => (!clubId || !l.club_id || l.club_id === clubId) && l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO);
-    if (memPortada) return memPortada;
-    return this.memoryLandings.find(l => (!clubId || !l.club_id || l.club_id === clubId) && l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE) || this.memoryLandings[0] || null;
+    if (clubId) {
+      const memClubPortada = this.memoryLandings.find(
+        l => l.club_id === clubId && l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO
+      );
+      if (memClubPortada) return memClubPortada;
+
+      const memClubAny = this.memoryLandings.find(
+        l => l.club_id === clubId && l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE
+      );
+      if (memClubAny) return memClubAny;
+    }
+
+    const memGlobalPortada = this.memoryLandings.find(
+      l => l.es_pagina_inicio && l.estado === EstadoLanding.PUBLICADO
+    );
+    if (memGlobalPortada) return memGlobalPortada;
+
+    return this.memoryLandings.find(
+      l => l.estado === EstadoLanding.PUBLICADO && l.tipo_contenido === TipoContenidoLanding.LANDING_PAGE
+    ) || this.memoryLandings[0] || null;
   }
 
   async setPortada(id: string, clubId?: string): Promise<LandingPageEntity | null> {
@@ -581,9 +619,9 @@ export class LandingsRepository {
     this.memoryLandings = [
       {
         id: '20000000-0000-0000-0000-000000000001',
-        club_id: null,
+        club_id: '10000000-0000-0000-0000-000000000001',
         tipo_contenido: TipoContenidoLanding.LANDING_PAGE,
-        titulo: 'Academia Élite Fútbol 2026 — Formación & Alto Rendimiento',
+        titulo: 'Club Deportivo Futuros Cracks FC — Formación & Alto Rendimiento',
         subtitulo: 'Desarrolla el máximo potencial deportivo de tu hijo con metodología europea, biometría con IA y visores profesionales.',
         slug: 'academia-elite-2026',
         estado: EstadoLanding.PUBLICADO,
@@ -815,6 +853,233 @@ export class LandingsRepository {
           },
         ],
         created_at: new Date('2026-02-15'),
+        updated_at: new Date(),
+      },
+      {
+        id: '20000000-0000-0000-0000-000000000004',
+        club_id: '10000000-0000-0000-0000-000000000002',
+        tipo_contenido: TipoContenidoLanding.LANDING_PAGE,
+        titulo: 'Academia Semillero Santa Fe — Cantera de Campeones',
+        subtitulo: 'Formación integral con pasión, garra y disciplina deportiva en Medellín. Formamos futuros futbolistas de élite para el país.',
+        slug: 'semillero-santa-fe',
+        estado: EstadoLanding.PUBLICADO,
+        tema_color: '#ef4444',
+        tema_gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+        tema_modo: 'DARK',
+        meta_descripcion: 'Inscripciones abiertas para Cantera Santa Fe en Medellín. Categorías Sub-7 a Sub-19.',
+        meta_keywords: 'santa fe, medellin, futbol formativo, cantera, inscripciones',
+        meta_og_imagen: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1200',
+        logo_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120',
+        boton_contacto_whatsapp: '+573118889999',
+        email_notificaciones: 'admisiones@semillerosantafe.com',
+        vistas_count: 980,
+        leads_count: 64,
+        es_pagina_inicio: true,
+        configuracion_json: {
+          navbar_logo: 'Semillero Santa Fe SSF',
+          navbar_cta: '¡Inscríbete Hoy! ⚡',
+          show_whatsapp_float: true,
+        },
+        secciones_json: [
+          {
+            id: 'sec-hero-ssf',
+            tipo: 'HERO',
+            titulo: 'El Orgullo Cardenal Nace en la Cantera 🔴⚪',
+            subtitulo: 'Metodología táctica de alto nivel, evaluaciones biomecánicas periódicas y participación en torneos nacionales de la Liga.',
+            orden: 1,
+            visible: true,
+            datos: {
+              badge: '🔥 Convocatorias Medellín 2026',
+              cta_primary_text: 'Apartar Prueba Técnica',
+              cta_primary_url: '#formulario-inscripcion',
+              cta_secondary_text: 'Planes & Horarios',
+              cta_secondary_url: '#programas',
+              banner_image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1000',
+            },
+          },
+          {
+            id: 'sec-stats-ssf',
+            tipo: 'STATS',
+            titulo: 'Nuestros Logros en Antioquia',
+            subtitulo: 'Resultados deportivos que certifican nuestra excelencia formativa.',
+            orden: 2,
+            visible: true,
+            datos: {
+              stats: [
+                { numero: '380+', label: 'Alumnos Matriculados' },
+                { numero: '14', label: 'Títulos Liga Antioqueña' },
+                { numero: '100%', label: 'Cuerpo Técnico Licenciado' },
+                { numero: '12', label: 'Promovidos al Fútbol Profesional' },
+              ],
+            },
+          },
+          {
+            id: 'sec-prog-ssf',
+            tipo: 'PROGRAMAS',
+            titulo: 'Programas de Formación Santa Fe',
+            subtitulo: 'Categorías estructuradas desde iniciación motriz hasta alta competencia.',
+            orden: 3,
+            visible: true,
+            datos: {
+              programas: [
+                {
+                  nombre: 'Semillero Cardenal (Sub-7 a Sub-10)',
+                  descripcion: 'Fundamentación técnica individual, pase, recepción y juegos dinámicos en espacio reducido.',
+                  horario: 'Sábados & Domingos 9:00 AM',
+                  icono: 'fa-solid fa-child',
+                  color: '#ef4444',
+                },
+                {
+                  nombre: 'Proyección Juvenil (Sub-13 a Sub-17)',
+                  descripcion: 'Táctica de equipo, preparación física avanzada y monitoreo de frecuencia cardíaca con IA.',
+                  horario: 'Lunes, Miércoles y Viernes 4:30 PM',
+                  icono: 'fa-solid fa-trophy',
+                  color: '#b91c1c',
+                },
+              ],
+            },
+          },
+          {
+            id: 'sec-lead-ssf',
+            tipo: 'LEAD_FORM',
+            titulo: 'Agenda una Clase de Prueba Gratuita ⚽',
+            subtitulo: 'Completa tus datos y un coordinador de admisiones de Semillero Santa Fe te contactará en menos de 2 horas.',
+            orden: 4,
+            visible: true,
+            datos: {
+              cta_button_text: 'Enviar Pre-Inscripción Santa Fe 🚀',
+            },
+          },
+        ],
+        created_at: new Date('2026-02-01'),
+        updated_at: new Date(),
+      },
+      {
+        id: '20000000-0000-0000-0000-000000000005',
+        club_id: '10000000-0000-0000-0000-000000000003',
+        tipo_contenido: TipoContenidoLanding.LANDING_PAGE,
+        titulo: 'Millonarios Cantera Norte — Formación & ADN Embajador',
+        subtitulo: 'Entrenamiento de alta competencia en Cali con seguimiento GPS, preparación física y captación profesional oficial.',
+        slug: 'millonarios-cantera-norte',
+        estado: EstadoLanding.PUBLICADO,
+        tema_color: '#3b82f6',
+        tema_gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        tema_modo: 'DARK',
+        meta_descripcion: 'Cantera oficial Millonarios FC en el Valle del Cauca. Formando grandes cracks del mañana.',
+        meta_keywords: 'millonarios, cantera, cali, futbol, formacion profesional',
+        meta_og_imagen: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1200',
+        logo_url: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=120',
+        boton_contacto_whatsapp: '+573157778888',
+        email_notificaciones: 'admisiones@millonarioscantera.com',
+        vistas_count: 1650,
+        leads_count: 104,
+        es_pagina_inicio: true,
+        configuracion_json: {
+          navbar_logo: 'Millonarios Cantera MCN',
+          navbar_cta: '¡Únete al Embajador! ⚡',
+          show_whatsapp_float: true,
+        },
+        secciones_json: [
+          {
+            id: 'sec-hero-mcn',
+            tipo: 'HERO',
+            titulo: 'Viste la Camiseta y Llega al Profesionalismo 🔵⚪',
+            subtitulo: 'La cantera embajadora en el Valle del Cauca con tecnología GPS de telemetría y pruebas de visoría semestrales.',
+            orden: 1,
+            visible: true,
+            datos: {
+              badge: '⭐ Cantera Oficial Millonarios FC',
+              cta_primary_text: 'Prueba de Admisión Gratuita',
+              cta_primary_url: '#formulario-inscripcion',
+              cta_secondary_text: 'Nuestras Sedes',
+              cta_secondary_url: '#programas',
+              banner_image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1000',
+            },
+          },
+          {
+            id: 'sec-stats-mcn',
+            tipo: 'STATS',
+            titulo: 'Cifras de Nuestra Cantera en Cali',
+            subtitulo: 'Impacto y formación deportiva de primera categoría.',
+            orden: 2,
+            visible: true,
+            datos: {
+              stats: [
+                { numero: '520+', label: 'Futbolistas Formados' },
+                { numero: '22', label: 'Títulos Departamentales' },
+                { numero: '100%', label: 'Preparación Física Pro' },
+                { numero: '15', label: 'Jugadores en Selección Valle' },
+              ],
+            },
+          },
+          {
+            id: 'sec-lead-mcn',
+            tipo: 'LEAD_FORM',
+            titulo: 'Pre-Inscríbete en la Cantera Embajadora ⚽',
+            subtitulo: 'Déjanos tus datos para coordinar la prueba de talento con el cuerpo técnico de Millonarios.',
+            orden: 3,
+            visible: true,
+            datos: {
+              cta_button_text: 'Enviar Solicitud a Cantera Millonarios 🚀',
+            },
+          },
+        ],
+        created_at: new Date('2026-02-10'),
+        updated_at: new Date(),
+      },
+      {
+        id: '20000000-0000-0000-0000-000000000006',
+        club_id: '10000000-0000-0000-0000-000000000004',
+        tipo_contenido: TipoContenidoLanding.LANDING_PAGE,
+        titulo: 'Academia Atlético Nacional Cantera — Semillero Verdolaga',
+        subtitulo: 'Proyección y desarrollo táctico de alto nivel en Barranquilla con metodología del club más laureado.',
+        slug: 'atletico-nacional-cantera',
+        estado: EstadoLanding.PUBLICADO,
+        tema_color: '#059669',
+        tema_gradient: 'linear-gradient(135deg, #059669 0%, #065f46 100%)',
+        tema_modo: 'DARK',
+        meta_descripcion: 'Academia de fútbol formativo en la costa caribe con proyección nacional.',
+        meta_keywords: 'nacional, cantera, barranquilla, talento, campeones',
+        meta_og_imagen: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1200',
+        logo_url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=120',
+        boton_contacto_whatsapp: '+573123334455',
+        email_notificaciones: 'admisiones@nacionalcantera.com',
+        vistas_count: 1210,
+        leads_count: 92,
+        es_pagina_inicio: true,
+        configuracion_json: {
+          navbar_logo: 'Atlético Nacional Cantera ANC',
+          navbar_cta: '¡Convocatoria Abierta! ⚡',
+          show_whatsapp_float: true,
+        },
+        secciones_json: [
+          {
+            id: 'sec-hero-anc',
+            tipo: 'HERO',
+            titulo: 'El ADN del Campeón se Entrena Cada Día 🟢⚪',
+            subtitulo: 'Formamos deportistas con disciplina, inteligencia táctica y mentalidad ganadora en la Costa Caribe.',
+            orden: 1,
+            visible: true,
+            datos: {
+              badge: '🏆 Convocatorias Costa 2026',
+              cta_primary_text: 'Separar Mi Prueba Técnica',
+              cta_primary_url: '#formulario-inscripcion',
+              banner_image: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=1000',
+            },
+          },
+          {
+            id: 'sec-lead-anc',
+            tipo: 'LEAD_FORM',
+            titulo: 'Formulario de Admisiones Verdolaga ⚽',
+            subtitulo: 'Regístrate para recibir fecha y hora de tu visoría técnica.',
+            orden: 2,
+            visible: true,
+            datos: {
+              cta_button_text: 'Solicitar Prueba en Cantera Nacional 🚀',
+            },
+          },
+        ],
+        created_at: new Date('2026-02-12'),
         updated_at: new Date(),
       },
     ];

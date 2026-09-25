@@ -1,15 +1,16 @@
-<div class="modal-overlay modal-backdrop" *ngIf="visible" (click)="cerrar()">
-  <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title-group modal-title-wrap">
-        <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
-          <i class="fa-solid fa-plus-circle"></i>
+@if (visible) {
+  <div class="modal-overlay modal-backdrop" (click)="cerrar()">
+    <div class="modal-dialog modal-card fut-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group modal-title-wrap">
+          <div class="modal-badge-icon modal-icon-badge bg-emerald-glow">
+            <i class="fa-solid fa-plus-circle"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2 class="modal-title">Crear Nueva Clínica Especializada</h2>
+            <p class="modal-sub modal-subtitle">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
+          </div>
         </div>
-        <div class="modal-title-text">
-          <h2 class="modal-title">Crear Nueva Clínica Especializada</h2>
-          <p class="modal-sub modal-subtitle">Diseña un programa intensivo de micro-habilidades y monetiza las tardes/fines de semana</p>
-        </div>
-      </div>
       <button class="btn-close-modal modal-close-btn btn-close" (click)="cerrar()" aria-label="Cerrar">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -188,10 +189,14 @@
         [disabled]="isSaving() || !nuevoTitulo() || !nuevoEntrenador() || !nuevaCanchaNombre()"
         (click)="submitCrearServicio()"
       >
-        <i class="fa-solid fa-check" *ngIf="!isSaving()"></i>
-        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving()"></i>
+        @if (!isSaving()) {
+          <i class="fa-solid fa-check"></i>
+        } @else {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        }
         {{ isSaving() ? 'Publicando...' : 'Publicar Clínica' }}
       </button>
     </div>
   </div>
 </div>
+}

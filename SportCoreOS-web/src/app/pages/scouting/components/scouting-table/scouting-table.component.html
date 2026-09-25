@@ -1,0 +1,140 @@
+<div class="directorio-section fut-card">
+  <div class="table-responsive">
+    <table class="fut-table">
+      <thead>
+        <tr>
+          <th>Prospecto</th>
+          <th>Posición</th>
+          <th>Club Origen</th>
+          <th>Ciudad</th>
+          <th>Pierna Hábil</th>
+          <th>Estado Pipeline</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading) {
+          <tr>
+            <td colspan="7" class="empty-table-cell text-center py-4">
+              <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
+              <p>Consultando catálogo de prospectos en la Base de Datos...</p>
+            </td>
+          </tr>
+        } @else {
+          @for (p of prospectos; track p.id) {
+            <tr>
+              <td>
+                <div class="player-cell">
+                  <div class="player-avatar-sm">
+                    <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
+                  </div>
+                  <div>
+                    <strong>{{ p.nombres }} {{ p.apellidos }}</strong>
+                    <div><small class="text-muted">{{ p.telefono_contacto || 'Sin teléfono' }}</small></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge badge-blue">{{ formatPosicion(p.posicion_principal) }}</span></td>
+              <td><strong>{{ p.club_origen || 'Libre' }}</strong></td>
+              <td>{{ p.ciudad || 'Colombia' }}</td>
+              <td>{{ p.pierna_habil || 'Derecha' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-primary]="p.estado_pipeline === ScoutingEstadoPipeline.EN_OBSERVACION"
+                  [class.badge-warning]="p.estado_pipeline === ScoutingEstadoPipeline.INTERES_FICHAJE"
+                  [class.badge-success]="p.estado_pipeline === ScoutingEstadoPipeline.FICHADO"
+                  [class.badge-danger]="p.estado_pipeline === ScoutingEstadoPipeline.DESCARTADO"
+                >
+                  {{ formatEstadoPipeline(p.estado_pipeline) }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions-row">
+                  <button class="btn-secondary btn-sm" (click)="viewExpediente.emit(p)" title="Ver Ficha y Rúbricas">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                  <button class="btn-secondary btn-sm" (click)="evaluate.emit(p)" title="Añadir Evaluación">
+                    <i class="fa-solid fa-star"></i>
+                  </button>
+                  <button class="btn-secondary btn-sm btn-danger-hover" (click)="deleteProspecto.emit(p)" title="Eliminar Prospecto">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-table-cell text-center py-4">
+                <i class="fa-solid fa-user-xmark"></i>
+                <p>No se encontraron prospectos registrados con los filtros aplicados.</p>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+  <div class="pagination-bar">
+    <div class="pagination-info">
+      <span>Mostrando <strong>{{ showingStart }} - {{ showingEnd }}</strong> de <strong>{{ totalRecords }}</strong> prospectos</span>
+      <div class="page-size-selector">
+        <label>Por página:</label>
+        <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="page-size-select">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pagination-controls">
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === 1 || loading" 
+        (click)="setPage(1)" 
+        title="Primera Página">
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === 1 || loading" 
+        (click)="setPage(currentPage - 1)" 
+        title="Página Anterior">
+        <i class="fa-solid fa-angle-left"></i>
+        <span>Anterior</span>
+      </button>
+
+      <div class="page-numbers">
+        @for (p of getVisiblePages(); track p) {
+          <button 
+            class="page-btn num-btn" 
+            [class.active]="currentPage === p" 
+            [disabled]="loading"
+            (click)="setPage(p)">
+            {{ p }}
+          </button>
+        }
+      </div>
+
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+        (click)="setPage(currentPage + 1)" 
+        title="Página Siguiente">
+        <span>Siguiente</span>
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+      <button 
+        class="page-btn nav-btn" 
+        [disabled]="currentPage === totalPages || totalPages === 0 || loading" 
+        (click)="setPage(totalPages)" 
+        title="Última Página">
+        <i class="fa-solid fa-angles-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

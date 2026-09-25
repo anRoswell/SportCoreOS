@@ -1,829 +1,167 @@
 <div class="scouting-page">
-      <!-- HEADER -->
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">
-            <i class="fa-solid fa-binoculars text-emerald"></i> Scouting, Visoría & Captación
-          </h1>
-          <p class="page-subtitle">Pipeline de talentos observados en torneos externos, pruebas de admisión y rúbricas técnicas</p>
-        </div>
-        <div class="header-actions">
-          <div class="view-mode-tabs">
-            <button
-              class="tab-btn"
-              [class.active]="viewMode() === 'pipeline'"
-              (click)="viewMode.set('pipeline')"
-            >
-              <i class="fa-solid fa-table-columns"></i> Tablero Pipeline
-            </button>
-            <button
-              class="tab-btn"
-              [class.active]="viewMode() === 'lista'"
-              (click)="viewMode.set('lista')"
-            >
-              <i class="fa-solid fa-list-ul"></i> Directorio Completo
-            </button>
-          </div>
-          <button class="btn-primary" (click)="openCreateProspectoModal()">
-            <i class="fa-solid fa-user-plus"></i> Registrar Prospecto
-          </button>
-        </div>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        <i class="fa-solid fa-binoculars text-emerald"></i> Scouting, Visoría & Captación
+      </h1>
+      <p class="page-subtitle">Pipeline de talentos observados en torneos externos, pruebas de admisión y rúbricas técnicas</p>
+    </div>
+    <div class="header-actions">
+      <div class="view-mode-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="viewMode() === 'pipeline'"
+          (click)="setViewMode('pipeline')"
+        >
+          <i class="fa-solid fa-table-columns"></i> Tablero Pipeline
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="viewMode() === 'lista'"
+          (click)="setViewMode('lista')"
+        >
+          <i class="fa-solid fa-list-ul"></i> Directorio Completo
+        </button>
       </div>
+      <button class="btn-primary" (click)="openCreateProspectoModal()">
+        <i class="fa-solid fa-user-plus"></i> Registrar Prospecto
+      </button>
+    </div>
+  </div>
 
-      <!-- KPI METRICS ROW PRO -->
-      <div class="kpi-row scouting-kpis">
-        <div class="kpi-card fut-card kpi-scout-card">
-          <div class="kpi-top">
-            <div class="kpi-icon-wrap bg-blue-glow">
-              <i class="fa-solid fa-users-viewfinder"></i>
-            </div>
-            <span class="kpi-chip chip-blue"><i class="fa-solid fa-radar"></i> Pipeline Activo</span>
-          </div>
-          <div class="kpi-body">
-            <div class="kpi-val">{{ prospectosList().length }}</div>
-            <div class="kpi-label">Talentos en Seguimiento</div>
-          </div>
-          <div class="kpi-footer-metric">
-            <div class="metric-progress-wrap">
-              <div class="metric-progress-bar" style="width: 100%; background: #3b82f6;"></div>
-            </div>
-            <span class="kpi-subtext">Base de datos de visorías y captación</span>
-          </div>
-        </div>
+  <!-- KPI METRICS ROW -->
+  <app-scouting-kpis
+    [totalProspectos]="prospectosList().length"
+    [countInteres]="countByEstado('interes_fichaje')"
+    [ratioInteres]="getRatioByEstado('interes_fichaje')"
+    [countFichados]="countByEstado('fichado')"
+    [ratioFichados]="getRatioByEstado('fichado')"
+    [globalTechnicalAvg]="getGlobalTechnicalAverage()"
+    [averageRatingPercent]="getAverageRatingPercent()"
+  />
 
-        <div class="kpi-card fut-card kpi-scout-card">
-          <div class="kpi-top">
-            <div class="kpi-icon-wrap bg-amber-glow">
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <span class="kpi-chip chip-amber"><i class="fa-solid fa-fire"></i> Alta Prioridad</span>
-          </div>
-          <div class="kpi-body">
-            <div class="kpi-val">{{ countByEstado('interes_fichaje') }}</div>
-            <div class="kpi-label">Prioridad de Fichaje</div>
-          </div>
-          <div class="kpi-footer-metric">
-            <div class="metric-progress-wrap">
-              <div class="metric-progress-bar" [style.width.%]="getRatioByEstado('interes_fichaje')" style="background: #f59e0b;"></div>
-            </div>
-            <span class="kpi-subtext">{{ getRatioByEstado('interes_fichaje') }}% del pipeline en fase final</span>
-          </div>
-        </div>
-
-        <div class="kpi-card fut-card kpi-scout-card">
-          <div class="kpi-top">
-            <div class="kpi-icon-wrap bg-emerald-glow">
-              <i class="fa-solid fa-signature"></i>
-            </div>
-            <span class="kpi-chip chip-emerald"><i class="fa-solid fa-check-double"></i> Fichados</span>
-          </div>
-          <div class="kpi-body">
-            <div class="kpi-val">{{ countByEstado('fichado') }}</div>
-            <div class="kpi-label">Incorporados al Club</div>
-          </div>
-          <div class="kpi-footer-metric">
-            <div class="metric-progress-wrap">
-              <div class="metric-progress-bar" [style.width.%]="getRatioByEstado('fichado')" style="background: #10b981;"></div>
-            </div>
-            <span class="kpi-subtext">Matriculados en planteles oficiales</span>
-          </div>
-        </div>
-
-        <div class="kpi-card fut-card kpi-scout-card">
-          <div class="kpi-top">
-            <div class="kpi-icon-wrap bg-purple-glow">
-              <i class="fa-solid fa-clipboard-check"></i>
-            </div>
-            <span class="kpi-chip chip-purple"><i class="fa-solid fa-chart-line"></i> Rúbricas</span>
-          </div>
-          <div class="kpi-body">
-            <div class="kpi-val">{{ getGlobalTechnicalAverage() }} <span class="kpi-unit">/ 10</span></div>
-            <div class="kpi-label">Promedio Técnico Global</div>
-          </div>
-          <div class="kpi-footer-metric">
-            <div class="metric-progress-wrap">
-              <div class="metric-progress-bar" [style.width.%]="getAverageRatingPercent()" style="background: #a855f7;"></div>
-            </div>
-            <span class="kpi-subtext">Basado en evaluaciones 4-Pilares</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- BARRA DE FILTROS & BÚSQUEDA -->
-      <div class="filters-bar fut-card">
-        <div class="search-input-wrap">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input
-            type="text"
-            [ngModel]="searchQuery"
-            (ngModelChange)="onSearchInput($event)"
-            placeholder="Buscar por nombre, club de origen, ciudad o posición..."
-            class="sport-input"
-          />
-          @if (searchQuery) {
-            <button class="btn-clear-search" (click)="resetFilters()" title="Limpiar búsqueda">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          }
-        </div>
-
-        <div class="filter-controls-row">
-          <div class="filter-item">
-            <label><i class="fa-solid fa-shirt"></i> Posición:</label>
-            <div class="sport-select-wrapper">
-              <select [(ngModel)]="selectedPosicion" (ngModelChange)="onFilterChange()" class="sport-input">
-                <option value="TODAS">Todas las Posiciones</option>
-                <option value="portero">Portero (POR)</option>
-                <option value="defensa">Defensa (DEF)</option>
-                <option value="mediocampista">Mediocampista (MED)</option>
-                <option value="delantero">Delantero (DEL)</option>
-              </select>
-              <i class="fa-solid fa-chevron-down select-chevron"></i>
-            </div>
-          </div>
-
-          <div class="filter-item">
-            <label><i class="fa-solid fa-timeline"></i> Estado:</label>
-            <div class="sport-select-wrapper">
-              <select [(ngModel)]="selectedEstado" (ngModelChange)="onFilterChange()" class="sport-input">
-                <option value="TODOS">Todos los Estados</option>
-                <option value="en_observacion">En Observación</option>
-                <option value="interes_fichaje">Interés de Fichaje</option>
-                <option value="fichado">Fichado</option>
-                <option value="descartado">Descartado</option>
-              </select>
-              <i class="fa-solid fa-chevron-down select-chevron"></i>
-            </div>
-          </div>
-
-          <button class="btn-secondary btn-sm btn-reset-filters" (click)="resetFilters()" title="Limpiar Filtros">
-            <i class="fa-solid fa-arrow-rotate-left"></i> Limpiar
-          </button>
-        </div>
-      </div>
-
-      <!-- VISTA 1: TABLERO KANBAN DE PIPELINE PRO -->
-      @if (viewMode() === 'pipeline') {
-        <div class="kanban-board-grid">
-          <!-- COLUMNA 1: EN OBSERVACIÓN -->
-          <div class="kanban-column col-observacion">
-            <div class="kanban-col-header bg-col-blue">
-              <div class="col-title-wrap">
-                <div class="col-icon-badge bg-blue-glow"><i class="fa-solid fa-eye"></i></div>
-                <div class="col-name-box">
-                  <strong>En Observación</strong>
-                  <span class="col-sub">Seguimiento inicial</span>
-                </div>
-              </div>
-              <span class="col-count count-blue">{{ getProspectosByCol('en_observacion').length }}</span>
-            </div>
-            <div class="kanban-cards-list">
-              @for (p of getProspectosByCol('en_observacion'); track p.id) {
-                <div class="prospecto-card fut-card" (click)="openExpedienteModal(p)">
-                  <div class="prospect-card-top">
-                    <div class="prospect-avatar-wrap">
-                      <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
-                      <span class="pos-tag">{{ formatPosicion(p.posicion_principal) }}</span>
-                    </div>
-                    <div class="prospect-main-info">
-                      <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
-                      <div class="prospect-tags-row">
-                        <span class="meta-chip"><i class="fa-solid fa-shield"></i> {{ p.club_origen || 'Agente Libre' }}</span>
-                        <span class="meta-chip"><i class="fa-solid fa-location-dot"></i> {{ p.ciudad || 'Colombia' }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="prospect-card-footer">
-                    <div class="rating-badge rating-good">
-                      <i class="fa-solid fa-star"></i>
-                      <span>{{ p.promedio_tecnico || '8.2' }}</span>
-                    </div>
-                    <div class="card-quick-actions" (click)="$event.stopPropagation()">
-                      <button class="btn-action-icon btn-eval" (click)="openRubricaModal(p, $event)" title="Evaluar Rúbrica">
-                        <i class="fa-solid fa-chart-simple"></i>
-                      </button>
-                      <button class="btn-action-icon btn-promote" (click)="cambiarEstadoProspecto(p, 'interes_fichaje', $event)" title="Avanzar a Interés">
-                        <i class="fa-solid fa-arrow-right"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              } @empty {
-                <div class="empty-col">
-                  <i class="fa-solid fa-user-clock"></i>
-                  <p>Sin prospectos en observación</p>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- COLUMNA 2: INTERÉS DE FICHAJE -->
-          <div class="kanban-column col-interes">
-            <div class="kanban-col-header bg-col-amber">
-              <div class="col-title-wrap">
-                <div class="col-icon-badge bg-amber-glow"><i class="fa-solid fa-fire"></i></div>
-                <div class="col-name-box">
-                  <strong>Interés de Fichaje</strong>
-                  <span class="col-sub">Prioridad de captación</span>
-                </div>
-              </div>
-              <span class="col-count count-amber">{{ getProspectosByCol('interes_fichaje').length }}</span>
-            </div>
-            <div class="kanban-cards-list">
-              @for (p of getProspectosByCol('interes_fichaje'); track p.id) {
-                <div class="prospecto-card fut-card card-amber-highlight" (click)="openExpedienteModal(p)">
-                  <div class="prospect-card-top">
-                    <div class="prospect-avatar-wrap">
-                      <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
-                      <span class="pos-tag pos-amber">{{ formatPosicion(p.posicion_principal) }}</span>
-                    </div>
-                    <div class="prospect-main-info">
-                      <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
-                      <div class="prospect-tags-row">
-                        <span class="meta-chip"><i class="fa-solid fa-shield"></i> {{ p.club_origen || 'Agente Libre' }}</span>
-                        <span class="meta-chip"><i class="fa-solid fa-phone"></i> {{ p.telefono_contacto || 'Contactar' }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="prospect-card-footer">
-                    <div class="rating-badge rating-elite">
-                      <i class="fa-solid fa-star"></i>
-                      <span>{{ p.promedio_tecnico || '8.9' }}</span>
-                    </div>
-                    <div class="card-quick-actions" (click)="$event.stopPropagation()">
-                      <button class="btn-fichar-mini" (click)="cambiarEstadoProspecto(p, 'fichado', $event)">
-                        <i class="fa-solid fa-signature"></i> Fichar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              } @empty {
-                <div class="empty-col">
-                  <i class="fa-solid fa-star-half-stroke"></i>
-                  <p>Sin talentos con interés activo</p>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- COLUMNA 3: FICHADO / INCORPORADO -->
-          <div class="kanban-column col-fichado">
-            <div class="kanban-col-header bg-col-emerald">
-              <div class="col-title-wrap">
-                <div class="col-icon-badge bg-emerald-glow"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="col-name-box">
-                  <strong>Fichado / Incorporado</strong>
-                  <span class="col-sub">Plantel del Club</span>
-                </div>
-              </div>
-              <span class="col-count count-emerald">{{ getProspectosByCol('fichado').length }}</span>
-            </div>
-            <div class="kanban-cards-list">
-              @for (p of getProspectosByCol('fichado'); track p.id) {
-                <div class="prospecto-card fut-card card-emerald-highlight" (click)="openExpedienteModal(p)">
-                  <div class="prospect-card-top">
-                    <div class="prospect-avatar-wrap">
-                      <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
-                      <span class="pos-tag pos-emerald">{{ formatPosicion(p.posicion_principal) }}</span>
-                    </div>
-                    <div class="prospect-main-info">
-                      <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
-                      <div class="prospect-tags-row">
-                        <span class="meta-chip text-emerald"><i class="fa-solid fa-award"></i> Oficial SportCore</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="prospect-card-footer">
-                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> En Plantel</span>
-                    <button class="btn-action-icon" (click)="openExpedienteModal(p)" title="Ver Ficha">
-                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </button>
-                  </div>
-                </div>
-              } @empty {
-                <div class="empty-col">
-                  <i class="fa-solid fa-trophy"></i>
-                  <p>Sin fichajes completados aún</p>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- COLUMNA 4: DESCARTADO -->
-          <div class="kanban-column col-descartado">
-            <div class="kanban-col-header bg-col-gray">
-              <div class="col-title-wrap">
-                <div class="col-icon-badge"><i class="fa-solid fa-ban"></i></div>
-                <div class="col-name-box">
-                  <strong>Descartado</strong>
-                  <span class="col-sub">No prioritario</span>
-                </div>
-              </div>
-              <span class="col-count count-gray">{{ getProspectosByCol('descartado').length }}</span>
-            </div>
-            <div class="kanban-cards-list">
-              @for (p of getProspectosByCol('descartado'); track p.id) {
-                <div class="prospecto-card fut-card card-muted" (click)="openExpedienteModal(p)">
-                  <div class="prospect-card-top">
-                    <div class="prospect-avatar-wrap grayscale">
-                      <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
-                    </div>
-                    <div class="prospect-main-info">
-                      <h4 class="prospect-name text-muted">{{ p.nombres }} {{ p.apellidos }}</h4>
-                      <div class="prospect-tags-row">
-                        <span class="meta-chip text-muted">{{ formatPosicion(p.posicion_principal) }} • {{ p.club_origen || 'Libre' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="prospect-card-footer">
-                    <span class="badge badge-danger">Descartado</span>
-                    <button class="btn-action-icon text-muted" (click)="cambiarEstadoProspecto(p, 'en_observacion', $event)" title="Reactivar">
-                      <i class="fa-solid fa-rotate-left"></i>
-                    </button>
-                  </div>
-                </div>
-              } @empty {
-                <div class="empty-col">
-                  <i class="fa-solid fa-user-xmark"></i>
-                  <p>Sin descartes registrados</p>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- VISTA 2: DIRECTORIO EN TABLA -->
-      @if (viewMode() === 'lista') {
-        <div class="directorio-section fut-card">
-          <div class="table-responsive">
-            <table class="fut-table">
-              <thead>
-                <tr>
-                  <th>Prospecto</th>
-                  <th>Posición</th>
-                  <th>Club Origen</th>
-                  <th>Ciudad</th>
-                  <th>Pierna Hábil</th>
-                  <th>Estado Pipeline</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (loading()) {
-                  <tr>
-                    <td colspan="7" class="empty-table-cell text-center py-4">
-                      <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
-                      <p>Consultando catálogo de prospectos en la Base de Datos...</p>
-                    </td>
-                  </tr>
-                } @else {
-                  @for (p of prospectosList(); track p.id) {
-                    <tr>
-                      <td>
-                        <div class="player-cell">
-                          <div class="player-avatar-sm">
-                            <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
-                          </div>
-                          <div>
-                            <strong>{{ p.nombres }} {{ p.apellidos }}</strong>
-                            <div><small class="text-muted">{{ p.telefono_contacto || 'Sin teléfono' }}</small></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td><span class="badge badge-blue">{{ formatPosicion(p.posicion_principal) }}</span></td>
-                      <td><strong>{{ p.club_origen || 'Libre' }}</strong></td>
-                      <td>{{ p.ciudad || 'Colombia' }}</td>
-                      <td>{{ p.pierna_habil || 'Derecha' }}</td>
-                      <td>
-                        <span
-                          class="badge"
-                          [class.badge-primary]="p.estado_pipeline === 'en_observacion'"
-                          [class.badge-warning]="p.estado_pipeline === 'interes_fichaje'"
-                          [class.badge-success]="p.estado_pipeline === 'fichado'"
-                          [class.badge-danger]="p.estado_pipeline === 'descartado'"
-                        >
-                          {{ formatEstadoPipeline(p.estado_pipeline) }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="table-actions-row">
-                          <button class="btn-secondary btn-sm" (click)="openExpedienteModal(p)" title="Ver Ficha y Rúbricas">
-                            <i class="fa-solid fa-eye"></i>
-                          </button>
-                          <button class="btn-secondary btn-sm" (click)="openRubricaModal(p, $event)" title="Añadir Evaluación">
-                            <i class="fa-solid fa-star"></i>
-                          </button>
-                          <button class="btn-secondary btn-sm btn-danger-hover" (click)="openDeleteModal(p)" title="Eliminar Prospecto">
-                            <i class="fa-solid fa-trash-can"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="7" class="empty-table-cell text-center py-4">
-                        <i class="fa-solid fa-user-xmark"></i>
-                        <p>No se encontraron prospectos registrados con los filtros aplicados.</p>
-                      </td>
-                    </tr>
-                  }
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
-          <div class="pagination-bar">
-            <div class="pagination-info">
-              <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalRecords() }}</strong> prospectos</span>
-              <div class="page-size-selector">
-                <label>Por página:</label>
-                <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
-                  <option [value]="5">5</option>
-                  <option [value]="10">10</option>
-                  <option [value]="20">20</option>
-                  <option [value]="50">50</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="pagination-controls">
-              <button 
-                class="page-btn nav-btn" 
-                [disabled]="currentPage() === 1 || loading()" 
-                (click)="setPage(1)" 
-                title="Primera Página">
-                <i class="fa-solid fa-angles-left"></i>
-              </button>
-              <button 
-                class="page-btn nav-btn" 
-                [disabled]="currentPage() === 1 || loading()" 
-                (click)="setPage(currentPage() - 1)" 
-                title="Página Anterior">
-                <i class="fa-solid fa-angle-left"></i>
-                <span>Anterior</span>
-              </button>
-
-              <div class="page-numbers">
-                @for (p of getVisiblePages(); track p) {
-                  <button 
-                    class="page-btn num-btn" 
-                    [class.active]="currentPage() === p" 
-                    [disabled]="loading()"
-                    (click)="setPage(p)">
-                    {{ p }}
-                  </button>
-                }
-              </div>
-
-              <button 
-                class="page-btn nav-btn" 
-                [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
-                (click)="setPage(currentPage() + 1)" 
-                title="Página Siguiente">
-                <span>Siguiente</span>
-                <i class="fa-solid fa-angle-right"></i>
-              </button>
-              <button 
-                class="page-btn nav-btn" 
-                [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
-                (click)="setPage(totalPages())" 
-                title="Última Página">
-                <i class="fa-solid fa-angles-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- MODAL NUEVO PROSPECTO -->
-      @if (showCreateModal()) {
-        <div class="modal-overlay" (click)="closeCreateModal()">
-          <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-              <div class="modal-title-wrap">
-                <div class="modal-icon-badge">
-                  <i class="fa-solid fa-user-plus"></i>
-                </div>
-                <div class="modal-title-text">
-                  <h2>Registrar Nuevo Talento / Prospecto</h2>
-                  <p class="modal-subtitle">Captación en visorías externas, pruebas de admisión y scouting</p>
-                </div>
-              </div>
-              <button class="btn-close" (click)="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <form (ngSubmit)="submitProspectoForm()" class="modal-form">
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> Datos Personales & Contacto</span>
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label>Nombres <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="prospectoForm.nombres" name="pNombres" placeholder="ej. Mateo" class="sport-input" required />
-                  </div>
-                  <div class="input-group">
-                    <label>Apellidos <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="prospectoForm.apellidos" name="pApellidos" placeholder="ej. Gómez Rojas" class="sport-input" required />
-                  </div>
-                </div>
-
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label>Fecha de Nacimiento</label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="prospectoForm.fecha_nacimiento" name="pFechaNac" class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label>Ciudad de Origen</label>
-                    <input type="text" [(ngModel)]="prospectoForm.ciudad" name="pCiudad" placeholder="ej. Cali, Valle" class="sport-input" />
-                  </div>
-                  <div class="input-group">
-                    <label>Teléfono / WhatsApp</label>
-                    <input type="tel" [(ngModel)]="prospectoForm.telefono_contacto" name="pTel" placeholder="+57 312..." class="sport-input" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> Perfil Deportivo & Procedencia</span>
-                <div class="form-row g3">
-                  <div class="input-group">
-                    <label>Posición Principal <span class="required-star">*</span></label>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="prospectoForm.posicion_principal" name="pPos" class="sport-input" required>
-                        @for (pos of posiciones(); track pos.codigo) {
-                          <option [value]="pos.codigo">{{ pos.nombre }}</option>
-                        }
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <label>Pierna Hábil</label>
-                    <div class="sport-select-wrapper">
-                      <select [(ngModel)]="prospectoForm.pierna_habil" name="pPierna" class="sport-input">
-                        @for (ph of piernasHabiles(); track ph.codigo) {
-                          <option [value]="ph.codigo">{{ ph.nombre }}</option>
-                        }
-                      </select>
-                      <i class="fa-solid fa-chevron-down select-chevron"></i>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <label>Club / Escuela de Origen</label>
-                    <input type="text" [(ngModel)]="prospectoForm.club_origen" name="pClubOrig" placeholder="ej. Academia Real Cali" class="sport-input" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- SUBIDA DE ARCHIVO / DOCUMENTO DE VISORÍA -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-file-arrow-up"></i> Documento / Ficha Técnica Adjunta</span>
-                <div class="input-group">
-                  <label>Adjuntar Reporte de Visoría, Video o Ficha (PDF, Imagen)</label>
-                  <input type="file" (change)="onFileSelected($event)" class="sport-input" accept=".pdf,.png,.jpg,.jpeg,.mp4" />
-                </div>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancelar</button>
-                <button type="submit" class="btn-primary">
-                  <i class="fa-solid fa-floppy-disk"></i> Guardar Prospecto
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      }
-
-      <!-- MODAL EXPEDIENTE & RÚBRICAS TÉCNICAS -->
-      @if (showExpedienteModal() && selectedProspecto()) {
-        <div class="modal-overlay" (click)="closeExpedienteModal()">
-          <div class="modal-card modal-lg modal-xl expediente-modal" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-              <div class="modal-title-wrap">
-                <div class="modal-icon-badge badge-blue">
-                  <i class="fa-solid fa-id-card"></i>
-                </div>
-                <div class="modal-title-text">
-                  <h2>Expediente del Prospecto</h2>
-                  <p class="modal-subtitle">{{ selectedProspecto()?.nombres }} {{ selectedProspecto()?.apellidos }} • {{ formatPosicion(selectedProspecto()?.posicion_principal) }}</p>
-                </div>
-              </div>
-              <button class="btn-close" (click)="closeExpedienteModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="modal-body-scroll">
-              <div class="expediente-top-hero">
-                <div class="hero-avatar">
-                  <img [src]="selectedProspecto()?.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=120'" alt="Foto" />
-                </div>
-                <div class="hero-details">
-                  <h3>{{ selectedProspecto()?.nombres }} {{ selectedProspecto()?.apellidos }}</h3>
-                  <div class="hero-badges-row">
-                    <span class="badge badge-blue">{{ formatPosicion(selectedProspecto()?.posicion_principal) }}</span>
-                    <span class="badge badge-purple">Pierna: {{ selectedProspecto()?.pierna_habil || 'Derecha' }}</span>
-                    <span class="badge badge-amber">Club: {{ selectedProspecto()?.club_origen || 'Agente Libre' }}</span>
-                  </div>
-                </div>
-                <div class="hero-score-badge">
-                  <span class="score-num">{{ selectedProspecto()?.promedio_tecnico || '8.5' }}</span>
-                  <span class="score-lbl">Score Visoría</span>
-                </div>
-              </div>
-
-              <!-- RÚBRICAS TÉCNICAS DE EVALUACIÓN -->
-              <div class="modal-section">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                  <span class="modal-section-title" style="margin:0;"><i class="fa-solid fa-chart-radar"></i> Evaluación Técnica por Pilares (1 - 10)</span>
-                  <button class="btn-primary btn-sm" (click)="openRubricaModal(selectedProspecto())">
-                    <i class="fa-solid fa-plus"></i> Añadir Rúbrica
-                  </button>
-                </div>
-
-                <div class="rubricas-radar-grid">
-                  <div class="rubrica-pillar-card">
-                    <div class="pillar-label">
-                      <span>⚽ Técnica Individual</span>
-                      <strong>8.8 / 10</strong>
-                    </div>
-                    <div class="pillar-bar"><div class="bar-fill bg-emerald" style="width: 88%;"></div></div>
-                  </div>
-
-                  <div class="rubrica-pillar-card">
-                    <div class="pillar-label">
-                      <span>🧠 Inteligencia Táctica</span>
-                      <strong>8.2 / 10</strong>
-                    </div>
-                    <div class="pillar-bar"><div class="bar-fill bg-blue" style="width: 82%;"></div></div>
-                  </div>
-
-                  <div class="rubrica-pillar-card">
-                    <div class="pillar-label">
-                      <span>⚡ Condición Física</span>
-                      <strong>8.5 / 10</strong>
-                    </div>
-                    <div class="pillar-bar"><div class="bar-fill bg-amber" style="width: 85%;"></div></div>
-                  </div>
-
-                  <div class="rubrica-pillar-card">
-                    <div class="pillar-label">
-                      <span>🛡️ Fortaleza Mental & Actitud</span>
-                      <strong>9.0 / 10</strong>
-                    </div>
-                    <div class="pillar-bar"><div class="bar-fill bg-purple" style="width: 90%;"></div></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CAMBIO RÁPIDO DE ESTADO DE PIPELINE -->
-              <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-sliders"></i> Estado en el Pipeline</span>
-                <div class="pipeline-actions-row">
-                  <button class="btn-secondary" (click)="cambiarEstadoProspecto(selectedProspecto(), 'en_observacion')">
-                    <i class="fa-solid fa-eye"></i> En Observación
-                  </button>
-                  <button class="btn-secondary text-amber" (click)="cambiarEstadoProspecto(selectedProspecto(), 'interes_fichaje')">
-                    <i class="fa-solid fa-star"></i> Interés de Fichaje
-                  </button>
-                  <button class="btn-primary" (click)="cambiarEstadoProspecto(selectedProspecto(), 'fichado')">
-                    <i class="fa-solid fa-circle-check"></i> Promover / Fichar al Club
-                  </button>
-                  <button class="btn-secondary text-danger" (click)="cambiarEstadoProspecto(selectedProspecto(), 'descartado')">
-                    <i class="fa-solid fa-ban"></i> Descartar
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-actions">
-              <button class="btn-secondary" (click)="closeExpedienteModal()">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- MODAL AÑADIR EVALUACIÓN / RÚBRICA -->
-      @if (showRubricaModal() && prospectoToEvaluate()) {
-        <div class="modal-overlay" (click)="closeRubricaModal()">
-          <div class="modal-card modal-md modal-lg" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-              <div class="modal-title-wrap">
-                <div class="modal-icon-badge badge-amber">
-                  <i class="fa-solid fa-star"></i>
-                </div>
-                <div class="modal-title-text">
-                  <h2>Evaluar Rúbrica Deportiva</h2>
-                  <p class="modal-subtitle">{{ prospectoToEvaluate()?.nombres }} {{ prospectoToEvaluate()?.apellidos }}</p>
-                </div>
-              </div>
-              <button class="btn-close" (click)="closeRubricaModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <form (ngSubmit)="submitRubricaForm()" class="modal-form">
-              <div class="modal-section">
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label>Técnica Individual (1-10) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="rubricaForm.nota_tecnica" name="nTec" min="1" max="10" step="0.5" class="sport-input" required />
-                  </div>
-                  <div class="input-group">
-                    <label>Táctica & Posicionamiento (1-10) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="rubricaForm.nota_tactica" name="nTac" min="1" max="10" step="0.5" class="sport-input" required />
-                  </div>
-                </div>
-
-                <div class="form-row g2">
-                  <div class="input-group">
-                    <label>Físico & Velocidad (1-10) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="rubricaForm.nota_fisica" name="nFis" min="1" max="10" step="0.5" class="sport-input" required />
-                  </div>
-                  <div class="input-group">
-                    <label>Mental & Disciplina (1-10) <span class="required-star">*</span></label>
-                    <input type="number" [(ngModel)]="rubricaForm.nota_mental" name="nMen" min="1" max="10" step="0.5" class="sport-input" required />
-                  </div>
-                </div>
-
-                <div class="input-group">
-                  <label>Comentarios de la Observación</label>
-                  <textarea [(ngModel)]="rubricaForm.comentarios" name="nCom" rows="3" placeholder="Observaciones detalladas sobre el desempeño del talento..." class="sport-input"></textarea>
-                </div>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" class="btn-secondary" (click)="closeRubricaModal()">Cancelar</button>
-                <button type="submit" class="btn-primary">
-                  <i class="fa-solid fa-check"></i> Registrar Evaluación
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      }
-
-      <!-- MODAL CONFIRMAR ELIMINACIÓN DE PROSPECTO -->
-      @if (showDeleteModal() && prospectoToDelete()) {
-        <div class="modal-overlay" (click)="closeDeleteModal()">
-          <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
-            <div class="modal-header header-danger">
-              <div class="modal-title-wrap">
-                <div class="modal-icon-badge badge-danger-glow">
-                  <i class="fa-solid fa-trash-can"></i>
-                </div>
-                <div class="modal-title-text">
-                  <h2>Eliminar Prospecto del Pipeline</h2>
-                  <p class="modal-subtitle">Esta acción borrará el talento observado y su historial de visorías</p>
-                </div>
-              </div>
-              <button class="btn-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="delete-confirm-body">
-              <div class="player-retire-card">
-                <div class="retire-avatar-wrap">
-                  <img [src]="prospectoToDelete()?.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ prospectoToDelete()?.nombres }}" />
-                </div>
-                <div class="retire-player-details">
-                  <div class="retire-name-row">
-                    <span class="retire-player-name">{{ prospectoToDelete()?.nombres }} {{ prospectoToDelete()?.apellidos }}</span>
-                  </div>
-                  <div class="retire-meta-row">
-                    <span class="meta-tag"><i class="fa-solid fa-futbol"></i> {{ formatPosicion(prospectoToDelete()?.posicion_principal) }}</span>
-                    <span class="meta-tag"><i class="fa-solid fa-shield"></i> {{ prospectoToDelete()?.club_origen || 'Libre' }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="warning-callout">
-                <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
-                <div class="warning-callout-content">
-                  <h4>Advertencia de Eliminación:</h4>
-                  <ul>
-                    <li>Se eliminarán todas las rúbricas e informes técnicos asociados al talento.</li>
-                    <li>Esta acción es permanente e irreversible.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-              <button type="button" class="btn-confirm-delete" (click)="confirmarEliminarProspecto()">
-                <i class="fa-solid fa-trash-can"></i> Sí, Eliminar Prospecto
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- TOAST -->
-      @if (toastMessage()) {
-        <div class="toast-floating-alert">
-          <i class="fa-solid fa-circle-check"></i>
-          <span>{{ toastMessage() }}</span>
-        </div>
+  <!-- BARRA DE FILTROS & BÚSQUEDA -->
+  <div class="filters-bar fut-card">
+    <div class="search-input-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        type="text"
+        [ngModel]="searchQuery"
+        (ngModelChange)="onSearchInput($event)"
+        placeholder="Buscar por nombre, club de origen, ciudad o posición..."
+        class="sport-input"
+      />
+      @if (searchQuery) {
+        <button class="btn-clear-search" (click)="resetFilters()" title="Limpiar búsqueda">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       }
     </div>
+
+    <div class="filter-controls-row">
+      <div class="filter-item">
+        <label><i class="fa-solid fa-shirt"></i> Posición:</label>
+        <div class="sport-select-wrapper">
+          <select [(ngModel)]="selectedPosicion" (ngModelChange)="onFilterChange()" class="sport-input">
+            @for (pos of posicionOptions; track pos.value) {
+              <option [value]="pos.value">{{ pos.label }}</option>
+            }
+          </select>
+          <i class="fa-solid fa-chevron-down select-chevron"></i>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label><i class="fa-solid fa-timeline"></i> Estado:</label>
+        <div class="sport-select-wrapper">
+          <select [(ngModel)]="selectedEstado" (ngModelChange)="onFilterChange()" class="sport-input">
+            @for (est of estadoOptions; track est.value) {
+              <option [value]="est.value">{{ est.label }}</option>
+            }
+          </select>
+          <i class="fa-solid fa-chevron-down select-chevron"></i>
+        </div>
+      </div>
+
+      <button class="btn-secondary btn-sm btn-reset-filters" (click)="resetFilters()" title="Limpiar Filtros">
+        <i class="fa-solid fa-arrow-rotate-left"></i> Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- VISTA 1: TABLERO KANBAN DE PIPELINE PRO -->
+  @if (viewMode() === 'pipeline') {
+    <app-scouting-pipeline
+      [prospectos]="prospectosList()"
+      (viewExpediente)="openExpedienteModal($event)"
+      (evaluate)="openRubricaModal($event)"
+      (changeStatus)="cambiarEstadoProspecto($event)"
+    />
+  }
+
+  <!-- VISTA 2: DIRECTORIO EN TABLA -->
+  @if (viewMode() === 'lista') {
+    <app-scouting-table
+      [prospectos]="prospectosList()"
+      [loading]="loading()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [totalPages]="totalPages()"
+      [showingStart]="showingStart()"
+      [showingEnd]="showingEnd()"
+      (viewExpediente)="openExpedienteModal($event)"
+      (evaluate)="openRubricaModal($event)"
+      (deleteProspecto)="openDeleteModal($event)"
+      (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+    />
+  }
+
+  <!-- MODAL NUEVO PROSPECTO -->
+  @if (showCreateModal()) {
+    <app-scouting-form-modal
+      [posiciones]="posiciones()"
+      [piernasHabiles]="piernasHabiles()"
+      (close)="closeCreateModal()"
+      (save)="submitCreateProspecto($event)"
+    />
+  }
+
+  <!-- MODAL EXPEDIENTE & RÚBRICAS TÉCNICAS -->
+  @if (showExpedienteModal() && selectedProspecto(); as prospecto) {
+    <app-scouting-expediente-modal
+      [prospecto]="prospecto"
+      (close)="closeExpedienteModal()"
+      (addRubrica)="openRubricaModal($event)"
+      (changeStatus)="cambiarEstadoProspecto($event)"
+    />
+  }
+
+  <!-- MODAL AÑADIR EVALUACIÓN / RÚBRICA -->
+  @if (showRubricaModal() && prospectoToEvaluate(); as prospecto) {
+    <app-scouting-rubrica-modal
+      [prospecto]="prospecto"
+      (close)="closeRubricaModal()"
+      (save)="submitRubricaForm($event)"
+    />
+  }
+
+  <!-- MODAL CONFIRMAR ELIMINACIÓN DE PROSPECTO -->
+  @if (showDeleteModal() && prospectoToDelete(); as prospecto) {
+    <app-scouting-delete-modal
+      [prospecto]="prospecto"
+      (close)="closeDeleteModal()"
+      (confirm)="confirmarEliminarProspecto($event)"
+    />
+  }
+
+  <!-- TOAST -->
+  @if (toastMessage()) {
+    <div class="toast-floating-alert">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ toastMessage() }}</span>
+    </div>
+  }
+</div>

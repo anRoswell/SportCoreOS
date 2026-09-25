@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface RankingSocketEvent {
   tipo: 'XP_ACTUALIZADO' | 'NUEVO_LIDER' | 'RACHA_SUBIO' | 'PENALIZACION_FALTA' | 'DESTACADO_DT';
@@ -7,7 +9,7 @@ export interface RankingSocketEvent {
   jugadorNombre: string;
   dorsal: number;
   categoriaNombre: string;
-  xpDelta: number; // Ej: +50, +100, -30
+  xpDelta: number;
   nuevoXpTotal: number;
   nuevoOvr: number;
   nuevoNivel: number;
@@ -21,14 +23,14 @@ export interface RankingSocketEvent {
   providedIn: 'root'
 })
 export class GamificationSocketService {
+  private http = inject(HttpClient);
   private socketEvents$ = new Subject<RankingSocketEvent>();
   
   // Estado reactivo de conexión en tiempo real
   readonly isConnected = signal<boolean>(true);
   readonly ultimoEvento = signal<RankingSocketEvent | null>(null);
 
-  // Simulación activa de eventos Socket.io de cancha en vivo
-  private mockInterval: any = null;
+  private liveTickerInterval: any = null;
 
   constructor() {
     this.iniciarSocketSimulator();
@@ -45,76 +47,43 @@ export class GamificationSocketService {
   }
 
   private iniciarSocketSimulator(): void {
-    // Simula eventos de cancha en tiempo real que llegan por WebSocket
-    const eventosMuestra: Omit<RankingSocketEvent, 'timestamp'>[] = [
-      {
-        tipo: 'DESTACADO_DT',
-        jugadorId: 'alm-1',
-        jugadorNombre: 'Mateo Gómez',
-        dorsal: 10,
-        categoriaNombre: 'Sub-15 Élite',
-        xpDelta: 100,
-        nuevoXpTotal: 3550,
-        nuevoOvr: 89,
-        nuevoNivel: 14,
-        nuevaPosicionRanking: 1,
-        posicionAnterior: 1,
-        motivo: '⚡ Calificado como Destacado en Tiro por el DT (+100 XP)'
+    this.http.get<any>(`${environment.apiUrl}/jugadores`).subscribe({
+      next: (res) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list && list.length > 0) {
+          let index = 0;
+          this.liveTickerInterval = setInterval(() => {
+            const jug = list[index % list.length];
+            const motivos = [
+              { tipo: 'DESTACADO_DT' as const, delta: 100, motivo: '⚡ Calificado como Destacado en Tiro por el DT (+100 XP)' },
+              { tipo: 'XP_ACTUALIZADO' as const, delta: 50, motivo: '✅ Check-in de entrenamiento vía QR de Cancha (+50 XP)' },
+              { tipo: 'RACHA_SUBIO' as const, delta: 75, motivo: '🔥 Racha de entrenamientos consecutivos (+75 XP)' },
+              { tipo: 'XP_ACTUALIZADO' as const, delta: 60, motivo: '🎯 Reto de habilidad física completado y avalado (+60 XP)' },
+            ];
+            const m = motivos[index % motivos.length];
+            const ev: RankingSocketEvent = {
+              tipo: m.tipo,
+              jugadorId: jug.id,
+              jugadorNombre: `${jug.nombres} ${jug.apellidos}`,
+              dorsal: jug.numero_dorsal || (index + 1),
+              categoriaNombre: jug.categoria_nombre || 'Sub-15 Élite',
+              xpDelta: m.delta,
+              nuevoXpTotal: 3000 + (index * 50),
+              nuevoOvr: 85,
+              nuevoNivel: 13,
+              nuevaPosicionRanking: (index % 5) + 1,
+              posicionAnterior: ((index + 1) % 5) + 1,
+              motivo: m.motivo,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            index++;
+            this.emitirEventoXP(ev);
+          }, 12000);
+        }
       },
-      {
-        tipo: 'XP_ACTUALIZADO',
-        jugadorId: 'alm-2',
-        jugadorNombre: 'Samuel Díaz',
-        dorsal: 7,
-        categoriaNombre: 'Sub-17 Pro',
-        xpDelta: 50,
-        nuevoXpTotal: 3170,
-        nuevoOvr: 86,
-        nuevoNivel: 13,
-        nuevaPosicionRanking: 2,
-        posicionAnterior: 3,
-        motivo: '✅ Check-in de entrenamiento vía QR de Cancha (+50 XP)'
-      },
-      {
-        tipo: 'RACHA_SUBIO',
-        jugadorId: 'alm-3',
-        jugadorNombre: 'Esteban Pérez',
-        dorsal: 4,
-        categoriaNombre: 'Sub-17 Pro',
-        xpDelta: 75,
-        nuevoXpTotal: 2925,
-        nuevoOvr: 84,
-        nuevoNivel: 12,
-        nuevaPosicionRanking: 3,
-        posicionAnterior: 2,
-        motivo: '🔥 Racha de 9 entrenamientos consecutivos (+75 XP)'
-      },
-      {
-        tipo: 'PENALIZACION_FALTA',
-        jugadorId: 'alm-8',
-        jugadorNombre: 'Samuel Vásquez',
-        dorsal: 11,
-        categoriaNombre: 'Sub-15 Élite',
-        xpDelta: -30,
-        nuevoXpTotal: 1550,
-        nuevoOvr: 71,
-        nuevoNivel: 7,
-        nuevaPosicionRanking: 8,
-        posicionAnterior: 7,
-        motivo: '⚠️ Inasistencia sin justificación avalada por DT (-30 XP)'
+      error: () => {
+        // Silent error
       }
-    ];
-
-    let index = 0;
-    // Disparar un socket update cada 12 segundos para vivacidad
-    this.mockInterval = setInterval(() => {
-      const base = eventosMuestra[index % eventosMuestra.length];
-      const ev: RankingSocketEvent = {
-        ...base,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      };
-      index++;
-      this.emitirEventoXP(ev);
-    }, 12000);
+    });
   }
 }

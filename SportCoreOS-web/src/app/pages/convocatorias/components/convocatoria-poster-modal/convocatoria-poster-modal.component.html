@@ -1,0 +1,98 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg poster-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge bg-emerald-badge">
+          <i class="fa-solid fa-wand-magic-sparkles text-emerald"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Diseño Inteligente de Convocatoria (Gemini AI)</h2>
+          <p class="modal-subtitle">Generado con motor multimodal Google Gemini & Identidad de {{ activeClub.nombre }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body poster-modal-body">
+      <div class="poster-preview-container">
+        @if (isGeneratingAi) {
+          <div class="ia-generating-overlay">
+            <div class="spinner-ia"></div>
+            <p class="mt-2 font-bold text-emerald"><i class="fa-solid fa-robot"></i> Gemini AI está diseñando la gráfica de convocatoria...</p>
+          </div>
+        }
+        <canvas #posterCanvas id="posterCanvas" class="poster-canvas"></canvas>
+      </div>
+      
+      <div class="poster-options-sidebar">
+        <div class="poster-meta-card">
+          <div class="card-header-ai">
+            <h4><i class="fa-solid fa-brain text-emerald"></i> Copiloto Creativo Gemini</h4>
+            <button class="btn-re-ai" (click)="regenerateAi.emit()" [disabled]="isGeneratingAi" title="Regenerar con IA">
+              <i class="fa-solid fa-rotate text-amber" [class.fa-spin]="isGeneratingAi"></i> Regenerar IA
+            </button>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Estilo Visual Gemini</label>
+            <select [ngModel]="posterTheme" (ngModelChange)="onThemeChange($event)" class="sport-select full-w">
+              @for (opt of themeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Titular Generado por IA</label>
+            <input type="text" [(ngModel)]="posterHeadline" (ngModelChange)="drawSocialPoster()" class="sport-input full-w" placeholder="¡CONVOCATORIA OFICIAL!" />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Hashtags Oficiales</label>
+            <input type="text" [(ngModel)]="posterHashtag" (ngModelChange)="drawSocialPoster()" class="sport-input full-w" placeholder="#VamosPorLaVictoria #SportCoreOS" />
+          </div>
+
+          @if (aiGeneratedCopy) {
+            <div class="ai-copy-box">
+              <div class="ai-copy-header">
+                <span class="text-muted"><i class="fa-solid fa-quote-left text-emerald"></i> Copy para pie de foto / WhatsApp:</span>
+                <button class="btn-copy-text" (click)="copyAiText.emit()" title="Copiar texto">
+                  <i class="fa-regular fa-copy"></i> Copiar
+                </button>
+              </div>
+              <p class="ai-copy-snippet">{{ aiGeneratedCopy }}</p>
+            </div>
+          }
+        </div>
+
+        <div class="poster-specs-card">
+          <div class="spec-item">
+            <i class="fa-solid fa-microchip text-emerald"></i>
+            <span><strong>Motor:</strong> Google Gemini Sports Designer Pro</span>
+          </div>
+          <div class="spec-item">
+            <i class="fa-brands fa-instagram text-pink"></i>
+            <span>Formato 4:5 (1080x1350px Stories & Feed)</span>
+          </div>
+          <div class="spec-item">
+            <i class="fa-brands fa-whatsapp text-emerald"></i>
+            <span>Optimizado para Estados de WhatsApp</span>
+          </div>
+          <div class="spec-item">
+            <i class="fa-solid fa-shield-halved text-blue"></i>
+            <span>Logos y Colores Institucionales del Club</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="close.emit()">
+        <i class="fa-solid fa-xmark"></i> Cerrar
+      </button>
+      <button type="button" class="btn-primary btn-download-poster" (click)="downloadPosterImage()">
+        <i class="fa-solid fa-cloud-arrow-down"></i> Descargar Imagen PNG
+      </button>
+    </div>
+  </div>
+</div>

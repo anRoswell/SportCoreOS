@@ -55,7 +55,7 @@ export class TelemetriaRepository {
        LEFT JOIN deportivo.metricas_rendimiento_gps m ON s.id = m.sesion_id
        WHERE ${whereParts.join(' AND ')}
        GROUP BY s.id, p.id
-       ORDER BY s.fecha_sesion DESC
+       ORDER BY s.fecha_sesion DESC, s.created_at DESC
        LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
       queryParams,
     );

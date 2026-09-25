@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService, DemoPersona } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { ThemeService } from '../../core/services/theme.service';
@@ -9,7 +9,7 @@ import { ThemeService } from '../../core/services/theme.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -46,10 +46,8 @@ export class LoginComponent implements OnInit {
       next: (user) => {
         this.api.setClubFromUser(user);
         this.loading.set(false);
-        this.showToast(`¡Bienvenido ${user.nombres}! Redirigiendo...`, false);
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 400);
+        this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);
@@ -66,10 +64,8 @@ export class LoginComponent implements OnInit {
       next: (user) => {
         this.api.setClubFromUser(user);
         this.loading.set(false);
-        this.showToast(`¡Bienvenido ${user.nombres}!`, false);
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 300);
+        this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);

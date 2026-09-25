@@ -24,6 +24,13 @@
         </div>
 
         <div class="hero-actions">
+          <button type="button" class="btn-landing-preview" (click)="openLandingModal()" [title]="'Ver Landing Page Oficial de ' + api.activeClub().nombre">
+            <i class="fa-solid fa-globe"></i>
+            <span>Ver Landing del Club</span>
+            @if (activeClubLanding()) {
+              <span class="live-dot-mini"></span>
+            }
+          </button>
           <button class="btn-secondary" (click)="onExportReport()">
             <i class="fa-solid fa-file-pdf"></i>
             <span>Exportar Informe 360°</span>
@@ -136,6 +143,45 @@
           </div>
         </div>
       </div>
+
+      <!-- WIDGET / BANNER DE LA LANDING PAGE OFICIAL DEL CLUB -->
+      @if (activeClubLanding()) {
+        <div class="club-landing-banner">
+          <div class="landing-banner-glow"></div>
+          <div class="landing-banner-left">
+            <div class="landing-badge-chip">
+              <span class="pulse-dot"></span>
+              <span>PORTADA WEB OFICIAL • {{ api.activeClub().nombre }}</span>
+            </div>
+            <h3 class="landing-banner-title">
+              <i class="fa-solid fa-layer-group text-emerald mr-2"></i>
+              {{ activeClubLanding()?.titulo }}
+            </h3>
+            <p class="landing-banner-desc">
+              {{ activeClubLanding()?.subtitulo || 'Landing page oficial para captación de nuevos talentos, pre-inscripciones online y boletines de la cantera.' }}
+            </p>
+            <div class="landing-banner-meta">
+              <span class="meta-item"><i class="fa-solid fa-eye text-emerald"></i> <strong>{{ activeClubLanding()?.vistas_totales || 0 }}</strong> vistas</span>
+              <span class="meta-item"><i class="fa-solid fa-user-plus text-cyan"></i> <strong>{{ activeClubLanding()?.leads_totales || 0 }}</strong> leads registrados</span>
+              <span class="meta-item"><i class="fa-solid fa-link text-indigo"></i> Ruta: <code>/p/{{ activeClubLanding()?.slug }}</code></span>
+            </div>
+          </div>
+          <div class="landing-banner-actions">
+            <button type="button" class="btn-banner-view" (click)="openLandingModal()">
+              <i class="fa-solid fa-expand"></i>
+              <span>Ver en Pantalla Completa</span>
+            </button>
+            <a [href]="'/p/' + activeClubLanding()?.slug" target="_blank" class="btn-banner-link">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>Abrir Enlace Web</span>
+            </a>
+            <a routerLink="/landings" class="btn-banner-edit">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>Editar en Creador</span>
+            </a>
+          </div>
+        </div>
+      }
 
       <!-- TABS NAVEGABLES DEL DASHBOARD -->
       <div class="dashboard-tabs-section">
@@ -523,6 +569,41 @@
         <div class="toast-floating-alert">
           <i class="fa-solid fa-circle-check"></i>
           <span>{{ toastMessage() }}</span>
+        </div>
+      }
+
+      <!-- MODAL FULLSCREEN DE LA LANDING PAGE DEL CLUB -->
+      @if (showLandingModal()) {
+        <div class="landing-fullscreen-modal-overlay">
+          <div class="landing-modal-top-bar">
+            <div class="modal-bar-left">
+              <span class="modal-status-badge">
+                <span class="pulse-dot"></span>
+                PORTADA WEB OFICIAL • {{ api.activeClub().nombre }}
+              </span>
+            </div>
+            <div class="modal-bar-right">
+              @if (activeClubLanding()?.slug) {
+                <a [href]="'/p/' + activeClubLanding()?.slug" target="_blank" class="btn-top-open-tab" title="Abrir en pestaña nueva">
+                  <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>
+                  <span>Abrir Web</span>
+                </a>
+              }
+              <button type="button" class="btn-close-landing-modal" (click)="closeLandingModal()" title="Cerrar vista previa y volver al Dashboard">
+                <i class="fa-solid fa-xmark mr-1"></i>
+                <span>Volver al Dashboard</span>
+              </button>
+            </div>
+          </div>
+          <div class="landing-modal-viewport">
+            <app-landing-public 
+              [isModal]="true" 
+              [clubId]="api.activeClub().id" 
+              [customSlug]="activeClubLanding()?.slug"
+              (openLogin)="closeLandingModal()" 
+              (closeLanding)="closeLandingModal()">
+            </app-landing-public>
+          </div>
         </div>
       }
     </div>

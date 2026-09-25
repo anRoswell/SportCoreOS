@@ -3,12 +3,37 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { CatalogosService } from '../../core/services/catalogos.service';
-import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
+import {
+  ProspectoItem,
+  ProspectoFormData,
+  RubricaFormData,
+  ScoutingEstadoPipeline,
+  ScoutingPosicionFiltro,
+  SCOUTING_ESTADO_OPTIONS,
+  SCOUTING_POSICION_OPTIONS
+} from './data/scouting.constants';
+import { ScoutingKpisComponent } from './components/scouting-kpis/scouting-kpis.component';
+import { ScoutingPipelineComponent } from './components/scouting-pipeline/scouting-pipeline.component';
+import { ScoutingTableComponent } from './components/scouting-table/scouting-table.component';
+import { ScoutingFormModalComponent } from './components/scouting-form-modal/scouting-form-modal.component';
+import { ScoutingExpedienteModalComponent } from './components/scouting-expediente-modal/scouting-expediente-modal.component';
+import { ScoutingRubricaModalComponent } from './components/scouting-rubrica-modal/scouting-rubrica-modal.component';
+import { ScoutingDeleteModalComponent } from './components/scouting-delete-modal/scouting-delete-modal.component';
 
 @Component({
   selector: 'app-scouting',
   standalone: true,
-  imports: [CommonModule, FormsModule, FlatpickrDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ScoutingKpisComponent,
+    ScoutingPipelineComponent,
+    ScoutingTableComponent,
+    ScoutingFormModalComponent,
+    ScoutingExpedienteModalComponent,
+    ScoutingRubricaModalComponent,
+    ScoutingDeleteModalComponent
+  ],
   templateUrl: './scouting.component.html',
   styleUrl: './scouting.component.scss'
 })
@@ -19,8 +44,11 @@ export class ScoutingComponent implements OnInit {
   readonly posiciones = this.catalogos.posiciones;
   readonly piernasHabiles = this.catalogos.piernasHabiles;
 
+  readonly estadoOptions = SCOUTING_ESTADO_OPTIONS;
+  readonly posicionOptions = SCOUTING_POSICION_OPTIONS;
+
   readonly viewMode = signal<'pipeline' | 'lista'>('pipeline');
-  readonly prospectosList = signal<any[]>([]);
+  readonly prospectosList = signal<ProspectoItem[]>([]);
   readonly loading = signal<boolean>(false);
 
   readonly showCreateModal = signal<boolean>(false);
@@ -28,15 +56,14 @@ export class ScoutingComponent implements OnInit {
   readonly showRubricaModal = signal<boolean>(false);
   readonly showDeleteModal = signal<boolean>(false);
 
-  readonly selectedProspecto = signal<any | null>(null);
-  readonly prospectoToEvaluate = signal<any | null>(null);
-  readonly prospectoToDelete = signal<any | null>(null);
+  readonly selectedProspecto = signal<ProspectoItem | null>(null);
+  readonly prospectoToEvaluate = signal<ProspectoItem | null>(null);
+  readonly prospectoToDelete = signal<ProspectoItem | null>(null);
   readonly toastMessage = signal<string>('');
 
   searchQuery: string = '';
-  selectedPosicion: string = 'TODAS';
-  selectedEstado: string = 'TODOS';
-  selectedFile: File | null = null;
+  selectedPosicion: string = ScoutingPosicionFiltro.TODAS;
+  selectedEstado: string = ScoutingEstadoPipeline.TODOS;
 
   // Paginación Server-Side
   readonly currentPage = signal<number>(1);
@@ -56,25 +83,6 @@ export class ScoutingComponent implements OnInit {
     return Math.min(end, this.totalRecords());
   });
 
-  prospectoForm = {
-    nombres: '',
-    apellidos: '',
-    fecha_nacimiento: '2010-05-12',
-    posicion_principal: 'delantero',
-    pierna_habil: 'Derecha',
-    club_origen: '',
-    ciudad: 'Cali',
-    telefono_contacto: '',
-  };
-
-  rubricaForm = {
-    nota_tecnica: 8.5,
-    nota_tactica: 8.0,
-    nota_fisica: 8.5,
-    nota_mental: 9.0,
-    comentarios: '',
-  };
-
   ngOnInit(): void {
     this.loadProspectos();
   }
@@ -82,11 +90,9 @@ export class ScoutingComponent implements OnInit {
   loadProspectos(): void {
     this.loading.set(true);
     const search = this.searchQuery.trim() || undefined;
-    const pos = this.selectedPosicion !== 'TODAS' ? this.selectedPosicion : undefined;
-    const est = this.selectedEstado !== 'TODOS' ? this.selectedEstado : undefined;
+    const pos = this.selectedPosicion !== ScoutingPosicionFiltro.TODAS ? this.selectedPosicion : undefined;
+    const est = this.selectedEstado !== ScoutingEstadoPipeline.TODOS ? this.selectedEstado : undefined;
 
-    // En modo pipeline cargamos un volumen mayor (hasta 100) para mostrar en las 4 columnas del Kanban,
-    // en modo lista se aplica la paginación tradicional de tabla por página.
     const isKanban = this.viewMode() === 'pipeline';
     const limit = isKanban ? 100 : this.pageSize();
     const page = isKanban ? 1 : this.currentPage();
@@ -103,7 +109,7 @@ export class ScoutingComponent implements OnInit {
         const total = res?.total !== undefined ? res.total : rawList.length;
         const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.pageSize()) || 1;
 
-        const mapped = rawList.map((p: any) => {
+        const mapped: ProspectoItem[] = rawList.map((p: any) => {
           const full = p.nombres_apellidos || `${p.nombres || ''} ${p.apellidos || ''}`.trim() || 'Prospecto';
           const parts = full.split(' ');
           const nombres = p.nombres || parts[0] || 'Prospecto';
@@ -113,7 +119,7 @@ export class ScoutingComponent implements OnInit {
             nombres,
             apellidos,
             nombres_apellidos: full,
-            estado_pipeline: p.estado_scouting || p.estado_pipeline || 'en_observacion',
+            estado_pipeline: p.estado_scouting || p.estado_pipeline || ScoutingEstadoPipeline.EN_OBSERVACION,
             promedio_tecnico: p.score_promedio_calculado ? Number(p.score_promedio_calculado).toFixed(1) : (p.valoracion_general || '8.5'),
             pierna_habil: p.pie_habil || p.pierna_habil || 'Derecha',
           };
@@ -149,8 +155,8 @@ export class ScoutingComponent implements OnInit {
 
   resetFilters(): void {
     this.searchQuery = '';
-    this.selectedPosicion = 'TODAS';
-    this.selectedEstado = 'TODOS';
+    this.selectedPosicion = ScoutingPosicionFiltro.TODAS;
+    this.selectedEstado = ScoutingEstadoPipeline.TODOS;
     this.currentPage.set(1);
     this.loadProspectos();
   }
@@ -168,37 +174,10 @@ export class ScoutingComponent implements OnInit {
     }
   }
 
-  setPageSize(size: number): void {
+  setPageSize(size: any): void {
     this.pageSize.set(Number(size));
     this.currentPage.set(1);
     this.loadProspectos();
-  }
-
-  getVisiblePages(): number[] {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const maxVisible = 5;
-
-    if (total <= maxVisible) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    let start = Math.max(1, current - 2);
-    let end = Math.min(total, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    const pages: number[] = [];
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  getProspectosByCol(estado: string): any[] {
-    return this.prospectosList().filter(p => p.estado_pipeline === estado);
   }
 
   countByEstado(estado: string): number {
@@ -214,55 +193,17 @@ export class ScoutingComponent implements OnInit {
 
   getGlobalTechnicalAverage(): string {
     const list = this.prospectosList();
-    if (!list || list.length === 0) return '8.6';
-    const sum = list.reduce((acc: number, p: any) => acc + (Number(p.promedio_tecnico) || 8.2), 0);
+    if (list.length === 0) return '8.5';
+    const sum = list.reduce((acc, curr) => acc + (Number(curr.promedio_tecnico) || 8.0), 0);
     return (sum / list.length).toFixed(1);
   }
 
   getAverageRatingPercent(): number {
-    const avg = Number(this.getGlobalTechnicalAverage()) || 8.6;
-    return Math.min(100, Math.round((avg / 10) * 100));
-  }
-
-  formatPosicion(pos: string): string {
-    switch (pos) {
-      case 'delantero': return 'Delantero (DEL)';
-      case 'mediocampista': return 'Mediocampista (MED)';
-      case 'defensa': return 'Defensa (DEF)';
-      case 'portero': return 'Portero (POR)';
-      default: return pos || 'Jugador';
-    }
-  }
-
-  formatEstadoPipeline(est: string): string {
-    switch (est) {
-      case 'en_observacion': return 'En Observación';
-      case 'interes_fichaje': return 'Interés Fichaje';
-      case 'fichado': return 'Fichado';
-      case 'descartado': return 'Descartado';
-      default: return est;
-    }
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files?.[0];
-    if (file) {
-      this.selectedFile = file;
-    }
+    const avg = Number(this.getGlobalTechnicalAverage()) || 8.5;
+    return Math.min(100, Math.round(avg * 10));
   }
 
   openCreateProspectoModal(): void {
-    this.prospectoForm = {
-      nombres: '',
-      apellidos: '',
-      fecha_nacimiento: '2010-05-12',
-      posicion_principal: 'delantero',
-      pierna_habil: 'Derecha',
-      club_origen: '',
-      ciudad: 'Cali',
-      telefono_contacto: '',
-    };
-    this.selectedFile = null;
     this.showCreateModal.set(true);
   }
 
@@ -270,38 +211,24 @@ export class ScoutingComponent implements OnInit {
     this.showCreateModal.set(false);
   }
 
-  submitProspectoForm(): void {
-    if (!this.prospectoForm.nombres?.trim()) {
-      this.showToast('El nombre del prospecto es obligatorio (*)');
-      return;
-    }
-    if (!this.prospectoForm.apellidos?.trim()) {
-      this.showToast('Los apellidos del prospecto son obligatorios (*)');
-      return;
-    }
-    if (!this.prospectoForm.posicion_principal) {
-      this.showToast('Selecciona la posición táctica del prospecto (*)');
-      return;
-    }
-
+  submitCreateProspecto(event: { form: ProspectoFormData; file: File | null }): void {
     const payload = {
-      nombres_apellidos: `${this.prospectoForm.nombres} ${this.prospectoForm.apellidos}`.trim(),
-      fecha_nacimiento: this.prospectoForm.fecha_nacimiento || '2010-05-12',
-      posicion_principal: this.prospectoForm.posicion_principal || 'delantero',
-      pie_habil: (this.prospectoForm.pierna_habil || 'Derecha').toLowerCase(),
-      club_origen: this.prospectoForm.club_origen || null,
-      telefono_contacto: this.prospectoForm.telefono_contacto || null,
-      ciudad: this.prospectoForm.ciudad || null,
+      nombres_apellidos: `${event.form.nombres || ''} ${event.form.apellidos || ''}`.trim(),
+      fecha_nacimiento: event.form.fecha_nacimiento || '2010-01-01',
+      posicion_principal: event.form.posicion_principal || 'delantero',
+      pie_habil: event.form.pierna_habil || 'Derecha',
+      club_origen: event.form.club_origen || null,
+      ciudad: event.form.ciudad || null,
+      telefono_contacto: event.form.telefono_contacto || null,
       estado_scouting: 'en_observacion',
     };
 
     this.api.createProspecto(payload).subscribe({
       next: (created) => {
-        // Si adjuntó archivo, subirlo a storage
-        if (this.selectedFile && created?.id) {
-          this.api.uploadFile(this.selectedFile, 'scouting', 'PROSPECTO', created.id, 'DOCUMENTO_IDENTIDAD').subscribe();
+        if (event.file && created?.id) {
+          this.api.uploadFile(event.file, 'scouting', 'PROSPECTO', created.id, 'DOCUMENTO_VISORIA').subscribe();
         }
-        this.showToast('¡Talento registrado exitosamente en el pipeline!');
+        this.showToast('¡Prospecto añadido exitosamente al radar de visoría!');
         this.closeCreateModal();
         this.loadProspectos();
       },
@@ -311,8 +238,8 @@ export class ScoutingComponent implements OnInit {
     });
   }
 
-  openExpedienteModal(p: any): void {
-    this.selectedProspecto.set(p);
+  openExpedienteModal(prospecto: ProspectoItem): void {
+    this.selectedProspecto.set(prospecto);
     this.showExpedienteModal.set(true);
   }
 
@@ -321,16 +248,8 @@ export class ScoutingComponent implements OnInit {
     this.selectedProspecto.set(null);
   }
 
-  openRubricaModal(p: any, event?: Event): void {
-    if (event) event.stopPropagation();
-    this.prospectoToEvaluate.set(p);
-    this.rubricaForm = {
-      nota_tecnica: 8.5,
-      nota_tactica: 8.0,
-      nota_fisica: 8.5,
-      nota_mental: 9.0,
-      comentarios: '',
-    };
+  openRubricaModal(prospecto: ProspectoItem): void {
+    this.prospectoToEvaluate.set(prospecto);
     this.showRubricaModal.set(true);
   }
 
@@ -339,61 +258,47 @@ export class ScoutingComponent implements OnInit {
     this.prospectoToEvaluate.set(null);
   }
 
-  submitRubricaForm(): void {
+  submitRubricaForm(form: any): void {
     const prospecto = this.prospectoToEvaluate();
     if (!prospecto?.id) return;
 
-    const nt = Number(this.rubricaForm.nota_tecnica);
-    const ntc = Number(this.rubricaForm.nota_tactica);
-    const nf = Number(this.rubricaForm.nota_fisica);
-    const nm = Number(this.rubricaForm.nota_mental);
-
-    if (isNaN(nt) || nt < 1 || nt > 10 || isNaN(ntc) || ntc < 1 || ntc > 10 || isNaN(nf) || nf < 1 || nf > 10 || isNaN(nm) || nm < 1 || nm > 10) {
-      this.showToast('Las notas de la rúbrica deben estar entre 1.0 y 10.0');
-      return;
-    }
-
     const payload = {
-      score_tecnico: nt,
-      score_tactico: ntc,
-      score_fisico: nf,
-      score_mental: nm,
-      comentarios_cualitativos: this.rubricaForm.comentarios || 'Evaluación técnica satisfactoria',
-      recomendacion: 'SEGUIMIENTO_CONTINUO',
+      score_tecnico: Number(form.nota_tecnica ?? form.score_tecnico) || 8.0,
+      score_tactico: Number(form.nota_tactica ?? form.score_tactico) || 8.0,
+      score_fisico: Number(form.nota_fisica ?? form.score_fisico) || 8.0,
+      score_mental: Number(form.nota_mental ?? form.score_mental) || 8.0,
+      comentarios_cualitativos: form.comentarios || form.comentarios_cualitativos || 'Evaluación de visoría',
+      recomendacion: form.recomendacion || 'SEGUIMIENTO_CONTINUO',
     };
 
     this.api.createEvaluacionProspecto(prospecto.id, payload).subscribe({
       next: () => {
-        this.showToast('¡Rúbrica de evaluación guardada con éxito!');
+        this.showToast('¡Evaluación técnica guardada exitosamente!');
         this.closeRubricaModal();
         this.loadProspectos();
       },
       error: () => {
-        this.showToast('Error al registrar evaluación');
+        this.showToast('Error al guardar rúbrica de visoría');
       }
     });
   }
 
-  cambiarEstadoProspecto(p: any, nuevoEstado: string, event?: Event): void {
-    if (event) event.stopPropagation();
-    if (!p?.id) return;
+  cambiarEstadoProspecto(event: { prospecto: ProspectoItem; estado: string }): void {
+    if (!event.prospecto?.id) return;
 
-    this.api.updateProspecto(p.id, { estado_scouting: nuevoEstado }).subscribe({
+    this.api.updateProspecto(event.prospecto.id, { estado_scouting: event.estado as any }).subscribe({
       next: () => {
-        this.showToast(`Estado actualizado a ${this.formatEstadoPipeline(nuevoEstado)}`);
+        this.showToast(`Estado actualizado: ${event.prospecto.nombres} ahora está en ${event.estado}`);
         this.loadProspectos();
-        if (this.selectedProspecto()) {
-          this.selectedProspecto.update(curr => curr ? { ...curr, estado_pipeline: nuevoEstado } : null);
-        }
       },
       error: () => {
-        this.showToast('Error al actualizar estado del prospecto');
+        this.showToast('Error al cambiar estado del prospecto');
       }
     });
   }
 
-  openDeleteModal(p: any): void {
-    this.prospectoToDelete.set(p);
+  openDeleteModal(prospecto: ProspectoItem): void {
+    this.prospectoToDelete.set(prospecto);
     this.showDeleteModal.set(true);
   }
 
@@ -402,13 +307,12 @@ export class ScoutingComponent implements OnInit {
     this.prospectoToDelete.set(null);
   }
 
-  confirmarEliminarProspecto(): void {
-    const p = this.prospectoToDelete();
-    if (!p?.id) return;
+  confirmarEliminarProspecto(prospecto: ProspectoItem): void {
+    if (!prospecto?.id) return;
 
-    this.api.deleteProspecto(p.id).subscribe({
+    this.api.deleteProspecto(prospecto.id).subscribe({
       next: () => {
-        this.showToast('Prospecto eliminado del pipeline');
+        this.showToast('Prospecto retirado del pipeline de captación.');
         this.closeDeleteModal();
         this.loadProspectos();
       },

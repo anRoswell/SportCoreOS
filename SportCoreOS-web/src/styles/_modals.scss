@@ -396,6 +396,12 @@
       color: var(--color-primary) !important;
       font-weight: 700 !important;
     }
+
+    &.city-input-field,
+    &.has-icon-left {
+      padding-left: 2.65rem !important;
+      padding-right: 2.5rem !important;
+    }
   }
 
   textarea {

@@ -334,7 +334,14 @@ export class ApiService {
     return `${this.getAssetBaseUrl()}${cleanPath}`;
   }
 
-  uploadFile(file: File, folder: string = 'avatars', entidadTipo?: string, entidadId?: string, tipoDocumento?: string): Observable<any> {
+  uploadFile(
+    file: File,
+    folder: string = 'avatars',
+    entidadTipo?: string,
+    entidadId?: string,
+    tipoDocumento?: string,
+    identificacion?: string,
+  ): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -342,6 +349,7 @@ export class ApiService {
     if (entidadTipo) params = params.set('entidadTipo', entidadTipo);
     if (entidadId) params = params.set('entidadId', entidadId);
     if (tipoDocumento) params = params.set('tipoDocumento', tipoDocumento);
+    if (identificacion && identificacion.trim()) params = params.set('identificacion', identificacion.trim());
 
     return this.http.post<any>(`${this.apiUrl}/storage/upload`, formData, { params }).pipe(
       map(res => {

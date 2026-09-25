@@ -85,6 +85,7 @@
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
+            (input)="searchQuery.set($any($event.target).value)"
             placeholder="Buscar módulo por nombre o descripción..."
             class="sport-input"
           />
@@ -211,7 +212,8 @@
                     <input
                       type="text"
                       appFlatpickr
-                      placeholder="dd/mm/aaaa"
+                      [altInput]="false"
+                      placeholder="YYYY-MM-DD"
                       [(ngModel)]="editForm.fechaInicio"
                       name="fechaInicio"
                       class="sport-input"
@@ -222,7 +224,8 @@
                     <input
                       type="text"
                       appFlatpickr
-                      placeholder="dd/mm/aaaa"
+                      [altInput]="false"
+                      placeholder="YYYY-MM-DD"
                       [(ngModel)]="editForm.fechaFin"
                       name="fechaFin"
                       class="sport-input"
@@ -299,15 +302,74 @@
                 </div>
 
                 <div class="form-row g2">
-                  <div class="input-group">
+                  <div class="input-group searchable-city-group">
                     <label>Ciudad Sede <span class="required-star">*</span></label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="newSchoolData.ciudad" 
-                      name="ciudad" 
-                      placeholder="ej. Bogotá D.C., Medellín..." 
-                      required 
-                      class="sport-input" />
+                    <div class="searchable-dropdown-wrap">
+                      <div class="searchable-input-box" (click)="openCiudadDropdown()">
+                        <i class="fa-solid fa-location-dot input-icon-left text-emerald"></i>
+                        <input 
+                          type="text" 
+                          [(ngModel)]="newSchoolData.ciudad" 
+                          (input)="onCiudadInput($any($event.target).value)"
+                          (focus)="openCiudadDropdown()"
+                          name="ciudad" 
+                          placeholder="Buscar o seleccionar ciudad sede..." 
+                          required 
+                          autocomplete="off"
+                          class="sport-input city-input-field" />
+                        <button type="button" class="btn-toggle-dropdown" (click)="toggleCiudadDropdown($event)" title="Ver lista de ciudades">
+                          <i class="fa-solid" [class.fa-chevron-down]="!isCiudadDropdownOpen()" [class.fa-chevron-up]="isCiudadDropdownOpen()"></i>
+                        </button>
+                      </div>
+
+                      <!-- Dropdown List with search & categories -->
+                      @if (isCiudadDropdownOpen()) {
+                        <div class="city-dropdown-menu" (click)="$event.stopPropagation()">
+                          <div class="dropdown-search-header">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input 
+                              type="text" 
+                              [value]="ciudadSearchQuery()"
+                              (input)="ciudadSearchQuery.set($any($event.target).value)"
+                              placeholder="Filtrar ciudades (ej. Cali, Medellín, Madrid...)" 
+                              class="dropdown-search-input" />
+                            @if (ciudadSearchQuery()) {
+                              <button type="button" class="btn-clear-search" (click)="ciudadSearchQuery.set('')">
+                                <i class="fa-solid fa-xmark"></i>
+                              </button>
+                            }
+                          </div>
+                          
+                          <div class="city-options-list">
+                            @for (c of ciudadesFiltradas(); track c.codigo) {
+                              <div 
+                                class="city-option-item" 
+                                [class.selected]="newSchoolData.ciudad === c.nombre"
+                                (click)="seleccionarCiudad(c.nombre)">
+                                <span class="city-icon">{{ c.icono || '📍' }}</span>
+                                <div class="city-info">
+                                  <strong class="city-name">{{ c.nombre }}</strong>
+                                  @if (c.linea) {
+                                    <span class="city-department">{{ c.linea }}</span>
+                                  }
+                                </div>
+                                @if (newSchoolData.ciudad === c.nombre) {
+                                  <i class="fa-solid fa-check text-emerald check-icon"></i>
+                                }
+                              </div>
+                            } @empty {
+                              <div class="empty-city-item">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                <span>No se encontraron ciudades con "{{ ciudadSearchQuery() }}"</span>
+                                <button type="button" class="btn-use-custom" (click)="seleccionarCiudad(ciudadSearchQuery())">
+                                  Usar "{{ ciudadSearchQuery() }}" como sede personalizada
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
                   </div>
                   <div class="input-group">
                     <label>Plan de Suscripción</label>
@@ -320,8 +382,96 @@
                 </div>
               </div>
 
+              <!-- SECCIÓN 2: ESCUDO / LOGO DE LA ESCUELA -->
+              <div class="modal-section logo-upload-section">
+                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> 2. Escudo / Logo de la Escuela</span>
+
+                <div class="logo-selector-container">
+                  <!-- Columna izquierda: Escudo Avatar Preview y Dropzone -->
+                  <div class="logo-preview-column">
+                    <div 
+                      class="logo-preview-avatar" 
+                      (dragover)="$event.preventDefault()" 
+                      (drop)="handleLogoDrop($event)"
+                      (click)="logoFileInput.click()"
+                      title="Haz clic o arrastra un archivo de imagen aquí">
+                      <img [src]="resolveSchoolLogoUrl()" alt="Escudo de la Escuela" class="school-logo-img" />
+                      @if (uploadingLogo()) {
+                        <div class="logo-loading-overlay">
+                          <i class="fa-solid fa-spinner fa-spin"></i>
+                          <span>Subiendo...</span>
+                        </div>
+                      }
+                      <div class="logo-camera-badge">
+                        <i class="fa-solid fa-camera"></i>
+                      </div>
+                    </div>
+                    <span class="logo-preview-caption">Escudo Oficial</span>
+                  </div>
+
+                  <!-- Columna derecha: Acciones de Subida, URL y Presets -->
+                  <div class="logo-controls-column">
+                    <div class="logo-buttons-row">
+                      <input 
+                        type="file" 
+                        #logoFileInput 
+                        (change)="onLogoSelected($event)" 
+                        accept="image/*" 
+                        style="display: none" />
+
+                      <button 
+                        type="button" 
+                        class="btn-upload-logo" 
+                        (click)="logoFileInput.click()" 
+                        [disabled]="uploadingLogo()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>{{ uploadingLogo() ? 'Subiendo escudo...' : 'Subir Imagen de Escudo' }}</span>
+                      </button>
+
+                      @if (newSchoolData.logoUrl || localLogoPreview()) {
+                        <button 
+                          type="button" 
+                          class="btn-remove-logo" 
+                          (click)="removeLogo()" 
+                          title="Restablecer al escudo por defecto">
+                          <i class="fa-solid fa-trash-can"></i>
+                          <span>Restablecer</span>
+                        </button>
+                      }
+                    </div>
+
+                    <div class="logo-url-input-wrap">
+                      <i class="fa-solid fa-link logo-url-icon"></i>
+                      <input 
+                        type="url" 
+                        [(ngModel)]="newSchoolData.logoUrl" 
+                        name="logoUrl" 
+                        placeholder="O ingresa enlace / URL directo del logo (https://...)" 
+                        class="sport-input logo-url-field" />
+                    </div>
+
+                    <div class="preset-badges-wrapper">
+                      <span class="preset-hint-label">O selecciona un diseño base:</span>
+                      <div class="preset-badges-list">
+                        @for (preset of presetLogos; track preset.url) {
+                          <button 
+                            type="button" 
+                            class="preset-badge-item" 
+                            [class.active]="newSchoolData.logoUrl === preset.url"
+                            (click)="selectPresetLogo(preset.url)" 
+                            [title]="preset.nombre">
+                            <img [src]="preset.url" [alt]="preset.nombre" class="preset-badge-img" />
+                            <span class="preset-badge-name">{{ preset.nombre }}</span>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-user-tie"></i> 2. Director Deportivo Inicial</span>
+                <span class="modal-section-title"><i class="fa-solid fa-user-tie"></i> 3. Director Deportivo Inicial</span>
 
                 <div class="form-row g2">
                   <div class="input-group">

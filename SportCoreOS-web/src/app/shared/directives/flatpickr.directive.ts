@@ -7,6 +7,9 @@ import {
   OnInit,
   SimpleChanges,
   forwardRef,
+  inject,
+  NgZone,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import flatpickr from 'flatpickr';
@@ -26,6 +29,9 @@ import { Spanish } from 'flatpickr/dist/l10n/es.js';
 export class FlatpickrDirective
   implements OnInit, OnChanges, OnDestroy, ControlValueAccessor
 {
+  private ngZone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
+
   @Input() enableTime: boolean = false;
   @Input() noCalendar: boolean = false;
   @Input() mode: 'single' | 'multiple' | 'range' = 'single';
@@ -108,16 +114,23 @@ export class FlatpickrDirective
       defaultDate: this.currentValue || undefined,
       onChange: (selectedDates: Date[], dateStr: string) => {
         this.currentValue = dateStr;
-        this.onChange(dateStr);
+        this.ngZone.run(() => {
+          this.onChange(dateStr);
+          this.cdr.markForCheck();
+        });
       },
       onClose: () => {
-        this.onTouched();
+        this.ngZone.run(() => {
+          this.onTouched();
+          this.cdr.markForCheck();
+        });
       },
       ...this.fpOptions,
     };
 
     this.fpInstance = flatpickr(inputEl, options);
 
+    let isSyncing = false;
     if (this.fpInstance.altInput) {
       const testId = inputEl.getAttribute('data-testid');
       if (testId) {
@@ -126,37 +139,94 @@ export class FlatpickrDirective
       }
 
       const syncAltInput = (e: Event) => {
-        const val = (e.target as HTMLInputElement).value?.trim();
-        if (!val) {
-          this.fpInstance.clear();
-          return;
-        }
-        let parsed: Date | null = null;
-        if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-          const parts = val.split('-');
-          parsed = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-        } else if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(val)) {
-          const parts = val.split(/[\/\-]/);
-          parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
-        }
-        if (parsed && !isNaN(parsed.getTime())) {
-          this.fpInstance.setDate(parsed, true);
-          if (e.type === 'change') {
-            this.fpInstance.close();
+        if (isSyncing) return;
+        isSyncing = true;
+        try {
+          const val = (e.target as HTMLInputElement).value?.trim();
+          if (!val) {
+            this.fpInstance.clear();
+            return;
           }
-        } else {
-          try {
-            this.fpInstance.setDate(val, true);
-          } catch {
-            // fallback
+          let parsed: Date | null = null;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            const parts = val.split('-');
+            parsed = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+          } else if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(val)) {
+            const parts = val.split(/[\/\-]/);
+            parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
           }
+          if (parsed && !isNaN(parsed.getTime())) {
+            this.fpInstance.setDate(parsed, true);
+            if (e.type === 'change') {
+              this.fpInstance.close();
+            }
+          } else {
+            try {
+              this.fpInstance.setDate(val, true);
+            } catch {
+              // fallback
+            }
+          }
+        } finally {
+          isSyncing = false;
         }
       };
 
       this.fpInstance.altInput.addEventListener('change', syncAltInput);
       this.fpInstance.altInput.addEventListener('input', syncAltInput);
       this.fpInstance.altInput.addEventListener('blur', () => {
-        this.onTouched();
+        this.ngZone.run(() => {
+          this.onTouched();
+          this.cdr.markForCheck();
+        });
+      });
+    } else {
+      const syncNativeInput = (e: Event) => {
+        if (isSyncing) return;
+        isSyncing = true;
+        try {
+          const val = (e.target as HTMLInputElement).value?.trim();
+          if (!val) {
+            this.fpInstance.clear();
+            this.ngZone.run(() => {
+              this.onChange('');
+              this.cdr.markForCheck();
+            });
+            return;
+          }
+          let parsed: Date | null = null;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            const parts = val.split('-');
+            parsed = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+          } else if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(val)) {
+            const parts = val.split(/[\/\-]/);
+            parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+          }
+          if (parsed && !isNaN(parsed.getTime())) {
+            this.fpInstance.setDate(parsed, false);
+            const dateStr = this.fpInstance.formatDate(parsed, effectiveDateFormat);
+            this.ngZone.run(() => {
+              this.onChange(dateStr);
+              this.cdr.markForCheck();
+            });
+          } else {
+            this.ngZone.run(() => {
+              this.onChange(val);
+              this.cdr.markForCheck();
+            });
+          }
+        } finally {
+          isSyncing = false;
+        }
+      };
+
+      inputEl.addEventListener('change', syncNativeInput);
+      inputEl.addEventListener('input', syncNativeInput);
+      inputEl.addEventListener('blur', () => {
+        this.ngZone.run(() => {
+          this.onTouched();
+          this.cdr.markForCheck();
+        });
       });
     }
 

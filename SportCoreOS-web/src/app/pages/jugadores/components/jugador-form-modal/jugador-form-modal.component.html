@@ -95,7 +95,7 @@
           </div>
           <div class="input-group">
             <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
-            <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="formData.fechaNacimiento" name="epFechaNac" required class="sport-input" />
+            <input type="text" appFlatpickr [altInput]="false" placeholder="YYYY-MM-DD" [(ngModel)]="formData.fechaNacimiento" name="epFechaNac" required class="sport-input" />
           </div>
         </div>
 
@@ -395,7 +395,7 @@
             </div>
             <div class="input-group">
               <label><i class="fa-regular fa-calendar"></i> Fecha Nacimiento <span class="required-star">*</span></label>
-              <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="formData.fechaNacimiento" name="npFechaNac" required class="sport-input" />
+              <input type="text" appFlatpickr [altInput]="false" placeholder="YYYY-MM-DD" [(ngModel)]="formData.fechaNacimiento" name="npFechaNac" required class="sport-input" />
             </div>
           </div>
 

@@ -1,0 +1,190 @@
+<div class="kanban-board-grid">
+  <!-- COLUMNA 1: EN OBSERVACIÓN -->
+  <div class="kanban-column col-observacion">
+    <div class="kanban-col-header bg-col-blue">
+      <div class="col-title-wrap">
+        <div class="col-icon-badge bg-blue-glow"><i class="fa-solid fa-eye"></i></div>
+        <div class="col-name-box">
+          <strong>En Observación</strong>
+          <span class="col-sub">Seguimiento inicial</span>
+        </div>
+      </div>
+      <span class="col-count count-blue">{{ getByEstado(ScoutingEstadoPipeline.EN_OBSERVACION).length }}</span>
+    </div>
+    <div class="kanban-cards-list">
+      @for (p of getByEstado(ScoutingEstadoPipeline.EN_OBSERVACION); track p.id) {
+        <div class="prospecto-card fut-card" (click)="onCardClick(p)">
+          <div class="prospect-card-top">
+            <div class="prospect-avatar-wrap">
+              <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
+              <span class="pos-tag">{{ formatPosicion(p.posicion_principal) }}</span>
+            </div>
+            <div class="prospect-main-info">
+              <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
+              <div class="prospect-tags-row">
+                <span class="meta-chip"><i class="fa-solid fa-shield"></i> {{ p.club_origen || 'Agente Libre' }}</span>
+                <span class="meta-chip"><i class="fa-solid fa-location-dot"></i> {{ p.ciudad || 'Colombia' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="prospect-card-footer">
+            <div class="rating-badge rating-good">
+              <i class="fa-solid fa-star"></i>
+              <span>{{ p.promedio_tecnico || '8.2' }}</span>
+            </div>
+            <div class="card-quick-actions" (click)="$event.stopPropagation()">
+              <button class="btn-action-icon btn-eval" (click)="onEval(p, $event)" title="Evaluar Rúbrica">
+                <i class="fa-solid fa-chart-simple"></i>
+              </button>
+              <button class="btn-action-icon btn-promote" (click)="onAdvance(p, ScoutingEstadoPipeline.INTERES_FICHAJE, $event)" title="Avanzar a Interés">
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-col">
+          <i class="fa-solid fa-user-clock"></i>
+          <p>Sin prospectos en observación</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- COLUMNA 2: INTERÉS DE FICHAJE -->
+  <div class="kanban-column col-interes">
+    <div class="kanban-col-header bg-col-amber">
+      <div class="col-title-wrap">
+        <div class="col-icon-badge bg-amber-glow"><i class="fa-solid fa-fire"></i></div>
+        <div class="col-name-box">
+          <strong>Interés de Fichaje</strong>
+          <span class="col-sub">Prioridad de captación</span>
+        </div>
+      </div>
+      <span class="col-count count-amber">{{ getByEstado(ScoutingEstadoPipeline.INTERES_FICHAJE).length }}</span>
+    </div>
+    <div class="kanban-cards-list">
+      @for (p of getByEstado(ScoutingEstadoPipeline.INTERES_FICHAJE); track p.id) {
+        <div class="prospecto-card fut-card card-amber-highlight" (click)="onCardClick(p)">
+          <div class="prospect-card-top">
+            <div class="prospect-avatar-wrap">
+              <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
+              <span class="pos-tag pos-amber">{{ formatPosicion(p.posicion_principal) }}</span>
+            </div>
+            <div class="prospect-main-info">
+              <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
+              <div class="prospect-tags-row">
+                <span class="meta-chip"><i class="fa-solid fa-shield"></i> {{ p.club_origen || 'Agente Libre' }}</span>
+                <span class="meta-chip"><i class="fa-solid fa-phone"></i> {{ p.telefono_contacto || 'Contactar' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="prospect-card-footer">
+            <div class="rating-badge rating-elite">
+              <i class="fa-solid fa-star"></i>
+              <span>{{ p.promedio_tecnico || '8.9' }}</span>
+            </div>
+            <div class="card-quick-actions" (click)="$event.stopPropagation()">
+              <button class="btn-fichar-mini" (click)="onAdvance(p, ScoutingEstadoPipeline.FICHADO, $event)">
+                <i class="fa-solid fa-signature"></i> Fichar
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-col">
+          <i class="fa-solid fa-star-half-stroke"></i>
+          <p>Sin talentos con interés activo</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- COLUMNA 3: FICHADO / INCORPORADO -->
+  <div class="kanban-column col-fichado">
+    <div class="kanban-col-header bg-col-emerald">
+      <div class="col-title-wrap">
+        <div class="col-icon-badge bg-emerald-glow"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="col-name-box">
+          <strong>Fichado / Incorporado</strong>
+          <span class="col-sub">Plantel del Club</span>
+        </div>
+      </div>
+      <span class="col-count count-emerald">{{ getByEstado(ScoutingEstadoPipeline.FICHADO).length }}</span>
+    </div>
+    <div class="kanban-cards-list">
+      @for (p of getByEstado(ScoutingEstadoPipeline.FICHADO); track p.id) {
+        <div class="prospecto-card fut-card card-emerald-highlight" (click)="onCardClick(p)">
+          <div class="prospect-card-top">
+            <div class="prospect-avatar-wrap">
+              <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
+              <span class="pos-tag pos-emerald">{{ formatPosicion(p.posicion_principal) }}</span>
+            </div>
+            <div class="prospect-main-info">
+              <h4 class="prospect-name">{{ p.nombres }} {{ p.apellidos }}</h4>
+              <div class="prospect-tags-row">
+                <span class="meta-chip text-emerald"><i class="fa-solid fa-award"></i> Oficial SportCore</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="prospect-card-footer">
+            <span class="badge badge-success"><i class="fa-solid fa-check"></i> En Plantel</span>
+            <button class="btn-action-icon" (click)="onCardClick(p)" title="Ver Ficha">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-col">
+          <i class="fa-solid fa-trophy"></i>
+          <p>Sin fichajes completados aún</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- COLUMNA 4: DESCARTADO -->
+  <div class="kanban-column col-descartado">
+    <div class="kanban-col-header bg-col-gray">
+      <div class="col-title-wrap">
+        <div class="col-icon-badge"><i class="fa-solid fa-ban"></i></div>
+        <div class="col-name-box">
+          <strong>Descartado</strong>
+          <span class="col-sub">No prioritario</span>
+        </div>
+      </div>
+      <span class="col-count count-gray">{{ getByEstado(ScoutingEstadoPipeline.DESCARTADO).length }}</span>
+    </div>
+    <div class="kanban-cards-list">
+      @for (p of getByEstado(ScoutingEstadoPipeline.DESCARTADO); track p.id) {
+        <div class="prospecto-card fut-card card-muted" (click)="onCardClick(p)">
+          <div class="prospect-card-top">
+            <div class="prospect-avatar-wrap grayscale">
+              <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ p.nombres }}" />
+            </div>
+            <div class="prospect-main-info">
+              <h4 class="prospect-name text-muted">{{ p.nombres }} {{ p.apellidos }}</h4>
+              <div class="prospect-tags-row">
+                <span class="meta-chip text-muted">{{ formatPosicion(p.posicion_principal) }} • {{ p.club_origen || 'Libre' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="prospect-card-footer">
+            <span class="badge badge-danger">Descartado</span>
+            <button class="btn-action-icon text-muted" (click)="onAdvance(p, ScoutingEstadoPipeline.EN_OBSERVACION, $event)" title="Reactivar">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-col">
+          <i class="fa-solid fa-user-xmark"></i>
+          <p>Sin descartes registrados</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

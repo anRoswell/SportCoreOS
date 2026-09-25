@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ApiService, LandingPage, LandingLead } from '../../core/services/api.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ApiService, LandingPage, LandingLead, Club } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-landing-public',
@@ -12,9 +13,11 @@ import { ApiService, LandingPage, LandingLead } from '../../core/services/api.se
   templateUrl: './landing-public.component.html',
   styleUrl: './landing-public.component.scss',
 })
-export class LandingPublicComponent implements OnInit {
+export class LandingPublicComponent implements OnInit, OnChanges {
   private route = inject(ActivatedRoute);
-  private api = inject(ApiService);
+  private router = inject(Router);
+  api = inject(ApiService);
+  authService = inject(AuthService);
 
   @Input() isModal = false;
   @Input() customSlug?: string;
@@ -25,6 +28,7 @@ export class LandingPublicComponent implements OnInit {
   landing = signal<LandingPage | null>(null);
   loading = signal<boolean>(true);
   notFound = signal<boolean>(false);
+  showSchoolSelector = signal<boolean>(false);
 
   // Form model for lead capture
   leadForm: Partial<LandingLead> = {
@@ -48,6 +52,8 @@ export class LandingPublicComponent implements OnInit {
   // Stories active index
   activeStoryIndex = signal<number>(0);
 
+  constructor() {}
+
   ngOnInit(): void {
     if (this.customSlug) {
       this.loadLanding(this.customSlug);
@@ -58,10 +64,40 @@ export class LandingPublicComponent implements OnInit {
       if (slug) {
         this.loadLanding(slug);
       } else {
-        const effectiveClubId = this.clubId || this.api.activeClub()?.id;
+        const effectiveClubId = this.clubId || this.api.activeClub()?.id || this.authService.currentUser()?.clubId;
         this.loadHomePortada(effectiveClubId);
       }
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['customSlug'] && !changes['customSlug'].firstChange && this.customSlug) {
+      this.loadLanding(this.customSlug);
+    } else if (changes['clubId'] && !changes['clubId'].firstChange && this.clubId) {
+      this.loadHomePortada(this.clubId);
+    }
+  }
+
+  toggleSchoolSelector(): void {
+    this.showSchoolSelector.update((v) => !v);
+  }
+
+  selectSchool(clubId: string): void {
+    this.api.selectClub(clubId);
+    this.showSchoolSelector.set(false);
+    this.loadHomePortada(clubId);
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  goToLandingBuilder(): void {
+    this.router.navigate(['/marketing/landings']);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   loadHomePortada(targetClubId?: string): void {

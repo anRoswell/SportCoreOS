@@ -5,9 +5,11 @@ import { queryDb } from './helpers/db-helper';
 test.describe('MÓDULO 6: DASHBOARD ESTRATÉGICO & PORTAL PADRES - E2E EXHAUSTIVO', () => {
 
   test.beforeEach(async ({ page }) => {
+    page.on('console', (msg) => console.log(`[BROWSER CONSOLE ${msg.type()}]:`, msg.text()));
+    page.on('pageerror', (err) => console.log(`[BROWSER PAGEERROR]:`, err.message, err.stack));
+
     // Autenticación con Director Deportivo
-    await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     const demoDirBtn = page.locator('.persona-btn', { hasText: 'Carlos Valderrama' }).first();
     await expect(demoDirBtn).toBeVisible({ timeout: 10000 });
@@ -18,14 +20,12 @@ test.describe('MÓDULO 6: DASHBOARD ESTRATÉGICO & PORTAL PADRES - E2E EXHAUSTIV
   test('1. Validación de los 4 KPIs estratégicos y acciones de cabecera en el Dashboard', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
 
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
     // Validar hero greeting
     await expect(page.locator('.hero-greeting')).toContainText('Carlos');
 
     // Validar los 4 KPIs
     const kpiCards = page.locator('.kpi-card');
+    await expect(kpiCards.first()).toBeVisible({ timeout: 10000 });
     expect(await kpiCards.count()).toBe(4);
 
     // Botón Exportar Informe 360°
@@ -47,11 +47,9 @@ test.describe('MÓDULO 6: DASHBOARD ESTRATÉGICO & PORTAL PADRES - E2E EXHAUSTIV
   test('2. Navegación por el 100% de las 4 pestañas interactivas del Dashboard', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
 
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
     // 1. Tab Próximos Partidos & GPS
     const tab1 = page.locator('.tab-btn', { hasText: 'Próximos Partidos & GPS' });
+    await expect(tab1).toBeVisible({ timeout: 10000 });
     await tab1.click();
     await page.waitForTimeout(200);
 
@@ -76,8 +74,7 @@ test.describe('MÓDULO 6: DASHBOARD ESTRATÉGICO & PORTAL PADRES - E2E EXHAUSTIV
   test('3. Navegación al Portal de Padres, confirmación y excusa de convocatoria a partido', async ({ page }) => {
     const sniffer = attachStrictErrorSniffer(page);
 
-    await page.goto('/portal-padres');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/portal/padres', { waitUntil: 'domcontentloaded' });
 
     // Validar hero acudiente
     await expect(page.locator('.hero-parent')).toBeVisible();

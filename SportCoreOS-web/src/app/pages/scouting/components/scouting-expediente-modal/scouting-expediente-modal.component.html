@@ -1,0 +1,103 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg modal-xl expediente-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge badge-blue">
+          <i class="fa-solid fa-id-card"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Expediente del Prospecto</h2>
+          <p class="modal-subtitle">{{ prospecto?.nombres }} {{ prospecto?.apellidos }} • {{ formatPosicion(prospecto?.posicion_principal) }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body-scroll">
+      <div class="expediente-top-hero">
+        <div class="hero-avatar">
+          <img [src]="prospecto?.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=120'" alt="Foto" />
+        </div>
+        <div class="hero-details">
+          <h3>{{ prospecto?.nombres }} {{ prospecto?.apellidos }}</h3>
+          <div class="hero-badges-row">
+            <span class="badge badge-blue">{{ formatPosicion(prospecto?.posicion_principal) }}</span>
+            <span class="badge badge-purple">Pierna: {{ prospecto?.pierna_habil || 'Derecha' }}</span>
+            <span class="badge badge-amber">Club: {{ prospecto?.club_origen || 'Agente Libre' }}</span>
+          </div>
+        </div>
+        <div class="hero-score-badge">
+          <span class="score-num">{{ prospecto?.promedio_tecnico || '8.5' }}</span>
+          <span class="score-lbl">Score Visoría</span>
+        </div>
+      </div>
+
+      <!-- RÚBRICAS TÉCNICAS DE EVALUACIÓN -->
+      <div class="modal-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <span class="modal-section-title" style="margin:0;"><i class="fa-solid fa-chart-radar"></i> Evaluación Técnica por Pilares (1 - 10)</span>
+          <button class="btn-primary btn-sm" (click)="onAddRubrica()">
+            <i class="fa-solid fa-plus"></i> Añadir Rúbrica
+          </button>
+        </div>
+
+        <div class="rubricas-radar-grid">
+          <div class="rubrica-pillar-card">
+            <div class="pillar-label">
+              <span>⚽ Técnica Individual</span>
+              <strong>8.8 / 10</strong>
+            </div>
+            <div class="pillar-bar"><div class="bar-fill bg-emerald" style="width: 88%;"></div></div>
+          </div>
+
+          <div class="rubrica-pillar-card">
+            <div class="pillar-label">
+              <span>🧠 Inteligencia Táctica</span>
+              <strong>8.2 / 10</strong>
+            </div>
+            <div class="pillar-bar"><div class="bar-fill bg-blue" style="width: 82%;"></div></div>
+          </div>
+
+          <div class="rubrica-pillar-card">
+            <div class="pillar-label">
+              <span>⚡ Condición Física</span>
+              <strong>8.5 / 10</strong>
+            </div>
+            <div class="pillar-bar"><div class="bar-fill bg-amber" style="width: 85%;"></div></div>
+          </div>
+
+          <div class="rubrica-pillar-card">
+            <div class="pillar-label">
+              <span>🛡️ Fortaleza Mental & Actitud</span>
+              <strong>9.0 / 10</strong>
+            </div>
+            <div class="pillar-bar"><div class="bar-fill bg-purple" style="width: 90%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMBIO RÁPIDO DE ESTADO DE PIPELINE -->
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-sliders"></i> Estado en el Pipeline</span>
+        <div class="pipeline-actions-row">
+          <button class="btn-secondary" (click)="onChangeStatus(ScoutingEstadoPipeline.EN_OBSERVACION)">
+            <i class="fa-solid fa-eye"></i> En Observación
+          </button>
+          <button class="btn-secondary text-amber" (click)="onChangeStatus(ScoutingEstadoPipeline.INTERES_FICHAJE)">
+            <i class="fa-solid fa-star"></i> Interés de Fichaje
+          </button>
+          <button class="btn-primary" (click)="onChangeStatus(ScoutingEstadoPipeline.FICHADO)">
+            <i class="fa-solid fa-circle-check"></i> Promover / Fichar al Club
+          </button>
+          <button class="btn-secondary text-danger" (click)="onChangeStatus(ScoutingEstadoPipeline.DESCARTADO)">
+            <i class="fa-solid fa-ban"></i> Descartar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="close.emit()">Cerrar</button>
+    </div>
+  </div>
+</div>

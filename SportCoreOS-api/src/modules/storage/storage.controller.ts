@@ -32,6 +32,7 @@ export class StorageController {
   @ApiQuery({ name: 'entidadTipo', required: false, description: 'Tipo de entidad (JUGADOR, PROSPECTO, PRODUCTO, CLUB, SESION_GPS, PAGO)' })
   @ApiQuery({ name: 'entidadId', required: false, description: 'UUID de la entidad asociada' })
   @ApiQuery({ name: 'tipoDocumento', required: false, description: 'FOTO_PERFIL, DOCUMENTO_IDENTIDAD, CERTIFICADO_MEDICO, SOPORTE_PAGO, TRACKING_GPS_RAW, etc.' })
+  @ApiQuery({ name: 'identificacion', required: false, description: 'NIT del club o número de documento de identidad del jugador' })
   @UseInterceptors(FileInterceptor('file'))
   async uploadSingleFile(
     @CurrentUser() user: any,
@@ -40,6 +41,7 @@ export class StorageController {
     @Query('entidadTipo') entidadTipo?: string,
     @Query('entidadId') entidadId?: string,
     @Query('tipoDocumento') tipoDocumento?: string,
+    @Query('identificacion') identificacion?: string,
   ): Promise<UploadedFileResponse> {
     if (!file) {
       throw new BadRequestException('Debes adjuntar un archivo en el campo "file"');
@@ -52,6 +54,8 @@ export class StorageController {
       entidadTipo,
       entidadId,
       tipoDocumento,
+      'web',
+      identificacion,
     );
   }
 
@@ -62,6 +66,7 @@ export class StorageController {
   @ApiQuery({ name: 'entidadTipo', required: false })
   @ApiQuery({ name: 'entidadId', required: false })
   @ApiQuery({ name: 'tipoDocumento', required: false })
+  @ApiQuery({ name: 'identificacion', required: false })
   @UseInterceptors(FilesInterceptor('files', 10))
   async uploadMultipleFiles(
     @CurrentUser() user: any,
@@ -70,6 +75,7 @@ export class StorageController {
     @Query('entidadTipo') entidadTipo?: string,
     @Query('entidadId') entidadId?: string,
     @Query('tipoDocumento') tipoDocumento?: string,
+    @Query('identificacion') identificacion?: string,
   ): Promise<UploadedFileResponse[]> {
     if (!files || files.length === 0) {
       throw new BadRequestException('Debes adjuntar al menos un archivo en el campo "files"');
@@ -82,6 +88,8 @@ export class StorageController {
       entidadTipo,
       entidadId,
       tipoDocumento,
+      'web',
+      identificacion,
     );
   }
 

@@ -1,7 +1,68 @@
 <div class="public-landing-container" *ngIf="landing() as page" [class.theme-dark]="page.tema_modo === 'DARK'" [class.theme-light]="page.tema_modo === 'LIGHT'">
   
+  <!-- TOP AUTHENTICATED STAFF TOOLBAR (ACCESO DIRECTO PARA USUARIOS LOGUEADOS) -->
+  <aside class="staff-authenticated-topbar" *ngIf="authService.isAuthenticated()">
+    <div class="topbar-inner-container">
+      <div class="topbar-left-info">
+        <span class="live-dot-pulse"></span>
+        <div class="school-badge-current" (click)="toggleSchoolSelector()" [title]="'Cambiar escuela activa'">
+          <i class="fa-solid fa-shield-halved mr-1"></i>
+          <span class="school-name-text">{{ api.activeClub().nombre || page.titulo }}</span>
+          <i class="fa-solid fa-chevron-down ml-1 text-xs opacity-75"></i>
+        </div>
+
+        <!-- Dropdown Selector de Escuelas -->
+        <div class="school-switcher-dropdown" *ngIf="showSchoolSelector()">
+          <div class="dropdown-header">
+            <span>Escuela / Cantera Activa</span>
+            <button type="button" class="btn-close-dropdown" (click)="toggleSchoolSelector()"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="dropdown-list">
+            <button 
+              type="button" 
+              *ngFor="let club of api.availableClubs()"
+              class="dropdown-club-item"
+              [class.active]="club.id === api.activeClub().id"
+              (click)="selectSchool(club.id)">
+              <img [src]="club.logo" class="club-thumb" alt="" />
+              <div class="club-info">
+                <strong>{{ club.nombre }}</strong>
+                <span class="club-sub">{{ club.ciudad }} • {{ club.sigla }}</span>
+              </div>
+              <i class="fa-solid fa-circle-check text-emerald" *ngIf="club.id === api.activeClub().id"></i>
+            </button>
+          </div>
+        </div>
+
+        <span class="divider-pill">|</span>
+        <div class="user-chip" *ngIf="authService.currentUser() as user">
+          <img [src]="user.avatar" class="user-avatar-tiny" [alt]="user.nombres" />
+          <span class="user-name">{{ user.nombres }} {{ user.apellidos }}</span>
+          <span class="user-role-badge">{{ user.rolLabel }}</span>
+        </div>
+      </div>
+
+      <div class="topbar-right-actions">
+        <button type="button" class="btn-topbar-dashboard" (click)="goToDashboard()" title="Ingresar al Dashboard Deportivo">
+          <i class="fa-solid fa-gauge-high mr-1"></i>
+          <span>Ir al Dashboard</span>
+        </button>
+        
+        <button type="button" class="btn-topbar-builder" (click)="goToLandingBuilder()" title="Personalizar el contenido de esta landing">
+          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+          <span>Personalizar Landing</span>
+        </button>
+
+        <button type="button" class="btn-topbar-logout" (click)="logout()" title="Cerrar sesión actual">
+          <i class="fa-solid fa-power-off"></i>
+          <span class="logout-label">Salir</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
   <!-- TOP NAVIGATION BAR -->
-  <header class="public-navbar">
+  <header class="public-navbar" [class.has-staff-bar]="authService.isAuthenticated()">
     <div class="navbar-container">
       <div class="nav-brand">
         <img *ngIf="page.logo_url" [src]="page.logo_url" [alt]="page.titulo" class="brand-logo-img" />
@@ -17,14 +78,31 @@
       </nav>
 
       <div class="nav-actions">
-        <a *ngIf="!isModal" [routerLink]="['/login']" class="btn-login-link" title="Ingresar a la Plataforma">
-          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
-          <span>Portal Staff & Login</span>
-        </a>
-        <button *ngIf="isModal" type="button" class="btn-login-link" (click)="openLogin.emit()" title="Ingresar a la Plataforma">
-          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
-          <span>Portal Staff & Login</span>
-        </button>
+        <!-- Si está autenticado, mostrar botón al panel -->
+        <ng-container *ngIf="authService.isAuthenticated(); else unauthenticatedTpl">
+          <button 
+            type="button" 
+            class="btn-logged-user-action" 
+            (click)="goToDashboard()" 
+            title="Ir a tu Panel Deportivo">
+            <img [src]="authService.currentUser()?.avatar" class="user-nav-avatar" [alt]="authService.currentUser()?.nombres" />
+            <span class="user-nav-text">Panel Deportivo</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </ng-container>
+
+        <!-- Si NO está autenticado, mostrar login -->
+        <ng-template #unauthenticatedTpl>
+          <a *ngIf="!isModal" [routerLink]="['/login']" class="btn-login-link" title="Ingresar a la Plataforma">
+            <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+            <span>Portal Staff & Login</span>
+          </a>
+          <button *ngIf="isModal" type="button" class="btn-login-link" (click)="openLogin.emit()" title="Ingresar a la Plataforma">
+            <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+            <span>Portal Staff & Login</span>
+          </button>
+        </ng-template>
+
         <button class="btn btn-cta" [style.background]="page.tema_color" (click)="scrollToSection('sec-lead-form')">
           <i class="fa-solid fa-bolt mr-1"></i>
           <span>Inscribirme Ahora</span>

@@ -1,28 +1,54 @@
 @if (producto) {
   <div class="modal-overlay" (click)="onClose()">
-    <div class="modal-card danger-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="danger-icon-circle">
-          <i class="ri-delete-bin-line"></i>
+    <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header header-danger">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge badge-danger-glow">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="modal-title-text">
+            <h2>Desactivar Producto del Catálogo</h2>
+            <p class="modal-subtitle">Estás a punto de deshabilitar este artículo del catálogo de ventas</p>
+          </div>
         </div>
-        <div>
-          <h3>Eliminar Producto</h3>
-          <p class="subtitle">Esta acción no se puede deshacer</p>
+        <button class="btn-close" (click)="onClose()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="delete-confirm-body">
+        <div class="player-retire-card">
+          <div class="retire-avatar-wrap" style="display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,0.1);">
+            <i class="fa-solid fa-shirt" style="font-size:1.5rem;color:#ef4444;"></i>
+          </div>
+          <div class="retire-player-details">
+            <div class="retire-name-row">
+              <span class="retire-player-name">{{ producto.nombre }}</span>
+            </div>
+            <div class="retire-meta-row">
+              <span class="meta-tag"><i class="fa-solid fa-barcode"></i> SKU: {{ producto.codigo_sku }}</span>
+              <span class="meta-tag"><i class="fa-solid fa-tag"></i> \${{ producto.precio_venta | number }} COP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-callout">
+          <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+          <div class="warning-callout-content">
+            <h4>Consecuencias de la Operación:</h4>
+            <ul>
+              <li>El producto no estará visible para compras o pedidos.</li>
+              <li>El historial de ventas y órdenes previas se mantendrá intacto en auditoría.</li>
+              <li>Podrás reactivar este artículo en cualquier momento.</li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <div class="modal-body">
-        <p>¿Estás seguro de que deseas eliminar permanentemente el producto <strong>"{{ producto.nombre }}"</strong> del catálogo e inventario?</p>
-        <div class="delete-warning-box">
-          <i class="ri-error-warning-line"></i>
-          <span>Se perderá el registro de inventario y configuración de stock para este ítem.</span>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" (click)="onClose()">Cancelar</button>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="onClose()">
+          <i class="fa-solid fa-arrow-left"></i> Conservar en Catálogo
+        </button>
         <button type="button" class="btn-confirm-delete" (click)="onConfirm()">
-          <i class="ri-delete-bin-line"></i> Eliminar Definitivamente
+          <i class="fa-solid fa-trash-can"></i> Sí, Desactivar Artículo
         </button>
       </div>
     </div>

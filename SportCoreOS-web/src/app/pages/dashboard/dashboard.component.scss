@@ -155,6 +155,229 @@
       align-items: center;
       gap: 0.75rem;
       flex-shrink: 0;
+      flex-wrap: wrap;
+
+      .btn-landing-preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 1.15rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+        color: var(--color-primary);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+
+        i {
+          font-size: 0.95rem;
+          color: var(--color-primary);
+        }
+
+        .live-dot-mini {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          animation: pulseDot 2s infinite;
+        }
+
+        &:hover {
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: #ffffff;
+          border-color: #10b981;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+
+          i {
+            color: #ffffff;
+          }
+
+          .live-dot-mini {
+            background: #ffffff;
+            box-shadow: 0 0 8px #ffffff;
+          }
+        }
+      }
+    }
+
+    /* =========================================================================
+       CLUB LANDING PAGE BANNER WIDGET
+       ========================================================================= */
+    .club-landing-banner {
+      position: relative;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.75rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.12);
+      }
+
+      .landing-banner-glow {
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .landing-banner-left {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-width: 65%;
+
+        .landing-badge-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.25rem 0.65rem;
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          border-radius: 9999px;
+          color: #10b981;
+          font-size: 0.7rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          width: fit-content;
+
+          .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulseDot 2s infinite;
+          }
+        }
+
+        .landing-banner-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: var(--text-heading);
+          margin: 0;
+          line-height: 1.3;
+          display: flex;
+          align-items: center;
+        }
+
+        .landing-banner-desc {
+          font-size: 0.85rem;
+          color: var(--text-body);
+          line-height: 1.45;
+          margin: 0;
+        }
+
+        .landing-banner-meta {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-top: 0.25rem;
+          font-size: 0.8rem;
+          color: var(--text-muted);
+
+          .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            i {
+              font-size: 0.85rem;
+            }
+
+            strong {
+              color: var(--text-main);
+            }
+
+            code {
+              background: var(--bg-hover);
+              padding: 0.15rem 0.4rem;
+              border-radius: 4px;
+              color: #06b6d4;
+              font-size: 0.75rem;
+            }
+          }
+        }
+      }
+
+      .landing-banner-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+
+        .btn-banner-view {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.65rem 1.15rem;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: #ffffff;
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: 0.85rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+          }
+        }
+
+        .btn-banner-link, .btn-banner-edit {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.65rem 1rem;
+          background: var(--bg-card);
+          color: var(--text-main);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          font-size: 0.85rem;
+          font-weight: 600;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.25s ease;
+
+          &:hover {
+            background: var(--bg-hover);
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+
+    @keyframes pulseDot {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
     /* =========================================================================
@@ -825,4 +1048,133 @@
       .form-row.g2, .form-row.g3 {
         grid-template-columns: 1fr;
       }
+
+      .club-landing-banner {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .landing-banner-left {
+          max-width: 100%;
+        }
+
+        .landing-banner-actions {
+          width: 100%;
+          justify-content: flex-start;
+        }
+      }
+    }
+
+    /* =========================================================================
+       LANDING PAGE FULLSCREEN MODAL OVERLAY IN DASHBOARD
+       ========================================================================= */
+    .landing-fullscreen-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #090f1d;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+      .landing-modal-top-bar {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.75rem;
+        background: rgba(11, 19, 43, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+        .modal-bar-left {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          .modal-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 9999px;
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+          }
+        }
+
+        .modal-bar-right {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          .btn-top-open-tab {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.55rem 1.05rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            color: #e2e8f0;
+            font-size: 0.825rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.16);
+              color: #ffffff;
+              border-color: rgba(255, 255, 255, 0.3);
+              transform: translateY(-1px);
+            }
+          }
+
+          .btn-close-landing-modal {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.55rem 1.15rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.825rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+
+            &:hover {
+              background: linear-gradient(135deg, #059669, #047857);
+              transform: translateY(-1px);
+              box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+            }
+          }
+        }
+      }
+
+      .landing-modal-viewport {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.985); }
+      to { opacity: 1; transform: scale(1); }
     }

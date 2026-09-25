@@ -48,11 +48,14 @@ test.describe('MÓDULO 9: LICENCIAS/MÓDULOS DE ESCUELA, PARÁMETROS & RBAC - E2
     await chips.first().click();
 
     // Buscador
+    const initialCardsCount = await page.locator('.module-card').count();
     const searchInput = page.locator('.search-input-wrap input');
     await searchInput.fill('Finanzas');
+    await page.waitForTimeout(200);
     await expect(page.locator('.module-card')).toHaveCount(1);
     await searchInput.fill('');
-    await expect(page.locator('.module-card')).toHaveCount(13);
+    await page.waitForTimeout(200);
+    await expect(page.locator('.module-card')).toHaveCount(initialCardsCount);
 
     // 3. Conmutar Switch de un Módulo y verificar persistencia en PostgreSQL
     const biometriaCard = page.locator('.module-card', { hasText: 'Biometría & Antropometría' }).first();
@@ -296,6 +299,72 @@ test.describe('MÓDULO 9: LICENCIAS/MÓDULOS DE ESCUELA, PARÁMETROS & RBAC - E2
     // Click en una tarjeta de rol para navegar a la matriz
     await page.locator('.role-card').nth(2).click();
     await expect(page.locator('.role-selector-row')).toBeVisible();
+
+    sniffer.assertZeroErrors();
+  });
+
+  // ===========================================================================
+  // SUITE 4: MODAL NUEVA ESCUELA CON BUSCADOR Y LISTA DESPLEGABLE DE CIUDAD SEDE
+  // ===========================================================================
+  test('4. Modal Nueva Escuela: Buscador interactivo y lista desplegable de Ciudad Sede', async ({ page }) => {
+    const sniffer = attachStrictErrorSniffer(page);
+
+    await page.goto('/modulos-escuela');
+    await page.waitForLoadState('networkidle');
+
+    // 1. Abrir Modal de Nueva Escuela
+    const newSchoolBtn = page.locator('button', { hasText: 'Nueva Escuela' }).first();
+    await expect(newSchoolBtn).toBeVisible();
+    await newSchoolBtn.click();
+
+    // 2. Verificar Modal visible
+    const modal = page.locator('.modal-card.modal-lg');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toContainText('Registrar Nueva Escuela');
+
+    // 3. Probar Buscador y Lista Desplegable de Ciudad Sede
+    const cityInput = modal.locator('.city-input-field');
+    await expect(cityInput).toBeVisible();
+
+    // Abrir dropdown haciendo click en el botón desplegable
+    const toggleBtn = modal.locator('.btn-toggle-dropdown');
+    await toggleBtn.click();
+
+    // Validar que el menú desplegable esté visible con opciones
+    const dropdownMenu = modal.locator('.city-dropdown-menu');
+    await expect(dropdownMenu).toBeVisible();
+
+    await expect(dropdownMenu.locator('.city-option-item').first()).toBeVisible({ timeout: 5000 });
+    const optionItems = dropdownMenu.locator('.city-option-item');
+    expect(await optionItems.count()).toBeGreaterThan(5);
+
+    // Escribir en el buscador interno del dropdown
+    const searchInput = dropdownMenu.locator('.dropdown-search-input');
+    await searchInput.fill('Cartagena');
+    await page.waitForTimeout(200);
+
+    const filteredItem = dropdownMenu.locator('.city-option-item', { hasText: 'Cartagena de Indias' }).first();
+    await expect(filteredItem).toBeVisible();
+    await filteredItem.click();
+
+    // Validar que el input principal ahora tiene "Cartagena de Indias"
+    await expect(cityInput).toHaveValue('Cartagena de Indias');
+    await expect(dropdownMenu).not.toBeVisible();
+
+    // Probar búsqueda directa por texto en el input principal
+    await cityInput.fill('Bucaramanga');
+    await page.waitForTimeout(200);
+    await expect(dropdownMenu).toBeVisible();
+
+    const bucaraOption = dropdownMenu.locator('.city-option-item', { hasText: 'Bucaramanga' }).first();
+    await expect(bucaraOption).toBeVisible();
+    await bucaraOption.click();
+    await expect(cityInput).toHaveValue('Bucaramanga');
+
+    // 4. Cerrar Modal
+    const cancelBtn = modal.locator('button', { hasText: 'Cancelar' });
+    await cancelBtn.click();
+    await expect(modal).not.toBeVisible();
 
     sniffer.assertZeroErrors();
   });

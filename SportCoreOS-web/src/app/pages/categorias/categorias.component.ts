@@ -140,16 +140,34 @@ export class CategoriasComponent implements OnInit {
       this.showToast('El código o sigla de la categoría es obligatorio (*)');
       return;
     }
-    if (this.newCat.anio_nacimiento_min > this.newCat.anio_nacimiento_max) {
+    const minYear = Number(this.newCat.anio_nacimiento_min);
+    const maxYear = Number(this.newCat.anio_nacimiento_max);
+    if (minYear > maxYear) {
       this.showToast('El año mínimo no puede ser mayor al año máximo.');
       return;
     }
-    if (this.newCat.cupo_maximo && this.newCat.cupo_maximo < 1) {
+    const cupo = Number(this.newCat.cupo_maximo);
+    if (cupo && cupo < 1) {
       this.showToast('El cupo máximo debe ser de al menos 1 deportista.');
       return;
     }
 
-    this.api.createCategoria(this.newCat).subscribe({
+    const payload: any = {
+      nombre: this.newCat.nombre.trim(),
+      codigo_categoria: this.newCat.codigo_categoria.trim(),
+      anio_nacimiento_min: minYear,
+      anio_nacimiento_max: maxYear,
+      rama: this.newCat.rama || 'MASCULINO',
+      nivel_competencia: this.newCat.nivel_competencia || 'FORMATIVO',
+      color_distintivo: this.newCat.color_distintivo || '#10B981',
+      cupo_maximo: cupo || 25,
+    };
+
+    if (this.newCat.director_tecnico_id && this.newCat.director_tecnico_id !== 'null') {
+      payload.director_tecnico_id = this.newCat.director_tecnico_id;
+    }
+
+    this.api.createCategoria(payload).subscribe({
       next: () => {
         this.showToast('¡Categoría deportiva creada y DT asignado exitosamente!');
         this.closeCreateModal();
@@ -169,8 +187,9 @@ export class CategoriasComponent implements OnInit {
           sede_entrenamiento: 'Sede Principal - Campo A (Césped)',
         };
       },
-      error: () => {
-        this.showToast('Error al crear categoría');
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al crear categoría';
+        this.showToast(Array.isArray(msg) ? msg.join(', ') : msg);
       },
     });
   }
@@ -187,23 +206,42 @@ export class CategoriasComponent implements OnInit {
       this.showToast('El código o sigla de la categoría es obligatorio (*)');
       return;
     }
-    if (this.editCat.anio_nacimiento_min > this.editCat.anio_nacimiento_max) {
+    const minYear = Number(this.editCat.anio_nacimiento_min);
+    const maxYear = Number(this.editCat.anio_nacimiento_max);
+    if (minYear > maxYear) {
       this.showToast('El año mínimo no puede ser mayor al año máximo.');
       return;
     }
-    if (this.editCat.cupo_maximo && this.editCat.cupo_maximo < 1) {
+    const cupo = Number(this.editCat.cupo_maximo);
+    if (cupo && cupo < 1) {
       this.showToast('El cupo máximo debe ser de al menos 1 deportista.');
       return;
     }
 
-    this.api.updateCategoria(cat.id, this.editCat).subscribe({
+    const payload: any = {
+      nombre: this.editCat.nombre.trim(),
+      codigo_categoria: this.editCat.codigo_categoria.trim(),
+      anio_nacimiento_min: minYear,
+      anio_nacimiento_max: maxYear,
+      rama: this.editCat.rama || 'MASCULINO',
+      nivel_competencia: this.editCat.nivel_competencia || 'FORMATIVO',
+      color_distintivo: this.editCat.color_distintivo || '#10B981',
+      cupo_maximo: cupo || 25,
+    };
+
+    if (this.editCat.director_tecnico_id && this.editCat.director_tecnico_id !== 'null') {
+      payload.director_tecnico_id = this.editCat.director_tecnico_id;
+    }
+
+    this.api.updateCategoria(cat.id, payload).subscribe({
       next: () => {
         this.showToast('¡Categoría deportiva actualizada exitosamente!');
         this.closeEditModal();
         this.loadCategorias();
       },
-      error: () => {
-        this.showToast('Error al actualizar categoría');
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al actualizar categoría';
+        this.showToast(Array.isArray(msg) ? msg.join(', ') : msg);
       },
     });
   }

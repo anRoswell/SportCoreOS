@@ -1,0 +1,54 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>{{ selectedRole === RolConvocatoria.TITULAR ? 'Alinear Jugador como Titular' : 'Convocar Jugador al Partido' }}</h2>
+          <p class="modal-subtitle">{{ match?.rival_nombre }} ({{ match?.categoria_nombre }})</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group mb-3">
+        <app-player-selector
+          label="Seleccionar Deportista de la Academia"
+          [categoriaId]="match?.categoria_id || 'TODAS'"
+          placeholder="Buscar por nombre, dorsal, cédula o género..."
+          [required]="true"
+          [selectedId]="selectedPlayerId()"
+          (selectedIdChange)="selectedPlayerId.set($event)"
+          (playerSelected)="onPlayerSelected($event)"
+        ></app-player-selector>
+      </div>
+
+      <div class="form-row g2">
+        <div class="input-group">
+          <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Rol de Convocatoria *</label>
+          <select [(ngModel)]="selectedRole" class="sport-input">
+            <option [value]="RolConvocatoria.TITULAR">🟢 Once Titular (Alinear Titular)</option>
+            <option [value]="RolConvocatoria.SUPLENTE">🔵 Banco de Suplentes</option>
+            <option [value]="RolConvocatoria.RESERVA">⚪ Reserva / Convocado de Apoyo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label><i class="fa-solid fa-shield-halved"></i> Posición Táctica Designada</label>
+          <input type="text" [(ngModel)]="selectedPos" placeholder="ej. Extremo Derecho, Lateral, Portero..." class="sport-input" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="close.emit()">
+        <i class="fa-solid fa-xmark"></i> Cancelar
+      </button>
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="!selectedPlayerId()">
+        <i class="fa-solid fa-check"></i> {{ selectedRole === RolConvocatoria.TITULAR ? 'Confirmar y Alinear Titular' : 'Confirmar Convocatoria' }}
+      </button>
+    </div>
+  </div>
+</div>

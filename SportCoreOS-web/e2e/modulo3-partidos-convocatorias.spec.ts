@@ -28,7 +28,7 @@ test.describe('MÓDULO 3: PARTIDOS, FIXTURE & CONVOCATORIAS - E2E EXHAUSTIVO', (
     expect(await rows.count()).toBeGreaterThanOrEqual(1);
 
     // Probar filtro de categoría
-    const catSelect = page.locator('.sport-select');
+    const catSelect = page.locator('.sport-select').first();
     await expect(catSelect).toBeVisible();
 
     sniffer.assertZeroErrors();

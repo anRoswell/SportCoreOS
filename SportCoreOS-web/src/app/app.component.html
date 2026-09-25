@@ -1,24 +1,23 @@
 <!-- Barra Transversal de Carga Global -->
-    <app-loading-bar></app-loading-bar>
+<app-loading-bar></app-loading-bar>
 
-    <!-- Contenedor Transversal de Notificaciones Toast -->
-    <app-toast-container></app-toast-container>
+<!-- Contenedor Transversal de Notificaciones Toast -->
+<app-toast-container></app-toast-container>
 
-    <!-- Modal Transversal de Edición de Perfil -->
-    <app-profile-modal></app-profile-modal>
+<!-- Modal Transversal de Edición de Perfil -->
+<app-profile-modal></app-profile-modal>
 
+<div [class.app-layout]="authService.isAuthenticated() && !isPublicRoute()" [class.auth-fullscreen-layout]="!authService.isAuthenticated() || isPublicRoute()">
+  @if (authService.isAuthenticated() && !isPublicRoute()) {
+    <app-sidebar></app-sidebar>
+  }
+
+  <div [class.main-wrapper]="authService.isAuthenticated() && !isPublicRoute()" [class.sidebar-collapsed]="api.sidebarCollapsed()">
     @if (authService.isAuthenticated() && !isPublicRoute()) {
-      <div class="app-layout">
-        <app-sidebar></app-sidebar>
-        <div class="main-wrapper" [class.sidebar-collapsed]="api.sidebarCollapsed()">
-          <app-navbar></app-navbar>
-          <main class="content-area">
-            <router-outlet></router-outlet>
-          </main>
-        </div>
-      </div>
-    } @else {
-      <div class="auth-fullscreen-layout">
-        <router-outlet></router-outlet>
-      </div>
+      <app-navbar></app-navbar>
     }
+    <main [class.content-area]="authService.isAuthenticated() && !isPublicRoute()">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

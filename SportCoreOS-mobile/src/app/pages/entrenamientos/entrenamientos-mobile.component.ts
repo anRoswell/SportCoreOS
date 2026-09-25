@@ -94,50 +94,7 @@ export class EntrenamientosMobileComponent implements OnInit {
   });
 
   // Categorías Asignadas y Selección
-  categoriasAsignadas = signal<CategoriaDeportivaItem[]>([
-    {
-      id: '30000000-0000-0000-0000-000000000001',
-      nombre: 'Sub-15 Élite A',
-      codigo_categoria: 'SUB15-A',
-      color_distintivo: '#10b981',
-      total_jugadores: 11,
-      cancha: 'Sede Norte #2',
-      enfoque: 'Presión Alta & Definición',
-      plantel: [
-        { id: 'j-1', nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
-        { id: 'j-2', nombres: 'Mateo', apellidos: 'Gómez', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
-        { id: 'j-3', nombres: 'Sebastián', apellidos: 'Muñoz', dorsal: 1, posicion: 'Portero', estado: 'PRESENTE' },
-        { id: 'j-4', nombres: 'Nicolás', apellidos: 'Zapata', dorsal: 4, posicion: 'Defensa Central', estado: 'RETRASO', observacion: 'Tráfico vía Las Palmas' },
-        { id: 'j-5', nombres: 'Carlos', apellidos: 'Londoño', dorsal: 9, posicion: 'Delantero', estado: 'EXCUSA', observacion: 'Fisioterapia rodilla izq.' },
-        { id: 'j-6', nombres: 'Daniel', apellidos: 'Henao', dorsal: 7, posicion: 'Extremo Derecho', estado: 'PRESENTE' },
-        { id: 'j-7', nombres: 'Samuel', apellidos: 'Vásquez', dorsal: 3, posicion: 'Lateral Izquierdo', estado: 'FALTA' },
-        { id: 'j-8', nombres: 'Alejandro', apellidos: 'Ochoa', dorsal: 5, posicion: 'Defensa Central', estado: 'PRESENTE' },
-        { id: 'j-9', nombres: 'Juan David', apellidos: 'Castro', dorsal: 11, posicion: 'Extremo Izquierdo', estado: 'PRESENTE' },
-        { id: 'j-10', nombres: 'Andrés Felipe', apellidos: 'Marín', dorsal: 14, posicion: 'Lateral Derecho', estado: 'PRESENTE' },
-        { id: 'j-11', nombres: 'David', apellidos: 'Herrera', dorsal: 12, posicion: 'Portero Suplente', estado: 'PRESENTE' }
-      ]
-    },
-    {
-      id: '30000000-0000-0000-0000-000000000002',
-      nombre: 'Sub-17 Nacional Pro',
-      codigo_categoria: 'SUB17-PRO',
-      color_distintivo: '#3b82f6',
-      total_jugadores: 9,
-      cancha: 'Cancha Principal Sintética',
-      enfoque: 'Fuerza, Salto & Transición Defensiva',
-      plantel: [
-        { id: 'u17-1', nombres: 'Esteban', apellidos: 'Pérez Salazar', dorsal: 4, posicion: 'Defensa Central', estado: 'PRESENTE' },
-        { id: 'u17-2', nombres: 'Samuel', apellidos: 'Díaz Marín', dorsal: 10, posicion: 'Volante Ofensivo', estado: 'PRESENTE' },
-        { id: 'u17-3', nombres: 'Jerónimo', apellidos: 'Cano', dorsal: 9, posicion: 'Delantero Centro', estado: 'PRESENTE' },
-        { id: 'u17-4', nombres: 'Lucas', apellidos: 'Mendoza', dorsal: 8, posicion: 'Mediocentro', estado: 'RETRASO', observacion: 'Colegio salida tarde' },
-        { id: 'u17-5', nombres: 'Felipe', apellidos: 'Berrío', dorsal: 11, posicion: 'Extremo Izquierdo', estado: 'PRESENTE' },
-        { id: 'u17-6', nombres: 'Tomás', apellidos: 'Giraldo', dorsal: 2, posicion: 'Lateral Derecho', estado: 'PRESENTE' },
-        { id: 'u17-7', nombres: 'David', apellidos: 'Gutiérrez', dorsal: 1, posicion: 'Arquero Titular', estado: 'PRESENTE' },
-        { id: 'u17-8', nombres: 'Camilo', apellidos: 'Ríos', dorsal: 7, posicion: 'Extremo Derecho', estado: 'EXCUSA', observacion: 'Permiso académico' },
-        { id: 'u17-9', nombres: 'Sebastián', apellidos: 'Álvarez', dorsal: 6, posicion: 'Volante de Marca', estado: 'PRESENTE' }
-      ]
-    }
-  ]);
+  categoriasAsignadas = signal<CategoriaDeportivaItem[]>([]);
 
   categoriaSeleccionada = signal<CategoriaDeportivaItem | null>(null);
 
@@ -167,11 +124,6 @@ export class EntrenamientosMobileComponent implements OnInit {
   }
 
   cargarCategoriasAsignadas(): void {
-    const defaultCat = this.categoriasAsignadas()[0];
-    this.categoriaSeleccionada.set(defaultCat);
-    this.jugadores.set(defaultCat.plantel || []);
-
-    // Conectar a API para sincronizar categorías asignadas al usuario actual
     this.http.get<any>(`${environment.apiUrl}/categorias`).subscribe({
       next: (res) => {
         const rows = Array.isArray(res) ? res : (res?.data || []);
@@ -184,41 +136,59 @@ export class EntrenamientosMobileComponent implements OnInit {
             total_jugadores: parseInt(c.total_jugadores || '0', 10),
             cancha: index % 2 === 0 ? 'Sede Norte #2' : 'Cancha Sintética #1',
             enfoque: index % 2 === 0 ? 'Fuerza & Presión Alta' : 'Táctica Fija & Transiciones',
-            plantel: this.generarPlantelMock(c.id, c.nombre)
           }));
           this.categoriasAsignadas.set(mapped);
           this.seleccionarCategoria(mapped[0]);
+        } else {
+          this.categoriasAsignadas.set([]);
+          this.jugadores.set([]);
         }
       },
       error: () => {
-        // Fallback robusto usando los datos iniciales
+        this.categoriasAsignadas.set([]);
+        this.jugadores.set([]);
       }
     });
   }
 
   seleccionarCategoria(cat: CategoriaDeportivaItem): void {
     this.categoriaSeleccionada.set(cat);
-    this.jugadores.set(cat.plantel || []);
     this.filtroEstado.set('TODOS');
+    this.cargarPlantelCategoria(cat.id);
     this.alertService.info(`Categoría activa: ${cat.nombre}`);
   }
 
-  generarPlantelMock(catId: string, catNombre: string): JugadorAsistencia[] {
-    const existing = this.categoriasAsignadas().find(c => c.id === catId);
-    if (existing && existing.plantel) return existing.plantel;
+  cargarPlantelCategoria(categoriaId: string): void {
+    const url = categoriaId 
+      ? `${environment.apiUrl}/jugadores?categoria_id=${categoriaId}`
+      : `${environment.apiUrl}/jugadores`;
 
-    return [
-      { id: `${catId}-1`, nombres: 'Mateo', apellidos: 'Gómez Restrepo', dorsal: 10, posicion: 'Enganche', estado: 'PRESENTE' },
-      { id: `${catId}-2`, nombres: 'Samuel', apellidos: 'Díaz Marín', dorsal: 7, posicion: 'Extremo', estado: 'PRESENTE' },
-      { id: `${catId}-3`, nombres: 'Esteban', apellidos: 'Pérez Salazar', dorsal: 4, posicion: 'Defensa Central', estado: 'PRESENTE' },
-      { id: `${catId}-4`, nombres: 'Sebastián', apellidos: 'Muñoz', dorsal: 1, posicion: 'Arquero', estado: 'RETRASO', observacion: 'Tráfico pesado' },
-      { id: `${catId}-5`, nombres: 'Santiago', apellidos: 'Restrepo', dorsal: 8, posicion: 'Mediocentro', estado: 'PRESENTE' },
-      { id: `${catId}-6`, nombres: 'Nicolás', apellidos: 'Zapata', dorsal: 3, posicion: 'Lateral Izquierdo', estado: 'EXCUSA', observacion: 'Cita médica' }
-    ];
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped: JugadorAsistencia[] = list.map((j: any, idx: number) => ({
+          id: j.id,
+          nombres: j.nombres,
+          apellidos: j.apellidos,
+          dorsal: j.numero_dorsal || (idx + 1),
+          posicion: j.posicion_principal || 'Volante',
+          estado: 'PRESENTE',
+          avatar: j.foto_url
+        }));
+        this.jugadores.set(mapped);
+      },
+      error: () => {
+        this.jugadores.set([]);
+      }
+    });
   }
 
   recargarAsistencia(): void {
     this.isRefreshing.set(true);
+    const cat = this.categoriaSeleccionada();
+    if (cat) {
+      this.cargarPlantelCategoria(cat.id);
+    }
     setTimeout(() => {
       this.isRefreshing.set(false);
       this.alertService.success(`Planilla de ${this.categoriaSeleccionada()?.nombre || 'Categoría'} sincronizada.`);

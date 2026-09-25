@@ -1,10 +1,11 @@
-<section class="podium-section" *ngIf="top3.length > 0">
-  <div class="podium-header-badge">
-    <div class="podium-category-pill">
-      <i class="fa-solid fa-trophy text-amber"></i>
-      <span>Podio de Honor: <strong>{{ categoriaNombre || 'Categoría General' }}</strong></span>
+@if (top3.length > 0) {
+  <section class="podium-section">
+    <div class="podium-header-badge">
+      <div class="podium-category-pill">
+        <i class="fa-solid fa-trophy text-amber"></i>
+        <span>Podio de Honor: <strong>{{ categoriaNombre || 'Categoría General' }}</strong></span>
+      </div>
     </div>
-  </div>
 
   <div class="podium-container">
     <!-- 2do LUGAR: PLATA -->
@@ -122,3 +123,4 @@
     }
   </div>
 </section>
+}

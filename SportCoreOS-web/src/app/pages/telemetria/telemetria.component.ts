@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { CatalogosService } from '../../core/services/catalogos.service';
-import { PlayerSelectorComponent } from '../../shared/components/player-selector/player-selector.component';
 import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
 
 @Component({
   selector: 'app-telemetria',
   standalone: true,
-  imports: [CommonModule, FormsModule, PlayerSelectorComponent, FlatpickrDirective],
+  imports: [CommonModule, FormsModule, FlatpickrDirective],
   templateUrl: './telemetria.component.html',
   styleUrl: './telemetria.component.scss'
 })
@@ -59,13 +58,7 @@ export class TelemetriaComponent implements OnInit {
     if (ses && ses.metricas && ses.metricas.length > 0) {
       return ses.metricas;
     }
-    // Mock default metrics if empty
-    return [
-      { id: '1', jugador_nombre: 'Samuel Gómez', posicion: 'delantero', distancia_total_km: 10.4, velocidad_maxima_kmh: 33.2, sprints_alta_intensidad: 24, player_load: 610, frecuencia_cardiaca_max: 194 },
-      { id: '2', jugador_nombre: 'Andrés Felipe Díaz', posicion: 'mediocampista', distancia_total_km: 11.2, velocidad_maxima_kmh: 30.5, sprints_alta_intensidad: 18, player_load: 590, frecuencia_cardiaca_max: 188 },
-      { id: '3', jugador_nombre: 'Carlos Mario Valderrama', posicion: 'defensa', distancia_total_km: 8.9, velocidad_maxima_kmh: 29.1, sprints_alta_intensidad: 12, player_load: 480, frecuencia_cardiaca_max: 182 },
-      { id: '4', jugador_nombre: 'Mateo Osorio', posicion: 'portero', distancia_total_km: 4.8, velocidad_maxima_kmh: 22.0, sprints_alta_intensidad: 4, player_load: 290, frecuencia_cardiaca_max: 165 },
-    ];
+    return [];
   });
 
   ngOnInit(): void {
@@ -80,7 +73,11 @@ export class TelemetriaComponent implements OnInit {
       limit: this.sesionesPageSize()
     }).subscribe({
       next: (res: any) => {
-        const sesiones = Array.isArray(res) ? res : res?.data || [];
+        const raw = Array.isArray(res) ? res : res?.data || [];
+        const sesiones = raw.map((s: any) => ({
+          ...s,
+          nombre_sesion: s.nombre_sesion || s.rival_nombre || ((s.tipo_sesion === 'PARTIDO_OFICIAL' || s.tipo_sesion === 'partido' ? 'Partido Oficial' : 'Entrenamiento Táctico') + ' • ' + s.fecha_sesion),
+        }));
         const total = res?.total !== undefined ? res.total : sesiones.length;
         const totalP = res?.totalPages !== undefined ? res.totalPages : Math.ceil(total / this.sesionesPageSize()) || 1;
 
@@ -92,29 +89,22 @@ export class TelemetriaComponent implements OnInit {
         if (sesiones && sesiones.length > 0) {
           let target = sesiones[0];
           if (preferredId) {
-            target = sesiones.find((s: any) => s.id === preferredId) || sesiones[0];
+            target = sesiones.find((s: any) => s.id === preferredId) || (this.selectedSesion()?.id === preferredId ? this.selectedSesion() : sesiones[0]);
           } else if (this.selectedSesion()?.id) {
-            target = sesiones.find((s: any) => s.id === this.selectedSesion()?.id) || sesiones[0];
+            target = sesiones.find((s: any) => s.id === this.selectedSesion()?.id) || this.selectedSesion() || sesiones[0];
           }
           this.selectSesion(target);
         } else {
-          // Fallback demo session
-          const demoSes = {
-            id: 'demo-1',
-            nombre_sesion: 'Fecha 14: SportCore FC vs Academia Pro',
-            tipo_sesion: 'partido',
-            fecha_sesion: new Date().toISOString().split('T')[0],
-            duracion_minutos: 90,
-            clima: '24°C Despejado',
-          };
-          this.selectedSesion.set(demoSes);
-          this.activeHeatmapPlayer.set(this.activeMetricas()[0]);
+          this.selectedSesion.set(null);
+          this.activeHeatmapPlayer.set(null);
         }
       },
       error: () => {
         this.sesionesList.set([]);
         this.totalSesiones.set(0);
         this.totalSesionesPages.set(1);
+        this.selectedSesion.set(null);
+        this.activeHeatmapPlayer.set(null);
         this.loading.set(false);
       }
     });
@@ -135,6 +125,7 @@ export class TelemetriaComponent implements OnInit {
   }
 
   selectSesion(s: any): void {
+    if (!s?.id) return;
     this.api.getSesionTelemetriaById(s.id).subscribe({
       next: (full) => {
         const ses = full || s;
@@ -156,12 +147,12 @@ export class TelemetriaComponent implements OnInit {
           this.activeHeatmapPlayer.set(mapped[0]);
         } else {
           this.selectedSesion.set(ses);
-          this.activeHeatmapPlayer.set(this.activeMetricas()[0]);
+          this.activeHeatmapPlayer.set(null);
         }
       },
       error: () => {
         this.selectedSesion.set(s);
-        this.activeHeatmapPlayer.set(this.activeMetricas()[0]);
+        this.activeHeatmapPlayer.set(null);
       }
     });
   }
@@ -222,18 +213,18 @@ export class TelemetriaComponent implements OnInit {
   }
 
   getProgressDistance(): number {
-    const avg = Number(this.getAverageDistance()) || 9.2;
+    const avg = Number(this.getAverageDistance()) || 0;
     const progress = Math.min(100, Math.round((avg / 10.5) * 100));
     return progress;
   }
 
   getTopSpeedNum(): number {
-    return Number(this.getTopSpeed()) || 33.2;
+    return Number(this.getTopSpeed()) || 0;
   }
 
   getTopSpeedPlayer(): string {
     const metrics = this.activeMetricas();
-    if (!metrics || metrics.length === 0) return 'Samuel Gómez (33.2 km/h)';
+    if (!metrics || metrics.length === 0) return 'Sin datos';
     let best = metrics[0];
     for (const m of metrics) {
       if (Number(m.velocidad_maxima_kmh) > Number(best.velocidad_maxima_kmh)) {
@@ -244,13 +235,13 @@ export class TelemetriaComponent implements OnInit {
   }
 
   getAveragePlayerLoadNum(): number {
-    return Number(this.getAveragePlayerLoad()) || 560;
+    return Number(this.getAveragePlayerLoad()) || 0;
   }
 
   getAvgHeartRate(): number {
     const player = this.activeHeatmapPlayer();
-    const maxFc = Number(player?.frecuencia_cardiaca_max) || 188;
-    return Math.round(maxFc * 0.82);
+    const maxFc = Number(player?.frecuencia_cardiaca_max) || 0;
+    return maxFc > 0 ? Math.round(maxFc * 0.82) : 0;
   }
 
   Number(val: any): number {
@@ -259,21 +250,21 @@ export class TelemetriaComponent implements OnInit {
 
   getAverageDistance(): string {
     const metrics = this.activeMetricas();
-    if (!metrics || metrics.length === 0) return '9.2';
+    if (!metrics || metrics.length === 0) return '0.0';
     const sum = metrics.reduce((acc: number, m: any) => acc + (Number(m.distancia_total_km) || 0), 0);
     return (sum / metrics.length).toFixed(1);
   }
 
   getTopSpeed(): string {
     const metrics = this.activeMetricas();
-    if (!metrics || metrics.length === 0) return '33.2';
+    if (!metrics || metrics.length === 0) return '0.0';
     const max = Math.max(...metrics.map((m: any) => Number(m.velocidad_maxima_kmh) || 0));
-    return max > 0 ? max.toFixed(1) : '33.2';
+    return max > 0 ? max.toFixed(1) : '0.0';
   }
 
   getAveragePlayerLoad(): string {
     const metrics = this.activeMetricas();
-    if (!metrics || metrics.length === 0) return '560';
+    if (!metrics || metrics.length === 0) return '0';
     const sum = metrics.reduce((acc: number, m: any) => acc + (Number(m.player_load) || 0), 0);
     return Math.round(sum / metrics.length).toString();
   }
@@ -334,6 +325,7 @@ export class TelemetriaComponent implements OnInit {
         this.showToast('¡Sesión de telemetría GPS registrada e ingerida!');
         this.closeCreateModal();
         if (created?.id) {
+          this.currentSesionesPage.set(1);
           this.selectedSesion.set(created);
           this.loadSesiones(created.id);
         } else {

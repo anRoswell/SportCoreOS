@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { ArchivosAdjuntosRepository, ArchivoAdjuntoEntity } from './archivos-adjuntos.repository';
 import { generateUploadPath, UploadOrigin } from './storage-paths.constants';
+import { DatabaseService } from '../../database/database.service';
 
 export interface UploadedFileResponse {
   id?: string;
@@ -36,7 +37,10 @@ export class StorageService {
   ];
   private readonly maxFileSize = 50 * 1024 * 1024; // 50MB
 
-  constructor(private readonly archivosRepo: ArchivosAdjuntosRepository) {
+  constructor(
+    private readonly archivosRepo: ArchivosAdjuntosRepository,
+    private readonly db: DatabaseService,
+  ) {
     this.ensureDirectoryExists(this.uploadsBasePath);
   }
 
@@ -49,6 +53,7 @@ export class StorageService {
     entidadId?: string,
     tipoDocumento?: string,
     origen: UploadOrigin = 'web',
+    identificacion?: string,
   ): Promise<UploadedFileResponse> {
     if (!file) {
       throw new BadRequestException('No se ha proporcionado ningún archivo para subir');
@@ -74,7 +79,58 @@ export class StorageService {
     const targetDir = path.join(this.uploadsBasePath, relativeSubPath);
     this.ensureDirectoryExists(targetDir);
 
-    // Sanitización estricta de nombre de archivo
+    // 1. Resolver nemotecnia de Club si está disponible
+    let clubPrefix = '';
+    if (clubId) {
+      try {
+        const qClub = await this.db.query<{ nombre: string; slug: string; sigla: string; configuracion_json: any }>(
+          'SELECT nombre, slug, sigla, configuracion_json FROM core.clubes WHERE id = $1',
+          [clubId],
+        );
+        if (qClub.rows[0]) {
+          const c = qClub.rows[0];
+          const rawPrefix = c.sigla || c.slug || c.nombre;
+          clubPrefix = rawPrefix
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '');
+
+          // Si no vino identificación explícita, revisar si el club tiene NIT en su configuración
+          if (!identificacion && c.configuracion_json?.nit) {
+            identificacion = c.configuracion_json.nit;
+          }
+        }
+      } catch (err: any) {
+        this.logger.debug(`No se pudo resolver datos del club para nemotecnia: ${err.message}`);
+      }
+    }
+
+    // 2. Resolver nemotecnia de Identificación (especialmente fotos de jugadores: número de documento)
+    if (!identificacion && entidadTipo === 'JUGADOR' && entidadId) {
+      try {
+        const qJugador = await this.db.query<{ numero_documento: string }>(
+          'SELECT numero_documento FROM core.jugadores WHERE id = $1',
+          [entidadId],
+        );
+        if (qJugador.rows[0]?.numero_documento) {
+          identificacion = qJugador.rows[0].numero_documento;
+        }
+      } catch (err: any) {
+        this.logger.debug(`No se pudo resolver documento del jugador para nemotecnia: ${err.message}`);
+      }
+    }
+
+    const cleanIdent = identificacion
+      ? identificacion
+          .toString()
+          .trim()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_-]/g, '')
+      : '';
+
+    // 3. Sanitización de nombre original y generación con nemotecnia
     const ext = path.extname(file.originalname).toLowerCase();
     const baseName = path.basename(file.originalname, ext);
     const cleanBaseName = baseName
@@ -83,16 +139,29 @@ export class StorageService {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9.-]/g, '_');
 
-    const hash = crypto.randomBytes(6).toString('hex');
+    const hash = crypto.randomBytes(4).toString('hex');
     const timestamp = Date.now();
-    const safeFilename = `${cleanBaseName}_${hash}_${timestamp}${ext}`;
+
+    // Estructuración de nemotecnia: [club]_[identificacion/doc]_[cleanBaseName]_[hash]_[timestamp].[ext]
+    const nameParts: string[] = [];
+    if (clubPrefix) {
+      nameParts.push(clubPrefix);
+    }
+    if (cleanIdent) {
+      nameParts.push(cleanIdent);
+    }
+    nameParts.push(cleanBaseName);
+    nameParts.push(hash);
+    nameParts.push(String(timestamp));
+
+    const safeFilename = `${nameParts.join('_')}${ext}`;
     const destinationPath = path.join(targetDir, safeFilename);
 
     // Calcular hash SHA-256 para integridad criptográfica y desduplicación (Estándar EduCoreOS / ConjuntOS)
     const sha256 = crypto.createHash('sha256').update(file.buffer).digest('hex');
 
     await fs.promises.writeFile(destinationPath, file.buffer);
-    this.logger.log(`Archivo físico guardado en: ${destinationPath} (SHA-256: ${sha256.slice(0, 16)}...)`);
+    this.logger.log(`Archivo físico guardado con nemotecnia en: ${destinationPath} (SHA-256: ${sha256.slice(0, 16)}...)`);
 
     const publicUrl = `/uploads/${relativeSubPath}/${safeFilename}`;
 
@@ -111,7 +180,7 @@ export class StorageService {
           mime_type: file.mimetype,
           tamano_bytes: file.size,
           path_almacenamiento: destinationPath,
-          metadata: { sha256, extension: ext, subfolder },
+          metadata: { sha256, extension: ext, subfolder, identificacion: cleanIdent || null, clubPrefix: clubPrefix || null },
           subido_por: userId || null,
         });
       } catch (err: any) {
@@ -140,6 +209,7 @@ export class StorageService {
     entidadId?: string,
     tipoDocumento?: string,
     origen: UploadOrigin = 'web',
+    identificacion?: string,
   ): Promise<UploadedFileResponse[]> {
     if (!files || files.length === 0) {
       throw new BadRequestException('No se proporcionaron archivos');
@@ -147,7 +217,7 @@ export class StorageService {
 
     const results: UploadedFileResponse[] = [];
     for (const file of files) {
-      const saved = await this.saveFile(file, subfolder, clubId, userId, entidadTipo, entidadId, tipoDocumento, origen);
+      const saved = await this.saveFile(file, subfolder, clubId, userId, entidadTipo, entidadId, tipoDocumento, origen, identificacion);
       results.push(saved);
     }
 

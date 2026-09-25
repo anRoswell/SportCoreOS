@@ -1,0 +1,53 @@
+<div class="fut-card match-hero">
+  <div class="match-meta">
+    <div class="cat-pill-badge">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>{{ match.categoria_nombre }}</span>
+    </div>
+    <span class="match-time">
+      <i class="fa-regular fa-calendar-check text-emerald"></i> {{ match.fecha_partido }} • {{ match.hora_partido }} (Citación: {{ match.hora_citacion }})
+    </span>
+  </div>
+
+  <div class="vs-banner">
+    <div class="team">
+      <div class="team-crest">{{ activeClub.sigla }}</div>
+      <span class="team-name">{{ activeClub.nombre }}</span>
+      <span class="team-role">{{ match.condicion_juego === 'LOCAL' ? 'LOCAL (Kit Titular)' : 'LOCAL' }}</span>
+    </div>
+    <div class="vs-circle">VS</div>
+    <div class="team">
+      <div class="team-crest rival-crest">⚔️</div>
+      <span class="team-name">{{ match.rival_nombre }}</span>
+      <span class="team-role">{{ match.condicion_juego === 'VISITANTE' ? 'VISITANTE' : 'VISITANTE' }}</span>
+    </div>
+  </div>
+
+  <div class="venue-info">
+    <div class="venue-text">
+      <i class="fa-solid fa-location-dot text-amber"></i>
+      <span><strong>Sede:</strong> {{ match.sede_cancha }}</span>
+    </div>
+    <button class="gps-btn" (click)="openGps.emit()">
+      <i class="fa-solid fa-map-location-dot"></i> Abrir en Maps / Waze
+    </button>
+  </div>
+
+  <div class="convocatoria-stats-bar">
+    <div class="stat-pill">
+      <i class="fa-solid fa-users text-blue"></i>
+      <span>Total Convocados:</span>
+      <strong>{{ totalConvocados }}</strong>
+    </div>
+    <div class="stat-pill">
+      <i class="fa-solid fa-circle-check text-emerald"></i>
+      <span>Confirmados:</span>
+      <strong class="text-emerald">{{ confirmadosCount }}</strong>
+    </div>
+    <div class="stat-pill">
+      <i class="fa-solid fa-clock-rotate-left text-amber"></i>
+      <span>Pendientes / Excusados:</span>
+      <strong class="text-amber">{{ totalConvocados - confirmadosCount }}</strong>
+    </div>
+  </div>
+</div>

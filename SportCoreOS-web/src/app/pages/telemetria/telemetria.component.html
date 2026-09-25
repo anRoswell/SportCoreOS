@@ -24,7 +24,7 @@
             <span class="kpi-chip chip-blue"><i class="fa-solid fa-circle-check"></i> Activos</span>
           </div>
           <div class="kpi-body">
-            <div class="kpi-val">{{ selectedSesion()?.metricas?.length || 18 }}</div>
+            <div class="kpi-val">{{ selectedSesion()?.metricas?.length || activeMetricas().length || 0 }}</div>
             <div class="kpi-label">Jugadores Monitoreados</div>
           </div>
           <div class="kpi-footer-metric">
@@ -475,7 +475,7 @@
                 <div class="form-row g3">
                   <div class="input-group">
                     <label>Fecha de la Sesión <span class="required-star">*</span></label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="sesionForm.fecha_sesion" name="sFecha" class="sport-input" required />
+                    <input type="text" appFlatpickr [altInput]="false" placeholder="dd/mm/aaaa" [(ngModel)]="sesionForm.fecha_sesion" name="sFecha" class="sport-input" required />
                   </div>
                   <div class="input-group">
                     <label>Duración (Minutos)</label>
@@ -542,13 +542,15 @@
             <form (ngSubmit)="submitMetricaForm()" class="modal-form">
               <div class="modal-section">
                 <div class="input-group">
-                  <app-player-selector
-                    [(selectedId)]="metricaForm.jugador_id"
-                    [players]="jugadoresList()"
-                    [label]="'Seleccionar Jugador a Vincular'"
-                    [required]="true"
-                    [placeholder]="'Buscar por nombre, documento (TI/CC), género o dorsal...'"
-                  ></app-player-selector>
+                  <label>Jugador a Vincular <span class="required-star">*</span></label>
+                  <div class="sport-select-wrapper">
+                    <select [(ngModel)]="metricaForm.jugador_id" name="mJugador" class="sport-input" required>
+                      @for (j of jugadoresList(); track j.id) {
+                        <option [value]="j.id">{{ j.nombres }} {{ j.apellidos }} ({{ j.posicion_principal || 'Jugador' }})</option>
+                      }
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
                 </div>
 
                 <div class="form-row g2">

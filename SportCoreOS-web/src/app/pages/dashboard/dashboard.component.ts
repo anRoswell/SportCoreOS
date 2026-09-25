@@ -85,15 +85,7 @@ export class DashboardComponent implements OnInit {
     condicion: 'LOCAL' as 'LOCAL' | 'VISITANTE',
   };
 
-  constructor() {
-    // Escuchar cambios de club activo para refrescar la landing correspondiente
-    effect(() => {
-      const activeClub = this.api.activeClub();
-      if (activeClub?.id) {
-        this.loadActiveClubLanding(activeClub.id);
-      }
-    });
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.loadDashboardData();

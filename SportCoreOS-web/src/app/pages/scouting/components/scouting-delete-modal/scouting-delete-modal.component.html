@@ -1,0 +1,51 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header header-danger">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge badge-danger-glow">
+          <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Eliminar Prospecto del Pipeline</h2>
+          <p class="modal-subtitle">Esta acción borrará el talento observado y su historial de visorías</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="delete-confirm-body">
+      <div class="player-retire-card">
+        <div class="retire-avatar-wrap">
+          <img [src]="prospecto?.foto_url || 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=100'" alt="{{ prospecto?.nombres }}" />
+        </div>
+        <div class="retire-player-details">
+          <div class="retire-name-row">
+            <span class="retire-player-name">{{ prospecto?.nombres }} {{ prospecto?.apellidos }}</span>
+          </div>
+          <div class="retire-meta-row">
+            <span class="meta-tag"><i class="fa-solid fa-futbol"></i> {{ formatPosicion(prospecto?.posicion_principal) }}</span>
+            <span class="meta-tag"><i class="fa-solid fa-shield"></i> {{ prospecto?.club_origen || 'Libre' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-callout">
+        <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
+        <div class="warning-callout-content">
+          <h4>Advertencia de Eliminación:</h4>
+          <ul>
+            <li>Se eliminarán todas las rúbricas e informes técnicos asociados al talento.</li>
+            <li>Esta acción es permanente e irreversible.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="close.emit()">Cancelar</button>
+      <button type="button" class="btn-confirm-delete" (click)="onConfirm()">
+        <i class="fa-solid fa-trash-can"></i> Sí, Eliminar Prospecto
+      </button>
+    </div>
+  </div>
+</div>

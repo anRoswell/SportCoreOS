@@ -36,16 +36,17 @@
         <span class="venue-name">{{ servicio.cancha_nombre }}</span>
         <span class="venue-dir">{{ servicio.cancha_direccion }}</span>
       </div>
-      <a
-        *ngIf="servicio.cancha_gps_url"
-        [href]="servicio.cancha_gps_url"
-        target="_blank"
-        rel="noopener"
-        class="btn-gps"
-        title="Abrir ubicación en Google Maps / Waze"
-      >
-        <i class="fa-solid fa-diamond-turn-right"></i> GPS
-      </a>
+      @if (servicio.cancha_gps_url) {
+        <a
+          [href]="servicio.cancha_gps_url"
+          target="_blank"
+          rel="noopener"
+          class="btn-gps"
+          title="Abrir ubicación en Google Maps / Waze"
+        >
+          <i class="fa-solid fa-diamond-turn-right"></i> GPS
+        </a>
+      }
     </div>
 
     <div class="schedule-item">
@@ -88,11 +89,15 @@
   </div>
 
   <!-- BENEFITS LIST -->
-  <ul class="benefits-list" *ngIf="servicio.beneficios && servicio.beneficios.length > 0">
-    <li *ngFor="let b of servicio.beneficios | slice:0:3">
-      <i class="fa-solid fa-check-circle text-emerald"></i> {{ b }}
-    </li>
-  </ul>
+  @if (servicio.beneficios && servicio.beneficios.length > 0) {
+    <ul class="benefits-list">
+      @for (b of servicio.beneficios | slice:0:3; track b) {
+        <li>
+          <i class="fa-solid fa-check-circle text-emerald"></i> {{ b }}
+        </li>
+      }
+    </ul>
+  }
 
   <!-- PRICING & CTA -->
   <div class="card-footer">
@@ -104,9 +109,11 @@
       <div class="price-bundle">
         <span class="p-label">Paquete Mensual (Mes Completo):</span>
         <span class="p-val-big">&#36;{{ formatNumber(servicio.precio_paquete_mensual) }}</span>
-        <span class="p-discount" *ngIf="servicio.descuento_hermanos_pct">
-          -{{ servicio.descuento_hermanos_pct }}% dto 2do hermano
-        </span>
+        @if (servicio.descuento_hermanos_pct) {
+          <span class="p-discount">
+            -{{ servicio.descuento_hermanos_pct }}% dto 2do hermano
+          </span>
+        }
       </div>
     </div>
 

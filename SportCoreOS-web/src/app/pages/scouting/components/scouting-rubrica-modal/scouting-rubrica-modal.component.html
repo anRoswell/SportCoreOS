@@ -1,0 +1,54 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-md modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge badge-amber">
+          <i class="fa-solid fa-star"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Evaluar Rúbrica Deportiva</h2>
+          <p class="modal-subtitle">{{ prospecto?.nombres }} {{ prospecto?.apellidos }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="modal-section">
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Técnica Individual (1-10) <span class="required-star">*</span></label>
+            <input type="number" [(ngModel)]="rubricaForm.nota_tecnica" name="nTec" min="1" max="10" step="0.5" class="sport-input" required />
+          </div>
+          <div class="input-group">
+            <label>Táctica & Posicionamiento (1-10) <span class="required-star">*</span></label>
+            <input type="number" [(ngModel)]="rubricaForm.nota_tactica" name="nTac" min="1" max="10" step="0.5" class="sport-input" required />
+          </div>
+        </div>
+
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Físico & Velocidad (1-10) <span class="required-star">*</span></label>
+            <input type="number" [(ngModel)]="rubricaForm.nota_fisica" name="nFis" min="1" max="10" step="0.5" class="sport-input" required />
+          </div>
+          <div class="input-group">
+            <label>Mental & Disciplina (1-10) <span class="required-star">*</span></label>
+            <input type="number" [(ngModel)]="rubricaForm.nota_mental" name="nMen" min="1" max="10" step="0.5" class="sport-input" required />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Comentarios de la Observación</label>
+          <textarea [(ngModel)]="rubricaForm.comentarios" name="nCom" rows="3" placeholder="Observaciones detalladas sobre el desempeño del talento..." class="sport-input"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="close.emit()">Cancelar</button>
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-check"></i> Registrar Evaluación
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

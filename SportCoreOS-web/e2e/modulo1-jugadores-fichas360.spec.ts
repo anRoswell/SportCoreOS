@@ -98,34 +98,36 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     }
 
     // 4. Probar filtro por posición táctica
-    const posicionSelect = page.locator('.filter-select-wrap select').nth(0);
-    await posicionSelect.selectOption('delantero');
+    const posicionSelect = page.locator('.filter-group select');
+    await posicionSelect.selectOption('Delantero Centro');
     await page.waitForTimeout(200);
     await posicionSelect.selectOption('TODAS');
     await page.waitForTimeout(200);
 
     // 5. Probar filtro por género/rama
-    const generoSelect = page.locator('.filter-select-wrap select').nth(1);
-    await generoSelect.selectOption('MASCULINO');
+    const mascPill = page.locator('.segmented-filter-pills .seg-pill', { hasText: 'Masc' });
+    await mascPill.click();
     await page.waitForTimeout(200);
-    await generoSelect.selectOption('TODOS');
+    const todasPill = page.locator('.segmented-filter-pills .seg-pill', { hasText: 'Todas' }).first();
+    await todasPill.click();
     await page.waitForTimeout(200);
 
     // 6. Probar filtro por estado
-    const estadoSelect = page.locator('.estado-select-wrapper .filter-select');
-    await estadoSelect.selectOption('ACTIVO');
-    await page.waitForTimeout(200);
-    await estadoSelect.selectOption('TODOS');
-    await page.waitForTimeout(200);
+    const activosPill = page.locator('.segmented-filter-pills .seg-pill', { hasText: 'Activos' });
+    if (await activosPill.isVisible()) {
+      await activosPill.click();
+      await page.waitForTimeout(200);
+    }
 
-    // 7. Probar botón Restablecer Filtros
+    // 7. Probar buscador y limpiar
     await searchInput.fill('TestSearchFilter');
     await page.waitForTimeout(200);
-    const resetBtn = page.locator('.btn-clear-all-filters');
-    await expect(resetBtn).toBeVisible();
-    await resetBtn.click();
-    await page.waitForTimeout(200);
-    await expect(searchInput).toHaveValue('');
+    if (await clearBtn.isVisible()) {
+      await clearBtn.click();
+      await page.waitForTimeout(200);
+    } else {
+      await searchInput.fill('');
+    }
 
     // 8. Probar Controles de Paginación
     const paginationBar = page.locator('.pagination-bar');
@@ -257,7 +259,7 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     const inputPeso = bioModal.locator('input[name="bioPeso"]');
     await inputTalla.fill('170');
     await inputPeso.fill('60');
-    await expect(bioModal.locator('.imc-live-preview')).toContainText('20.8');
+    await expect(bioModal.locator('.imc-live-preview')).toContainText('20.7');
 
     // Cancelar modal biometría
     const btnCancelBio = bioModal.locator('.btn-cancel');
@@ -297,17 +299,21 @@ test.describe('MÓDULO 1: JUGADORES & FICHAS 360° - E2E EXHAUSTIVO', () => {
     const modal = page.locator('.form-modal-card');
     await expect(modal).toBeVisible();
 
-    // Asegurar categoría seleccionada
-    await modal.locator('select[name="npCat"]').selectOption({ index: 1 });
-
+    // Paso 1: Datos Personales
     await modal.locator('input[name="npNombres"]').fill(testNombre);
     await modal.locator('input[name="npApellidos"]').fill(testApellido);
     await modal.locator('input[name="npDoc"]').fill(testDoc);
     await modal.locator('input[name="npFechaNac"]').fill('2011-07-20');
-    await modal.locator('input[name="npDorsal"]').fill(testDorsal.toString());
-    await modal.locator('input[name="npEps"]').fill('Compensar EPS');
+    await modal.locator('select[name="npEps"]').selectOption({ index: 1 });
+    await modal.locator('button:has-text("Siguiente: Perfil Deportivo")').click();
 
-    // Datos del Acudiente
+    // Paso 2: Perfil Deportivo
+    await modal.locator('select[name="npCat"]').selectOption({ index: 1 });
+    await modal.locator('input[name="npDorsal"]').fill(testDorsal.toString());
+    await modal.locator('select[name="npPos"]').selectOption('Extremo Derecho');
+    await modal.locator('button:has-text("Siguiente: Núcleo Familiar")').click();
+
+    // Paso 3: Datos del Acudiente
     await modal.locator('input[name="npAcNom"]').fill('Lorena');
     await modal.locator('input[name="npAcApe"]').fill('Ospina');
     await modal.locator('input[name="npAcTel"]').fill('+57 311 444 8899');

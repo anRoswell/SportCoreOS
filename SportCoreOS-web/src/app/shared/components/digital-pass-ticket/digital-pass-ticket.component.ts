@@ -29,7 +29,7 @@ export interface PassTicketData {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pass-ticket-card" [class.pending-mode]="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
+    <div class="pass-ticket-card ticket-card" [class.pending-mode]="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
       <!-- HEADER DEL PASE / TICKET -->
       <div class="ticket-header" [style.background]="getHeaderBackground()">
         <div class="ticket-brand">
@@ -39,14 +39,14 @@ export interface PassTicketData {
             <span class="sub-title">PASE OFICIAL DE ACCESO</span>
           </div>
         </div>
-        <div class="ticket-badge" [class.badge-approved]="ticket.paymentStatus === 'APROBADO'" [class.badge-pending]="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
+        <div class="ticket-badge ticket-status" [class.badge-approved]="ticket.paymentStatus === 'APROBADO'" [class.badge-pending]="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
           <i class="fa-solid" [ngClass]="ticket.paymentStatus === 'PENDIENTE_APROBACION' ? 'fa-clock' : 'fa-circle-check'"></i>
-          {{ ticket.paymentStatus === 'PENDIENTE_APROBACION' ? 'PENDIENTE VALIDACIÓN' : 'ACTIVO / VERIFICADO' }}
+          {{ ticket.paymentStatus === 'PENDIENTE_APROBACION' ? 'PENDIENTE DE APROBACIÓN' : 'INSCRIPCIÓN CONFIRMADA' }}
         </div>
       </div>
 
       <!-- ALERTA INFORMATIVA SI ESTÁ EN REVISIÓN DE TESORERÍA -->
-      <div class="pending-notice-bar" *ngIf="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
+      <div class="pending-notice-bar pending-approval-banner" *ngIf="ticket.paymentStatus === 'PENDIENTE_APROBACION'">
         <i class="fa-solid fa-vault"></i>
         <div>
           <strong>Comprobante en Revisión de Tesorería</strong>
@@ -110,7 +110,7 @@ export interface PassTicketData {
               alt="Código QR de Acceso" />
           </div>
           <div class="qr-meta-info">
-            <span class="token-code">{{ ticket.qrCodeToken || 'SPT-2026-PASS' }}</span>
+            <span class="token-code qr-code-text">{{ ticket.qrCodeToken || 'SPT-2026-PASS' }}</span>
             <span class="ref-code" *ngIf="ticket.referenceCode">Ref: {{ ticket.referenceCode }}</span>
             <p class="scan-instructions">
               Presenta este código en portería o al profesor en cancha para validar el ingreso.
@@ -121,10 +121,10 @@ export interface PassTicketData {
 
       <!-- FOOTER DE ACCIONES -->
       <div class="ticket-footer">
-        <button class="btn-share-whatsapp" (click)="onShareWhatsApp()">
+        <button class="btn-share-whatsapp btn-whatsapp btn-whatsapp-share" (click)="onShareWhatsApp()">
           <i class="fa-brands fa-whatsapp"></i> Compartir Pase
         </button>
-        <button class="btn-close-ticket" (click)="onFinish()">
+        <button class="btn-close-ticket btn-primary btn-close-sheet" (click)="onFinish()">
           <i class="fa-solid fa-check"></i> Finalizar
         </button>
       </div>

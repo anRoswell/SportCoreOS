@@ -1,0 +1,77 @@
+<div class="kpi-row scouting-kpis">
+  <div class="kpi-card fut-card kpi-scout-card">
+    <div class="kpi-top">
+      <div class="kpi-icon-wrap bg-blue-glow">
+        <i class="fa-solid fa-users-viewfinder"></i>
+      </div>
+      <span class="kpi-chip chip-blue"><i class="fa-solid fa-radar"></i> Pipeline Activo</span>
+    </div>
+    <div class="kpi-body">
+      <div class="kpi-val">{{ totalProspectos }}</div>
+      <div class="kpi-label">Talentos en Seguimiento</div>
+    </div>
+    <div class="kpi-footer-metric">
+      <div class="metric-progress-wrap">
+        <div class="metric-progress-bar" style="width: 100%; background: #3b82f6;"></div>
+      </div>
+      <span class="kpi-subtext">Base de datos de visorías y captación</span>
+    </div>
+  </div>
+
+  <div class="kpi-card fut-card kpi-scout-card">
+    <div class="kpi-top">
+      <div class="kpi-icon-wrap bg-amber-glow">
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <span class="kpi-chip chip-amber"><i class="fa-solid fa-fire"></i> Alta Prioridad</span>
+    </div>
+    <div class="kpi-body">
+      <div class="kpi-val">{{ countInteres }}</div>
+      <div class="kpi-label">Prioridad de Fichaje</div>
+    </div>
+    <div class="kpi-footer-metric">
+      <div class="metric-progress-wrap">
+        <div class="metric-progress-bar" [style.width.%]="ratioInteres" style="background: #f59e0b;"></div>
+      </div>
+      <span class="kpi-subtext">{{ ratioInteres }}% del pipeline en fase final</span>
+    </div>
+  </div>
+
+  <div class="kpi-card fut-card kpi-scout-card">
+    <div class="kpi-top">
+      <div class="kpi-icon-wrap bg-emerald-glow">
+        <i class="fa-solid fa-signature"></i>
+      </div>
+      <span class="kpi-chip chip-emerald"><i class="fa-solid fa-check-double"></i> Fichados</span>
+    </div>
+    <div class="kpi-body">
+      <div class="kpi-val">{{ countFichados }}</div>
+      <div class="kpi-label">Incorporados al Club</div>
+    </div>
+    <div class="kpi-footer-metric">
+      <div class="metric-progress-wrap">
+        <div class="metric-progress-bar" [style.width.%]="ratioFichados" style="background: #10b981;"></div>
+      </div>
+      <span class="kpi-subtext">Matriculados en planteles oficiales</span>
+    </div>
+  </div>
+
+  <div class="kpi-card fut-card kpi-scout-card">
+    <div class="kpi-top">
+      <div class="kpi-icon-wrap bg-purple-glow">
+        <i class="fa-solid fa-clipboard-check"></i>
+      </div>
+      <span class="kpi-chip chip-purple"><i class="fa-solid fa-chart-line"></i> Rúbricas</span>
+    </div>
+    <div class="kpi-body">
+      <div class="kpi-val">{{ globalTechnicalAvg }} <span class="kpi-unit">/ 10</span></div>
+      <div class="kpi-label">Promedio Técnico Global</div>
+    </div>
+    <div class="kpi-footer-metric">
+      <div class="metric-progress-wrap">
+        <div class="metric-progress-bar" [style.width.%]="averageRatingPercent" style="background: #a855f7;"></div>
+      </div>
+      <span class="kpi-subtext">Basado en evaluaciones 4-Pilares</span>
+    </div>
+  </div>
+</div>

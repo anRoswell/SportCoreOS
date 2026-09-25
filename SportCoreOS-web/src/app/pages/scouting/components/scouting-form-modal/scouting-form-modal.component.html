@@ -1,0 +1,102 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="modal-title-text">
+          <h2>Registrar Nuevo Talento / Prospecto</h2>
+          <p class="modal-subtitle">Captación en visorías externas, pruebas de admisión y scouting</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close.emit()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-id-card"></i> Datos Personales & Contacto</span>
+        <div class="form-row g2">
+          <div class="input-group">
+            <label>Nombres <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="prospectoForm.nombres" name="pNombres" placeholder="ej. Mateo" class="sport-input" required />
+          </div>
+          <div class="input-group">
+            <label>Apellidos <span class="required-star">*</span></label>
+            <input type="text" [(ngModel)]="prospectoForm.apellidos" name="pApellidos" placeholder="ej. Gómez Rojas" class="sport-input" required />
+          </div>
+        </div>
+
+        <div class="form-row g3">
+          <div class="input-group">
+            <label>Fecha de Nacimiento</label>
+            <input type="text" appFlatpickr [altInput]="false" placeholder="dd/mm/aaaa" [(ngModel)]="prospectoForm.fecha_nacimiento" name="pFechaNac" class="sport-input" />
+          </div>
+          <div class="input-group">
+            <label>Ciudad de Origen</label>
+            <input type="text" [(ngModel)]="prospectoForm.ciudad" name="pCiudad" placeholder="ej. Cali, Valle" class="sport-input" />
+          </div>
+          <div class="input-group">
+            <label>Teléfono / WhatsApp</label>
+            <input type="tel" [(ngModel)]="prospectoForm.telefono_contacto" name="pTel" placeholder="+57 312..." class="sport-input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-futbol"></i> Perfil Deportivo & Procedencia</span>
+        <div class="form-row g3">
+          <div class="input-group">
+            <label>Posición Principal <span class="required-star">*</span></label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="prospectoForm.posicion_principal" name="pPos" class="sport-input" required>
+                <option value="delantero">Delantero (DEL)</option>
+                <option value="mediocampista">Mediocampista / Volante (MED)</option>
+                <option value="defensa">Defensa / Lateral (DEF)</option>
+                <option value="portero">Portero / Guardameta (POR)</option>
+                @for (pos of posiciones; track pos.codigo) {
+                  <option [value]="pos.codigo">{{ pos.nombre }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Pierna Hábil</label>
+            <div class="sport-select-wrapper">
+              <select [(ngModel)]="prospectoForm.pierna_habil" name="pPierna" class="sport-input">
+                <option value="Derecha">Pie Derecho (Diestro)</option>
+                <option value="Izquierda">Pie Izquierdo (Zurdo)</option>
+                <option value="Ambidiestro">Ambidiestro</option>
+                @for (ph of piernasHabiles; track ph.codigo) {
+                  <option [value]="ph.codigo">{{ ph.nombre }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-chevron"></i>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Club / Escuela de Origen</label>
+            <input type="text" [(ngModel)]="prospectoForm.club_origen" name="pClubOrig" placeholder="ej. Academia Real Cali" class="sport-input" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBIDA DE ARCHIVO / DOCUMENTO DE VISORÍA -->
+      <div class="modal-section">
+        <span class="modal-section-title"><i class="fa-solid fa-file-arrow-up"></i> Documento / Ficha Técnica Adjunta</span>
+        <div class="input-group">
+          <label>Adjuntar Reporte de Visoría, Video o Ficha (PDF, Imagen)</label>
+          <input type="file" (change)="onFileSelected($event)" class="sport-input" accept=".pdf,.png,.jpg,.jpeg,.mp4" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="close.emit()">Cancelar</button>
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar Prospecto
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div class="fut-card squad-column">
+  <div class="squad-header">
+    <div class="squad-title">
+      <i [class]="iconClass"></i>
+      <h3>{{ title }}</h3>
+    </div>
+    <div class="squad-header-actions">
+      <span class="badge" [class.badge-success]="roleType === RolConvocatoria.TITULAR" [class.badge-blue]="roleType === RolConvocatoria.SUPLENTE">
+        {{ confirmedCount }} / {{ players.length }} Confirmados
+      </span>
+      <button
+        class="btn-squad-head-action"
+        [class.btn-add-titular]="roleType === RolConvocatoria.TITULAR"
+        [class.btn-add-suplente]="roleType === RolConvocatoria.SUPLENTE"
+        (click)="onAdd()"
+        [title]="roleType === RolConvocatoria.TITULAR ? 'Alinear nuevo jugador como Titular' : 'Añadir jugador a los Suplentes'"
+      >
+        <i class="fa-solid fa-user-plus"></i>
+        <span>{{ roleType === RolConvocatoria.TITULAR ? '+ Alinear Titular' : '+ Añadir Suplente' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="player-list">
+    @for (p of players; track p.jugador_id || p.id) {
+      <div class="player-row">
+        <div class="player-dorsal" [class.suplente-dorsal]="roleType === RolConvocatoria.SUPLENTE">
+          #{{ p.numero_dorsal || '-' }}
+        </div>
+        <img [src]="p.foto_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100'" alt="Player" class="player-avatar-sm" />
+        <div class="player-details">
+          <strong>{{ p.nombres }} {{ p.apellidos }}</strong>
+          <span class="pos-tag"><i class="fa-solid fa-shield-halved"></i> {{ p.posicion_designada || p.posicion_principal || 'Sin definir' }}</span>
+        </div>
+        <div class="player-status-actions">
+          <button
+            type="button"
+            class="btn-status-toggle"
+            (click)="onToggleStatus(p)"
+            [title]="'Estado actual: ' + p.estado_confirmacion + ' (Clic para cambiar estado)'"
+          >
+            <span
+              class="badge-status-pill"
+              [class.status-confirmado]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.CONFIRMADO"
+              [class.status-pendiente]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.PENDIENTE"
+              [class.status-excusado]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.EXCUSADO || p.estado_confirmacion === EstadoConfirmacionConvocatoria.RECHAZADO"
+            >
+              <i
+                class="fa-solid"
+                [class.fa-circle-check]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.CONFIRMADO"
+                [class.fa-clock]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.PENDIENTE"
+                [class.fa-circle-xmark]="p.estado_confirmacion === EstadoConfirmacionConvocatoria.EXCUSADO || p.estado_confirmacion === EstadoConfirmacionConvocatoria.RECHAZADO"
+              ></i>
+              <span>{{ p.estado_confirmacion }}</span>
+            </span>
+          </button>
+          
+          <button
+            type="button"
+            class="btn-action-role"
+            [class.btn-to-suplente]="roleType === RolConvocatoria.TITULAR"
+            [class.btn-promote-titular]="roleType === RolConvocatoria.SUPLENTE"
+            (click)="onSwitchRole(p)"
+            [title]="roleType === RolConvocatoria.TITULAR ? 'Enviar al Banco de Suplentes' : 'Alinear en el Once Titular'"
+          >
+            <i class="fa-solid" [class.fa-chair]="roleType === RolConvocatoria.TITULAR" [class.fa-futbol]="roleType === RolConvocatoria.SUPLENTE"></i>
+            <span>{{ roleType === RolConvocatoria.TITULAR ? 'A Suplentes' : 'Alinear Titular' }}</span>
+          </button>
+          
+          <button
+            type="button"
+            class="btn-action-icon btn-remove"
+            (click)="onRemove(p)"
+            title="Quitar de convocatoria"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-squad">
+        <i class="fa-solid" [class.fa-clipboard-user]="roleType === RolConvocatoria.TITULAR" [class.fa-users-slash]="roleType === RolConvocatoria.SUPLENTE"></i>
+        <p>{{ roleType === RolConvocatoria.TITULAR ? 'No hay titulares asignados todavía.' : 'No hay suplentes asignados todavía.' }}</p>
+        <button class="btn-secondary btn-sm" (click)="onAdd()">
+          <i class="fa-solid fa-user-plus"></i> {{ roleType === RolConvocatoria.TITULAR ? 'Alinear Primer Titular' : 'Añadir Suplente' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

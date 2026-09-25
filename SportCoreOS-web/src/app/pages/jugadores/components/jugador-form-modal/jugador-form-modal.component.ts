@@ -181,16 +181,27 @@ export class JugadorFormModalComponent {
     reader.onload = (e) => this.localPhotoPreview.set(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    this.api.uploadFile(file, 'jugadores').subscribe({
-      next: (res: any) => {
-        this.uploadingPhoto.set(false);
-        this.formData.fotoUrl = res.url || res.fullUrl || res.fotoUrl;
-        this.localPhotoPreview.set(null);
-      },
-      error: () => {
-        this.uploadingPhoto.set(false);
-      }
-    });
+    const docIdentidad = this.formData.numeroDocumento?.trim() || '';
+
+    this.api
+      .uploadFile(
+        file,
+        'jugadores',
+        'JUGADOR',
+        this.formData.id || undefined,
+        'FOTO_PERFIL',
+        docIdentidad || undefined,
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.uploadingPhoto.set(false);
+          this.formData.fotoUrl = res.url || res.fullUrl || res.fotoUrl;
+          this.localPhotoPreview.set(null);
+        },
+        error: () => {
+          this.uploadingPhoto.set(false);
+        },
+      });
   }
 
   removePhoto() {

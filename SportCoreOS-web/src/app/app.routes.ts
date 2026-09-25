@@ -30,7 +30,7 @@ export const dashboardRoutes: Routes = [
 
 /* =============================================================================
    3. MÓDULO DE GESTIÓN DEPORTIVA (PLANTELES & ATLETAS)
-   Rutas agrupadas: /deportivo/...
+   Rutas agrupadas: /deportivo/... y directas: /jugadores, /categorias
    ============================================================================= */
 export const gestionDeportivaRoutes: Routes = [
   {
@@ -64,14 +64,33 @@ export const gestionDeportivaRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'jugadores', redirectTo: 'deportivo/jugadores', pathMatch: 'full' },
-  { path: 'categorias', redirectTo: 'deportivo/categorias', pathMatch: 'full' },
+  {
+    path: 'jugadores',
+    loadComponent: () =>
+      import('./pages/jugadores/jugadores.component').then((m) => m.JugadoresComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'DEPORTIVO_JUGADORES',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'ADMIN_FINANCIERO'],
+      title: 'Jugadores & Fichas 360°'
+    },
+  },
+  {
+    path: 'categorias',
+    loadComponent: () =>
+      import('./pages/categorias/categorias.component').then((m) => m.CategoriasComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'DEPORTIVO_CATEGORIAS',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Categorías & Divisiones'
+    },
+  },
 ];
 
 /* =============================================================================
    4. MÓDULO DE COMPETICIÓN & CONVOCATORIAS
-   Rutas agrupadas: /competicion/...
+   Rutas agrupadas: /competicion/... y directas: /partidos, /convocatorias
    ============================================================================= */
 export const competicionRoutes: Routes = [
   {
@@ -110,15 +129,38 @@ export const competicionRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'partidos', redirectTo: 'competicion/partidos', pathMatch: 'full' },
-  { path: 'partido', redirectTo: 'competicion/partidos', pathMatch: 'full' },
-  { path: 'convocatorias', redirectTo: 'competicion/convocatorias', pathMatch: 'full' },
+  {
+    path: 'partidos',
+    loadComponent: () =>
+      import('./pages/partidos/partidos.component').then((m) => m.PartidosComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'COMPETICION_PARTIDOS',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Fixture & Partidos Oficiales'
+    },
+  },
+  {
+    path: 'partido',
+    redirectTo: 'partidos',
+    pathMatch: 'full',
+  },
+  {
+    path: 'convocatorias',
+    loadComponent: () =>
+      import('./pages/convocatorias/convocatorias.component').then((m) => m.ConvocatoriasComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'COMPETICION_CONVOCATORIAS',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Convocatorias & Citaciones'
+    },
+  },
 ];
 
 /* =============================================================================
    5. MÓDULO DE CIENCIAS DEL DEPORTE & RENDIMIENTO
-   Rutas agrupadas: /rendimiento/...
+   Rutas agrupadas: /rendimiento/... y directas: /biometria, /telemetria, /scouting, /ranking
    ============================================================================= */
 export const rendimientoRoutes: Routes = [
   {
@@ -172,16 +214,55 @@ export const rendimientoRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'biometria', redirectTo: 'rendimiento/biometria', pathMatch: 'full' },
-  { path: 'telemetria', redirectTo: 'rendimiento/telemetria', pathMatch: 'full' },
-  { path: 'scouting', redirectTo: 'rendimiento/scouting', pathMatch: 'full' },
-  { path: 'ranking', redirectTo: 'rendimiento/ranking', pathMatch: 'full' },
+  {
+    path: 'biometria',
+    loadComponent: () =>
+      import('./pages/biometria/biometria.component').then((m) => m.BiometriaComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'RENDIMIENTO_BIOMETRIA',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Biometría & Tests Antropométricos'
+    },
+  },
+  {
+    path: 'telemetria',
+    loadComponent: () =>
+      import('./pages/telemetria/telemetria.component').then((m) => m.TelemetriaComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'RENDIMIENTO_TELEMETRIA',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Telemetría GPS & Carga Cinemática'
+    },
+  },
+  {
+    path: 'scouting',
+    loadComponent: () =>
+      import('./pages/scouting/scouting.component').then((m) => m.ScoutingComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'RENDIMIENTO_SCOUTING',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      title: 'Scouting, Visorías & Captación'
+    },
+  },
+  {
+    path: 'ranking',
+    loadComponent: () =>
+      import('./pages/ranking-gamificado/ranking-gamificado.component').then((m) => m.RankingGamificadoComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'RENDIMIENTO_RANKING_GAMIFICADO',
+      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'SUPER_ADMIN', 'ADMIN_FINANCIERO'],
+      title: 'Leaderboard & Ranking Gamificado XP'
+    },
+  },
 ];
 
 /* =============================================================================
    6. MÓDULO DE INTELIGENCIA ARTIFICIAL (SPORTCORE AI)
-   Rutas agrupadas: /ia/...
+   Rutas agrupadas: /ia/... y directas: /ia
    ============================================================================= */
 export const iaRoutes: Routes = [
   {
@@ -190,8 +271,13 @@ export const iaRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'copiloto',
-        pathMatch: 'full',
+        loadComponent: () =>
+          import('./pages/ia/ia.component').then((m) => m.IaComponent),
+        data: { 
+          module: 'IA_COPILOTO',
+          roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+          title: 'Copiloto Táctico AI (Gemini)'
+        },
       },
       {
         path: 'copiloto',
@@ -209,7 +295,7 @@ export const iaRoutes: Routes = [
 
 /* =============================================================================
    7. MÓDULO DE ADMINISTRACIÓN FINANCIERA & RECAUDO PSE
-   Rutas agrupadas: /finanzas/...
+   Rutas agrupadas: /finanzas/... y directas: /finanzas
    ============================================================================= */
 export const finanzasRoutes: Routes = [
   {
@@ -218,8 +304,13 @@ export const finanzasRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'recaudo',
-        pathMatch: 'full',
+        loadComponent: () =>
+          import('./pages/finanzas/finanzas.component').then((m) => m.FinanzasComponent),
+        data: { 
+          module: 'FINANZAS_RECAUDO',
+          roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+          title: 'Cobranza, Pensiones & Recaudo PSE'
+        },
       },
       {
         path: 'recaudo',
@@ -237,7 +328,7 @@ export const finanzasRoutes: Routes = [
 
 /* =============================================================================
    8. MÓDULO DE INFRAESTRUCTURA, CANCHAS & TIENDA OFICIAL
-   Rutas agrupadas: /infraestructura/...
+   Rutas agrupadas: /infraestructura/... y directas: /canchas, /tienda, /servicios
    ============================================================================= */
 export const infraestructuraRoutes: Routes = [
   {
@@ -281,15 +372,44 @@ export const infraestructuraRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'canchas', redirectTo: 'infraestructura/canchas', pathMatch: 'full' },
-  { path: 'tienda', redirectTo: 'infraestructura/tienda', pathMatch: 'full' },
-  { path: 'servicios', redirectTo: 'infraestructura/servicios', pathMatch: 'full' },
+  {
+    path: 'canchas',
+    loadComponent: () =>
+      import('./pages/canchas/canchas.component').then((m) => m.CanchasComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'INFRAESTRUCTURA_CANCHAS',
+      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
+      title: 'Alquiler de Canchas & Escenarios'
+    },
+  },
+  {
+    path: 'tienda',
+    loadComponent: () =>
+      import('./pages/tienda/tienda.component').then((m) => m.TiendaComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'INFRAESTRUCTURA_TIENDA',
+      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
+      title: 'Tienda Oficial & Kits Deportivos'
+    },
+  },
+  {
+    path: 'servicios',
+    loadComponent: () =>
+      import('./pages/servicios/servicios.component').then((m) => m.ServiciosComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'SERVICIOS_MASTERCLASSES',
+      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT', 'SUPER_ADMIN'],
+      title: 'Clínicas & Masterclasses Pro'
+    },
+  },
 ];
 
 /* =============================================================================
    9. MÓDULO DE MARKETING, SLIDERS & CREADOR DE LANDINGS
-   Rutas agrupadas: /marketing/...
+   Rutas agrupadas: /marketing/... y directas: /sliders-promocionales, /landing-builder
    ============================================================================= */
 export const marketingRoutes: Routes = [
   {
@@ -333,14 +453,33 @@ export const marketingRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'sliders-promocionales', redirectTo: 'marketing/sliders', pathMatch: 'full' },
-  { path: 'landing-builder', redirectTo: 'marketing/landings', pathMatch: 'full' },
+  {
+    path: 'sliders-promocionales',
+    loadComponent: () =>
+      import('./pages/sliders-promocionales/sliders-promocionales.component').then((m) => m.SlidersPromocionalesComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'MARKETING_SLIDERS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Sliders Promocionales & Onboarding'
+    },
+  },
+  {
+    path: 'landing-builder',
+    loadComponent: () =>
+      import('./pages/landing-builder/landing-builder.component').then((m) => m.LandingBuilderComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'MARKETING_LANDINGS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Creador de Landing Pages & Contenidos'
+    },
+  },
 ];
 
 /* =============================================================================
    10. MÓDULO DE PORTAL MÓVIL DE FAMILIAS & PADRES
-   Rutas agrupadas: /portal/...
+   Rutas agrupadas: /portal/... y directas: /portal-padres
    ============================================================================= */
 export const portalPadresRoutes: Routes = [
   {
@@ -362,13 +501,20 @@ export const portalPadresRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'portal-padres', redirectTo: 'portal/padres', pathMatch: 'full' },
+  {
+    path: 'portal-padres',
+    loadComponent: () =>
+      import('./pages/portal-padres/portal-padres.component').then((m) => m.PortalPadresComponent),
+    data: { 
+      module: 'PORTAL_PADRES',
+      title: 'Portal Móvil para Padres de Familia'
+    },
+  },
 ];
 
 /* =============================================================================
    11. MÓDULO DE CONFIGURACIÓN SAAS, MULTI-TENANT & i18n
-   Rutas agrupadas: /configuracion/...
+   Rutas agrupadas: /configuracion/... y directas: /modulos-escuela, /parametros, /roles-permisos, /idiomas
    ============================================================================= */
 export const configuracionSaaSRoutes: Routes = [
   {
@@ -422,11 +568,50 @@ export const configuracionSaaSRoutes: Routes = [
       },
     ],
   },
-  // Retrocompatibilidad
-  { path: 'modulos-escuela', redirectTo: 'configuracion/modulos', pathMatch: 'full' },
-  { path: 'parametros', redirectTo: 'configuracion/parametros', pathMatch: 'full' },
-  { path: 'roles-permisos', redirectTo: 'configuracion/roles-permisos', pathMatch: 'full' },
-  { path: 'idiomas', redirectTo: 'configuracion/idiomas', pathMatch: 'full' },
+  {
+    path: 'modulos-escuela',
+    loadComponent: () =>
+      import('./pages/modulos-escuela/modulos-escuela.component').then((m) => m.ModulosEscuelaComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_MODULOS_ESCUELA',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+      title: 'Gestión de Módulos por Escuela'
+    },
+  },
+  {
+    path: 'parametros',
+    loadComponent: () =>
+      import('./pages/parametros/parametros.component').then((m) => m.ParametrosComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_PARAMETROS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Parámetros Globales del Sistema'
+    },
+  },
+  {
+    path: 'roles-permisos',
+    loadComponent: () =>
+      import('./pages/roles-permisos/roles-permisos.component').then((m) => m.RolesPermisosComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_ROLES_PERMISOS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+      title: 'Matriz de Roles & Permisos RBAC'
+    },
+  },
+  {
+    path: 'idiomas',
+    loadComponent: () =>
+      import('./pages/idiomas/idiomas.component').then((m) => m.IdiomasComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_IDIOMAS',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      title: 'Centro de Idiomas & i18n'
+    },
+  },
 ];
 
 /* =============================================================================

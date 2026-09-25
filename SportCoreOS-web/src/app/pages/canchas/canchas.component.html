@@ -11,6 +11,7 @@
             <input
               type="text"
               appFlatpickr
+              [altInput]="false"
               placeholder="dd/mm/aaaa"
               [ngModel]="selectedFecha()"
               (ngModelChange)="onFechaChange($event)"
@@ -201,7 +202,7 @@
                   </div>
                   <div class="input-group">
                     <label>Fecha de Turno <span class="required-star">*</span></label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="reservaForm.fecha_reserva" name="fecha_reserva" class="sport-input" required />
+                    <input type="text" appFlatpickr [altInput]="false" placeholder="dd/mm/aaaa" [(ngModel)]="reservaForm.fecha_reserva" name="fecha_reserva" class="sport-input" required />
                   </div>
                 </div>
 
