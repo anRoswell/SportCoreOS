@@ -10,15 +10,14 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-SportCoreQA2026*}
       POSTGRES_DB: ${DB_NAME:-sportcoreos_db_qa}
     ports:
-      - "55132:5432"
+      - "${HOST_DB_PORT:-55132}:5432"
     volumes:
       - sportcoreos_qa_postgres_data:/var/lib/postgresql/data
-      - ../../SportCoreOS-api/src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ../../SportCoreOS-api/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     networks:
       - sportcoreos_qa_net
 
   backend:
+    image: ${API_IMAGE:-ghcr.io/anroswell/sportcoreos-api:qa-latest}
     build:
       context: ../../SportCoreOS-api
       dockerfile: Dockerfile
@@ -28,12 +27,15 @@ services:
       - .env
     ports:
       - "3001:3001"
+    volumes:
+      - sportcoreos_qa_uploads:/usr/src/app/uploads
     depends_on:
       - postgres-qa
     networks:
       - sportcoreos_qa_net
 
   frontend:
+    image: ${WEB_IMAGE:-ghcr.io/anroswell/sportcoreos-web:qa-latest}
     build:
       context: ../../SportCoreOS-web
       dockerfile: Dockerfile
@@ -48,6 +50,7 @@ services:
 
 volumes:
   sportcoreos_qa_postgres_data:
+  sportcoreos_qa_uploads:
 
 networks:
   sportcoreos_qa_net:

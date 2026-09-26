@@ -1,0 +1,142 @@
+name: SportCoreOS — CI Matrix & Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - dev
+      - develop
+  workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: '¿Ejecutar suite de pruebas E2E Playwright? (Solo con autorización explícita)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  # ============================================================================
+  # 1. VERIFICACIÓN Y COMPILACIÓN DEL BACKEND API (NestJS 11)
+  # ============================================================================
+  api-build-check:
+    name: Backend API — NestJS Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: SportCoreOS-api/package-lock.json
+
+      - name: Install API Dependencies
+        working-directory: SportCoreOS-api
+        run: npm ci
+
+      - name: Compile Backend API
+        working-directory: SportCoreOS-api
+        run: npm run build
+
+  # ============================================================================
+  # 2. VERIFICACIÓN Y COMPILACIÓN DEL FRONTEND WEB (Angular 19)
+  # ============================================================================
+  web-build-check:
+    name: Frontend Web — Angular 19 Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: SportCoreOS-web/package-lock.json
+
+      - name: Install Web Dependencies
+        working-directory: SportCoreOS-web
+        run: npm ci
+
+      - name: Compile Frontend Web (Production)
+        working-directory: SportCoreOS-web
+        run: npm run build
+
+  # ============================================================================
+  # 3. VERIFICACIÓN Y COMPILACIÓN DE LA APP MÓVIL (Ionic / Angular 19)
+  # ============================================================================
+  mobile-build-check:
+    name: Mobile App — Ionic/Angular Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: SportCoreOS-mobile/package-lock.json
+
+      - name: Install Mobile Dependencies
+        working-directory: SportCoreOS-mobile
+        run: npm ci
+
+      - name: Compile Mobile App (Production)
+        working-directory: SportCoreOS-mobile
+        run: npm run build
+
+  # ============================================================================
+  # 4. SUITE DE PRUEBAS E2E (Solo cuando se active explícitamente)
+  # ============================================================================
+  e2e-playwright:
+    name: E2E Playwright Suite (Condicional)
+    needs: [api-build-check, web-build-check]
+    if: ${{ github.event.inputs.run_e2e == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: SportCoreOS-web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: SportCoreOS-web
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: SportCoreOS-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright Tests
+        working-directory: SportCoreOS-web
+        run: npx playwright test
+
+      - name: Upload Test Report (On Failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: SportCoreOS-web/playwright-report/
+          retention-days: 14

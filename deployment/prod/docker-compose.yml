@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  postgres-prod:
+    image: postgres:16-alpine
+    container_name: sportcoreos_prod_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-sportcore_user_prod}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-sportcoreos_db_prod}
+    volumes:
+      - sportcoreos_prod_postgres_data:/var/lib/postgresql/data
+    networks:
+      - sportcoreos_prod_net
+
+  backend:
+    image: ${API_IMAGE:-ghcr.io/anroswell/sportcoreos-api:latest}
+    build:
+      context: ../../SportCoreOS-api
+      dockerfile: Dockerfile
+    container_name: sportcoreos_api_prod
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    volumes:
+      - sportcoreos_prod_uploads:/usr/src/app/uploads
+    depends_on:
+      - postgres-prod
+    networks:
+      - sportcoreos_prod_net
+
+  frontend:
+    image: ${WEB_IMAGE:-ghcr.io/anroswell/sportcoreos-web:latest}
+    build:
+      context: ../../SportCoreOS-web
+      dockerfile: Dockerfile
+    container_name: sportcoreos_web_prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - sportcoreos_prod_net
+
+volumes:
+  sportcoreos_prod_postgres_data:
+  sportcoreos_prod_uploads:
+
+networks:
+  sportcoreos_prod_net:
+    driver: bridge

@@ -27,8 +27,11 @@ SportCoreOS-mobile/android/build/
 SportCoreOS-mobile/android/captures/
 SportCoreOS-mobile/android/.idea/
 SportCoreOS-mobile/android/*.iml
-SportCoreOS-mobile/android/local.properties
-SportCoreOS-mobile/ios/DerivedData/
-SportCoreOS-mobile/ios/App/build/
-SportCoreOS-mobile/ios/App/Pods/
-SportCoreOS-mobile/ios/App/Podfile.lock
+# Keys & Secrets
+id_ed25519*
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+
