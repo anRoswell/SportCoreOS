@@ -1,0 +1,37 @@
+name: SportCoreOS Backend — CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - dev
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: NestJS API Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile NestJS API
+        run: npm run build
