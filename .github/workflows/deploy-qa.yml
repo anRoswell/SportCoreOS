@@ -17,8 +17,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  API_IMAGE_NAME: ${{ github.repository_owner }}/sportcoreos-api
-  WEB_IMAGE_NAME: ${{ github.repository_owner }}/sportcoreos-web
 
 jobs:
   # ============================================================================
@@ -106,17 +104,26 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to VPS via SSH (Solo si VPS_HOST está configurado)
-        if: ${{ env.HAS_VPS_SECRET == 'true' }}
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Check VPS Configuration Secrets
+        id: check_vps
+        run: |
+          if [ -n "$VPS_HOST" ]; then
+            echo "has_vps=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_vps=false" >> $GITHUB_OUTPUT
+          fi
         env:
-          HAS_VPS_SECRET: ${{ secrets.VPS_HOST != '' }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+
+      - name: Deploy to VPS via SSH
+        if: steps.check_vps.outputs.has_vps == 'true'
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: ${{ secrets.VPS_PORT || '22' }}
           timeout: 60s
           command_timeout: 10m
           script: |
@@ -134,7 +141,7 @@ jobs:
             echo "✅ Despliegue de SportCoreOS QA completado exitosamente."
 
       - name: Notificar si VPS no tiene secretos configurados
-        if: ${{ secrets.VPS_HOST == '' }}
+        if: steps.check_vps.outputs.has_vps != 'true'
         run: |
           echo "ℹ️ Las imágenes Docker fueron construidas y publicadas en GHCR con éxito."
           echo "ℹ️ El paso de despliegue remoto por SSH se omitió porque el secreto 'VPS_HOST' aún no ha sido configurado en el repositorio."
