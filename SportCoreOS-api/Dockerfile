@@ -33,6 +33,7 @@ RUN apk add --no-cache python3 make g++ && \
     npm cache clean --force
 
 COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/src/database/*.sql ./dist/database/
 
 # Directorio para subidas persistentes de archivos y permisos de usuario
 RUN mkdir -p uploads && chown -R node:node /usr/src/app

@@ -95,7 +95,9 @@ export const DEFAULT_CLUBS: Club[] = [
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl || 'http://localhost:3001/api/v1';
+  private apiUrl = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? '/api/v1'
+    : (environment.apiUrl || 'http://localhost:3001/api/v1');
 
   // Lista de Clubes Multi-Tenant (cargada dinámicamente desde la BD con fallback inmediato)
   readonly availableClubs = signal<Club[]>(DEFAULT_CLUBS);
