@@ -33,6 +33,7 @@ export interface AlumnoRankItem {
   xpRendimientoDT: number; // Bonificaciones de destacados
   xpMisiones: number; // Retos superados
   xpTactica: number; // Trivia táctica
+  xpLiga: number; // Estadísticas verificadas en competiciones externas
   xpPenalizaciones: number; // Inasistencias sin justificación descontadas (-30 XP)
   asistenciasEfectividad: number; // % Asistencia
   rachaEntrenamientos: number; // Racha de días seguidos (fuego 🔥)
@@ -54,6 +55,7 @@ import { RankingRetosComponent } from './components/ranking-retos/ranking-retos.
 import { RankingCertificacionDtComponent } from './components/ranking-certificacion-dt/ranking-certificacion-dt.component';
 import { RankingFutDrawerComponent } from './components/ranking-fut-drawer/ranking-fut-drawer.component';
 import { RankingReglasModalComponent } from './components/ranking-reglas-modal/ranking-reglas-modal.component';
+import { RankingLigaComponent } from './components/ranking-liga/ranking-liga.component';
 
 @Component({
   selector: 'app-ranking-gamificado',
@@ -66,7 +68,8 @@ import { RankingReglasModalComponent } from './components/ranking-reglas-modal/r
     RankingRetosComponent,
     RankingCertificacionDtComponent,
     RankingFutDrawerComponent,
-    RankingReglasModalComponent
+    RankingReglasModalComponent,
+    RankingLigaComponent
   ],
   encapsulation: ViewEncapsulation.None,
   templateUrl: './ranking-gamificado.component.html',
@@ -85,6 +88,7 @@ export class RankingGamificadoComponent implements OnInit {
 
   // Pestaña Principal de la Vista
   activeMainTab = signal<TabRanking>(TabRanking.LEADERBOARD);
+  activeJuegoVista = signal<TabRanking>(TabRanking.RETOS);
 
   // Filtros de Clasificación
   categoriaSeleccionada = signal<string>('TODAS');
@@ -297,7 +301,8 @@ export class RankingGamificadoComponent implements OnInit {
   }
 
   private mapJugadorToRankItem(j: any, rankNumber: number): AlumnoRankItem {
-    const nivel = Math.max(1, Math.floor((j.xp_total || 2000) / 250));
+    const xpTotal = Number(j.xp_total) || 0;
+    const nivel = Math.max(1, Math.floor(xpTotal / 250));
     let tier: TierRank = TierRank.BRONCE;
     if (nivel >= 15) tier = TierRank.DIAMANTE;
     else if (nivel >= 12) tier = TierRank.ORO;
@@ -310,30 +315,31 @@ export class RankingGamificadoComponent implements OnInit {
       nombres: j.nombres || 'Jugador',
       apellidos: j.apellidos || '',
       dorsal: j.numero_dorsal || rankNumber,
-      posicionCampo: j.posicion_principal || 'Volante',
-      categoriaId: j.categoria_id || 'cat-u15',
-      categoriaNombre: j.categoria_nombre || 'Sub-15 Élite',
+      posicionCampo: j.posicion_principal || 'Sin posición',
+      categoriaId: j.categoria_id || '',
+      categoriaNombre: j.categoria_nombre || 'Sin categoría',
       fotoUrl: j.foto_url || `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200`,
       tier: tier,
       nivel: nivel,
-      overallRating: j.overall_rating || (72 + (rankNumber % 18)),
-      xpTotal: j.xp_total || (3500 - (rankNumber - 1) * 110),
-      xpAsistencia: j.xp_asistencia || 1150,
-      xpRendimientoDT: j.xp_rendimiento_dt || 650,
-      xpMisiones: j.xp_misiones || 520,
-      xpTactica: j.xp_tactica || 480,
-      xpPenalizaciones: j.xp_penalizaciones || 0,
-      asistenciasEfectividad: j.porcentaje_asistencia || 92,
-      rachaEntrenamientos: j.racha_asistencia || (rankNumber % 9),
-      insigniasCount: 4,
-      destacadoSemana: rankNumber === 1,
+      overallRating: Number(j.overall_rating) || 0,
+      xpTotal,
+      xpAsistencia: Number(j.xp_asistencia) || 0,
+      xpRendimientoDT: Number(j.xp_rendimiento_dt) || 0,
+      xpMisiones: Number(j.xp_misiones) || 0,
+      xpTactica: Number(j.xp_tactica) || 0,
+      xpLiga: Number(j.xp_liga) || 0,
+      xpPenalizaciones: Number(j.xp_penalizaciones) || 0,
+      asistenciasEfectividad: Number(j.porcentaje_asistencia) || 0,
+      rachaEntrenamientos: Number(j.racha_asistencia) || 0,
+      insigniasCount: Number(j.insignias_count) || 0,
+      destacadoSemana: j.destacado_semana === true,
       stats: {
-        ritmo: j.stat_ritmo || 82,
-        tiro: j.stat_tiro || 76,
-        pase: j.stat_pase || 84,
-        regate: j.stat_regate || 83,
-        defensa: j.stat_defensa || 64,
-        fisico: j.stat_fisico || 75
+        ritmo: Number(j.stat_ritmo) || 0,
+        tiro: Number(j.stat_tiro) || 0,
+        pase: Number(j.stat_pase) || 0,
+        regate: Number(j.stat_regate) || 0,
+        defensa: Number(j.stat_defensa) || 0,
+        fisico: Number(j.stat_fisico) || 0
       }
     };
   }
@@ -449,16 +455,33 @@ export class RankingGamificadoComponent implements OnInit {
   // GESTIÓN DE RETOS INDIVIDUALES COMPROBABLES (FLEXIONES, DOMINADAS, ETC.)
   // =========================================================================
   setMainTab(tab: TabRanking): void {
+    if (tab === TabRanking.CERTIFICACION_DT) {
+      this.activeMainTab.set(TabRanking.RETOS);
+      this.activeJuegoVista.set(TabRanking.CERTIFICACION_DT);
+      this.cargarRetosPendientesDT();
+      return;
+    }
     this.activeMainTab.set(tab);
-    if (tab === TabRanking.RETOS) {
+    if (tab === TabRanking.LEADERBOARD) {
+      this.cargarTop3Podio();
+      this.cargarJugadoresDesdeBD();
+    } else if (tab === TabRanking.RETOS) {
+      this.activeJuegoVista.set(TabRanking.RETOS);
       if (!this.jugadorParaRetos()) {
         const primero = this.alumnos()[0] || this.top3()[0];
         if (primero) {
           this.seleccionarJugadorParaRetos(primero);
         }
       }
-    } else if (tab === TabRanking.CERTIFICACION_DT) {
-      this.cargarRetosPendientesDT();
+    }
+  }
+
+  setJuegoVista(tab: TabRanking): void {
+    this.activeJuegoVista.set(tab);
+    if (tab === TabRanking.CERTIFICACION_DT) this.cargarRetosPendientesDT();
+    if (tab === TabRanking.RETOS && !this.jugadorParaRetos()) {
+      const primero = this.alumnos()[0] || this.top3()[0];
+      if (primero) this.seleccionarJugadorParaRetos(primero);
     }
   }
 
@@ -532,7 +555,7 @@ export class RankingGamificadoComponent implements OnInit {
 
   private calcularMetricasLocales(jugadorId: string): any {
     const jug = this.jugadorParaRetos() || this.alumnos().find(a => a.id === jugadorId);
-    const xpTotalJugador = jug ? jug.xpTotal : 3120;
+    const xpTotalJugador = jug ? jug.xpTotal : 0;
     const catalogo = this.retosCatalogo();
     
     let xpTotalCatalogo = 0;
@@ -582,12 +605,12 @@ export class RankingGamificadoComponent implements OnInit {
       jugadorId,
       xpTotalJugador,
       xpRetosObtenido,
-      xpTotalCatalogo: xpTotalCatalogo || 3610,
+      xpTotalCatalogo,
       porcentajeXpRetos,
       porcentajeCatalogoCompletado,
       retosAprobadosCount,
       retosPendientesCount: this.retosDelJugador().filter(p => p.estado === EstadoRetoJugador.COMPROBABLE).length,
-      totalNivelesCatalogo: totalNivelesCatalogo || 21,
+      totalNivelesCatalogo,
       desgloseCategorias: desglose
     };
   }
@@ -802,4 +825,3 @@ export class RankingGamificadoComponent implements OnInit {
     return 'Mantiene su posición';
   }
 }
-

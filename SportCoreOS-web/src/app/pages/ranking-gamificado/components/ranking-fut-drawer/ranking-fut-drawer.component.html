@@ -38,6 +38,10 @@
               <span class="lbl"><i class="fa-solid fa-chess-knight text-purple"></i> Decisiones Tácticas:</span>
               <strong class="val text-purple">+{{ alumno.xpTactica }} XP</strong>
             </div>
+            <div class="xp-row">
+              <span class="lbl"><i class="fa-solid fa-earth-americas text-cyan"></i> Partidos de Liga validados:</span>
+              <strong class="val text-cyan">+{{ alumno.xpLiga }} XP</strong>
+            </div>
             @if ((alumno.xpPenalizaciones || 0) < 0) {
               <div class="xp-row row-penalty">
                 <span class="lbl"><i class="fa-solid fa-triangle-exclamation text-rose"></i> Penalizaciones Inasistencia Injustificada:</span>

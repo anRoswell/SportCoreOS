@@ -176,6 +176,7 @@ export enum TabRanking {
   LEADERBOARD = 'LEADERBOARD',
   RETOS = 'RETOS',
   CERTIFICACION_DT = 'CERTIFICACION_DT',
+  LIGA = 'LIGA',
 }
 
 export enum FiltroTemporalRanking {
@@ -409,7 +410,6 @@ export enum MetodoPagoTienda {
   EFECTIVO_CAJA = 'EFECTIVO_CAJA',
   TRANSFERENCIA = 'TRANSFERENCIA',
 }
-
 
 
 

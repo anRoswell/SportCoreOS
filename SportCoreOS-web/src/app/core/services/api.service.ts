@@ -1122,6 +1122,36 @@ export class ApiService {
     );
   }
 
+  // ==========================================
+  // RENDIMIENTO / RANKING: ESTADÍSTICAS EXTERNAS DE LIGA
+  // ==========================================
+  getLigaEstadisticas(options?: { categoriaId?: string; temporada?: string }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.categoriaId) params = params.set('categoriaId', options.categoriaId);
+    if (options?.temporada?.trim()) params = params.set('temporada', options.temporada.trim());
+    return this.http.get<any>(`${this.apiUrl}/rendimiento/liga`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  registrarPartidoLigaManual(dto: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/rendimiento/liga/partidos/manual`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  importarPartidoLigaCsv(dto: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/rendimiento/liga/partidos/csv`, dto).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  validarPartidoLiga(partidoId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/rendimiento/liga/partidos/${partidoId}/validar`, {}).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   // =========================================================================
   // MÓDULO: SLIDERS PROMOCIONALES & ONBOARDING MARKETING CRUD
   // =========================================================================
@@ -1391,7 +1421,6 @@ export interface LandingLead {
   ip_registro?: string;
   created_at?: string | Date;
 }
-
 
 
 

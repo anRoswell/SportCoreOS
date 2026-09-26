@@ -52,68 +52,6 @@ export class LandingsRepository {
 
   constructor(private readonly db: DatabaseService) {
     this.seedDefaultLandings();
-    this.initDatabaseSchema();
-  }
-
-  private async initDatabaseSchema() {
-    try {
-      await this.db.query(`ALTER TABLE core.landing_pages ADD COLUMN IF NOT EXISTS es_pagina_inicio BOOLEAN DEFAULT FALSE;`);
-      
-      // Update each school's portada landing in database
-      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000001', es_pagina_inicio = TRUE WHERE slug = 'academia-elite-2026';`);
-      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000002', es_pagina_inicio = TRUE WHERE slug = 'semillero-santa-fe';`);
-      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000003', es_pagina_inicio = TRUE WHERE slug = 'millonarios-cantera-norte';`);
-      await this.db.query(`UPDATE core.landing_pages SET club_id = '10000000-0000-0000-0000-000000000004', es_pagina_inicio = TRUE WHERE slug = 'atletico-nacional-cantera';`);
-
-      for (const item of this.memoryLandings) {
-        try {
-          await this.db.query(
-            `INSERT INTO core.landing_pages (
-              id, club_id, tipo_contenido, titulo, subtitulo, slug, estado,
-              tema_color, tema_gradient, tema_modo, meta_descripcion, meta_keywords,
-              meta_og_imagen, logo_url, boton_contacto_whatsapp, email_notificaciones,
-              vistas_count, leads_count, es_pagina_inicio, configuracion_json, secciones_json
-            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
-            ON CONFLICT (slug) DO UPDATE SET
-              club_id = EXCLUDED.club_id,
-              es_pagina_inicio = EXCLUDED.es_pagina_inicio,
-              titulo = EXCLUDED.titulo,
-              subtitulo = EXCLUDED.subtitulo,
-              tema_color = EXCLUDED.tema_color,
-              tema_gradient = EXCLUDED.tema_gradient,
-              logo_url = EXCLUDED.logo_url,
-              secciones_json = EXCLUDED.secciones_json`,
-            [
-              item.id,
-              item.club_id,
-              item.tipo_contenido,
-              item.titulo,
-              item.subtitulo,
-              item.slug,
-              item.estado,
-              item.tema_color,
-              item.tema_gradient,
-              item.tema_modo,
-              item.meta_descripcion,
-              item.meta_keywords,
-              item.meta_og_imagen,
-              item.logo_url,
-              item.boton_contacto_whatsapp,
-              item.email_notificaciones,
-              item.vistas_count || 0,
-              item.leads_count || 0,
-              item.es_pagina_inicio || false,
-              JSON.stringify(item.configuracion_json || {}),
-              JSON.stringify(item.secciones_json || []),
-            ]
-          );
-        } catch (insertErr) {
-          // ignore seed conflict
-        }
-      }
-    } catch (e: any) {
-      // Ignorar si la BD no está disponible
-    }
   }
 
   async findAll(clubId?: string, tipo?: string, estado?: string): Promise<LandingPageEntity[]> {

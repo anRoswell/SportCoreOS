@@ -1,0 +1,201 @@
+<section class="liga-stats-view">
+  <header class="liga-view-header">
+    <div>
+      <span class="liga-eyebrow"><i class="fa-solid fa-earth-americas"></i> ESTADÍSTICAS DE COMPETICIÓN</span>
+      <h2>Partidos de liga</h2>
+      <p>Registra estadísticas de ligas externas aunque la liga todavía no use SportCoreOS. Los datos quedan pendientes hasta que el DT los valide.</p>
+    </div>
+    <button type="button" class="liga-refresh-btn" (click)="cargarDatos()" [disabled]="cargando">
+      <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="cargando"></i>
+      Actualizar
+    </button>
+  </header>
+
+  @if (mensaje) {
+    <div class="liga-feedback" [class.feedback-success]="tipoMensaje === 'success'" [class.feedback-error]="tipoMensaje === 'error'" role="status">
+      <i class="fa-solid" [class.fa-circle-check]="tipoMensaje === 'success'" [class.fa-triangle-exclamation]="tipoMensaje === 'error'" [class.fa-circle-info]="tipoMensaje === 'info'"></i>
+      <span>{{ mensaje }}</span>
+      <button type="button" aria-label="Cerrar aviso" (click)="mensaje = ''"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  }
+
+  <section class="liga-import-card">
+    <div class="liga-section-heading">
+      <div>
+        <span class="section-kicker">CAPTURA DE ACTA</span>
+        <h3>Registrar estadísticas de un partido</h3>
+      </div>
+      <div class="liga-capture-switch" role="tablist" aria-label="Método de captura">
+        <button type="button" role="tab" [attr.aria-selected]="modoCarga === 'MANUAL'" [class.active]="modoCarga === 'MANUAL'" (click)="seleccionarModo('MANUAL')">Manual</button>
+        <button type="button" role="tab" [attr.aria-selected]="modoCarga === 'CSV'" [class.active]="modoCarga === 'CSV'" (click)="seleccionarModo('CSV')">Importar CSV</button>
+      </div>
+    </div>
+
+    <div class="liga-match-fields">
+      <label>
+        <span>Competencia</span>
+        <input name="ligaCompetencia" [(ngModel)]="partido.competenciaNombre" placeholder="Ej. Liga Distrital Sub-15" required />
+      </label>
+      <label>
+        <span>Temporada</span>
+        <input name="ligaTemporada" [(ngModel)]="partido.temporada" placeholder="Ej. 2026-I" required />
+      </label>
+      <label>
+        <span>Categoría de la escuela</span>
+        <select name="ligaCategoria" [(ngModel)]="categoriaId" (ngModelChange)="onCategoriaChange()" required>
+          <option value="">Selecciona categoría</option>
+          @for (categoria of categorias; track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Fecha</span>
+        <input name="ligaFecha" type="date" [(ngModel)]="partido.fechaPartido" required />
+      </label>
+      <label>
+        <span>Rival</span>
+        <input name="ligaRival" [(ngModel)]="partido.rivalNombre" placeholder="Nombre del equipo rival" required />
+      </label>
+      <label>
+        <span>Marcador de la escuela</span>
+        <input name="golesClub" type="number" min="0" max="99" [(ngModel)]="partido.golesClub" />
+      </label>
+      <label>
+        <span>Marcador rival</span>
+        <input name="golesRival" type="number" min="0" max="99" [(ngModel)]="partido.golesRival" />
+      </label>
+    </div>
+
+    @if (modoCarga === 'MANUAL') {
+      <div class="manual-entry-panel">
+        <div class="manual-entry-title">
+          <div>
+            <h4>Estadísticas por jugador</h4>
+            <p>Solo se acreditará XP después de validar el acta.</p>
+          </div>
+          <span class="players-added-count">{{ manualJugadores.length }} agregado(s)</span>
+        </div>
+
+        <div class="player-select-row">
+          <label class="player-picker">
+            <span>Jugador</span>
+            <select name="ligaJugador" [(ngModel)]="jugadorForm.jugadorId" (ngModelChange)="seleccionarJugador()">
+              <option value="">Selecciona jugador</option>
+              @for (jugador of jugadoresDisponibles; track jugador.id) {
+                <option [value]="jugador.id">#{{ jugador.numero_dorsal || '—' }} · {{ jugador.nombres }} {{ jugador.apellidos }}</option>
+              }
+            </select>
+          </label>
+          <label><span>Minutos</span><input name="statMinutos" type="number" min="0" max="120" [(ngModel)]="jugadorForm.minutos" /></label>
+          <label><span>Goles</span><input name="statGoles" type="number" min="0" [(ngModel)]="jugadorForm.goles" /></label>
+          <label><span>Asistencias</span><input name="statAsistencias" type="number" min="0" [(ngModel)]="jugadorForm.asistencias" /></label>
+          <label><span>Remates</span><input name="statRemates" type="number" min="0" [(ngModel)]="jugadorForm.remates" /></label>
+          <label><span>A puerta</span><input name="statRematesAPuerta" type="number" min="0" [(ngModel)]="jugadorForm.rematesAPuerta" /></label>
+          <label><span>Pases clave</span><input name="statPasesClave" type="number" min="0" [(ngModel)]="jugadorForm.pasesClave" /></label>
+          <label><span>Regates</span><input name="statRegates" type="number" min="0" [(ngModel)]="jugadorForm.regatesExitosos" /></label>
+          <label><span>Recuperaciones</span><input name="statRecuperaciones" type="number" min="0" [(ngModel)]="jugadorForm.recuperaciones" /></label>
+          <label><span>Intercepciones</span><input name="statIntercepciones" type="number" min="0" [(ngModel)]="jugadorForm.intercepciones" /></label>
+          <label><span>Duelos ganados</span><input name="statDuelos" type="number" min="0" [(ngModel)]="jugadorForm.duelosGanados" /></label>
+          <label><span>Atajadas</span><input name="statAtajadas" type="number" min="0" [(ngModel)]="jugadorForm.atajadas" /></label>
+          <button type="button" class="add-player-stat-btn" (click)="agregarJugadorManual()"><i class="fa-solid fa-plus"></i> Agregar jugador</button>
+        </div>
+
+        @if (manualJugadores.length) {
+          <div class="manual-players-list">
+            @for (row of manualJugadores; track row.jugadorId) {
+              <div class="manual-player-row">
+                <div class="manual-player-name"><span class="jersey">#{{ row.dorsal || '—' }}</span><strong>{{ row.nombre }}</strong></div>
+                <span>{{ row.minutos }} min</span><span>{{ row.goles }} G</span><span>{{ row.asistencias }} A</span><span>{{ row.rematesAPuerta }}/{{ row.remates }} a puerta</span>
+                <button type="button" [attr.aria-label]="'Quitar ' + row.nombre" (click)="quitarJugadorManual(row.jugadorId)"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            }
+          </div>
+        }
+        <div class="manual-submit-row">
+          <span>El acta quedará pendiente de validación del cuerpo técnico.</span>
+          <button type="button" class="submit-match-btn" (click)="registrarManual()" [disabled]="guardando || !categoriaId || !partido.competenciaNombre.trim() || !partido.temporada.trim() || !partido.fechaPartido || !partido.rivalNombre.trim() || !manualJugadores.length">
+            @if (guardando) { <i class="fa-solid fa-spinner fa-spin"></i> Guardando... } @else { <i class="fa-solid fa-clipboard-check"></i> Guardar acta pendiente }
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="csv-entry-panel">
+        <div class="csv-help-card">
+          <i class="fa-solid fa-file-csv"></i>
+          <div><strong>Importa las estadísticas de toda la nómina</strong><p>Un jugador por fila. El dorsal debe coincidir con el de la categoría seleccionada.</p></div>
+          <button type="button" class="download-template-btn" (click)="descargarPlantilla()"><i class="fa-solid fa-download"></i> Descargar plantilla</button>
+        </div>
+        <label class="csv-dropzone" [class.csv-ready]="csvNombre">
+          <input type="file" accept=".csv,text/csv" aria-label="Seleccionar archivo CSV" (change)="onCsvSelected($event)" />
+          <i class="fa-solid" [class.fa-cloud-arrow-up]="!csvNombre" [class.fa-file-circle-check]="csvNombre"></i>
+          <strong>{{ csvNombre || 'Selecciona o arrastra un archivo CSV' }}</strong>
+          <span>{{ csvNombre ? csvFilas + ' fila(s) de jugador listas para importar' : 'Máximo 1 MB · formato CSV UTF-8' }}</span>
+        </label>
+        @if (csvError) { <p class="csv-error"><i class="fa-solid fa-circle-exclamation"></i> {{ csvError }}</p> }
+        @if (csvNombre && !csvError) {
+          <div class="csv-preview"><i class="fa-solid fa-eye"></i><span>Vista previa lista: {{ csvFilas }} registro(s). El servidor validará dorsales, duplicados y rangos antes de guardar.</span></div>
+        }
+        <div class="manual-submit-row">
+          <span>Importar no otorga XP. La validación del acta lo acredita.</span>
+          <button type="button" class="submit-match-btn" (click)="importarCsv()" [disabled]="guardando || !csvContenido || !!csvError || !categoriaId || !partido.competenciaNombre.trim() || !partido.temporada.trim() || !partido.fechaPartido || !partido.rivalNombre.trim()">
+            @if (guardando) { <i class="fa-solid fa-spinner fa-spin"></i> Importando... } @else { <i class="fa-solid fa-file-import"></i> Importar CSV pendiente }
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="liga-results-grid">
+    <article class="liga-panel-card">
+      <div class="liga-panel-heading">
+        <div><span class="section-kicker">RANKING DE LIGA</span><h3>Rendimiento verificado</h3></div>
+        <label class="season-filter"><span>Temporada</span><input name="filtroTemporadaLiga" [(ngModel)]="temporadaFiltro" /></label>
+        <button type="button" class="liga-filter-btn" (click)="cargarDatos()" [disabled]="cargando">Filtrar</button>
+      </div>
+      @if (cargando) {
+        <div class="liga-empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Cargando estadísticas...</div>
+      } @else if (ranking.length) {
+        <div class="liga-table-scroll">
+          <table class="liga-ranking-table">
+            <thead><tr><th>#</th><th>Jugador</th><th>Part.</th><th>Min</th><th>G</th><th>A</th><th>Rem. a puerta</th><th>Pases clave</th><th>Recup.</th><th>Ataj.</th><th>XP liga</th></tr></thead>
+            <tbody>
+              @for (player of ranking; track player.jugador_id; let index = $index) {
+                <tr><td><span class="league-rank-number" [class.top-rank]="index < 3">{{ index + 1 }}</span></td>
+                  <td><strong>{{ player.nombres }} {{ player.apellidos }}</strong><small>#{{ player.numero_dorsal || '—' }} · {{ player.posicion_principal || 'Sin posición' }}</small></td>
+                  <td>{{ player.partidos }}</td><td>{{ player.minutos }}</td><td>{{ player.goles }}</td><td>{{ player.asistencias }}</td>
+                  <td>{{ player.remates_a_puerta }}/{{ player.remates }} <small>({{ player.precision_remate }}%)</small></td>
+                  <td>{{ player.pases_clave }}</td><td>{{ player.recuperaciones }}</td><td>{{ player.atajadas }}</td><td><b class="league-xp">{{ player.xp_liga }} XP</b></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="liga-empty-state"><i class="fa-solid fa-chart-simple"></i><strong>Aún no hay estadísticas verificadas</strong><span>Registra un acta manualmente o importa el archivo de la liga. Los datos aparecerán aquí después de su validación.</span></div>
+      }
+    </article>
+
+    <article class="liga-panel-card pending-panel">
+      <div class="liga-panel-heading"><div><span class="section-kicker">VALIDACIÓN DT</span><h3>Actas pendientes</h3></div><span class="pending-total">{{ partidosPendientesCount }}</span></div>
+      @if (partidos.length) {
+        <div class="pending-match-list">
+          @for (match of partidos; track match.id) {
+            <div class="pending-match-card" [class.match-validated]="match.estado === 'VALIDADO'">
+              <div class="pending-match-top"><span class="match-source" [class.source-csv]="match.fuente === 'CSV'"><i class="fa-solid" [class.fa-keyboard]="match.fuente === 'MANUAL'" [class.fa-file-csv]="match.fuente === 'CSV'"></i> {{ match.fuente }}</span><span class="match-status">{{ match.estado === 'VALIDADO' ? 'VALIDADA' : 'PENDIENTE' }}</span></div>
+              <strong>{{ match.competencia_nombre }}</strong>
+              <span class="pending-match-meta">{{ match.categoria_nombre }} · {{ match.temporada }}</span>
+              <span class="pending-match-meta">{{ match.fecha_partido | date:'dd/MM/yyyy' }} · vs {{ match.rival_nombre }} · {{ match.jugadores_registrados }} jugador(es)</span>
+              @if (match.estado === 'PENDIENTE') {
+                <button type="button" class="validate-match-btn" [attr.aria-label]="'Validar acta contra ' + match.rival_nombre" (click)="validarPartido(match)"><i class="fa-solid fa-shield-check"></i> Validar y acreditar XP</button>
+              } @else {
+                <span class="validated-xp"><i class="fa-solid fa-circle-check"></i> +{{ match.xp_acreditado }} XP acreditados</span>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="liga-empty-state compact"><i class="fa-solid fa-clipboard-check"></i><strong>Sin actas registradas</strong><span>Las cargas manuales y CSV aparecerán aquí para su validación.</span></div>
+      }
+    </article>
+  </section>
+</section>

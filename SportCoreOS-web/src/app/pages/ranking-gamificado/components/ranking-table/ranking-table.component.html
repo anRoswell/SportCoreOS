@@ -129,7 +129,7 @@
               <i class="fa-solid" [ngClass]="getSortIcon('asistenciasEfectividad')"></i>
             </div>
           </th>
-          <th class="th-breakdown">Desglose XP (Asist / DT / Táctica / Pen.)</th>
+          <th class="th-breakdown">XP (Asist / DT / Juego / Liga / Pen.)</th>
           <th class="th-total-xp sortable" (click)="sortChange.emit('xpTotal')">
             <div class="th-sort-inner">
               <span>XP Total</span>
@@ -251,6 +251,7 @@
                   <span class="mini-xp-pill xp-asist" title="XP Asistencia"><i class="fa-solid fa-check"></i> +{{ alumno.xpAsistencia }}</span>
                   <span class="mini-xp-pill xp-dt" title="XP Destacado DT"><i class="fa-solid fa-bolt"></i> +{{ alumno.xpRendimientoDT }}</span>
                   <span class="mini-xp-pill xp-tact" title="XP Táctica / Minijuegos"><i class="fa-solid fa-brain"></i> +{{ alumno.xpTactica + alumno.xpMisiones }}</span>
+                  <span class="mini-xp-pill xp-tact" title="XP de partidos de liga validados"><i class="fa-solid fa-earth-americas"></i> +{{ alumno.xpLiga }}</span>
                   @if (alumno.xpPenalizaciones < 0) {
                     <span class="mini-xp-pill xp-pen" title="Penalización por Inasistencia Injustificada"><i class="fa-solid fa-circle-exclamation"></i> {{ alumno.xpPenalizaciones }}</span>
                   }

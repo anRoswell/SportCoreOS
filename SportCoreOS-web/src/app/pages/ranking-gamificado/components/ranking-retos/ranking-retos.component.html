@@ -36,7 +36,7 @@
       </div>
       <div class="gauge-text-block">
         <h4>Aporte de Retos al Nivel del Jugador</h4>
-        <p>El <strong>{{ metricasRetos?.porcentajeXpRetos || 0 }}%</strong> de la experiencia total de este alumno ({{ metricasRetos?.xpRetosObtenido || 0 | number }} de {{ metricasRetos?.xpTotalJugador || 3120 | number }} XP) ha sido comprobada presencialmente ante el Director Técnico.</p>
+        <p>El <strong>{{ metricasRetos?.porcentajeXpRetos || 0 }}%</strong> de la experiencia total de este alumno ({{ metricasRetos?.xpRetosObtenido || 0 | number }} de {{ metricasRetos?.xpTotalJugador || 0 | number }} XP) ha sido comprobada presencialmente ante el Director Técnico.</p>
         
         <div class="xp-global-progress-track">
           <div class="track-fill" [style.width.%]="metricasRetos?.porcentajeXpRetos || 0"></div>

@@ -36,7 +36,7 @@
     </div>
   }
 
-  <!-- PESTAÑAS PRINCIPALES DE NAVEGACIÓN GAMIFICADA -->
+  <!-- SUBMÓDULOS: JUEGO, CLUB Y LIGA -->
   <nav class="main-gamification-nav">
     <button 
       type="button" 
@@ -44,7 +44,8 @@
       [class.active]="activeMainTab() === TabRanking.LEADERBOARD" 
       (click)="setMainTab(TabRanking.LEADERBOARD)">
       <i class="fa-solid fa-trophy"></i>
-      <span>🏆 Salón de la Fama & Podio</span>
+      <span>🏫 Club</span>
+      <small>Rendimiento escolar</small>
     </button>
     <button 
       type="button" 
@@ -52,19 +53,17 @@
       [class.active]="activeMainTab() === TabRanking.RETOS" 
       (click)="setMainTab(TabRanking.RETOS)">
       <i class="fa-solid fa-dumbbell"></i>
-      <span>🎯 Retos Individuales Comprobables</span>
-      <span class="pill-sparkle">Nivel & Tiers</span>
+      <span>🎮 Juego</span>
+      <small>XP, retos y niveles</small>
     </button>
-    <button 
-      type="button" 
-      class="nav-tab-btn" 
-      [class.active]="activeMainTab() === TabRanking.CERTIFICACION_DT" 
-      (click)="setMainTab(TabRanking.CERTIFICACION_DT)">
-      <i class="fa-solid fa-clipboard-check"></i>
-      <span>🛡️ Certificación en Cancha (DT)</span>
-      @if (pendientesCount() > 0) {
-        <span class="badge-pending-counter">{{ pendientesCount() }}</span>
-      }
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeMainTab() === TabRanking.LIGA"
+      (click)="setMainTab(TabRanking.LIGA)">
+      <i class="fa-solid fa-earth-americas"></i>
+      <span>🌎 Liga</span>
+      <small>Actas manuales y CSV</small>
     </button>
   </nav>
 
@@ -173,29 +172,39 @@
   <!-- VISTA 2: SUBCOMPONENTE 3: CATÁLOGO DE RETOS INDIVIDUALES COMPROBABLES -->
   <!-- ===================================================================== -->
   @if (activeMainTab() === TabRanking.RETOS) {
-    <app-ranking-retos 
-      [jugadorActivo]="jugadorParaRetos()" 
-      [todosAlumnos]="alumnos()" 
-      [metricasRetos]="metricasRetosJugador()" 
-      [retosCatalogo]="retosCatalogo()" 
-      [retosDelJugador]="retosDelJugador()" 
-      [filtroTipoReto]="filtroTipoReto()" 
-      (seleccionarJugador)="seleccionarJugadorPorId($event)" 
-      (filtroTipoRetoChange)="filtroTipoReto.set($event)" 
-      (solicitarComprobacion)="solicitarComprobacionReto($event.reto, $event.nivel)">
-    </app-ranking-retos>
+    <nav class="game-subnav" aria-label="Opciones de juego">
+      <button type="button" [class.active]="activeJuegoVista() === TabRanking.RETOS" (click)="setJuegoVista(TabRanking.RETOS)">
+        <i class="fa-solid fa-bullseye"></i> Retos y misiones
+      </button>
+      <button type="button" [class.active]="activeJuegoVista() === TabRanking.CERTIFICACION_DT" (click)="setJuegoVista(TabRanking.CERTIFICACION_DT)">
+        <i class="fa-solid fa-shield-check"></i> Validación DT
+        @if (pendientesCount() > 0) { <span class="badge-pending-counter">{{ pendientesCount() }}</span> }
+      </button>
+    </nav>
+    @if (activeJuegoVista() === TabRanking.RETOS) {
+      <app-ranking-retos
+        [jugadorActivo]="jugadorParaRetos()"
+        [todosAlumnos]="alumnos()"
+        [metricasRetos]="metricasRetosJugador()"
+        [retosCatalogo]="retosCatalogo()"
+        [retosDelJugador]="retosDelJugador()"
+        [filtroTipoReto]="filtroTipoReto()"
+        (seleccionarJugador)="seleccionarJugadorPorId($event)"
+        (filtroTipoRetoChange)="filtroTipoReto.set($event)"
+        (solicitarComprobacion)="solicitarComprobacionReto($event.reto, $event.nivel)">
+      </app-ranking-retos>
+    } @else {
+      <app-ranking-certificacion-dt
+        [retosPendientes]="retosPendientesDT()"
+        [pendientesCount]="pendientesCount()"
+        (evaluarReto)="evaluarRetoDT($event.reto, $event.aprobado)"
+        (irARetos)="setJuegoVista(TabRanking.RETOS)">
+      </app-ranking-certificacion-dt>
+    }
   }
 
-  <!-- ===================================================================== -->
-  <!-- VISTA 3: SUBCOMPONENTE 4: CERTIFICACIÓN Y APROBACIÓN POR EL DT -->
-  <!-- ===================================================================== -->
-  @if (activeMainTab() === TabRanking.CERTIFICACION_DT) {
-    <app-ranking-certificacion-dt 
-      [retosPendientes]="retosPendientesDT()" 
-      [pendientesCount]="pendientesCount()" 
-      (evaluarReto)="evaluarRetoDT($event.reto, $event.aprobado)" 
-      (irARetos)="setMainTab(TabRanking.RETOS)">
-    </app-ranking-certificacion-dt>
+  @if (activeMainTab() === TabRanking.LIGA) {
+    <app-ranking-liga></app-ranking-liga>
   }
 
   <!-- SUBCOMPONENTE 5: MODAL LATERAL / EXPEDIENTE DE CARTA FUT -->

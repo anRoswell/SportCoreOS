@@ -22,6 +22,7 @@ import { ParametrosModule } from './modules/parametros/parametros.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { ServiciosModule } from './modules/servicios/servicios.module';
 import { RetosModule } from './modules/retos/retos.module';
+import { LigaEstadisticasModule } from './modules/liga-estadisticas/liga-estadisticas.module';
 import { SlidersModule } from './modules/sliders/sliders.module';
 import { LandingsModule } from './modules/landings/landings.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
@@ -56,6 +57,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     RolesModule,
     ServiciosModule,
     RetosModule,
+    LigaEstadisticasModule,
     SlidersModule,
     LandingsModule,
   ],

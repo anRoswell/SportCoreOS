@@ -1,7 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
-import * as fs from 'fs';
-import * as path from 'path';
 
 interface InMemoryStore {
   clubes: any[];
@@ -52,39 +50,20 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`🔌 Conectando a Base de Datos PostgreSQL QA (${process.env.DB_HOST || '127.0.0.1'}:${process.env.DB_PORT || '55132'} / ${process.env.DB_NAME || 'sportcoreos_db_qa'})...`);
 
+    let client: PoolClient | undefined;
     try {
-      const client = await this.pool.connect();
+      // El arranque solo comprueba conectividad. Esquema, migraciones y seeds
+      // se gestionan fuera del ciclo de vida de la aplicación.
+      client = await this.pool.connect();
       this.isPostgresConnected = true;
       this.logger.log('✅ Conexión establecida con PostgreSQL exitosamente.');
-      
-      // Intentar auto-migración DDL & Seed si existe schema.sql
-      try {
-        const schemaPath = fs.existsSync(path.join(__dirname, 'schema.sql'))
-          ? path.join(__dirname, 'schema.sql')
-          : path.join(process.cwd(), 'src', 'database', 'schema.sql');
-        const seedPath = fs.existsSync(path.join(__dirname, 'seed.sql'))
-          ? path.join(__dirname, 'seed.sql')
-          : path.join(process.cwd(), 'src', 'database', 'seed.sql');
-        if (fs.existsSync(schemaPath)) {
-          const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-          await client.query(schemaSql);
-          this.logger.log('📜 Esquema DDL verificado/migrado en PostgreSQL.');
-        }
-        if (fs.existsSync(seedPath)) {
-          const seedSql = fs.readFileSync(seedPath, 'utf8');
-          await client.query(seedSql);
-          this.logger.log('🌱 Datos Semilla (Seeds) verificados en PostgreSQL.');
-        }
-      } catch (migrationErr: any) {
-        this.logger.warn(`Nota sobre migración automática: ${migrationErr.message}`);
-      } finally {
-        client.release();
-      }
     } catch (err: any) {
       this.isPostgresConnected = false;
       this.logger.warn(
         `⚠️ PostgreSQL no disponible en puerto ${process.env.DB_PORT || '5432'} (${err.message}). Activando motor de persistencia reactiva en memoria con datos semilla oficiales de FutCoreOS.`,
       );
+    } finally {
+      client?.release();
     }
   }
 

@@ -152,6 +152,17 @@ CREATE TABLE IF NOT EXISTS deportivo.jugadores (
     UNIQUE(club_id, categoria_id, numero_dorsal)
 );
 
+-- XP acumulado consultado por ranking y gamificación.
+-- Se agrega con ALTER para mantener compatibles instalaciones existentes.
+ALTER TABLE deportivo.jugadores
+    ADD COLUMN IF NOT EXISTS xp_total INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_asistencia INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_rendimiento_dt INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_misiones INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_tactica INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_penalizaciones INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_liga INT NOT NULL DEFAULT 0;
+
 -- 2.3 ACUDIENTES / FAMILIAS
 CREATE TABLE IF NOT EXISTS deportivo.acudientes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -511,6 +522,79 @@ CREATE INDEX IF NOT EXISTS idx_retos_catalogo_cat ON rendimiento.retos_catalogo(
 CREATE INDEX IF NOT EXISTS idx_retos_progreso_jug ON rendimiento.retos_jugador_progreso(jugador_id);
 CREATE INDEX IF NOT EXISTS idx_retos_progreso_estado ON rendimiento.retos_jugador_progreso(estado);
 
+-- Estadísticas de competiciones externas cargadas manualmente o mediante CSV.
+-- La captura permanece disponible aunque la gestión completa de Liga no esté habilitada.
+CREATE TABLE IF NOT EXISTS rendimiento.liga_partidos_externos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    categoria_id UUID NOT NULL REFERENCES deportivo.categorias(id) ON DELETE RESTRICT,
+    competencia_nombre VARCHAR(150) NOT NULL,
+    temporada VARCHAR(60) NOT NULL,
+    fecha_partido DATE NOT NULL,
+    rival_nombre VARCHAR(150) NOT NULL,
+    goles_club INT NOT NULL DEFAULT 0 CHECK (goles_club >= 0),
+    goles_rival INT NOT NULL DEFAULT 0 CHECK (goles_rival >= 0),
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'VALIDADO')),
+    fuente VARCHAR(20) NOT NULL CHECK (fuente IN ('MANUAL', 'CSV')),
+    fingerprint CHAR(64) NOT NULL,
+    cargado_por UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
+    validado_por UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
+    fecha_validacion TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (club_id, fingerprint)
+);
+
+CREATE TABLE IF NOT EXISTS rendimiento.liga_estadisticas_jugador (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    partido_id UUID NOT NULL REFERENCES rendimiento.liga_partidos_externos(id) ON DELETE CASCADE,
+    jugador_id UUID NOT NULL REFERENCES deportivo.jugadores(id) ON DELETE CASCADE,
+    minutos INT NOT NULL DEFAULT 0 CHECK (minutos BETWEEN 0 AND 120),
+    goles INT NOT NULL DEFAULT 0 CHECK (goles >= 0),
+    asistencias INT NOT NULL DEFAULT 0 CHECK (asistencias >= 0),
+    remates INT NOT NULL DEFAULT 0 CHECK (remates >= 0),
+    remates_a_puerta INT NOT NULL DEFAULT 0 CHECK (remates_a_puerta >= 0),
+    pases_clave INT NOT NULL DEFAULT 0 CHECK (pases_clave >= 0),
+    regates_exitosos INT NOT NULL DEFAULT 0 CHECK (regates_exitosos >= 0),
+    recuperaciones INT NOT NULL DEFAULT 0 CHECK (recuperaciones >= 0),
+    intercepciones INT NOT NULL DEFAULT 0 CHECK (intercepciones >= 0),
+    duelos_ganados INT NOT NULL DEFAULT 0 CHECK (duelos_ganados >= 0),
+    atajadas INT NOT NULL DEFAULT 0 CHECK (atajadas >= 0),
+    xp_acreditado INT NOT NULL DEFAULT 0 CHECK (xp_acreditado >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (partido_id, jugador_id),
+    CHECK (remates_a_puerta <= remates)
+);
+
+ALTER TABLE rendimiento.liga_estadisticas_jugador
+    ADD COLUMN IF NOT EXISTS pases_clave INT NOT NULL DEFAULT 0 CHECK (pases_clave >= 0),
+    ADD COLUMN IF NOT EXISTS regates_exitosos INT NOT NULL DEFAULT 0 CHECK (regates_exitosos >= 0),
+    ADD COLUMN IF NOT EXISTS recuperaciones INT NOT NULL DEFAULT 0 CHECK (recuperaciones >= 0),
+    ADD COLUMN IF NOT EXISTS intercepciones INT NOT NULL DEFAULT 0 CHECK (intercepciones >= 0),
+    ADD COLUMN IF NOT EXISTS duelos_ganados INT NOT NULL DEFAULT 0 CHECK (duelos_ganados >= 0);
+
+CREATE TABLE IF NOT EXISTS rendimiento.xp_movimientos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    jugador_id UUID NOT NULL REFERENCES deportivo.jugadores(id) ON DELETE CASCADE,
+    fuente_tipo VARCHAR(40) NOT NULL,
+    fuente_id UUID NOT NULL,
+    xp_delta INT NOT NULL CHECK (xp_delta > 0),
+    descripcion VARCHAR(240) NOT NULL,
+    actor_id UUID REFERENCES core.usuarios(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (club_id, fuente_tipo, fuente_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_liga_partidos_club_fecha
+    ON rendimiento.liga_partidos_externos(club_id, fecha_partido DESC);
+CREATE INDEX IF NOT EXISTS idx_liga_partidos_club_categoria_temporada
+    ON rendimiento.liga_partidos_externos(club_id, categoria_id, temporada);
+CREATE INDEX IF NOT EXISTS idx_liga_estadisticas_jugador
+    ON rendimiento.liga_estadisticas_jugador(club_id, jugador_id);
+CREATE INDEX IF NOT EXISTS idx_xp_movimientos_jugador_fecha
+    ON rendimiento.xp_movimientos(club_id, jugador_id, created_at DESC);
+
 -- ============================================================================
 -- SCHEMA: core (MÓDULO: SLIDERS PROMOCIONALES, MARKETING & ONBOARDING)
 -- ============================================================================
@@ -595,6 +679,4 @@ CREATE INDEX IF NOT EXISTS idx_landings_club ON core.landing_pages(club_id);
 CREATE INDEX IF NOT EXISTS idx_landings_estado ON core.landing_pages(estado);
 CREATE INDEX IF NOT EXISTS idx_landings_tipo ON core.landing_pages(tipo_contenido);
 CREATE INDEX IF NOT EXISTS idx_leads_landing ON core.landing_leads(landing_id);
-
-
 
