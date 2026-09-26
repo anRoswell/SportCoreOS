@@ -1,9 +1,9 @@
 export const environment = {
-  production: true,
-  appName: 'SportCoreOS',
-  environmentName: 'production',
+  production: false,
+  appName: 'SportCoreOS (QA)',
+  environmentName: 'qa',
   apiUrl: '/api/v1',
-  apiBaseUrl: 'https://app.sportcore.co',
+  apiBaseUrl: 'https://sportcoreos.secticsolar.site',
   tokenKey: 'futcore_token',
   userKey: 'futcore_user',
   activeClubKey: 'futcore_active_club',

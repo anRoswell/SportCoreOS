@@ -5,3 +5,9 @@ npm-debug.log*
 .DS_Store
 playwright-report/
 test-results/
+.env
+.env.local
+!.env.example
+!.env.qa
+!.env.prod
+

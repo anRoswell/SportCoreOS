@@ -67,6 +67,23 @@
               },
               "outputHashing": "all"
             },
+            "qa": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.qa.ts"
+                }
+              ],
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": false
+              },
+              "outputHashing": "all"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -84,6 +101,9 @@
           "configurations": {
             "production": {
               "buildTarget": "sport-core-os-web:build:production"
+            },
+            "qa": {
+              "buildTarget": "sport-core-os-web:build:qa"
             },
             "development": {
               "buildTarget": "sport-core-os-web:build:development"
