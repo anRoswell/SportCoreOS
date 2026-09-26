@@ -89,11 +89,12 @@ jobs:
           timeout: 60s
           command_timeout: 10m
           script: |
+            set -e
             echo "🚀 Actualizando SportCoreOS Web en QA..."
-            mkdir -p ~/sportcoreos-qa
-            cd ~/sportcoreos-qa
+            cd ~/sportcoreos-qa || cd ~/SportCoreOS/sportcoreos-qa
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull frontend
             docker compose up -d --remove-orphans frontend
             docker image prune -f
+            docker ps --filter "name=sportcoreos"
             echo "✅ Frontend Web actualizado en QA."

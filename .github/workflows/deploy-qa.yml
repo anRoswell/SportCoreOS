@@ -127,9 +127,9 @@ jobs:
           timeout: 60s
           command_timeout: 10m
           script: |
+            set -e
             echo "🚀 Iniciando despliegue de SportCoreOS QA..."
-            mkdir -p ~/sportcoreos-qa
-            cd ~/sportcoreos-qa
+            cd ~/sportcoreos-qa || cd ~/SportCoreOS/sportcoreos-qa
 
             # Autenticación contra GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -138,6 +138,7 @@ jobs:
             docker compose pull backend frontend
             docker compose up -d --remove-orphans backend frontend
             docker image prune -f
+            docker ps --filter "name=sportcoreos"
             echo "✅ Despliegue de SportCoreOS QA completado exitosamente."
 
       - name: Notificar si VPS no tiene secretos configurados
