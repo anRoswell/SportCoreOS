@@ -11,8 +11,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // 1. Si el usuario está en proceso de cerrar sesión, silenciar todos los errores HTTP abortados/401
+      if (authService.isLoggingOut()) {
+        return throwError(() => error);
+      }
+
       // Si la petición tiene 'X-Skip-Error-Toast', dejamos pasar el error sin toast automático
       if (req.headers.has('X-Skip-Error-Toast')) {
+        return throwError(() => error);
+      }
+
+      // En el endpoint de login, el componente maneja su propio feedback visual
+      if (req.url.includes('/auth/login') && (error.status === 401 || error.status === 404)) {
         return throwError(() => error);
       }
 
@@ -27,6 +37,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         // Error con código HTTP
         switch (error.status) {
           case 0:
+            if (authService.isLoggingOut()) {
+              return throwError(() => error);
+            }
             errorTitle = 'Sin Conexión';
             errorMsg = 'No es posible conectar con los servidores de SportCoreOS. Verifica tu conexión a internet.';
             break;
@@ -35,6 +48,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             errorMsg = error.error?.message || error.error?.error || 'Los datos enviados no son válidos.';
             break;
           case 401:
+            if (authService.isLoggingOut()) {
+              return throwError(() => error);
+            }
             errorTitle = 'Sesión Expirada (401)';
             errorMsg = 'Tu sesión de autenticación ha vencido. Por favor inicia sesión nuevamente.';
             authService.logout();

@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from './notification.service';
 
 export interface UserProfile {
   id: string;
@@ -56,6 +57,9 @@ export interface LoginResponse {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
+
+  readonly isLoggingOut = signal<boolean>(false);
 
   private readonly TOKEN_KEY = environment.tokenKey || 'futcore_token';
   private readonly USER_KEY = environment.userKey || 'futcore_user';
@@ -229,6 +233,8 @@ export class AuthService {
   }
 
   logout(): void {
+    this.isLoggingOut.set(true);
+    this.notificationService.clearAll();
     this.currentUser.set(null);
     this.token.set(null);
 
@@ -237,6 +243,14 @@ export class AuthService {
       localStorage.removeItem(this.TOKEN_KEY);
     }
 
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login']).then(() => {
+      this.notificationService.clearAll();
+      setTimeout(() => {
+        this.isLoggingOut.set(false);
+      }, 500);
+    }).catch(() => {
+      this.notificationService.clearAll();
+      this.isLoggingOut.set(false);
+    });
   }
 }

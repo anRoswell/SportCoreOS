@@ -18,14 +18,23 @@ export class NotificationService {
   readonly toasts = signal<ToastMessage[]>([]);
 
   show(type: ToastType, message: string, title?: string, duration: number = 4500): string {
-    const id = 'toast_' + Math.random().toString(36).substring(2, 9) + Date.now();
+    // Evitar spam de toasts idénticos emitidos en una ventana menor a 2 segundos
+    const now = Date.now();
+    const isDuplicate = this.toasts().some(
+      (t) => t.message === message && t.type === type && (now - t.timestamp < 2000)
+    );
+    if (isDuplicate) {
+      return '';
+    }
+
+    const id = 'toast_' + Math.random().toString(36).substring(2, 9) + now;
     const newToast: ToastMessage = {
       id,
       type,
       title,
       message,
       duration,
-      timestamp: Date.now(),
+      timestamp: now,
     };
 
     this.toasts.update((current) => [...current, newToast]);
