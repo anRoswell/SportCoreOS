@@ -52,11 +52,21 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     let client: PoolClient | undefined;
     try {
-      // El arranque solo comprueba conectividad. Esquema, migraciones y seeds
-      // se gestionan fuera del ciclo de vida de la aplicación.
       client = await this.pool.connect();
       this.isPostgresConnected = true;
       this.logger.log('✅ Conexión establecida con PostgreSQL exitosamente.');
+
+      // Asegurar columnas de XP en deportivo.jugadores de manera idempotente
+      await client.query(`
+        ALTER TABLE deportivo.jugadores
+          ADD COLUMN IF NOT EXISTS xp_total INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_asistencia INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_rendimiento_dt INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_misiones INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_tactica INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_penalizaciones INT NOT NULL DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS xp_liga INT NOT NULL DEFAULT 0;
+      `).catch(() => {});
     } catch (err: any) {
       this.isPostgresConnected = false;
       this.logger.warn(
