@@ -61,6 +61,22 @@
     .clip-topline { position: absolute; z-index: 2; inset: .85rem .9rem auto; display: flex; align-items: center; gap: .5rem; font-size: .62rem; font-weight: 900; letter-spacing: .09em; }
     .clip-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #fb7185; box-shadow: 0 0 0 4px rgba(251,113,133,.15); }
     .clip-format { margin-left: auto; color: #c8ded5; }
+    .clip-video-wrapper {
+      width: 100%;
+      aspect-ratio: 760 / 360;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 2.55rem;
+      box-sizing: border-box;
+
+      .clip-html5-video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
     .tactical-pitch { display: block; width: 100%; aspect-ratio: 760 / 360; padding: 2.55rem .5rem 0; box-sizing: border-box; }
     .player text { fill: #0f172a; font: 900 15px Inter, sans-serif; }
     .space-marker text { fill: #dcfce7; font: 900 8px Inter, sans-serif; letter-spacing: .08em; }

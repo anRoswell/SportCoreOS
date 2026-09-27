@@ -66,6 +66,22 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           ADD COLUMN IF NOT EXISTS xp_tactica INT NOT NULL DEFAULT 0,
           ADD COLUMN IF NOT EXISTS xp_penalizaciones INT NOT NULL DEFAULT 0,
           ADD COLUMN IF NOT EXISTS xp_liga INT NOT NULL DEFAULT 0;
+
+        CREATE TABLE IF NOT EXISTS rendimiento.lecciones_tacticas (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+          titulo VARCHAR(150) NOT NULL,
+          subtitulo VARCHAR(255),
+          categoria_edad VARCHAR(50) NOT NULL DEFAULT '8-12 años',
+          tipo_video VARCHAR(30) NOT NULL DEFAULT 'SVG_INTERACTIVO',
+          video_url TEXT,
+          duracion_formato VARCHAR(30) DEFAULT '04:00',
+          xp_recompensa INT NOT NULL DEFAULT 20,
+          checkpoints_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+          activo BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
       `).catch(() => {});
     } catch (err: any) {
       this.isPostgresConnected = false;

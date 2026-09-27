@@ -55,9 +55,20 @@
             <span class="clip-format">DEMO INTERACTIVA</span>
           </div>
 
-          <svg class="tactical-pitch" viewBox="0 0 760 360" role="img" aria-labelledby="pitch-title pitch-description">
-            <title id="pitch-title">{{ activeDecision().clip.label }}</title>
-            <desc id="pitch-description">{{ activeDecision().clip.description }}</desc>
+          @if (activeDecision().clip.videoUrl) {
+            <div class="clip-video-wrapper">
+              <video
+                #videoPlayer
+                class="clip-html5-video"
+                [src]="activeDecision().clip.videoUrl"
+                playsinline
+                (ended)="clipPlaying.set(false)">
+              </video>
+            </div>
+          } @else {
+            <svg class="tactical-pitch" viewBox="0 0 760 360" role="img" aria-labelledby="pitch-title pitch-description">
+              <title id="pitch-title">{{ activeDecision().clip.label }}</title>
+              <desc id="pitch-description">{{ activeDecision().clip.description }}</desc>
             <defs>
               <linearGradient id="pitch-gradient" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stop-color="#116b51" />
@@ -155,6 +166,7 @@
               <text class="route-label route-label-stop" x="449" y="196">PAUSA</text>
             </g>
           </svg>
+          }
 
           <div class="clip-bottomline">
             <div>

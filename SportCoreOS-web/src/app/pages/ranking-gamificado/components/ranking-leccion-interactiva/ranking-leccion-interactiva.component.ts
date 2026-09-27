@@ -21,6 +21,8 @@ type DecisionStep = {
     duration: string;
     summary: string;
     description: string;
+    videoUrl?: string;
+    videoSource?: 'svg' | 'video' | 'youtube';
   };
   options: DecisionOption[];
 };

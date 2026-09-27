@@ -586,6 +586,26 @@ CREATE TABLE IF NOT EXISTS rendimiento.xp_movimientos (
     UNIQUE (club_id, fuente_tipo, fuente_id)
 );
 
+-- Lecciones del Aula Táctica (videos con branching de decisiones y checkpoints)
+CREATE TABLE IF NOT EXISTS rendimiento.lecciones_tacticas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+    titulo VARCHAR(150) NOT NULL,
+    subtitulo VARCHAR(255),
+    categoria_edad VARCHAR(50) NOT NULL DEFAULT '8-12 años',
+    tipo_video VARCHAR(30) NOT NULL DEFAULT 'SVG_INTERACTIVO', -- 'SVG_INTERACTIVO', 'MP4_LOCAL', 'YOUTUBE_UNLISTED', 'VIMEO'
+    video_url TEXT,
+    duracion_formato VARCHAR(30) DEFAULT '04:00',
+    xp_recompensa INT NOT NULL DEFAULT 20,
+    checkpoints_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_lecciones_tacticas_club ON rendimiento.lecciones_tacticas(club_id);
+CREATE INDEX IF NOT EXISTS idx_lecciones_tacticas_activo ON rendimiento.lecciones_tacticas(activo);
+
 CREATE INDEX IF NOT EXISTS idx_liga_partidos_club_fecha
     ON rendimiento.liga_partidos_externos(club_id, fecha_partido DESC);
 CREATE INDEX IF NOT EXISTS idx_liga_partidos_club_categoria_temporada
