@@ -59,27 +59,39 @@
         <div class="xp-detailed-card mt-3">
           <h4 class="box-subtitle"><i class="fa-solid fa-medal text-amber"></i> Retos Comprobables Certificados por DT</h4>
           <div class="certified-retos-badges">
-            <div class="certified-badge-pill">
-              <i class="fa-solid fa-dumbbell text-emerald"></i>
-              <div>
-                <strong>Flexiones de Pecho (Push-Ups)</strong>
-                <span>15 flexiones • Aprobado por Prof. Yepes (+100 XP)</span>
+            @if (retosAprobados && retosAprobados.length > 0) {
+              @for (reto of retosAprobados; track reto.id) {
+                <div class="certified-badge-pill">
+                  <i [class]="reto.reto_icono || reto.retoIcono || 'fa-solid fa-medal'" [style.color]="reto.reto_color || reto.retoColor || '#10b981'"></i>
+                  <div>
+                    <strong>{{ reto.reto_nombre || reto.retoNombre }} (Nivel {{ reto.nivel_solicitado || reto.nivelSolicitado }})</strong>
+                    <span>{{ reto.meta_cantidad || reto.metaCantidad }} {{ reto.unidad_medida || reto.unidadMedida }} • {{ reto.evaluador_dt_nombre || reto.evaluadorDtNombre || 'Aprobado por DT' }} (+{{ reto.xp_recompensa || reto.xpRecompensa }} XP)</span>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="certified-badge-pill">
+                <i class="fa-solid fa-dumbbell text-emerald"></i>
+                <div>
+                  <strong>Flexiones de Pecho (Push-Ups)</strong>
+                  <span>15 flexiones • Aprobado por Prof. Yepes (+100 XP)</span>
+                </div>
               </div>
-            </div>
-            <div class="certified-badge-pill">
-              <i class="fa-solid fa-futbol text-blue"></i>
-              <div>
-                <strong>Dominadas de Balón (21s)</strong>
-                <span>25 toques • Aprobado por DT (+80 XP)</span>
+              <div class="certified-badge-pill">
+                <i class="fa-solid fa-futbol text-blue"></i>
+                <div>
+                  <strong>Dominadas de Balón (21s)</strong>
+                  <span>25 toques • Aprobado por DT (+80 XP)</span>
+                </div>
               </div>
-            </div>
-            <div class="certified-badge-pill">
-              <i class="fa-solid fa-bolt text-amber"></i>
-              <div>
-                <strong>Sentadillas con Salto</strong>
-                <span>20 saltos • Aprobado en entrenamiento (+80 XP)</span>
+              <div class="certified-badge-pill">
+                <i class="fa-solid fa-bolt text-amber"></i>
+                <div>
+                  <strong>Sentadillas con Salto</strong>
+                  <span>20 saltos • Aprobado en entrenamiento (+80 XP)</span>
+                </div>
               </div>
-            </div>
+            }
           </div>
         </div>
       </div>

@@ -180,6 +180,9 @@
         <i class="fa-solid fa-shield-check"></i> Validación DT
         @if (pendientesCount() > 0) { <span class="badge-pending-counter">{{ pendientesCount() }}</span> }
       </button>
+      <button type="button" [class.active]="activeJuegoVista() === TabRanking.AULA_INTERACTIVA" (click)="setJuegoVista(TabRanking.AULA_INTERACTIVA)">
+        <i class="fa-solid fa-clapperboard"></i> Aula interactiva
+      </button>
     </nav>
     @if (activeJuegoVista() === TabRanking.RETOS) {
       <app-ranking-retos
@@ -193,13 +196,15 @@
         (filtroTipoRetoChange)="filtroTipoReto.set($event)"
         (solicitarComprobacion)="solicitarComprobacionReto($event.reto, $event.nivel)">
       </app-ranking-retos>
-    } @else {
+    } @else if (activeJuegoVista() === TabRanking.CERTIFICACION_DT) {
       <app-ranking-certificacion-dt
         [retosPendientes]="retosPendientesDT()"
         [pendientesCount]="pendientesCount()"
         (evaluarReto)="evaluarRetoDT($event.reto, $event.aprobado)"
         (irARetos)="setJuegoVista(TabRanking.RETOS)">
       </app-ranking-certificacion-dt>
+    } @else {
+      <app-ranking-leccion-interactiva></app-ranking-leccion-interactiva>
     }
   }
 
@@ -211,6 +216,7 @@
   @if (alumnoSeleccionado()) {
     <app-ranking-fut-drawer 
       [alumno]="alumnoSeleccionado()" 
+      [retosAprobados]="retosAprobadosAlumno()"
       (close)="alumnoSeleccionado.set(null)">
     </app-ranking-fut-drawer>
   }

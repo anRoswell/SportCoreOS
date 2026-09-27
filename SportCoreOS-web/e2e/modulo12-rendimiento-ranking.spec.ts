@@ -23,6 +23,36 @@ async function signInAndOpenRanking(page: Page) {
   return sniffer;
 }
 
+async function openRankingWithMockApi(page: Page) {
+  const sniffer = attachStrictErrorSniffer(page);
+  await page.addInitScript(() => {
+    localStorage.setItem('futcore_token', 'e2e-interactive-lesson-token');
+    localStorage.setItem('futcore_user', JSON.stringify({
+      id: 'e2e-athlete',
+      email: 'e2e@sportcore.test',
+      nombres: 'Jugador',
+      apellidos: 'Demostración',
+      rol: 'DIRECTOR_DEPORTIVO',
+      rolLabel: 'Director Deportivo',
+      avatar: '',
+    }));
+  });
+  await page.route('http://localhost:3001/api/v1/**', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    let payload: unknown = { data: [] };
+    if (pathname.endsWith('/jugadores')) payload = { data: [], total: 0 };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(payload),
+    });
+  });
+  await page.goto('/ranking');
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('.main-gamification-nav')).toBeVisible();
+  return sniffer;
+}
+
 async function selectCategoryAndPlayer(page: Page) {
   const categorySelect = page.locator('select[name="ligaCategoria"]');
   await expect(categorySelect).toBeVisible();
@@ -199,6 +229,8 @@ test.describe('MÓDULO 12: RENDIMIENTO / RANKING - E2E EXHAUSTIVO', () => {
     if (await returnToChallenges.count()) await returnToChallenges.click();
     await page.locator('.game-subnav button', { hasText: 'Validación DT' }).click();
     await page.locator('.game-subnav button', { hasText: 'Retos y misiones' }).click();
+    await page.locator('.game-subnav button', { hasText: 'Aula interactiva' }).click();
+    await expect(page.locator('.interactive-lesson')).toBeVisible();
 
     // Liga: controles de consulta/captura, plantilla y validaciones locales del CSV.
     await mainTabs.filter({ hasText: 'Liga' }).click();
@@ -234,6 +266,82 @@ test.describe('MÓDULO 12: RENDIMIENTO / RANKING - E2E EXHAUSTIVO', () => {
     await page.locator('.liga-capture-switch button[role="tab"]', { hasText: 'Manual' }).click();
     await expect(page.locator('.manual-entry-panel')).toBeVisible();
     await expect(page.locator('.submit-match-btn')).toBeDisabled();
+    sniffer.assertZeroErrors();
+  });
+
+  test('completa el video interactivo de control orientado con decisiones y reto de cancha', async ({ page }) => {
+    const sniffer = await openRankingWithMockApi(page);
+    await page.locator('.main-gamification-nav .nav-tab-btn', { hasText: 'Juego' }).click();
+    await page.locator('.game-subnav button', { hasText: 'Aula interactiva' }).click();
+
+    const lesson = page.locator('.interactive-lesson');
+    await expect(lesson).toBeVisible();
+    await expect(lesson.locator('#interactive-lesson-title')).toContainText('Control orientado');
+    await expect(lesson.locator('.lesson-progress-copy')).toContainText('Momento 1 de 2');
+    await expect(lesson.locator('.pilot-week-card')).toHaveCount(4);
+    await expect(lesson.locator('[data-pilot-week="1"]')).toContainText('Punto de partida');
+    await expect(lesson.locator('[data-pilot-week="4"]')).toContainText('Transferir al juego');
+    const clip = lesson.locator('.interactive-clip');
+    await expect(clip).toHaveAttribute('data-clip-scene', 'scan-before-receive');
+    await expect(clip.locator('[data-scene-visual="scan"]')).toBeVisible();
+    await expect(clip.locator('[data-scene-visual="first-touch"]')).not.toBeVisible();
+    await expect(clip.locator('.clip-bottomline')).toContainText('ESCENA 01 · ESCANEO ANTES DE RECIBIR');
+
+    const playback = lesson.locator('[data-lesson-action="play"]');
+    await playback.click();
+    await expect(playback).toHaveAttribute('aria-pressed', 'true');
+    await playback.click();
+    await expect(playback).toHaveAttribute('aria-pressed', 'false');
+
+    const hintButton = lesson.locator('[data-lesson-action="hint"]');
+    await hintButton.click();
+    await expect(lesson.locator('.coach-hint')).toContainText('Pista del DT');
+    await hintButton.click();
+    await expect(lesson.locator('.coach-hint')).toHaveCount(0);
+
+    const firstChoices = ['watch-ball', 'call', 'scan'];
+    for (const choice of firstChoices) {
+      await lesson.locator(`[data-lesson-choice="${choice}"]`).click();
+      await expect(lesson.locator('.decision-feedback')).toBeVisible();
+      await expect(clip).toHaveAttribute('data-selected-choice', choice);
+    }
+    await expect(lesson.locator('.decision-feedback')).toContainText('¡Buena lectura!');
+    await lesson.locator('[data-lesson-action="continue"]').click();
+    await expect(lesson.locator('.lesson-progress-copy')).toContainText('Momento 2 de 2');
+    await expect(clip).toHaveAttribute('data-clip-scene', 'first-touch-exit');
+    await expect(clip.locator('[data-scene-visual="first-touch"]')).toBeVisible();
+    await expect(clip.locator('[data-scene-visual="scan"]')).not.toBeVisible();
+    await expect(clip.locator('[data-clip-route]')).toHaveCount(3);
+    await expect(clip.locator('.clip-bottomline')).toContainText('ESCENA 02 · PRIMER TOQUE Y SALIDA');
+
+    const secondChoices = ['pressure', 'stop', 'space'];
+    for (const choice of secondChoices) {
+      await lesson.locator(`[data-lesson-choice="${choice}"]`).click();
+      await expect(lesson.locator('.decision-feedback')).toBeVisible();
+      await expect(clip).toHaveAttribute('data-selected-choice', choice);
+      await expect(clip.locator(`[data-clip-route="${choice}"]`)).toHaveClass(/is-selected/);
+    }
+    await expect(lesson.locator('.decision-feedback')).toContainText('¡Exacto!');
+    await lesson.locator('[data-lesson-action="continue"]').click();
+
+    const fieldChallenge = page.locator('.field-challenge');
+    await expect(fieldChallenge).toBeVisible();
+    await expect(fieldChallenge).toContainText('Reto 3 contra 1');
+    await expect(fieldChallenge).toContainText('6 recepciones');
+    await expect(fieldChallenge).toContainText('Comparar semana 1 y semana 4');
+    await expect(fieldChallenge.locator('.pilot-rubric-criterion')).toHaveCount(3);
+    await expect(fieldChallenge.locator('.pilot-rubric-levels > span')).toHaveCount(3);
+    await expect(fieldChallenge.locator('.pilot-rubric-note')).toContainText('no comparar jugadores');
+    await fieldChallenge.locator('[data-lesson-action="complete"]').click();
+
+    const completion = page.locator('.lesson-complete');
+    await expect(completion).toBeVisible();
+    await expect(completion).toContainText('+20 XP de aprendizaje');
+    await expect(completion).toContainText('2 de 2 decisiones comprendidas');
+    await expect(completion).toContainText('Dominio en cancha: pendiente');
+    await completion.locator('[data-lesson-action="restart"]').click();
+    await expect(lesson.locator('.lesson-progress-copy')).toContainText('Momento 1 de 2');
+    await expect(lesson.locator('.decision-feedback')).toHaveCount(0);
     sniffer.assertZeroErrors();
   });
 

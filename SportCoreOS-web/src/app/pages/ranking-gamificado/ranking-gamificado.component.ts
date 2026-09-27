@@ -56,6 +56,7 @@ import { RankingCertificacionDtComponent } from './components/ranking-certificac
 import { RankingFutDrawerComponent } from './components/ranking-fut-drawer/ranking-fut-drawer.component';
 import { RankingReglasModalComponent } from './components/ranking-reglas-modal/ranking-reglas-modal.component';
 import { RankingLigaComponent } from './components/ranking-liga/ranking-liga.component';
+import { RankingLeccionInteractivaComponent } from './components/ranking-leccion-interactiva/ranking-leccion-interactiva.component';
 
 @Component({
   selector: 'app-ranking-gamificado',
@@ -69,7 +70,8 @@ import { RankingLigaComponent } from './components/ranking-liga/ranking-liga.com
     RankingCertificacionDtComponent,
     RankingFutDrawerComponent,
     RankingReglasModalComponent,
-    RankingLigaComponent
+    RankingLigaComponent,
+    RankingLeccionInteractivaComponent
   ],
   encapsulation: ViewEncapsulation.None,
   templateUrl: './ranking-gamificado.component.html',
@@ -116,6 +118,7 @@ export class RankingGamificadoComponent implements OnInit {
   totalRecords = signal<number>(0);
 
   alumnoSeleccionado = signal<AlumnoRankItem | null>(null);
+  retosAprobadosAlumno = signal<any[]>([]);
   mostrarModalReglas = signal<boolean>(false);
 
   categoriasDisponibles = signal<{ id: string; nombre: string; color: string }[]>([
@@ -434,6 +437,19 @@ export class RankingGamificadoComponent implements OnInit {
 
   seleccionarDetalleAlumno(alumno: AlumnoRankItem): void {
     this.alumnoSeleccionado.set(alumno);
+    this.retosAprobadosAlumno.set([]);
+    if (alumno?.id) {
+      this.api.getRetosJugador(alumno.id).subscribe({
+        next: (res: any) => {
+          const list = Array.isArray(res) ? res : (res?.data || []);
+          const aprobados = list.filter((r: any) => r.estado === 'APROBADO');
+          this.retosAprobadosAlumno.set(aprobados);
+        },
+        error: () => {
+          this.retosAprobadosAlumno.set([]);
+        }
+      });
+    }
   }
 
   abrirModalReglasXP(): void {

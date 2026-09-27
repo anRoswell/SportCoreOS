@@ -11,5 +11,6 @@ import { FutPlayerCardComponent } from '../../../../shared/components/fut-player
 })
 export class RankingFutDrawerComponent {
   @Input() alumno: AlumnoRankItem | null = null;
+  @Input() retosAprobados: any[] = [];
   @Output() close = new EventEmitter<void>();
 }

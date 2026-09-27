@@ -87,6 +87,9 @@ export class JugadoresRepository {
     else if (sortBy === 'APELLIDO_ASC') orderClause = 'ORDER BY j.apellidos ASC, j.nombres ASC';
     else if (sortBy === 'CREATED_DESC') orderClause = 'ORDER BY j.created_at DESC';
     else if (sortBy === 'TALLA_DESC') orderClause = 'ORDER BY b.talla_cm DESC NULLS LAST';
+    else if (sortBy === 'xp_total_desc' || sortBy === 'XP_TOTAL_DESC') orderClause = 'ORDER BY COALESCE(j.xp_total, 0) DESC, j.apellidos ASC';
+    else if (sortBy === 'xp_total_asc' || sortBy === 'XP_TOTAL_ASC') orderClause = 'ORDER BY COALESCE(j.xp_total, 0) ASC, j.apellidos ASC';
+    else if (sortBy === 'posicion_desc' || sortBy === 'posicion_asc') orderClause = 'ORDER BY COALESCE(j.xp_total, 0) DESC';
 
     const countRes = await this.db.query(
       `SELECT COUNT(*) as count
@@ -102,6 +105,13 @@ export class JugadoresRepository {
       `SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento, j.numero_documento,
               j.fecha_nacimiento, j.genero, j.foto_url, j.posicion_principal,
               j.posicion_secundaria, j.pierna_habil, j.numero_dorsal, j.eps, j.estado_matricula,
+              COALESCE(j.xp_total, 0) as xp_total,
+              COALESCE(j.xp_asistencia, 0) as xp_asistencia,
+              COALESCE(j.xp_rendimiento_dt, 0) as xp_rendimiento_dt,
+              COALESCE(j.xp_misiones, 0) as xp_misiones,
+              COALESCE(j.xp_tactica, 0) as xp_tactica,
+              COALESCE(j.xp_penalizaciones, 0) as xp_penalizaciones,
+              COALESCE(j.xp_liga, 0) as xp_liga,
               j.created_at, j.updated_at,
               c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
               b.peso_kg, b.talla_cm, b.imc, b.fecha_evaluacion as ultima_evaluacion
