@@ -50,6 +50,7 @@ export type TacticalLesson = {
   difficulty: 'Básico' | 'Intermedio' | 'Avanzado';
   icon: string;
   xpReward: number;
+  levelId: string;
   learningGoal: {
     title: string;
     steps: string[];
@@ -71,6 +72,58 @@ export type TacticalLesson = {
   decisionSteps: DecisionStep[];
 };
 
+export type TacticalLevel = {
+  id: string;
+  number: number;
+  title: string;
+  subtitle: string;
+  ageCategory: string;
+  badge: string;
+  rewardTitle: string;
+  rewardXp: number;
+  icon: string;
+  lessonIds: string[];
+};
+
+export const TACTICAL_LEVELS: TacticalLevel[] = [
+  {
+    id: 'nivel-1',
+    number: 1,
+    title: 'Nivel 1: Iniciación & Percepción',
+    subtitle: 'Fundamentos de control, orientación y visión periférica.',
+    ageCategory: 'Sub-8 a Sub-10 (8–12 años)',
+    badge: 'Básico',
+    rewardTitle: 'Medalla Visión Periférica',
+    rewardXp: 45,
+    icon: 'fa-eye',
+    lessonIds: ['control-orientado', 'perfil-corporal'],
+  },
+  {
+    id: 'nivel-2',
+    number: 2,
+    title: 'Nivel 2: Combinaciones Asociativas',
+    subtitle: 'Paredes en velocidad, atracción y juego por tercer hombre.',
+    ageCategory: 'Sub-11 a Sub-13 (10–16 años)',
+    badge: 'Intermedio',
+    rewardTitle: 'Medalla Maestro del 1-2',
+    rewardXp: 55,
+    icon: 'fa-bolt',
+    lessonIds: ['pared-velocidad', 'tercer-hombre'],
+  },
+  {
+    id: 'nivel-3',
+    number: 3,
+    title: 'Nivel 3: Táctica Colectiva & Modelo de Juego',
+    subtitle: 'Salida de balón Lavolpiana, desmarques de ruptura y presión Gegenpressing.',
+    ageCategory: 'Sub-14 a Sub-18 (12–18 años)',
+    badge: 'Avanzado',
+    rewardTitle: 'Insignia Estratega DT',
+    rewardXp: 85,
+    icon: 'fa-chess-knight',
+    lessonIds: ['desmarque-ruptura', 'salida-balon', 'presion-perdida'],
+  },
+];
+
 export const TACTICAL_LESSONS: TacticalLesson[] = [
   {
     id: 'control-orientado',
@@ -82,6 +135,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     difficulty: 'Básico',
     icon: 'fa-crosshairs',
     xpReward: 20,
+    levelId: 'nivel-1',
     learningGoal: {
       title: 'Recibir con ventaja',
       steps: ['Mirar antes de recibir', 'Perfilar el cuerpo', 'Orientar el primer toque'],
@@ -223,6 +277,157 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     ],
   },
   {
+    id: 'perfil-corporal',
+    title: 'Perfil corporal y orientación antes de recibir',
+    eyebrow: 'AULA TÁCTICA · FUNDAMENTO TÉCNICO 02',
+    subtitle: 'Abrir el cuerpo a 45° para observar al pasador y el arco rival simultáneamente.',
+    ageRange: '8–12 años · 3 semanas',
+    category: 'Fundamento Técnico',
+    difficulty: 'Básico',
+    icon: 'fa-person-walking',
+    xpReward: 25,
+    levelId: 'nivel-1',
+    learningGoal: {
+      title: 'Perfil y visión amplia',
+      steps: ['Posición semiabierta', 'Recepción a pierna alejada', 'Giro continuo hacia adelante'],
+    },
+    pilotWeeks: [
+      {
+        number: 1,
+        title: 'Postura semiabierta',
+        activity: 'Juego de pases en triángulo: colocarse de perfil viendo a ambos apoyos.',
+        evidence: '¿El cuerpo está orientado hacia el objetivo de ataque?',
+      },
+      {
+        number: 2,
+        title: 'Control con pierna alejada',
+        activity: 'Recibir con el pie más distante de la presión para proteger el balón.',
+        evidence: '¿Usa el pie correcto para ganar tiempo de giro?',
+      },
+      {
+        number: 3,
+        title: 'Giro en un solo toque',
+        activity: 'Conectar control orientado con cambio de orientación hacia banda.',
+        evidence: '¿Gira sin frenar la velocidad del balón?',
+      },
+      {
+        number: 4,
+        title: 'Juego 3v3 con puertas',
+        activity: 'Transferir la postura de perfil en situaciones de marca real.',
+        evidence: '¿Evita recibir de espaldas al campo rival?',
+      },
+    ],
+    rubricCriteria: [
+      {
+        id: 'body-angle',
+        title: 'Ángulo del cuerpo',
+        behavior: 'Se posiciona a 45° viendo pasador y cancha ofensiva.',
+      },
+      {
+        id: 'far-foot',
+        title: 'Pie alejado',
+        behavior: 'Controla con la pierna más distante del rival que presiona.',
+      },
+      {
+        id: 'turn-flow',
+        title: 'Fluidez del giro',
+        behavior: 'Encadena control y avance en un único movimiento fluido.',
+      },
+    ],
+    rubricLevels: [
+      'Recibe de espaldas completas a la portería',
+      'Se perfila pero controla con pie equivocado',
+      'Postura abierta y giro instantáneo en ventaja',
+    ],
+    fieldChallenge: {
+      title: 'Reto 3v2: perfil abierto y cambio de orientación',
+      subtitle: 'Evita recibir de espaldas; ábrete para encontrar al compañero libre en el otro costado.',
+      organization: '3 atacantes · 2 defensores centrales',
+      mission: 'Completa 6 controles con pierna alejada y pase a banda sin perder posesión.',
+      coachObservation: 'Postura de cadera y visión periférica.',
+      coachFocusSummary: '¿Cuerpo a 45°? · ¿Pierna alejada? · ¿Giro hacia adelante?',
+      rubricTitle: 'Qué observa el DT',
+      rubricSubtitle: 'Comprueba si el jugador recibe con vista panorámica o encerrado en su propia marca.',
+      note: 'Perfil correcto significa ver el balón y la jugada completa al mismo tiempo.',
+    },
+    decisionSteps: [
+      {
+        id: 'profile-stance-step',
+        title: 'Orientación corporal previa',
+        prompt: 'El mediocentro te va a dar el pase y el lateral rival está a tu espalda. ¿Cómo te perfilas?',
+        context: 'Si miras de espaldas al rival no sabrás dónde está la presión.',
+        hint: 'Abre tu cadera a 45 grados: un ojo en el balón y otro en el campo contrario.',
+        clip: {
+          id: 'body-profile-open',
+          label: 'ESCENA 01 · POSTURA A 45° Y VISIÓN PANORÁMICA',
+          duration: '00:05',
+          summary: 'Apertura de cadera para ver al pasador y la cancha ofensiva.',
+          description: 'El jugador 10 perfila su cadera semiabierta a 45 grados recibiendo el pase con ángulo de visión hacia el arco rival.',
+        },
+        options: [
+          {
+            id: 'abrir-cuerpo',
+            title: 'Me perfilo de costado viendo el balón y el campo rival',
+            description: 'Abro la cadera para ver al pasador y al espacio al mismo tiempo.',
+            feedback: '¡Excelente postura! El perfil semiabierto te permite girar de inmediato o descargar de primera.',
+            correct: true,
+          },
+          {
+            id: 'espalda-total',
+            title: 'Recibo totalmente de espaldas a la portería rival',
+            description: 'Miro únicamente al compañero que me da el pase.',
+            feedback: 'Recibir de espaldas te vuelve ciego a la presión y te obliga a dar un pase hacia atrás.',
+            correct: false,
+          },
+          {
+            id: 'frente-total',
+            title: 'Me quedo de espaldas al balón esperando que llegue',
+            description: 'Miro solo hacia adelante sin ver la trayectoria del pase.',
+            feedback: 'Si no ves el balón perderás el control antes de tocarlo.',
+            correct: false,
+          },
+        ],
+      },
+      {
+        id: 'profile-touch-step',
+        title: 'Elección del pie de recepción',
+        prompt: 'El balón llega desde tu izquierda y el defensor aprieta por tu espalda. ¿Con qué pie recibes?',
+        context: 'La banda derecha está libre para avanzar.',
+        hint: 'Usa el pie más alejado de la presión para dejar tu cuerpo como escudo.',
+        clip: {
+          id: 'body-profile-turn',
+          label: 'ESCENA 02 · CONTROL CON PIERNA ALEJADA Y GIRO',
+          duration: '00:06',
+          summary: 'Control con borde interno de pierna alejada para girar en un solo toque.',
+          description: 'El jugador 10 controla con el pie derecho (alejado) girando el cuerpo en un movimiento continuo hacia la banda.',
+        },
+        options: [
+          {
+            id: 'pie-lejano',
+            title: 'Borde interno de la pierna alejada',
+            description: 'Uso la pierna derecha como escudo y salgo hacia el espacio abierto.',
+            feedback: '¡Perfecto! La pierna alejada protege la pelota con tu propio cuerpo y te deja de cara al arco.',
+            correct: true,
+          },
+          {
+            id: 'pie-cercano',
+            title: 'Pie más cercano al rival',
+            description: 'Detengo la pelota con el pie izquierdo cerca del defensor.',
+            feedback: 'Poner el pie cercano expone el balón al robo directo del rival.',
+            correct: false,
+          },
+          {
+            id: 'parar-taco',
+            title: 'Pisar el balón con la suela y frenarme',
+            description: 'Detengo completamente la inercia de la jugada.',
+            feedback: 'Pisar el balón frena el ritmo y le da tiempo al defensor de encimarte.',
+            correct: false,
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'pared-velocidad',
     title: 'La Pared (1-2) y Desmarque al Espacio',
     eyebrow: 'AULA TÁCTICA · JUGADA COLECTIVA 02',
@@ -232,6 +437,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     difficulty: 'Intermedio',
     icon: 'fa-bolt',
     xpReward: 25,
+    levelId: 'nivel-2',
     learningGoal: {
       title: 'Pared en velocidad',
       steps: ['Fijar al defensor antes de soltar', 'Acelerar sin balón tras el pase', 'Devolución de primera al espacio'],
@@ -373,6 +579,157 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     ],
   },
   {
+    id: 'tercer-hombre',
+    title: 'El Concepto del Tercer Hombre',
+    eyebrow: 'AULA TÁCTICA · ASOCIACIÓN COLECTIVA 03',
+    subtitle: 'Atraer al marcador con un pase intermedio para habilitar al jugador libre de cara al arco.',
+    ageRange: '10–16 años · 4 semanas',
+    category: 'Combinación Asociativa',
+    difficulty: 'Intermedio',
+    icon: 'fa-users-line',
+    xpReward: 30,
+    levelId: 'nivel-2',
+    learningGoal: {
+      title: 'Juego por Tercer Hombre',
+      steps: ['Atraer la marca con pase al apoyo', 'Descarga de cara sin girar', 'Ataque del tercer hombre al espacio'],
+    },
+    pilotWeeks: [
+      {
+        number: 1,
+        title: 'Identificar al hombre libre',
+        activity: 'Rondo 3v2: buscar quién es el jugador que no tiene marca directa.',
+        evidence: '¿El poseedor reconoce al tercer hombre antes del pase?',
+      },
+      {
+        number: 2,
+        title: 'El pase de atracción',
+        activity: 'Pase fuerte al pie del apoyo para obligar al central rival a salir.',
+        evidence: '¿El pase atrae al defensor dejando el espacio libre detrás?',
+      },
+      {
+        number: 3,
+        title: 'Descarga a un toque de cara',
+        activity: 'El apoyo descarga de cara al tercer jugador sin intentar gambetear.',
+        evidence: '¿Toca de primera para aprovechar la inercia del tercer hombre?',
+      },
+      {
+        number: 4,
+        title: 'Juego condicionado 4v3',
+        activity: 'Anotar gol utilizando combinación de tercer hombre obligatoria.',
+        evidence: '¿Se rompe la línea defensiva con fluidez y velocidad?',
+      },
+    ],
+    rubricCriteria: [
+      {
+        id: 'attraction-pass',
+        title: 'Pase de atracción',
+        behavior: 'Juega al apoyo con la fuerza adecuada para atraer al rival.',
+      },
+      {
+        id: 'support-cushion',
+        title: 'Toque de cara',
+        behavior: 'El apoyo descarga suave y de primera hacia el tercer hombre lanzado.',
+      },
+      {
+        id: 'third-man-timing',
+        title: 'Carrera del tercer hombre',
+        behavior: 'Llega en carrera y velocidad justo a tiempo para recibir.',
+      },
+    ],
+    rubricLevels: [
+      'El apoyo intenta girar y pierde la sorpresa',
+      'Logra el pase pero el tercer hombre llega tarde',
+      'Circulación a 1 toque y penetración en ventaja',
+    ],
+    fieldChallenge: {
+      title: 'Reto 3v2: combinación de tercer hombre y remate',
+      subtitle: 'El central pasa al 9, el 9 descarga de cara al 8 que llega en carrera y remata.',
+      organization: '3 atacantes · 2 defensores · 1 arquero',
+      mission: 'Completa 6 transiciones exitosas rompiendo la línea por tercer hombre.',
+      coachObservation: 'Velocidad de descarga y sincronización del tercer hombre.',
+      coachFocusSummary: '¿Atrajo al rival? · ¿Descarga de cara? · ¿Tercer hombre en carrera?',
+      rubricTitle: 'Qué observa el DT',
+      rubricSubtitle: 'Evalúa la capacidad de jugar con un compañero intermedio para habilitar al que viene de frente.',
+      note: 'El secreto táctico es que el tercer hombre no espera quieto, llega en carrera.',
+    },
+    decisionSteps: [
+      {
+        id: 'third-man-attract-step',
+        title: 'La función del jugador apoyo',
+        prompt: 'Tienes marca pegajosa en la espalda y tu compañero te pasa el balón. ¿Qué haces?',
+        context: 'Un tercer compañero viene corriendo de frente sin marca.',
+        hint: 'Si intentas girar sobre tu marcador perderás el balón. Juega de cara hacia el que viene libre.',
+        clip: {
+          id: 'third-man-attract',
+          label: 'ESCENA 01 · DESCARGA DE CARA AL HOMBRE LIBRE',
+          duration: '00:05',
+          summary: 'El apoyo toca de primera hacia el tercer hombre libre que llega en carrera.',
+          description: 'El delantero 9 recibe con marcador pegado y descarga de primera hacia el volante 8 que llega de frente al arco.',
+        },
+        options: [
+          {
+            id: 'tocar-de-cara',
+            title: 'Descargo de primera hacia el compañero libre que viene de frente',
+            description: 'Uso un toque suave para acomodar el balón a la carrera del tercer hombre.',
+            feedback: '¡Exacto! Tocar de cara elimina la marca y habilita al tercer hombre con panorama completo de arco.',
+            correct: true,
+          },
+          {
+            id: 'girar-marca',
+            title: 'Intento girar sobre el cuerpo del defensor',
+            description: 'Busco darme la vuelta a fuerza física.',
+            feedback: 'Girar con marca pegajosa es de alto riesgo y frena la llegada del tercer hombre.',
+            correct: false,
+          },
+          {
+            id: 'reventar',
+            title: 'Despejo el balón hacia un costado',
+            description: 'Me quito la pelota de encima sin mirar.',
+            feedback: 'Despejar regala la posesión cuando tenías una combinación perfecta.',
+            correct: false,
+          },
+        ],
+      },
+      {
+        id: 'third-man-attack-step',
+        title: 'La llegada del tercer hombre',
+        prompt: 'Eres el tercer hombre y ves el pase al apoyo. ¿Cuándo inicias tu carrera?',
+        context: 'El espacio entre centrales se abre cuando el rival va a presionar al apoyo.',
+        hint: 'Arranca en carrera antes del toque de cara para llegar con velocidad lanzada.',
+        clip: {
+          id: 'third-man-release',
+          label: 'ESCENA 02 · PENETRACIÓN LANZADA Y REMATE',
+          duration: '00:06',
+          summary: 'El tercer hombre recibe en máxima aceleración y define de primera.',
+          description: 'El volante 8 llega en carrera lanzada, recibe la descarga del 9 y remata cruzado al palo lejano.',
+        },
+        options: [
+          {
+            id: 'carrera-lanzada',
+            title: 'Acelero para recibir en carrera de cara al arco',
+            description: 'Llego lanzado al espacio libre para rematar o asistir al primer toque.',
+            feedback: '¡Doctrina pura! Llegar en velocidad es imposible de marcar para los defensores que vienen retrocediendo.',
+            correct: true,
+          },
+          {
+            id: 'esperar-quieto',
+            title: 'Espero parado en el centro a que me la pasen',
+            description: 'Me quedo estático en el mediocampo.',
+            feedback: 'Si esperas parado, el defensor tendrá tiempo de recuperarse y cortar el pase.',
+            correct: false,
+          },
+          {
+            id: 'esconderse',
+            title: 'Me muevo detrás del árbitro',
+            description: 'Busco un ángulo extraño sin línea de pase.',
+            feedback: 'El tercer hombre siempre debe ofrecer una línea de pase limpia de frente.',
+            correct: false,
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'desmarque-ruptura',
     title: 'Desmarque de Ruptura y Pase Filtrado',
     eyebrow: 'AULA TÁCTICA · ATAQUE AL ESPACIO 03',
@@ -382,6 +739,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     difficulty: 'Avanzado',
     icon: 'fa-location-arrow',
     xpReward: 25,
+    levelId: 'nivel-3',
     learningGoal: {
       title: 'Desmarque de ruptura',
       steps: ['Temporizar la carrera con el pasador', 'Atacar el punto ciego del central', 'Control orientado hacia el arco'],
@@ -532,6 +890,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     difficulty: 'Avanzado',
     icon: 'fa-shield-halved',
     xpReward: 30,
+    levelId: 'nivel-3',
     learningGoal: {
       title: 'Salida Lavolpiana',
       steps: ['Abrir centrales a las bandas', 'Incrustar pivote defensivo', 'Buscar tercer hombre en lateral'],
@@ -682,6 +1041,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
     difficulty: 'Avanzado',
     icon: 'fa-arrows-to-circle',
     xpReward: 30,
+    levelId: 'nivel-3',
     learningGoal: {
       title: 'Presión tras pérdida',
       steps: ['Reaccionar en menos de 3 segundos', 'Cerrar líneas de pase en embudo', 'Recuperar o forzar despeje'],
@@ -833,11 +1193,31 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
   styleUrl: './ranking-leccion-interactiva.component.scss',
 })
 export class RankingLeccionInteractivaComponent {
+  readonly tacticalLevels = TACTICAL_LEVELS;
   readonly tacticalLessons = TACTICAL_LESSONS;
+
+  readonly selectedLevelId = signal<string>('nivel-1');
   readonly selectedLessonId = signal<string>('control-orientado');
+  readonly completedLessonIds = signal<string[]>([]);
+
+  readonly activeLevel = computed(() => {
+    return this.tacticalLevels.find((lvl) => lvl.id === this.selectedLevelId()) ?? this.tacticalLevels[0];
+  });
+
+  readonly activeLevelLessons = computed(() => {
+    const ids = this.activeLevel().lessonIds;
+    return this.tacticalLessons.filter((l) => ids.includes(l.id));
+  });
 
   readonly activeLesson = computed(() => {
     return this.tacticalLessons.find((l) => l.id === this.selectedLessonId()) ?? this.tacticalLessons[0];
+  });
+
+  readonly levelProgress = computed(() => {
+    const total = this.activeLevel().lessonIds.length;
+    const done = this.activeLevel().lessonIds.filter((id) => this.completedLessonIds().includes(id)).length;
+    const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { done, total, percent };
   });
 
   readonly pilotWeeks = computed(() => this.activeLesson().pilotWeeks);
@@ -868,9 +1248,27 @@ export class RankingLeccionInteractivaComponent {
     return Math.round((this.completedDecisions().length / totalSteps) * baseReward);
   });
 
+  selectLevel(levelId: string): void {
+    if (this.selectedLevelId() === levelId) return;
+    this.selectedLevelId.set(levelId);
+    const targetLvl = this.tacticalLevels.find((lvl) => lvl.id === levelId);
+    if (targetLvl && targetLvl.lessonIds.length > 0) {
+      if (!targetLvl.lessonIds.includes(this.selectedLessonId())) {
+        this.selectLesson(targetLvl.lessonIds[0]);
+      }
+    }
+  }
+
   selectLesson(lessonId: string): void {
     if (this.selectedLessonId() === lessonId) return;
     this.selectedLessonId.set(lessonId);
+
+    // Si la lección pertenece a otro nivel, sincronizar el nivel activo
+    const parentLevel = this.tacticalLevels.find((lvl) => lvl.lessonIds.includes(lessonId));
+    if (parentLevel && parentLevel.id !== this.selectedLevelId()) {
+      this.selectedLevelId.set(parentLevel.id);
+    }
+
     this.stage.set('decision');
     this.decisionIndex.set(0);
     this.selectedOptionId.set(null);
@@ -918,6 +1316,11 @@ export class RankingLeccionInteractivaComponent {
   completeLesson(): void {
     this.stage.set('complete');
     this.clipPlaying.set(false);
+
+    const activeId = this.activeLesson().id;
+    this.completedLessonIds.update((completed) =>
+      completed.includes(activeId) ? completed : [...completed, activeId],
+    );
   }
 
   restartLesson(): void {

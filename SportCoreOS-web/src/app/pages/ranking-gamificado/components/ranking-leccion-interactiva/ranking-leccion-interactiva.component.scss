@@ -7,27 +7,190 @@
   padding: 1.2rem 0 2.5rem;
   color: var(--lesson-ink);
 
-  /* TACTICAL CATALOG SELECTOR */
+  /* TACTICAL CATALOG & LEVEL SELECTOR */
   .tactical-catalog-header {
     margin-bottom: 1.6rem;
-    padding: 1.1rem;
-    border-radius: 1.1rem;
+    padding: 1.2rem;
+    border-radius: 1.2rem;
     background: linear-gradient(135deg, #092c22, #0d3d30);
     box-shadow: 0 10px 25px rgba(9, 44, 34, 0.2);
     color: #fff;
 
-    .catalog-badge {
-      display: inline-flex;
+    .catalog-top-row {
+      display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.72rem;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      color: #34d399;
-      text-transform: uppercase;
-      margin-bottom: 0.85rem;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
 
-      i { font-size: 0.85rem; }
+      .catalog-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: #34d399;
+        text-transform: uppercase;
+
+        i { font-size: 0.85rem; }
+      }
+
+      .catalog-overall-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(250, 204, 21, 0.15);
+        border: 1px solid rgba(250, 204, 21, 0.35);
+        color: #fef08a;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 0.3rem 0.65rem;
+        border-radius: 999px;
+      }
+    }
+
+    /* PESTAÑAS DE NIVELES */
+    .level-tabs-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+
+      .level-tab-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.75rem 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(52, 211, 153, 0.4);
+          transform: translateY(-1px);
+        }
+
+        &.is-active {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(6, 95, 70, 0.45));
+          border-color: #34d399;
+          box-shadow: 0 0 16px rgba(52, 211, 153, 0.25);
+        }
+
+        .level-tab-icon {
+          width: 2.1rem;
+          height: 2.1rem;
+          flex-shrink: 0;
+          border-radius: 0.65rem;
+          background: rgba(255, 255, 255, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #34d399;
+          font-size: 0.9rem;
+        }
+
+        .level-tab-copy {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+
+          strong {
+            font-size: 0.78rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          small {
+            font-size: 0.61rem;
+            color: #93c5b5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .level-diff-pill {
+          margin-left: auto;
+          font-size: 0.55rem;
+          font-weight: 850;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          padding: 0.15rem 0.4rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.14);
+          color: #d1fae5;
+        }
+      }
+    }
+
+    /* RESUMEN Y PROGRESO DEL NIVEL ACTIVO */
+    .active-level-summary {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.85rem;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.1rem;
+
+      .level-summary-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.55rem;
+
+        h4 {
+          margin: 0;
+          font-size: 0.88rem;
+          font-weight: 800;
+          color: #fff;
+        }
+
+        p {
+          margin: 0.15rem 0 0;
+          font-size: 0.68rem;
+          color: #93c5b5;
+        }
+
+        .level-xp-indicator {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          flex-shrink: 0;
+
+          strong {
+            font-size: 0.85rem;
+            color: #34d399;
+          }
+
+          span {
+            font-size: 0.62rem;
+            color: #a7f3d0;
+          }
+        }
+      }
+
+      .level-progress-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+
+        .level-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #10b981, #facc15);
+          border-radius: inherit;
+          transition: width 0.35s ease;
+        }
+      }
     }
 
     .catalog-selector-row {
@@ -88,6 +251,7 @@
         align-items: center;
         gap: 0.4rem;
         margin-bottom: 0.15rem;
+        flex-wrap: wrap;
 
         .difficulty-tag {
           font-size: 0.58rem;
@@ -109,6 +273,18 @@
           font-weight: 900;
           color: #facc15;
           letter-spacing: 0.04em;
+        }
+
+        .completed-check-tag {
+          font-size: 0.55rem;
+          font-weight: 850;
+          background: rgba(16, 185, 129, 0.28);
+          color: #86efac;
+          padding: 0.12rem 0.35rem;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.2rem;
         }
       }
 
@@ -242,7 +418,7 @@
       }
       .scan-cue { animation: scan-pulse .9s ease-in-out infinite alternate; }
 
-      /* Jugada 1 */
+      /* Jugada 1: Control orientado */
       &[data-clip-scene="scan-before-receive"] .match-ball {
         animation: ball-pass 1.8s ease-in-out infinite alternate;
       }
@@ -256,7 +432,15 @@
         animation-name: ball-stop;
       }
 
-      /* Jugada 2: Pared */
+      /* Jugada 2: Perfil corporal */
+      &[data-clip-scene="body-profile-open"] .match-ball {
+        animation: ball-profile-pass 1.6s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="body-profile-turn"] .match-ball {
+        animation: ball-profile-turn 1.6s ease-in-out infinite alternate;
+      }
+
+      /* Jugada 3: Pared */
       &[data-clip-scene="wall-pass-approach"] .match-ball {
         animation: ball-wall-1 1.6s ease-in-out infinite alternate;
       }
@@ -264,7 +448,15 @@
         animation: ball-wall-2 1.6s ease-in-out infinite alternate;
       }
 
-      /* Jugada 3: Ruptura */
+      /* Jugada 4: Tercer hombre */
+      &[data-clip-scene="third-man-attract"] .match-ball {
+        animation: ball-third-attract 1.8s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="third-man-release"] .match-ball {
+        animation: ball-third-release 1.6s ease-in-out infinite alternate;
+      }
+
+      /* Jugada 5: Ruptura */
       &[data-clip-scene="rupture-timing"] .match-ball {
         animation: ball-rupture-prep 1.8s ease-in-out infinite alternate;
       }
@@ -272,7 +464,7 @@
         animation: ball-rupture-pass 1.8s ease-in-out infinite alternate;
       }
 
-      /* Jugada 4: Salida Lavolpiana */
+      /* Jugada 6: Salida Lavolpiana */
       &[data-clip-scene="lavolpiana-shape"] .match-ball {
         animation: ball-lavolpe-swing 2.2s ease-in-out infinite alternate;
       }
@@ -280,7 +472,7 @@
         animation: ball-lavolpe-exit 2.2s ease-in-out infinite alternate;
       }
 
-      /* Jugada 5: Gegenpressing */
+      /* Jugada 7: Gegenpressing */
       &[data-clip-scene="press-trap"] .match-ball {
         animation: ball-press-trap 1.2s ease-in-out infinite alternate;
       }
@@ -402,9 +594,17 @@
   @keyframes ball-to-pressure { to { transform: translate(57px, 15px); } }
   @keyframes ball-stop { to { transform: translate(5px, 0); } }
 
+  /* Perfil corporal keyframes */
+  @keyframes ball-profile-pass { to { transform: translate(110px, -15px); } }
+  @keyframes ball-profile-turn { to { transform: translate(140px, -70px); } }
+
   /* Wall pass keyframes */
   @keyframes ball-wall-1 { to { transform: translate(110px, -65px); } }
   @keyframes ball-wall-2 { to { transform: translate(80px, 45px); } }
+
+  /* Tercer hombre keyframes */
+  @keyframes ball-third-attract { 0% { transform: translate(0, 0); } 50% { transform: translate(90px, -25px); } 100% { transform: translate(50px, -60px); } }
+  @keyframes ball-third-release { to { transform: translate(120px, 15px); } }
 
   /* Rupture pass keyframes */
   @keyframes ball-rupture-prep { to { transform: translate(15px, -5px); } }
@@ -419,6 +619,7 @@
   @keyframes ball-press-steal { to { transform: translate(-30px, -15px); } }
 
   @media (max-width: 900px) {
+    .tactical-catalog-header .level-tabs-nav { grid-template-columns: 1fr; }
     .lesson-layout { grid-template-columns: 1fr; }
     .lesson-side-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .coach-note-card { grid-column: 1 / -1; }
