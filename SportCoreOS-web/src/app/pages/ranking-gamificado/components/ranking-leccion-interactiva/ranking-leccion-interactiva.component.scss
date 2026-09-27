@@ -7,6 +7,148 @@
   padding: 1.2rem 0 2.5rem;
   color: var(--lesson-ink);
 
+  /* TACTICAL CATALOG SELECTOR */
+  .tactical-catalog-header {
+    margin-bottom: 1.6rem;
+    padding: 1.1rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #092c22, #0d3d30);
+    box-shadow: 0 10px 25px rgba(9, 44, 34, 0.2);
+    color: #fff;
+
+    .catalog-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: #34d399;
+      text-transform: uppercase;
+      margin-bottom: 0.85rem;
+
+      i { font-size: 0.85rem; }
+    }
+
+    .catalog-selector-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .tactical-selector-card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(52, 211, 153, 0.4);
+      }
+
+      &.is-active {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(6, 95, 70, 0.35));
+        border-color: #34d399;
+        box-shadow: 0 0 16px rgba(52, 211, 153, 0.25);
+      }
+
+      .card-icon-bubble {
+        width: 2.2rem;
+        height: 2.2rem;
+        flex-shrink: 0;
+        border-radius: 0.65rem;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #34d399;
+        font-size: 0.95rem;
+      }
+
+      .card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 0;
+      }
+
+      .card-top-tags {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.15rem;
+
+        .difficulty-tag {
+          font-size: 0.58rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          padding: 0.15rem 0.4rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.12);
+          color: #d1fae5;
+
+          &[data-diff="Básico"] { background: rgba(52, 211, 153, 0.25); color: #a7f3d0; }
+          &[data-diff="Intermedio"] { background: rgba(251, 191, 36, 0.25); color: #fef08a; }
+          &[data-diff="Avanzado"] { background: rgba(248, 113, 113, 0.25); color: #fecaca; }
+        }
+
+        .xp-badge {
+          font-size: 0.62rem;
+          font-weight: 900;
+          color: #facc15;
+          letter-spacing: 0.04em;
+        }
+      }
+
+      .card-title {
+        font-size: 0.78rem;
+        font-weight: 750;
+        line-height: 1.3;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card-category {
+        font-size: 0.62rem;
+        color: #93c5b5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .active-glow-pill {
+        position: absolute;
+        top: 0.45rem;
+        right: 0.45rem;
+        font-size: 0.52rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: #10b981;
+        color: #fff;
+        padding: 0.12rem 0.35rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+      }
+    }
+  }
+
   .lesson-heading,
   .lesson-progress-copy,
   .decision-title-row,
@@ -87,20 +229,66 @@
     .touch-route { opacity: .24; transition: opacity .2s ease, stroke-width .2s ease; }
     .touch-route.is-selected { opacity: 1; stroke-width: 7; filter: drop-shadow(0 0 5px rgba(255,255,255,.45)); }
     .touch-route[data-clip-route="stop"] { stroke-linecap: round; }
+
     &[data-clip-scene="first-touch-exit"][data-selected-choice="space"] .route-label-space,
     &[data-clip-scene="first-touch-exit"][data-selected-choice="pressure"] .route-label-pressure,
     &[data-clip-scene="first-touch-exit"][data-selected-choice="stop"] .route-label-stop { opacity: 1; }
-    &.is-playing[data-clip-scene="scan-before-receive"] {
-      .pass-route, .pressure-route { animation: route-dash .8s linear infinite; opacity: 1; }
-      .match-ball { animation: ball-pass 1.8s ease-in-out infinite alternate; }
+
+    /* ANIMACIONES CUANDO ESTÁ REPRODUCIÉNDOSE LA JUGADA */
+    &.is-playing {
+      .pass-route, .pressure-route, .touch-route {
+        animation: route-dash .8s linear infinite;
+        opacity: 0.95;
+      }
       .scan-cue { animation: scan-pulse .9s ease-in-out infinite alternate; }
+
+      /* Jugada 1 */
+      &[data-clip-scene="scan-before-receive"] .match-ball {
+        animation: ball-pass 1.8s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="first-touch-exit"] .match-ball {
+        animation: ball-to-space 1.8s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="first-touch-exit"][data-selected-choice="pressure"] .match-ball {
+        animation-name: ball-to-pressure;
+      }
+      &[data-clip-scene="first-touch-exit"][data-selected-choice="stop"] .match-ball {
+        animation-name: ball-stop;
+      }
+
+      /* Jugada 2: Pared */
+      &[data-clip-scene="wall-pass-approach"] .match-ball {
+        animation: ball-wall-1 1.6s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="wall-pass-return"] .match-ball {
+        animation: ball-wall-2 1.6s ease-in-out infinite alternate;
+      }
+
+      /* Jugada 3: Ruptura */
+      &[data-clip-scene="rupture-timing"] .match-ball {
+        animation: ball-rupture-prep 1.8s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="rupture-finish"] .match-ball {
+        animation: ball-rupture-pass 1.8s ease-in-out infinite alternate;
+      }
+
+      /* Jugada 4: Salida Lavolpiana */
+      &[data-clip-scene="lavolpiana-shape"] .match-ball {
+        animation: ball-lavolpe-swing 2.2s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="lavolpiana-exit"] .match-ball {
+        animation: ball-lavolpe-exit 2.2s ease-in-out infinite alternate;
+      }
+
+      /* Jugada 5: Gegenpressing */
+      &[data-clip-scene="press-trap"] .match-ball {
+        animation: ball-press-trap 1.2s ease-in-out infinite alternate;
+      }
+      &[data-clip-scene="press-recover"] .match-ball {
+        animation: ball-press-steal 1.4s ease-in-out infinite alternate;
+      }
     }
-    &.is-playing[data-clip-scene="first-touch-exit"] {
-      .touch-route { animation: route-dash .8s linear infinite; }
-      .match-ball { animation: ball-to-space 1.8s ease-in-out infinite alternate; }
-    }
-    &.is-playing[data-clip-scene="first-touch-exit"][data-selected-choice="pressure"] .match-ball { animation-name: ball-to-pressure; }
-    &.is-playing[data-clip-scene="first-touch-exit"][data-selected-choice="stop"] .match-ball { animation-name: ball-stop; }
+
     .clip-bottomline { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem 1rem; background: linear-gradient(0deg, rgba(2,20,15,.88), rgba(2,20,15,.25)); }
     .clip-bottomline > div { display: grid; gap: .25rem; }
     .clip-kicker { color: #a7f3d0; font-size: .62rem; }
@@ -206,12 +394,29 @@
   .complete-summary span { display: inline-flex; align-items: center; gap: .4rem; color: #52685d; font-size: .69rem; font-weight: 750; }
   .complete-summary span:first-child i { color: #159567; }
 
+  /* KEYFRAME ANIMATIONS */
   @keyframes route-dash { to { stroke-dashoffset: -19; } }
   @keyframes scan-pulse { to { opacity: .42; transform: scale(.92); } }
   @keyframes ball-pass { to { transform: translate(76px, 27px); } }
   @keyframes ball-to-space { to { transform: translate(68px, -45px); } }
   @keyframes ball-to-pressure { to { transform: translate(57px, 15px); } }
   @keyframes ball-stop { to { transform: translate(5px, 0); } }
+
+  /* Wall pass keyframes */
+  @keyframes ball-wall-1 { to { transform: translate(110px, -65px); } }
+  @keyframes ball-wall-2 { to { transform: translate(80px, 45px); } }
+
+  /* Rupture pass keyframes */
+  @keyframes ball-rupture-prep { to { transform: translate(15px, -5px); } }
+  @keyframes ball-rupture-pass { to { transform: translate(75px, -20px); } }
+
+  /* Lavolpiana keyframes */
+  @keyframes ball-lavolpe-swing { to { transform: translate(65px, -70px); } }
+  @keyframes ball-lavolpe-exit { to { transform: translate(120px, 25px); } }
+
+  /* Gegenpressing keyframes */
+  @keyframes ball-press-trap { 0% { transform: scale(1); } 50% { transform: scale(1.15) translate(-5px, 5px); } 100% { transform: scale(1); } }
+  @keyframes ball-press-steal { to { transform: translate(-30px, -15px); } }
 
   @media (max-width: 900px) {
     .lesson-layout { grid-template-columns: 1fr; }
@@ -233,6 +438,7 @@
     .decision-actions button { width: 100%; }
     .pilot-roadmap-heading, .pilot-rubric-heading { align-items: flex-start; flex-direction: column; }
     .pilot-week-grid { grid-template-columns: 1fr; }
+    .tactical-catalog-header .catalog-selector-row { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }

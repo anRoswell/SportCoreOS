@@ -1,17 +1,50 @@
 <section class="interactive-lesson" aria-labelledby="interactive-lesson-title">
+  <!-- CATÁLOGO & SELECTOR DE JUGADAS TÁCTICAS -->
+  <div class="tactical-catalog-header">
+    <div class="catalog-badge">
+      <i class="fa-solid fa-chalkboard-user"></i>
+      <span>VIDEOTECA TÁCTICA & PIZARRA INTERACTIVA 2D</span>
+    </div>
+    <div class="catalog-selector-row">
+      @for (lesson of tacticalLessons; track lesson.id) {
+        <button
+          type="button"
+          class="tactical-selector-card"
+          [class.is-active]="selectedLessonId() === lesson.id"
+          [attr.data-tactical-id]="lesson.id"
+          (click)="selectLesson(lesson.id)">
+          <div class="card-icon-bubble">
+            <i class="fa-solid {{ lesson.icon }}"></i>
+          </div>
+          <div class="card-meta">
+            <div class="card-top-tags">
+              <span class="difficulty-tag" [attr.data-diff]="lesson.difficulty">{{ lesson.difficulty }}</span>
+              <span class="xp-badge">+{{ lesson.xpReward }} XP</span>
+            </div>
+            <strong class="card-title">{{ lesson.title }}</strong>
+            <small class="card-category">{{ lesson.category }} · {{ lesson.ageRange }}</small>
+          </div>
+          @if (selectedLessonId() === lesson.id) {
+            <span class="active-glow-pill"><i class="fa-solid fa-play"></i> En curso</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
   <header class="lesson-heading">
     <div>
-      <div class="lesson-eyebrow"><i class="fa-solid fa-clapperboard"></i> AULA TÁCTICA · PILOTO FORMATIVO 01</div>
-      <h2 id="interactive-lesson-title">Control orientado para salir de la presión</h2>
-      <p>Una habilidad que se observa, se practica y luego se transfiere al juego.</p>
+      <div class="lesson-eyebrow"><i class="fa-solid fa-clapperboard"></i> {{ activeLesson().eyebrow }}</div>
+      <h2 id="interactive-lesson-title">{{ activeLesson().title }}</h2>
+      <p>{{ activeLesson().subtitle }}</p>
     </div>
-    <div class="lesson-age-pill"><i class="fa-solid fa-people-group"></i> 8–12 años <span>·</span> 4 semanas</div>
+    <div class="lesson-age-pill"><i class="fa-solid fa-people-group"></i> {{ activeLesson().ageRange }}</div>
   </header>
 
   <div class="lesson-progress" aria-label="Progreso de la lección">
     <div class="lesson-progress-copy">
       <span>
-        @if (stage() === 'decision') { Momento {{ decisionNumber() }} de 2 }
+        @if (stage() === 'decision') { Momento {{ decisionNumber() }} de {{ activeLesson().decisionSteps.length }} }
         @else if (stage() === 'practice') { Reto de cancha }
         @else { Lección completada }
       </span>
@@ -24,12 +57,12 @@
     <div class="pilot-roadmap-heading">
       <div>
         <span class="question-label">PLAN DE CANCHA</span>
-        <h3 id="pilot-roadmap-title">Piloto de 4 semanas</h3>
+        <h3 id="pilot-roadmap-title">Piloto formativo de progresión</h3>
       </div>
-      <p>Foco: recibir con ventaja. El DT observa la misma rúbrica al inicio y al cierre.</p>
+      <p>Foco de desarrollo: {{ activeLesson().learningGoal.title }}. El DT observa la misma rúbrica al inicio y al cierre.</p>
     </div>
     <div class="pilot-week-grid">
-      @for (week of pilotWeeks; track week.number) {
+      @for (week of pilotWeeks(); track week.number) {
         <article class="pilot-week-card" [attr.data-pilot-week]="week.number">
           <span class="pilot-week-number">SEMANA 0{{ week.number }}</span>
           <strong>{{ week.title }}</strong>
@@ -52,7 +85,7 @@
           <div class="clip-topline">
             <span class="clip-live-dot"></span>
             <span>ESCENA 0{{ decisionNumber() }} · {{ activeDecision().clip.duration }}</span>
-            <span class="clip-format">DEMO INTERACTIVA</span>
+            <span class="clip-format">PIZARRA TÁCTICA 2D</span>
           </div>
 
           @if (activeDecision().clip.videoUrl) {
@@ -83,7 +116,11 @@
               <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
                 <path d="M0 0L10 5L0 10Z" fill="#fca5a5" />
               </marker>
+              <marker id="arrow-yellow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="#fde047" />
+              </marker>
             </defs>
+            <!-- LÍNEAS DEL TERRENO DE JUEGO -->
             <rect x="7" y="7" width="746" height="346" rx="18" fill="url(#pitch-gradient)" />
             <rect x="25" y="24" width="710" height="312" rx="12" fill="none" stroke="#d1fae5" stroke-opacity=".72" stroke-width="2" />
             <line x1="380" y1="24" x2="380" y2="336" stroke="#d1fae5" stroke-opacity=".5" stroke-width="2" />
@@ -91,80 +128,402 @@
             <rect x="25" y="105" width="105" height="150" fill="none" stroke="#d1fae5" stroke-opacity=".65" stroke-width="2" />
             <rect x="630" y="105" width="105" height="150" fill="none" stroke="#d1fae5" stroke-opacity=".65" stroke-width="2" />
 
-            <g class="scan-scene" data-scene-visual="scan" [attr.display]="activeDecision().clip.id === 'scan-before-receive' ? null : 'none'">
-              <path class="pass-route" d="M190 122 Q292 146 402 204" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-dasharray="9 10" marker-end="url(#arrow-white)" />
-              <path class="pressure-route" d="M560 239 Q497 224 440 214" fill="none" stroke="#fca5a5" stroke-width="4" stroke-dasharray="8 10" marker-end="url(#arrow-red)" />
-              <g class="player teammate" transform="translate(175 116)">
-                <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
-                <text y="6" text-anchor="middle">8</text>
+            <!-- JUGADA 1: CONTROL ORIENTADO -->
+            @if (selectedLessonId() === 'control-orientado') {
+              <g class="scan-scene" data-scene-visual="scan" [attr.display]="activeDecision().clip.id === 'scan-before-receive' ? null : 'none'">
+                <path class="pass-route" d="M190 122 Q292 146 402 204" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-dasharray="9 10" marker-end="url(#arrow-white)" />
+                <path class="pressure-route" d="M560 239 Q497 224 440 214" fill="none" stroke="#fca5a5" stroke-width="4" stroke-dasharray="8 10" marker-end="url(#arrow-red)" />
+                <g class="player teammate" transform="translate(175 116)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">8</text>
+                </g>
+                <g class="player receiver" transform="translate(417 213)">
+                  <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">10</text>
+                </g>
+                <g class="player defender" transform="translate(574 242)">
+                  <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player support" transform="translate(532 92)">
+                  <circle r="20" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">7</text>
+                </g>
+                <circle class="match-ball" cx="285" cy="165" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="scan-cue">
+                  <path d="M394 183 Q381 167 392 151 M408 178 Q403 157 417 145 M422 181 Q432 164 443 161" fill="none" stroke="#fde68a" stroke-width="4" stroke-linecap="round" />
+                  <text class="scene-callout" x="454" y="154">ESCANEA</text>
+                </g>
+                <g class="space-marker">
+                  <circle cx="558" cy="126" r="25" fill="#86efac" fill-opacity=".16" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="558" y="130" text-anchor="middle">LIBRE</text>
+                </g>
               </g>
-              <g class="player receiver" transform="translate(417 213)">
-                <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
-                <text y="6" text-anchor="middle">10</text>
-              </g>
-              <g class="player defender" transform="translate(574 242)">
-                <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
-                <text y="6" text-anchor="middle">4</text>
-              </g>
-              <g class="player support" transform="translate(532 92)">
-                <circle r="20" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
-                <text y="6" text-anchor="middle">7</text>
-              </g>
-              <circle class="match-ball" cx="285" cy="165" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
-              <g class="scan-cue">
-                <path d="M394 183 Q381 167 392 151 M408 178 Q403 157 417 145 M422 181 Q432 164 443 161" fill="none" stroke="#fde68a" stroke-width="4" stroke-linecap="round" />
-                <text class="scene-callout" x="454" y="154">ESCANEA</text>
-              </g>
-              <g class="space-marker">
-                <circle cx="558" cy="126" r="25" fill="#86efac" fill-opacity=".16" stroke="#86efac" stroke-dasharray="4 4" />
-                <text x="558" y="130" text-anchor="middle">LIBRE</text>
-              </g>
-            </g>
 
-            <g class="touch-scene" data-scene-visual="first-touch" [attr.display]="activeDecision().clip.id === 'first-touch-exit' ? null : 'none'">
-              <path
-                data-clip-route="space"
-                class="touch-route"
-                [class.is-selected]="selectedOptionId() === 'space'"
-                d="M431 218 Q486 185 570 126"
-                fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="9 10" marker-end="url(#arrow-green)" />
-              <path
-                data-clip-route="pressure"
-                class="touch-route"
-                [class.is-selected]="selectedOptionId() === 'pressure'"
-                d="M431 218 Q478 230 521 235"
-                fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="8 10" marker-end="url(#arrow-red)" />
-              <path
-                data-clip-route="stop"
-                class="touch-route"
-                [class.is-selected]="selectedOptionId() === 'stop'"
-                d="M431 218 Q441 211 450 218"
-                fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="5 7" />
-              <g class="player teammate" transform="translate(173 114)">
-                <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
-                <text y="6" text-anchor="middle">8</text>
+              <g class="touch-scene" data-scene-visual="first-touch" [attr.display]="activeDecision().clip.id === 'first-touch-exit' ? null : 'none'">
+                <path
+                  data-clip-route="space"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'space'"
+                  d="M431 218 Q486 185 570 126"
+                  fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="9 10" marker-end="url(#arrow-green)" />
+                <path
+                  data-clip-route="pressure"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'pressure'"
+                  d="M431 218 Q478 230 521 235"
+                  fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="8 10" marker-end="url(#arrow-red)" />
+                <path
+                  data-clip-route="stop"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'stop'"
+                  d="M431 218 Q441 211 450 218"
+                  fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="5 7" />
+                <g class="player teammate" transform="translate(173 114)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">8</text>
+                </g>
+                <g class="player receiver" transform="translate(408 210)">
+                  <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">10</text>
+                </g>
+                <g class="player defender" transform="translate(535 238)">
+                  <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player support" transform="translate(616 104)">
+                  <circle r="20" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">7</text>
+                </g>
+                <circle class="match-ball" cx="432" cy="218" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="579" cy="123" r="27" fill="#86efac" fill-opacity=".16" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="579" y="127" text-anchor="middle">ESPACIO</text>
+                </g>
+                <text class="route-label route-label-space" x="509" y="161">SALIDA</text>
+                <text class="route-label route-label-pressure" x="482" y="265">PRESIÓN</text>
+                <text class="route-label route-label-stop" x="449" y="196">PAUSA</text>
               </g>
-              <g class="player receiver" transform="translate(408 210)">
-                <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
-                <text y="6" text-anchor="middle">10</text>
+            }
+
+            <!-- JUGADA 2: PARED 1-2 EN VELOCIDAD -->
+            @if (selectedLessonId() === 'pared-velocidad') {
+              <g class="wall-approach-scene" data-scene-visual="wall-approach" [attr.display]="activeDecision().clip.id === 'wall-pass-approach' ? null : 'none'">
+                <!-- Flecha de conducción hacia el rival -->
+                <path class="pass-route" d="M260 210 Q320 205 350 200" fill="none" stroke="#fde047" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow-yellow)" />
+                <!-- Flecha de descarga al apoyo -->
+                <path class="pass-route" d="M350 200 Q395 160 435 130" fill="none" stroke="#86efac" stroke-width="4" stroke-dasharray="9 9" marker-end="url(#arrow-green)" />
+                <!-- Presión del defensor saliendo a fijar -->
+                <path class="pressure-route" d="M430 230 Q390 220 370 205" fill="none" stroke="#fca5a5" stroke-width="4" stroke-dasharray="6 8" marker-end="url(#arrow-red)" />
+                <!-- Jugador 10 con balón -->
+                <g class="player receiver" transform="translate(260 210)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">10</text>
+                </g>
+                <!-- Defensor 4 que sale al corte -->
+                <g class="player defender" transform="translate(425 230)">
+                  <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <!-- Apoyo 9 que ofrece la pared -->
+                <g class="player teammate" transform="translate(445 125)">
+                  <circle r="23" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">9</text>
+                </g>
+                <circle class="match-ball" cx="280" cy="208" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="360" cy="205" r="32" fill="#fde047" fill-opacity=".12" stroke="#fde047" stroke-dasharray="5 5" />
+                  <text x="360" y="210" text-anchor="middle">FIJACIÓN</text>
+                </g>
+                <text class="scene-callout" x="455" y="105">APOYO A UN TOQUE</text>
               </g>
-              <g class="player defender" transform="translate(535 238)">
-                <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
-                <text y="6" text-anchor="middle">4</text>
+
+              <g class="wall-return-scene" data-scene-visual="wall-return" [attr.display]="activeDecision().clip.id === 'wall-pass-return' ? null : 'none'">
+                <!-- Devolución al espacio -->
+                <path class="pass-route" d="M445 125 Q495 145 565 175" fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="8 8" marker-end="url(#arrow-green)" />
+                <!-- Carrera del 10 al espacio -->
+                <path
+                  data-clip-route="sprint-space"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'sprint-space'"
+                  d="M350 200 Q430 180 550 175"
+                  fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="9 9" marker-end="url(#arrow-green)" />
+                <path
+                  data-clip-route="frenar"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'frenar'"
+                  d="M350 200 Q355 195 360 200"
+                  fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="4 6" />
+                <path
+                  data-clip-route="volver"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'volver'"
+                  d="M350 200 Q300 220 240 230"
+                  fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-red)" />
+
+                <g class="player receiver" transform="translate(350 200)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">10</text>
+                </g>
+                <g class="player defender" transform="translate(420 225)">
+                  <circle r="22" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player teammate" transform="translate(445 125)">
+                  <circle r="23" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">9</text>
+                </g>
+                <circle class="match-ball" cx="445" cy="135" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="560" cy="175" r="30" fill="#86efac" fill-opacity=".2" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="560" y="180" text-anchor="middle">HUECO</text>
+                </g>
+                <text class="route-label" x="500" y="215">ESPALDA DEL CENTRAL</text>
               </g>
-              <g class="player support" transform="translate(616 104)">
-                <circle r="20" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
-                <text y="6" text-anchor="middle">7</text>
+            }
+
+            <!-- JUGADA 3: DESMARQUE DE RUPTURA -->
+            @if (selectedLessonId() === 'desmarque-ruptura') {
+              <g class="rupture-timing-scene" data-scene-visual="rupture-timing" [attr.display]="activeDecision().clip.id === 'rupture-timing' ? null : 'none'">
+                <!-- Línea de fuera de juego -->
+                <line x1="480" y1="30" x2="480" y2="330" stroke="#fca5a5" stroke-width="2" stroke-dasharray="6 6" />
+                <text x="480" y="45" fill="#fca5a5" font-size="10" font-weight="800" text-anchor="middle">LÍNEA DE OFFSIDE</text>
+
+                <!-- Volante 8 armando el pase -->
+                <g class="player teammate" transform="translate(230 210)">
+                  <circle r="23" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">8</text>
+                </g>
+                <!-- Extremo 11 aguantando la carrera -->
+                <g class="player receiver" transform="translate(440 100)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">11</text>
+                </g>
+                <!-- Centrales rivales -->
+                <g class="player defender" transform="translate(480 120)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player defender" transform="translate(480 200)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">2</text>
+                </g>
+                <circle class="match-ball" cx="250" cy="205" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <!-- Trayectoria prevista del pase -->
+                <path class="pass-route" d="M250 205 Q360 170 560 140" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow-white)" />
+                <text class="scene-callout" x="230" y="248">PIE ARMADO</text>
+                <g class="space-marker">
+                  <circle cx="560" cy="140" r="28" fill="#86efac" fill-opacity=".15" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="560" y="145" text-anchor="middle">ESPACIO</text>
+                </g>
               </g>
-              <circle class="match-ball" cx="432" cy="218" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
-              <g class="space-marker">
-                <circle cx="579" cy="123" r="27" fill="#86efac" fill-opacity=".16" stroke="#86efac" stroke-dasharray="4 4" />
-                <text x="579" y="127" text-anchor="middle">ESPACIO</text>
+
+              <g class="rupture-finish-scene" data-scene-visual="rupture-finish" [attr.display]="activeDecision().clip.id === 'rupture-finish' ? null : 'none'">
+                <!-- Pase filtrado profundo -->
+                <path class="pass-route" d="M260 210 Q380 180 580 145" fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="8 8" marker-end="url(#arrow-green)" />
+                <!-- Carrera en diagonal al punto ciego -->
+                <path
+                  data-clip-route="blind-spot"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'blind-spot'"
+                  d="M440 95 Q495 110 575 140"
+                  fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="8 8" marker-end="url(#arrow-green)" />
+                <path
+                  data-clip-route="front-body"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'front-body'"
+                  d="M440 95 Q465 115 480 120"
+                  fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-red)" />
+                <path
+                  data-clip-route="wide-out"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'wide-out'"
+                  d="M440 95 Q520 60 620 50"
+                  fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-yellow)" />
+
+                <g class="player receiver" transform="translate(440 95)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">11</text>
+                </g>
+                <g class="player defender" transform="translate(485 125)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player support" transform="translate(680 180)">
+                  <circle r="22" fill="#34d399" stroke="#d1fae5" stroke-width="3" />
+                  <text y="6" text-anchor="middle">1</text>
+                </g>
+                <circle class="match-ball" cx="500" cy="165" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="585" cy="140" r="30" fill="#86efac" fill-opacity=".22" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="585" y="145" text-anchor="middle">ZONA GOL</text>
+                </g>
+                <text class="route-label" x="490" y="80">PUNTO CIEGO</text>
               </g>
-              <text class="route-label route-label-space" x="509" y="161">SALIDA</text>
-              <text class="route-label route-label-pressure" x="482" y="265">PRESIÓN</text>
-              <text class="route-label route-label-stop" x="449" y="196">PAUSA</text>
-            </g>
+            }
+
+            <!-- JUGADA 4: SALIDA LAVOLPIANA -->
+            @if (selectedLessonId() === 'salida-balon') {
+              <g class="lavolpiana-shape-scene" data-scene-visual="lavolpiana-shape" [attr.display]="activeDecision().clip.id === 'lavolpiana-shape' ? null : 'none'">
+                <!-- Portero en salida -->
+                <g class="player support" transform="translate(85 180)">
+                  <circle r="22" fill="#10b981" stroke="#d1fae5" stroke-width="3" />
+                  <text y="6" text-anchor="middle">1</text>
+                </g>
+                <!-- Centrales abiertos a bandas -->
+                <g class="player teammate" transform="translate(180 80)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">3</text>
+                </g>
+                <g class="player teammate" transform="translate(180 280)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">2</text>
+                </g>
+                <!-- Pivote 5 descendiendo entre centrales -->
+                <g class="player receiver" transform="translate(150 180)">
+                  <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">5</text>
+                </g>
+                <!-- 2 Delanteros rivales presionando -->
+                <g class="player defender" transform="translate(260 130)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">9</text>
+                </g>
+                <g class="player defender" transform="translate(260 230)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">7</text>
+                </g>
+                <!-- Rutas de apertura -->
+                <path class="pass-route" d="M105 180 Q130 130 170 90" fill="none" stroke="#e2e8f0" stroke-width="3" stroke-dasharray="6 6" />
+                <path class="pass-route" d="M105 180 Q130 230 170 270" fill="none" stroke="#e2e8f0" stroke-width="3" stroke-dasharray="6 6" />
+                <circle class="match-ball" cx="100" cy="180" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="150" cy="180" r="35" fill="#facc15" fill-opacity=".15" stroke="#facc15" stroke-dasharray="4 4" />
+                  <text x="150" y="184" text-anchor="middle">3v2 BASE</text>
+                </g>
+                <text class="scene-callout" x="180" y="55">AMPLITUD TOTAL</text>
+              </g>
+
+              <g class="lavolpiana-exit-scene" data-scene-visual="lavolpiana-exit" [attr.display]="activeDecision().clip.id === 'lavolpiana-exit' ? null : 'none'">
+                <!-- Pase central al pivote y descarga al lateral derecho -->
+                <path
+                  data-clip-route="third-man-pass"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'third-man-pass'"
+                  d="M175 275 Q210 220 220 185 Q260 220 370 280"
+                  fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="8 8" marker-end="url(#arrow-green)" />
+                <path
+                  data-clip-route="central-force"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'central-force'"
+                  d="M175 275 Q250 200 350 180"
+                  fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-red)" />
+                <path
+                  data-clip-route="clear-line"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'clear-line'"
+                  d="M175 275 Q220 310 280 330"
+                  fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-yellow)" />
+
+                <g class="player teammate" transform="translate(175 275)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">2</text>
+                </g>
+                <g class="player receiver" transform="translate(220 185)">
+                  <circle r="24" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">5</text>
+                </g>
+                <g class="player teammate" transform="translate(385 285)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">4</text>
+                </g>
+                <g class="player defender" transform="translate(250 150)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">9</text>
+                </g>
+                <circle class="match-ball" cx="195" cy="255" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="385" cy="285" r="32" fill="#86efac" fill-opacity=".2" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="385" y="289" text-anchor="middle">LATERAL LIBRE</text>
+                </g>
+                <text class="route-label" x="270" y="235">TERCER HOMBRE</text>
+              </g>
+            }
+
+            <!-- JUGADA 5: GEGENPRESSING (PRESIÓN TRAS PÉRDIDA) -->
+            @if (selectedLessonId() === 'presion-perdida') {
+              <g class="press-trap-scene" data-scene-visual="press-trap" [attr.display]="activeDecision().clip.id === 'press-trap' ? null : 'none'">
+                <!-- Poseedor rival atrapado de espaldas -->
+                <g class="player defender" transform="translate(490 180)">
+                  <circle r="23" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">6</text>
+                </g>
+                <!-- Pinza de 3 atacantes cerrando en embudo -->
+                <path class="pass-route" d="M430 130 Q465 150 475 170" fill="none" stroke="#fde047" stroke-width="4" stroke-dasharray="6 6" marker-end="url(#arrow-yellow)" />
+                <path class="pass-route" d="M430 230 Q465 210 475 190" fill="none" stroke="#fde047" stroke-width="4" stroke-dasharray="6 6" marker-end="url(#arrow-yellow)" />
+                <path class="pass-route" d="M560 180 Q530 180 505 180" fill="none" stroke="#fde047" stroke-width="4" stroke-dasharray="6 6" marker-end="url(#arrow-yellow)" />
+
+                <g class="player receiver" transform="translate(420 125)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">11</text>
+                </g>
+                <g class="player receiver" transform="translate(420 235)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">9</text>
+                </g>
+                <g class="player teammate" transform="translate(565 180)">
+                  <circle r="22" fill="#60a5fa" stroke="#dbeafe" stroke-width="3" />
+                  <text y="6" text-anchor="middle">8</text>
+                </g>
+                <circle class="match-ball" cx="490" cy="180" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="490" cy="180" r="42" fill="#fb7185" fill-opacity=".15" stroke="#fb7185" stroke-dasharray="5 5" />
+                  <text x="490" y="145" text-anchor="middle" fill="#fca5a5" font-size="9" font-weight="900">EMBUDO</text>
+                </g>
+                <text class="scene-callout" x="490" y="240">REGLA 5 SEGUNDOS</text>
+              </g>
+
+              <g class="press-recover-scene" data-scene-visual="press-recover" [attr.display]="activeDecision().clip.id === 'press-recover' ? null : 'none'">
+                <!-- Corte de línea y robo -->
+                <path
+                  data-clip-route="intercept-lanes"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'intercept-lanes'"
+                  d="M550 180 Q515 150 470 140"
+                  fill="none" stroke="#86efac" stroke-width="5" stroke-dasharray="8 8" marker-end="url(#arrow-green)" />
+                <path
+                  data-clip-route="ball-watcher"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'ball-watcher'"
+                  d="M550 180 Q555 175 560 180"
+                  fill="none" stroke="#fcd34d" stroke-width="5" stroke-dasharray="4 6" />
+                <path
+                  data-clip-route="retreat-alone"
+                  class="touch-route"
+                  [class.is-selected]="selectedOptionId() === 'retreat-alone'"
+                  d="M550 180 Q590 190 630 200"
+                  fill="none" stroke="#fca5a5" stroke-width="5" stroke-dasharray="6 8" marker-end="url(#arrow-red)" />
+
+                <g class="player defender" transform="translate(460 170)">
+                  <circle r="23" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">6</text>
+                </g>
+                <g class="player teammate" transform="translate(555 180)">
+                  <circle r="23" fill="#facc15" stroke="#fef3c7" stroke-width="3" />
+                  <text y="6" text-anchor="middle">8</text>
+                </g>
+                <g class="player defender" transform="translate(420 100)">
+                  <circle r="21" fill="#fb7185" stroke="#ffe4e6" stroke-width="3" />
+                  <text y="6" text-anchor="middle">5</text>
+                </g>
+                <circle class="match-ball" cx="475" cy="155" r="8" fill="#fff" stroke="#0f172a" stroke-width="2" />
+                <g class="space-marker">
+                  <circle cx="470" cy="140" r="30" fill="#86efac" fill-opacity=".22" stroke="#86efac" stroke-dasharray="4 4" />
+                  <text x="470" y="144" text-anchor="middle">ROBO ALTO</text>
+                </g>
+                <text class="route-label" x="495" y="125">ANTICIPACIÓN</text>
+              </g>
+            }
           </svg>
           }
 
@@ -184,7 +543,7 @@
           <div class="decision-title-row">
             <span class="decision-number">0{{ decisionNumber() }}</span>
             <div>
-              <span class="question-label">TU DECISIÓN</span>
+              <span class="question-label">TU DECISIÓN TÁCTICA</span>
               <h3>{{ activeDecision().prompt }}</h3>
             </div>
           </div>
@@ -222,7 +581,7 @@
               <i class="fa-regular fa-lightbulb"></i> {{ showHint() ? 'Ocultar pista' : 'Dame una pista' }}
             </button>
             <button type="button" class="lesson-primary-button" data-lesson-action="continue" [disabled]="!selectedOptionId()" (click)="continueLesson()">
-              {{ decisionIndex() === 0 ? 'Siguiente jugada' : 'Ir al reto de cancha' }} <i class="fa-solid fa-arrow-right"></i>
+              {{ decisionIndex() === 0 ? 'Siguiente momento' : 'Ir al reto de cancha' }} <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
         </div>
@@ -232,23 +591,23 @@
         <div class="learning-goal-card">
           <span class="side-card-icon"><i class="fa-solid fa-bullseye"></i></span>
           <span class="side-card-label">HOY VAS A APRENDER</span>
-          <h3>Recibir con ventaja</h3>
+          <h3>{{ activeLesson().learningGoal.title }}</h3>
           <ul>
-            <li><span>1</span> Mirar antes de recibir</li>
-            <li><span>2</span> Perfilar el cuerpo</li>
-            <li><span>3</span> Orientar el primer toque</li>
+            @for (step of activeLesson().learningGoal.steps; track step; let idx = $index) {
+              <li><span>{{ idx + 1 }}</span> {{ step }}</li>
+            }
           </ul>
         </div>
 
         <div class="learning-xp-card">
           <div class="xp-card-icon"><i class="fa-solid fa-bolt"></i></div>
           <div><strong>+{{ learningXp() }} XP</strong><span>XP de aprendizaje</span></div>
-          <p>Se gana por comprender las decisiones. La validación de la técnica en cancha la hace tu DT.</p>
+          <p>Gana hasta +{{ activeLesson().xpReward }} XP completando las lecturas tácticas. La validación en campo la registra tu DT.</p>
         </div>
 
         <div class="coach-note-card">
           <i class="fa-solid fa-comment-dots"></i>
-          <p>No hay una sola forma de jugar. Observa la situación, prueba tu idea y aprende de lo que ocurre.</p>
+          <p>No hay una sola forma de jugar. Observa la situación, prueba tu idea y aprende de lo que ocurre en cada jugada.</p>
         </div>
       </aside>
     </div>
@@ -260,19 +619,19 @@
         <span class="challenge-icon"><i class="fa-solid fa-futbol"></i></span>
         <div>
           <span class="question-label">AHORA EN LA CANCHA</span>
-          <h3 id="field-challenge-title">Reto 3 contra 1: recibe y sal por la puerta libre</h3>
-          <p>Practica con tu equipo. Tu DT observa la técnica; aquí no cuenta quién hace más goles.</p>
+          <h3 id="field-challenge-title">{{ activeLesson().fieldChallenge.title }}</h3>
+          <p>{{ activeLesson().fieldChallenge.subtitle }}</p>
         </div>
       </div>
 
       <div class="challenge-detail-grid">
-        <article class="challenge-detail-card"><span>ORGANIZACIÓN</span><strong>3 atacantes · 1 defensor · 2 puertas</strong><p>Un compañero te pasa el balón mientras el defensor presiona.</p></article>
-        <article class="challenge-detail-card"><span>TU MISIÓN</span><strong>Completa 6 recepciones</strong><p>Escanea antes del pase y lleva el primer toque hacia la puerta libre.</p></article>
-        <article class="challenge-detail-card"><span>EL DT OBSERVA</span><strong>Mirada · perfil · control</strong><p>Puede ajustar la presión o el espacio para que el reto sea apropiado para ti.</p></article>
+        <article class="challenge-detail-card"><span>ORGANIZACIÓN</span><strong>{{ activeLesson().fieldChallenge.organization }}</strong><p>Posicionamiento coordinado del equipo en campo reducido.</p></article>
+        <article class="challenge-detail-card"><span>TU MISIÓN</span><strong>{{ activeLesson().fieldChallenge.mission }}</strong><p>Aplica la sincronización táctica aprendida en la pizarra 2D.</p></article>
+        <article class="challenge-detail-card"><span>EL DT OBSERVA</span><strong>{{ activeLesson().fieldChallenge.coachObservation }}</strong><p>{{ activeLesson().fieldChallenge.coachFocusSummary }}</p></article>
       </div>
 
       <div class="coach-rubric">
-        <div><i class="fa-solid fa-clipboard-check"></i><span><strong>Rúbrica rápida del DT</strong><small>¿Miró antes de recibir? · ¿Abrió el cuerpo? · ¿Controló hacia el espacio?</small></span></div>
+        <div><i class="fa-solid fa-clipboard-check"></i><span><strong>Rúbrica rápida del DT</strong><small>{{ activeLesson().fieldChallenge.coachFocusSummary }}</small></span></div>
         <span class="pending-validation"><i class="fa-regular fa-clock"></i> Comparar semana 1 y semana 4</span>
       </div>
 
@@ -280,12 +639,12 @@
         <div class="pilot-rubric-heading">
           <div>
             <span class="question-label">EVIDENCIA DE APRENDIZAJE</span>
-            <h4 id="pilot-rubric-title">Qué observa el DT</h4>
+            <h4 id="pilot-rubric-title">{{ activeLesson().fieldChallenge.rubricTitle }}</h4>
           </div>
-          <p>Usa las mismas señales en ambos juegos para ver si el jugador las transfiere bajo presión.</p>
+          <p>{{ activeLesson().fieldChallenge.rubricSubtitle }}</p>
         </div>
         <div class="pilot-rubric-grid">
-          @for (criterion of pilotRubric; track criterion.id) {
+          @for (criterion of pilotRubric(); track criterion.id) {
             <article class="pilot-rubric-criterion" [attr.data-pilot-criterion]="criterion.id">
               <span>{{ criterion.title }}</span>
               <strong>{{ criterion.behavior }}</strong>
@@ -293,15 +652,15 @@
           }
         </div>
         <div class="pilot-rubric-levels" aria-label="Niveles de observación del DT">
-          @for (level of pilotRubricLevels; track level; let index = $index) {
+          @for (level of pilotRubricLevels(); track level; let index = $index) {
             <span><b>0{{ index + 1 }}</b>{{ level }}</span>
           }
         </div>
-        <p class="pilot-rubric-note">Registrar conductas por oportunidad observada, no comparar jugadores ni premiar solo el resultado de la jugada.</p>
+        <p class="pilot-rubric-note">{{ activeLesson().fieldChallenge.note }}</p>
       </section>
 
       <div class="challenge-footer">
-        <p><i class="fa-solid fa-shield-heart"></i> Haz el reto con tu entrenador y detente si sientes dolor o mareo.</p>
+        <p><i class="fa-solid fa-shield-heart"></i> Haz el reto con tu entrenador y detente si sientes dolor o fatiga excesiva.</p>
         <button type="button" class="lesson-primary-button" data-lesson-action="complete" (click)="completeLesson()">Terminar lección <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </section>
@@ -314,7 +673,7 @@
       <h3 id="lesson-complete-title">¡Misión terminada!</h3>
       <p>Has ganado <strong>+{{ learningXp() }} XP de aprendizaje</strong>. La técnica queda pendiente de práctica y validación con tu DT.</p>
       <div class="complete-summary">
-        <span><i class="fa-solid fa-circle-check"></i> {{ completedDecisions().length }} de 2 decisiones comprendidas</span>
+        <span><i class="fa-solid fa-circle-check"></i> {{ completedDecisions().length }} de {{ activeLesson().decisionSteps.length }} decisiones comprendidas</span>
         <span><i class="fa-regular fa-clock"></i> Dominio en cancha: pendiente</span>
       </div>
       <button type="button" class="lesson-primary-button" data-lesson-action="restart" (click)="restartLesson()"><i class="fa-solid fa-rotate-left"></i> Repetir la lección</button>
