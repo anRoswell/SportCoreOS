@@ -33,7 +33,7 @@ export class CreateClubDto {
   @IsString()
   logoUrl?: string;
 
-  @ApiPropertyOptional({ example: 'Plan Élite Pro', default: 'Plan Élite Pro' })
+  @ApiPropertyOptional({ example: 'PLAN_CLUB_ELITE_PRO', default: 'PLAN_CLUB_ELITE_PRO' })
   @IsOptional()
   @IsString()
   plan?: string;
@@ -66,7 +66,7 @@ export class UpdateClubDto {
   @IsString()
   logoUrl?: string;
 
-  @ApiPropertyOptional({ example: 'Plan Élite Pro' })
+  @ApiPropertyOptional({ example: 'PLAN_CLUB_ELITE_PRO' })
   @IsOptional()
   @IsString()
   plan?: string;
@@ -98,7 +98,7 @@ export class OnboardingClubDto {
   @IsString()
   pais?: string;
 
-  @ApiPropertyOptional({ example: 'Plan Club Élite Pro', default: 'Plan Club Élite Pro' })
+  @ApiPropertyOptional({ example: 'PLAN_CLUB_ELITE_PRO', default: 'PLAN_CLUB_ELITE_PRO' })
   @IsOptional()
   @IsString()
   plan?: string;

@@ -75,7 +75,7 @@ export class ClubesRepository {
       data.ciudad,
       data.pais || 'Colombia',
       data.logo_url || null,
-      data.plan || 'Plan Élite Pro',
+      data.plan || 'PLAN_CLUB_ELITE_PRO',
       data.activo !== undefined ? data.activo : true,
       JSON.stringify(data.configuracion_json || {}),
     ]);

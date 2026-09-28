@@ -283,8 +283,11 @@ test.describe('MÓDULO 12: RENDIMIENTO / RANKING - E2E EXHAUSTIVO', () => {
     await expect(lesson.locator('[data-pilot-week="4"]')).toContainText('Transferir al juego');
     const clip = lesson.locator('.interactive-clip');
     await expect(clip).toHaveAttribute('data-clip-scene', 'scan-before-receive');
-    await expect(clip.locator('[data-scene-visual="scan"]')).toBeVisible();
-    await expect(clip.locator('[data-scene-visual="first-touch"]')).not.toBeVisible();
+    await expect(clip.locator('.clip-format')).toContainText('VIDEO TÁCTICO 3D');
+    const threeDimensionalScene = clip.locator('[data-scene-3d="scan-before-receive"]');
+    const sceneCanvas = threeDimensionalScene.locator('[data-testid="lesson-3d-canvas"]');
+    await expect(sceneCanvas).toBeVisible();
+    await expect.poll(() => sceneCanvas.evaluate((canvas) => (canvas as HTMLCanvasElement).toDataURL().length)).toBeGreaterThan(12000);
     await expect(clip.locator('.clip-bottomline')).toContainText('ESCENA 01 · ESCANEO ANTES DE RECIBIR');
 
     const playback = lesson.locator('[data-lesson-action="play"]');
@@ -309,9 +312,9 @@ test.describe('MÓDULO 12: RENDIMIENTO / RANKING - E2E EXHAUSTIVO', () => {
     await lesson.locator('[data-lesson-action="continue"]').click();
     await expect(lesson.locator('.lesson-progress-copy')).toContainText('Momento 2 de 2');
     await expect(clip).toHaveAttribute('data-clip-scene', 'first-touch-exit');
-    await expect(clip.locator('[data-scene-visual="first-touch"]')).toBeVisible();
-    await expect(clip.locator('[data-scene-visual="scan"]')).not.toBeVisible();
-    await expect(clip.locator('[data-clip-route]')).toHaveCount(3);
+    const firstTouchScene = clip.locator('[data-scene-3d="first-touch-exit"]');
+    await expect(firstTouchScene).toBeVisible();
+    await expect(firstTouchScene).toHaveAttribute('data-selected-choice-3d', '');
     await expect(clip.locator('.clip-bottomline')).toContainText('ESCENA 02 · PRIMER TOQUE Y SALIDA');
 
     const secondChoices = ['pressure', 'stop', 'space'];
@@ -319,7 +322,7 @@ test.describe('MÓDULO 12: RENDIMIENTO / RANKING - E2E EXHAUSTIVO', () => {
       await lesson.locator(`[data-lesson-choice="${choice}"]`).click();
       await expect(lesson.locator('.decision-feedback')).toBeVisible();
       await expect(clip).toHaveAttribute('data-selected-choice', choice);
-      await expect(clip.locator(`[data-clip-route="${choice}"]`)).toHaveClass(/is-selected/);
+      await expect(firstTouchScene).toHaveAttribute('data-selected-choice-3d', choice);
     }
     await expect(lesson.locator('.decision-feedback')).toContainText('¡Exacto!');
     await lesson.locator('[data-lesson-action="continue"]').click();

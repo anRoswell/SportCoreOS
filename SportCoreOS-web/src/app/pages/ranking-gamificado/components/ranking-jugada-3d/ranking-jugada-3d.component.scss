@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.scene-frame {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 280px;
+  isolation: isolate;
+  background: #102b36;
+}
+
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-watermark,
+.scene-legend,
+.scene-subtitle {
+  position: absolute;
+  z-index: 1;
+  color: #f5fbf8;
+  pointer-events: none;
+}
+
+.scene-watermark {
+  top: 3.1rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  padding: .38rem .6rem;
+  border: 1px solid rgba(208, 245, 229, .24);
+  border-radius: 999px;
+  background: rgba(4, 29, 28, .6);
+  color: #d3f7e7;
+  font-size: .56rem;
+  font-weight: 900;
+  letter-spacing: .09em;
+  backdrop-filter: blur(8px);
+
+  span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5af0a5;
+    box-shadow: 0 0 10px rgba(90, 240, 165, .9);
+  }
+}
+
+.scene-legend {
+  top: 3.15rem;
+  right: .8rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .35rem;
+  max-width: 65%;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+    padding: .34rem .5rem;
+    border: 1px solid rgba(237, 255, 247, .16);
+    border-radius: 999px;
+    background: rgba(4, 29, 28, .58);
+    color: #e8f5ee;
+    font-size: .55rem;
+    font-weight: 750;
+    backdrop-filter: blur(8px);
+  }
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .legend-blue { background: #55a9ff; }
+  .legend-yellow { background: #ffdc39; }
+  .legend-red { background: #ff7089; }
+}
+
+.scene-subtitle {
+  right: 1rem;
+  bottom: .9rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .18rem;
+  padding: .65rem .8rem;
+  border: 1px solid rgba(229, 255, 244, .17);
+  border-radius: .7rem;
+  background: linear-gradient(90deg, rgba(3, 25, 23, .83), rgba(3, 25, 23, .42));
+  backdrop-filter: blur(8px);
+
+  strong {
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 900;
+  }
+
+  span {
+    color: #c5e4d5;
+    font-size: .63rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 700px) {
+  .scene-frame { min-height: 220px; }
+  .scene-watermark { top: 2.85rem; left: .55rem; font-size: .47rem; }
+  .scene-legend { top: 2.8rem; right: .45rem; gap: .2rem; }
+  .scene-legend span { padding: .28rem .38rem; font-size: .48rem; }
+  .scene-subtitle { right: .55rem; bottom: .55rem; left: .55rem; padding: .5rem .6rem; }
+  .scene-subtitle strong { font-size: .68rem; }
+  .scene-subtitle span { font-size: .56rem; }
+}

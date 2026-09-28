@@ -288,6 +288,18 @@ VALUES
     'Margen de tolerancia después de la fecha límite de pago antes de generar recargo.',
     true,
     true
+  ),
+  (
+    'e0000000-0000-0000-0000-000000000011',
+    NULL,
+    'CORE',
+    'PLANES_SUSCRIPCION',
+    '[{"codigo":"PLAN_CLUB_ELITE_PRO","nombre":"Plan Club Élite Pro","descripcion":"Gestión deportiva completa, telemetría y módulo de scouting","precio_mensual_cop":450000,"icono":"👑"},{"codigo":"PLAN_SEMILLERO_ORO","nombre":"Plan Semillero Oro","descripcion":"Ideal para escuelas formativas y torneos locales","precio_mensual_cop":280000,"icono":"⭐"},{"codigo":"PLAN_ELITE_LIGA","nombre":"Plan Élite Liga","descripcion":"Clubes de alta competencia con múltiples categorías y filiales","precio_mensual_cop":750000,"icono":"🏆"}]',
+    'JSON',
+    'Planes de Suscripción para Escuelas Deportivas',
+    'Catálogo oficial de planes de suscripción para el registro y gestión de clubes y escuelas.',
+    true,
+    true
   )
 ON CONFLICT (id) DO NOTHING;
 

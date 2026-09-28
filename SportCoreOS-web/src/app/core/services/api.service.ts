@@ -151,7 +151,7 @@ export class ApiService {
           nombre: c.nombre,
           slug: c.slug,
           logo: c.logo_url || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
-          plan: c.plan || 'Plan Élite Pro',
+          plan: c.plan || 'PLAN_CLUB_ELITE_PRO',
           sigla: c.sigla || 'SC',
           ciudad: c.ciudad || 'Colombia',
           pais: c.pais || 'Colombia',
@@ -193,7 +193,7 @@ export class ApiService {
           nombre: user.clubNombre || 'Academia Vinculada',
           slug: user.clubSlug || 'academia-vinculada',
           logo: user.clubLogo || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
-          plan: 'Plan Élite Pro',
+          plan: 'PLAN_CLUB_ELITE_PRO',
           sigla: 'SC',
           ciudad: 'Colombia',
           pais: 'Colombia',
@@ -204,6 +204,20 @@ export class ApiService {
           localStorage.setItem(environment.activeClubKey, JSON.stringify(customClub));
         }
       }
+    }
+  }
+
+  formatPlanNombre(plan?: string): string {
+    if (!plan) return 'Plan Club Élite Pro';
+    switch (plan) {
+      case 'PLAN_CLUB_ELITE_PRO':
+        return 'Plan Club Élite Pro';
+      case 'PLAN_SEMILLERO_ORO':
+        return 'Plan Semillero Oro';
+      case 'PLAN_ELITE_LIGA':
+        return 'Plan Élite Liga';
+      default:
+        return plan.replace(/_/g, ' ');
     }
   }
 

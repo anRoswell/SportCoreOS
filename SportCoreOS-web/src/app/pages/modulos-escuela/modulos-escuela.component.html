@@ -20,7 +20,7 @@
                 <option [value]="c.id">{{ c.nombre }} ({{ c.ciudad }})</option>
               }
             </select>
-            <span class="badge-pill">{{ clubInfo()?.plan || api.activeClub().plan }}</span>
+            <span class="badge-pill">{{ api.formatPlanNombre(clubInfo()?.plan || api.activeClub().plan) }}</span>
           </div>
           <button class="btn-secondary" (click)="enableAllModules(true)">
             <i class="fa-solid fa-toggle-on text-emerald"></i> Habilitar Todos
@@ -374,9 +374,9 @@
                   <div class="input-group">
                     <label>Plan de Suscripción</label>
                     <select [(ngModel)]="newSchoolData.plan" name="plan" class="sport-select">
-                      <option value="Plan Club Élite Pro">Plan Club Élite Pro</option>
-                      <option value="Plan Semillero Oro">Plan Semillero Oro</option>
-                      <option value="Plan Élite Liga">Plan Élite Liga</option>
+                      @for (p of planesSuscripcion(); track p.codigo) {
+                        <option [value]="p.codigo">{{ p.nombre }}</option>
+                      }
                     </select>
                   </div>
                 </div>

@@ -50,7 +50,7 @@ export class ClubesService {
       ciudad: dto.ciudad?.trim() || 'Bogotá D.C.',
       pais: dto.pais?.trim() || 'Colombia',
       logo_url: dto.logoUrl || null,
-      plan: dto.plan || 'Plan Élite Pro',
+      plan: this.normalizePlanCode(dto.plan),
       activo: true,
       configuracion_json: {},
     });
@@ -63,7 +63,7 @@ export class ClubesService {
       ciudad: dto.ciudad?.trim(),
       pais: dto.pais?.trim(),
       logo_url: dto.logoUrl,
-      plan: dto.plan,
+      plan: dto.plan ? this.normalizePlanCode(dto.plan) : undefined,
       activo: dto.activo,
     });
 
@@ -146,7 +146,7 @@ export class ClubesService {
       ciudad: dto.ciudad.trim(),
       pais: dto.pais?.trim() || 'Colombia',
       logo_url: dto.logoUrl || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120&auto=format&fit=crop&q=80',
-      plan: dto.plan?.trim() || 'Plan Élite Pro',
+      plan: this.normalizePlanCode(dto.plan),
       activo: true,
       configuracion_json: {
         moneda: 'COP',
@@ -221,5 +221,30 @@ export class ClubesService {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '') || 'club';
+  }
+
+  private normalizePlanCode(plan?: string): string {
+    if (!plan || !plan.trim()) {
+      return 'PLAN_CLUB_ELITE_PRO';
+    }
+    const clean = plan.trim();
+    const upper = clean.toUpperCase();
+    if (upper === 'PLAN_CLUB_ELITE_PRO' || upper === 'PLAN_SEMILLERO_ORO' || upper === 'PLAN_ELITE_LIGA') {
+      return upper;
+    }
+    if (upper.includes('SEMILLERO')) {
+      return 'PLAN_SEMILLERO_ORO';
+    }
+    if (upper.includes('LIGA')) {
+      return 'PLAN_ELITE_LIGA';
+    }
+    if (upper.includes('ELITE') || upper.includes('ÉLITE')) {
+      return 'PLAN_CLUB_ELITE_PRO';
+    }
+    return upper
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'PLAN_CLUB_ELITE_PRO';
   }
 }

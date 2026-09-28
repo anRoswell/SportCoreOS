@@ -82,6 +82,29 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
+
+        -- Normalizar valores del plan en core.clubes a códigos estandarizados sin espacios ni tildes
+        UPDATE core.clubes SET plan = 'PLAN_CLUB_ELITE_PRO' WHERE plan ILIKE '%élite%' OR plan ILIKE '%elite%' OR plan = 'Plan Club Élite Pro' OR plan = 'Plan Élite Pro';
+        UPDATE core.clubes SET plan = 'PLAN_SEMILLERO_ORO' WHERE plan ILIKE '%semillero%';
+        UPDATE core.clubes SET plan = 'PLAN_ELITE_LIGA' WHERE plan ILIKE '%liga%';
+        UPDATE core.clubes SET plan = 'PLAN_CLUB_ELITE_PRO' WHERE plan IS NULL OR plan = '';
+
+        -- Catálogo oficial de PLANES_SUSCRIPCION en core.parametros_sistema
+        INSERT INTO core.parametros_sistema (id, club_id, modulo, clave, valor, tipo_valor, titulo, descripcion, estado, es_editable)
+        SELECT
+          'e0000000-0000-0000-0000-000000000011',
+          NULL,
+          'CORE',
+          'PLANES_SUSCRIPCION',
+          '[{"codigo":"PLAN_CLUB_ELITE_PRO","nombre":"Plan Club Élite Pro","descripcion":"Gestión deportiva completa, telemetría y módulo de scouting","precio_mensual_cop":450000,"icono":"👑"},{"codigo":"PLAN_SEMILLERO_ORO","nombre":"Plan Semillero Oro","descripcion":"Ideal para escuelas formativas y torneos locales","precio_mensual_cop":280000,"icono":"⭐"},{"codigo":"PLAN_ELITE_LIGA","nombre":"Plan Élite Liga","descripcion":"Clubes de alta competencia con múltiples categorías y filiales","precio_mensual_cop":750000,"icono":"🏆"}]',
+          'JSON',
+          'Planes de Suscripción para Escuelas Deportivas',
+          'Catálogo oficial de planes de suscripción para el registro y gestión de clubes y escuelas.',
+          true,
+          true
+        WHERE NOT EXISTS (
+          SELECT 1 FROM core.parametros_sistema WHERE clave = 'PLANES_SUSCRIPCION'
+        );
       `).catch(() => {});
     } catch (err: any) {
       this.isPostgresConnected = false;
@@ -1158,6 +1181,24 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           tipo_valor: 'JSON',
           titulo: 'Tipos de Superficie de Cancha',
           descripcion: 'Catálogo de terrenos de juego e instalaciones deportivas.',
+          estado: true,
+          es_editable: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'e0000000-0000-0000-0000-000000000011',
+          club_id: null,
+          modulo: 'CORE',
+          clave: 'PLANES_SUSCRIPCION',
+          valor: JSON.stringify([
+            { codigo: 'PLAN_CLUB_ELITE_PRO', nombre: 'Plan Club Élite Pro', descripcion: 'Gestión deportiva completa, telemetría y módulo de scouting', precio_mensual_cop: 450000, icono: '👑' },
+            { codigo: 'PLAN_SEMILLERO_ORO', nombre: 'Plan Semillero Oro', descripcion: 'Ideal para escuelas formativas y torneos locales', precio_mensual_cop: 280000, icono: '⭐' },
+            { codigo: 'PLAN_ELITE_LIGA', nombre: 'Plan Élite Liga', descripcion: 'Clubes de alta competencia con múltiples categorías y filiales', precio_mensual_cop: 750000, icono: '🏆' },
+          ]),
+          tipo_valor: 'JSON',
+          titulo: 'Planes de Suscripción para Escuelas Deportivas',
+          descripcion: 'Catálogo oficial de planes de suscripción para el registro y gestión de clubes y escuelas.',
           estado: true,
           es_editable: true,
           created_at: new Date(),

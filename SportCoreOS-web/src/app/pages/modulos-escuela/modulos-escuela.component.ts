@@ -108,12 +108,14 @@ export class ModulosEscuelaComponent implements OnInit {
   uploadingLogo = signal<boolean>(false);
   localLogoPreview = signal<string>('');
 
+  planesSuscripcion = this.catalogos.planesSuscripcion;
+
   newSchoolData = {
     clubNombre: '',
     sigla: '',
     ciudad: 'Bogotá D.C.',
     pais: 'Colombia',
-    plan: 'Plan Club Élite Pro',
+    plan: 'PLAN_CLUB_ELITE_PRO',
     logoUrl: '',
     adminNombre: '',
     adminApellido: '',
@@ -398,7 +400,7 @@ export class ModulosEscuelaComponent implements OnInit {
       sigla: '',
       ciudad: 'Bogotá D.C.',
       pais: 'Colombia',
-      plan: 'Plan Club Élite Pro',
+      plan: 'PLAN_CLUB_ELITE_PRO',
       logoUrl: '',
       adminNombre: '',
       adminApellido: '',

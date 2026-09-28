@@ -174,6 +174,13 @@ export class CatalogosService {
     { codigo: 'arena_futbol', nombre: 'Cancha de Arena / Playa' },
   ]);
 
+  // 10. Planes de Suscripción Oficiales
+  readonly planesSuscripcion = signal<CatalogoItem[]>([
+    { codigo: 'PLAN_CLUB_ELITE_PRO', nombre: 'Plan Club Élite Pro', icono: '👑' },
+    { codigo: 'PLAN_SEMILLERO_ORO', nombre: 'Plan Semillero Oro', icono: '⭐' },
+    { codigo: 'PLAN_ELITE_LIGA', nombre: 'Plan Élite Liga', icono: '🏆' },
+  ]);
+
   private loaded = false;
 
   constructor() {
@@ -222,6 +229,9 @@ export class CatalogosService {
             } else if (p.clave === 'TIPOS_SUPERFICIE_CANCHA') {
               const parsed = typeof p.valor === 'string' ? JSON.parse(p.valor) : p.valor;
               if (Array.isArray(parsed) && parsed.length) this.tiposSuperficie.set(parsed);
+            } else if (p.clave === 'PLANES_SUSCRIPCION') {
+              const parsed = typeof p.valor === 'string' ? JSON.parse(p.valor) : p.valor;
+              if (Array.isArray(parsed) && parsed.length) this.planesSuscripcion.set(parsed);
             }
           } catch (e) {
             console.warn(`Error parseando catálogo ${p.clave}:`, e);

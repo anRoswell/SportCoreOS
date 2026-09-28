@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RankingJugada3dComponent } from '../ranking-jugada-3d/ranking-jugada-3d.component';
 
 export type DecisionOption = {
   id: string;
@@ -1187,7 +1188,7 @@ export const TACTICAL_LESSONS: TacticalLesson[] = [
 @Component({
   selector: 'app-ranking-leccion-interactiva',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RankingJugada3dComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ranking-leccion-interactiva.component.html',
   styleUrl: './ranking-leccion-interactiva.component.scss',

@@ -132,7 +132,7 @@
           <div class="clip-topline">
             <span class="clip-live-dot"></span>
             <span>ESCENA 0{{ decisionNumber() }} · {{ activeDecision().clip.duration }}</span>
-            <span class="clip-format">PIZARRA TÁCTICA 2D</span>
+            <span class="clip-format">{{ selectedLessonId() === 'control-orientado' ? 'VIDEO TÁCTICO 3D' : 'PIZARRA TÁCTICA 2D' }}</span>
           </div>
 
           @if (activeDecision().clip.videoUrl) {
@@ -145,6 +145,12 @@
                 (ended)="clipPlaying.set(false)">
               </video>
             </div>
+          } @else if (selectedLessonId() === 'control-orientado') {
+            <app-ranking-jugada-3d
+              [sceneId]="activeDecision().clip.id"
+              [selectedChoiceId]="selectedOptionId()"
+              [playing]="clipPlaying()">
+            </app-ranking-jugada-3d>
           } @else {
             <svg class="tactical-pitch" viewBox="0 0 760 360" role="img" aria-labelledby="pitch-title pitch-description">
               <title id="pitch-title">{{ activeDecision().clip.label }}</title>
