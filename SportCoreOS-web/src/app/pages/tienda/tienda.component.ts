@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { TiendaTab, TiendaCategoriaProducto } from '../../core/enums/domain.enums';
@@ -14,6 +14,7 @@ import { TiendaDeleteModalComponent } from './components/tienda-delete-modal/tie
 @Component({
   selector: 'app-tienda',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     TiendaCatalogoComponent,
