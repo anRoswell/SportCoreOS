@@ -98,6 +98,11 @@ export class OnboardingClubDto {
   @IsString()
   pais?: string;
 
+  @ApiPropertyOptional({ example: 'Plan Club Élite Pro', default: 'Plan Club Élite Pro' })
+  @IsOptional()
+  @IsString()
+  plan?: string;
+
   @ApiPropertyOptional({ example: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=120' })
   @IsOptional()
   @IsString()
