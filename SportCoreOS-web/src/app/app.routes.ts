@@ -539,8 +539,18 @@ export const configuracionSaaSRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'modulos',
+        redirectTo: 'escuelas',
         pathMatch: 'full',
+      },
+      {
+        path: 'escuelas',
+        loadComponent: () =>
+          import('./pages/escuelas/escuelas.component').then((m) => m.EscuelasComponent),
+        data: { 
+          module: 'CONFIG_ESCUELAS',
+          roles: ['SUPER_ADMIN'],
+          title: 'Directorio de Escuelas & Clubes'
+        },
       },
       {
         path: 'modulos',
@@ -583,6 +593,17 @@ export const configuracionSaaSRoutes: Routes = [
         },
       },
     ],
+  },
+  {
+    path: 'escuelas',
+    loadComponent: () =>
+      import('./pages/escuelas/escuelas.component').then((m) => m.EscuelasComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_ESCUELAS',
+      roles: ['SUPER_ADMIN'],
+      title: 'Directorio de Escuelas & Clubes'
+    },
   },
   {
     path: 'modulos-escuela',

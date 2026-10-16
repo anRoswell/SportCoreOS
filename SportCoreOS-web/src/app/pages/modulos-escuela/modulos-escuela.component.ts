@@ -20,10 +20,12 @@ export interface TenantModuleItem {
   updatedAt: string | null;
 }
 
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-modulos-escuela',
   standalone: true,
-  imports: [CommonModule, FormsModule, FlatpickrDirective],
+  imports: [CommonModule, FormsModule, FlatpickrDirective, RouterLink],
   templateUrl: './modulos-escuela.component.html',
   styleUrl: './modulos-escuela.component.scss',
 })

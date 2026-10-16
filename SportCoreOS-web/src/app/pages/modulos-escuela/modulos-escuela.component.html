@@ -22,6 +22,9 @@
             </select>
             <span class="badge-pill">{{ api.formatPlanNombre(clubInfo()?.plan || api.activeClub().plan) }}</span>
           </div>
+          <button class="btn-secondary" routerLink="/configuracion/escuelas">
+            <i class="fa-solid fa-school text-emerald"></i> Directorio de Escuelas
+          </button>
           <button class="btn-secondary" (click)="enableAllModules(true)">
             <i class="fa-solid fa-toggle-on text-emerald"></i> Habilitar Todos
           </button>

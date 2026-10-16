@@ -14,6 +14,8 @@ export interface Club {
   ciudad: string;
   pais?: string;
   activo?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface KPIStats {
@@ -235,6 +237,46 @@ export class ApiService {
     adminTelefono?: string;
   }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/clubes/onboarding`, data).pipe(
+      map((res) => res.data || res),
+      tap(() => {
+        this.loadClubs();
+      })
+    );
+  }
+
+  getAllClubsAdmin(onlyActive: boolean = false): Observable<Club[]> {
+    return this.http.get<any>(`${this.apiUrl}/clubes`, { params: { onlyActive: String(onlyActive) } }).pipe(
+      map((res) => {
+        const payload = res?.data !== undefined ? res.data : res;
+        const list = Array.isArray(payload) ? payload : (payload?.data || []);
+        return list.map((c: any) => ({
+          id: c.id,
+          nombre: c.nombre,
+          slug: c.slug,
+          logo: this.resolveFileUrl(c.logo_url) || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          plan: c.plan || 'PLAN_CLUB_ELITE_PRO',
+          sigla: c.sigla || 'SC',
+          ciudad: c.ciudad || 'Colombia',
+          pais: c.pais || 'Colombia',
+          activo: c.activo !== false,
+          created_at: c.created_at,
+          updated_at: c.updated_at,
+        }));
+      })
+    );
+  }
+
+  updateClub(id: string, data: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/clubes/${id}`, data).pipe(
+      map((res) => res.data || res),
+      tap(() => {
+        this.loadClubs();
+      })
+    );
+  }
+
+  deleteClub(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/clubes/${id}`).pipe(
       map((res) => res.data || res),
       tap(() => {
         this.loadClubs();

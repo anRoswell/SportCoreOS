@@ -204,6 +204,13 @@
           }
 
           @if (profileService.hasRole(['SUPER_ADMIN'])) {
+            <a routerLink="/configuracion/escuelas" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Escuelas & Clubes' : ''">
+              <i class="fa-solid fa-school"></i>
+              <span *ngIf="!api.sidebarCollapsed()">Escuelas & Clubes</span>
+            </a>
+          }
+
+          @if (profileService.hasRole(['SUPER_ADMIN'])) {
             <a routerLink="/configuracion/modulos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Módulos Escuela' : ''">
               <i class="fa-solid fa-cubes"></i>
               <span *ngIf="!api.sidebarCollapsed()">Módulos Escuela</span>
