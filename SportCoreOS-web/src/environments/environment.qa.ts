@@ -7,4 +7,6 @@ export const environment = {
   tokenKey: 'futcore_token',
   userKey: 'futcore_user',
   activeClubKey: 'futcore_active_club',
+  enableSuperAdminDemo: false,
+  superAdminDemoPersona: null,
 };

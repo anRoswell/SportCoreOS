@@ -1,13 +1,6 @@
 <div class="login-wrapper">
-      <!-- Barra Superior Flotante: Landing & Tema -->
+      <!-- Barra Superior Flotante: Selector de Tema -->
       <div class="login-floating-actions">
-        <a 
-          routerLink="/" 
-          class="landing-toggle-floating" 
-          title="Ver Landing Page Institucional">
-          <i class="fa-solid fa-house"></i>
-          <span>Landing Institucional</span>
-        </a>
         <button 
           class="theme-toggle-floating" 
           (click)="themeService.toggleTheme()" 
@@ -205,7 +198,7 @@
             </div>
 
             <!-- Personas Demo de Prueba -->
-            <div class="demo-personas-grid">
+            <div class="demo-personas-grid" [class.has-four-personas]="authService.demoPersonas.length === 4">
               @for (persona of authService.demoPersonas; track persona.id) {
                 <button 
                   type="button" 
@@ -234,7 +227,7 @@
               </div>
               <div class="callout-content">
                 <strong class="callout-title">Acceso Institucional Centralizado</strong>
-                <span class="callout-desc">El registro de nuevas academias y la habilitación de módulos es administrado exclusivamente por el Super Administrador.</span>
+                <span class="callout-desc">El registro de nuevas academias y la habilitación de módulos es administrado por la dirección central de SportCoreOS.</span>
               </div>
               <div class="callout-cert">
                 <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>

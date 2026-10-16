@@ -1,0 +1,224 @@
+{"kind":"deck","id":"pr/coiqdn","name":"Deck"}
+{"kind":"layout","layoutId":"1db5cfbe-8d5d-45c1-a26f-66f860deaa64","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ce91caee-a51c-45be-a2f7-f4c3e7108510","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/2aaade","slide":1,"title":"SportCoreOS","textShapes":11}
+{"kind":"shape","id":"sh/alk36dk7","slide":1,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/c72l8n2d","slide":1,"text":"SportCoreOS","textPreview":"SportCoreOS","textChars":11,"textLines":1,"bbox":[174,61,250,46]}
+{"kind":"textbox","id":"sh/nitkvilw","slide":1,"text":"La operación del club,\nmejor conectada","textPreview":"La operación del club, | mejor conectada","textChars":38,"textLines":2,"bbox":[68,180,575,150]}
+{"kind":"textbox","id":"sh/2h032dkb","slide":1,"text":"De la coordinación dispersa a una gestión deportiva y administrativa más clara.","textPreview":"De la coordinación dispersa a una gestión deportiva y administrativa más clara.","textChars":79,"textLines":1,"bbox":[72,355,520,88]}
+{"kind":"shape","id":"sh/pkb2xs3m","slide":1,"bbox":[72,504,248,34]}
+{"kind":"textbox","id":"sh/oj2l4n2h","slide":1,"text":"PRESENTACIÓN PARA CLUBES","textPreview":"PRESENTACIÓN PARA CLUBES","textChars":24,"textLines":1,"bbox":[82,506,228,30]}
+{"kind":"shape","id":"sh/7ed472l0","slide":1,"bbox":[730,155,430,428]}
+{"kind":"textbox","id":"sh/md43exkf","slide":1,"text":"Una referencia para el día a día","textPreview":"Una referencia para el día a día","textChars":32,"textLines":1,"bbox":[765,185,360,34]}
+{"kind":"shape","id":"sh/c36583qx","slide":1,"bbox":[772,255,138,66]}
+{"kind":"textbox","id":"sh/d4f618ri","slide":1,"text":"PLANTEL","textPreview":"PLANTEL","textChars":7,"textLines":1,"bbox":[780,263,122,48]}
+{"kind":"shape","id":"sh/qhon6t8r","slide":1,"bbox":[966,255,154,66]}
+{"kind":"textbox","id":"sh/b2xozy9c","slide":1,"text":"COMPETENCIA","textPreview":"COMPETENCIA","textChars":11,"textLines":1,"bbox":[974,263,138,48]}
+{"kind":"shape","id":"sh/ofm543q1","slide":1,"bbox":[772,381,138,66]}
+{"kind":"textbox","id":"sh/pgv6xorm","slide":1,"text":"FINANZAS","textPreview":"FINANZAS","textChars":8,"textLines":1,"bbox":[780,389,122,48]}
+{"kind":"shape","id":"sh/2d4n2t8v","slide":1,"bbox":[966,381,154,66]}
+{"kind":"textbox","id":"sh/3ed4vy9g","slide":1,"text":"SEGUIMIENTO","textPreview":"SEGUIMIENTO","textChars":11,"textLines":1,"bbox":[974,389,138,48]}
+{"kind":"shape","id":"sh/gbm50jqp","slide":1,"bbox":[913,284,46,2]}
+{"kind":"shape","id":"sh/1cvmtora","slide":1,"bbox":[839,337,2,42]}
+{"kind":"shape","id":"sh/xw3uhgf2","slide":1,"bbox":[1038,337,2,42]}
+{"kind":"shape","id":"sh/wvut8beh","slide":1,"bbox":[913,411,46,2]}
+{"kind":"shape","id":"sh/vulcf6xw","slide":1,"bbox":[833,485,206,54]}
+{"kind":"textbox","id":"sh/atcb6lwb","slide":1,"text":"SportCoreOS","textPreview":"SportCoreOS","textChars":11,"textLines":1,"bbox":[845,491,182,42]}
+{"kind":"textbox","id":"sh/9s3udgfq","slide":1,"text":"Módulos e integraciones sujetos a disponibilidad y configuración.","textPreview":"Módulos e integraciones sujetos a disponibilidad y configuración.","textChars":65,"textLines":1,"bbox":[72,644,780,25]}
+{"kind":"image","id":"im/k3il0j2l","slide":1,"name":"","alt":"Logotipo SportCoreOS","bbox":[68,44,92,92]}
+{"kind":"notes","id":"nt/2aaade","slide":1,"text":"Portada de ventas enfocada en gestión deportiva y administrativa. El módulo de ranking queda fuera del alcance de esta presentación. La disponibilidad depende de módulos activos y configuración."}
+{"kind":"slide","id":"sl/fyji4x","slide":2,"title":"LA OPERACIÓN HOY","textShapes":18}
+{"kind":"textbox","id":"sh/6x8nq507","slide":2,"text":"LA OPERACIÓN HOY","textPreview":"LA OPERACIÓN HOY","textChars":16,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/t0z61kzy","slide":2,"text":"Cuando cada proceso vive en un lugar distinto","textPreview":"Cuando cada proceso vive en un lugar distinto","textChars":45,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/szq5sfyd","slide":2,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/jaxovqhw","slide":2,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/i9onm50b","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/5wz6x0zm","slide":2,"text":"En muchos clubes, la jornada se coordina entre herramientas que no comparten el mismo contexto.","textPreview":"En muchos clubes, la jornada se coordina entre herramientas que no comparten el mismo contexto.","textChars":95,"textLines":1,"bbox":[68,163,1090,55]}
+{"kind":"textbox","id":"sh/4b65ovi1","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[72,250,48,37]}
+{"kind":"textbox","id":"sh/n61o7uh0","slide":2,"text":"Inscripciones y plantel","textPreview":"Inscripciones y plantel","textChars":23,"textLines":1,"bbox":[143,250,330,38]}
+{"kind":"textbox","id":"sh/25snypgf","slide":2,"text":"Formularios, hojas de cálculo y datos que se vuelven a pedir.","textPreview":"Formularios, hojas de cálculo y datos que se vuelven a pedir.","textChars":61,"textLines":1,"bbox":[505,250,635,44]}
+{"kind":"shape","id":"sh/wbep4f2l","slide":2,"bbox":[143,305,997,1]}
+{"kind":"textbox","id":"sh/xcn6xkjq","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[72,344,48,37]}
+{"kind":"textbox","id":"sh/a9c72pkf","slide":2,"text":"Partidos y convocatorias","textPreview":"Partidos y convocatorias","textChars":24,"textLines":1,"bbox":[143,344,330,38]}
+{"kind":"textbox","id":"sh/valova10","slide":2,"text":"Fixture en un archivo; nómina y confirmaciones en mensajes.","textPreview":"Fixture en un archivo; nómina y confirmaciones en mensajes.","textChars":59,"textLines":1,"bbox":[505,344,635,44]}
+{"kind":"shape","id":"sh/87up0f29","slide":2,"bbox":[143,399,997,1]}
+{"kind":"textbox","id":"sh/9836tkju","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[72,438,48,37]}
+{"kind":"textbox","id":"sh/m5c7y5k3","slide":2,"text":"Cobros y comprobantes","textPreview":"Cobros y comprobantes","textChars":21,"textLines":1,"bbox":[143,438,330,38]}
+{"kind":"textbox","id":"sh/n6lora1o","slide":2,"text":"Transferencias, recibos y cartera revisados por separado.","textPreview":"Transferencias, recibos y cartera revisados por separado.","textChars":57,"textLines":1,"bbox":[505,438,635,44]}
+{"kind":"shape","id":"sh/03apwv2d","slide":2,"bbox":[143,493,997,1]}
+{"kind":"textbox","id":"sh/l436p03y","slide":2,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[72,532,48,37]}
+{"kind":"textbox","id":"sh/10vmtwvm","slide":2,"text":"Seguimiento deportivo","textPreview":"Seguimiento deportivo","textChars":21,"textLines":1,"bbox":[143,532,330,38]}
+{"kind":"textbox","id":"sh/gz25kru1","slide":2,"text":"Notas y mediciones difíciles de comparar entre sesiones.","textPreview":"Notas y mediciones difíciles de comparar entre sesiones.","textChars":56,"textLines":1,"bbox":[505,532,635,44]}
+{"kind":"shape","id":"sh/fyt4rmdg","slide":2,"bbox":[143,587,997,1]}
+{"kind":"shape","id":"sh/exknihcv","slide":2,"bbox":[68,642,1100,1]}
+{"kind":"textbox","id":"sh/twbmpcva","slide":2,"text":"Es un punto de partida para conversar con cada club, no una descripción universal.","textPreview":"Es un punto de partida para conversar con cada club, no una descripción universal.","textChars":82,"textLines":1,"bbox":[68,650,1060,20]}
+{"kind":"notes","id":"nt/fyji4x","slide":2,"text":"Presentar como escenario frecuente para validar con el cliente. Preguntar cuáles de estos pasos hoy dependen de hojas, chats o registros separados. No afirmar que todos los clubes operan igual."}
+{"kind":"slide","id":"sl/4ecjg9","slide":3,"title":"UN EJEMPLO CONCRETO · DÍA DE PARTIDO","textShapes":25}
+{"kind":"textbox","id":"sh/wna1sr6p","slide":3,"text":"UN EJEMPLO CONCRETO · DÍA DE PARTIDO","textPreview":"UN EJEMPLO CONCRETO · DÍA DE PARTIDO","textChars":36,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/bm10zmp4","slide":3,"text":"De perseguir información a revisar un flujo","textPreview":"De perseguir información a revisar un flujo","textChars":43,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/al8jqh8z","slide":3,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/lsji5w7m","slide":3,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/kra1wr61","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"shape","id":"sh/jq103mpg","slide":3,"bbox":[68,176,525,418]}
+{"kind":"shape","id":"sh/ypsjuhov","slide":3,"bbox":[666,176,544,418]}
+{"kind":"shape","id":"sh/1wzitc72","slide":3,"bbox":[96,199,80,30]}
+{"kind":"textbox","id":"sh/0vqhk7qh","slide":3,"text":"HOY","textPreview":"HOY","textChars":3,"textLines":1,"bbox":[106,201,60,26]}
+{"kind":"shape","id":"sh/6xcnep83","slide":3,"bbox":[694,199,190,30]}
+{"kind":"textbox","id":"sh/7ylonupo","slide":3,"text":"CON SPORTCOREOS","textPreview":"CON SPORTCOREOS","textChars":15,"textLines":1,"bbox":[704,201,170,26]}
+{"kind":"textbox","id":"sh/8zu5gzqt","slide":3,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[96,254,38,42]}
+{"kind":"textbox","id":"sh/t036pk7e","slide":3,"text":"Buscar la lista","textPreview":"Buscar la lista","textChars":15,"textLines":1,"bbox":[146,254,400,34]}
+{"kind":"textbox","id":"sh/u1wnipoz","slide":3,"text":"Datos del plantel en varios archivos.","textPreview":"Datos del plantel en varios archivos.","textChars":37,"textLines":1,"bbox":[146,293,402,45]}
+{"kind":"textbox","id":"sh/v25orupk","slide":3,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[694,254,38,42]}
+{"kind":"textbox","id":"sh/g3e5kz65","slide":3,"text":"Abrir el equipo","textPreview":"Abrir el equipo","textChars":15,"textLines":1,"bbox":[744,254,400,34]}
+{"kind":"textbox","id":"sh/h4n6t47q","slide":3,"text":"Jugadores y categorías disponibles en el módulo.","textPreview":"Jugadores y categorías disponibles en el módulo.","textChars":48,"textLines":1,"bbox":[744,293,425,45]}
+{"kind":"textbox","id":"sh/i5wnm9ob","slide":3,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[96,354,38,42]}
+{"kind":"textbox","id":"sh/365ovepg","slide":3,"text":"Armar la nómina","textPreview":"Armar la nómina","textChars":15,"textLines":1,"bbox":[146,354,400,34]}
+{"kind":"textbox","id":"sh/fup43e5o","slide":3,"text":"La convocatoria se recompone para cada partido.","textPreview":"La convocatoria se recompone para cada partido.","textChars":47,"textLines":1,"bbox":[146,393,402,45]}
+{"kind":"textbox","id":"sh/etgna943","slide":3,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[694,354,38,42]}
+{"kind":"textbox","id":"sh/1w7m5onu","slide":3,"text":"Revisar el partido","textPreview":"Revisar el partido","textChars":18,"textLines":1,"bbox":[744,354,400,34]}
+{"kind":"textbox","id":"sh/0vy5cjm9","slide":3,"text":"Fixture y convocatoria dentro del flujo deportivo.","textPreview":"Fixture y convocatoria dentro del flujo deportivo.","textChars":50,"textLines":1,"bbox":[744,393,425,45]}
+{"kind":"textbox","id":"sh/r654zu5s","slide":3,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[96,454,38,42]}
+{"kind":"textbox","id":"sh/q5wn6p47","slide":3,"text":"Confirmar por chat","textPreview":"Confirmar por chat","textChars":18,"textLines":1,"bbox":[146,454,400,34]}
+{"kind":"textbox","id":"sh/d87m14ni","slide":3,"text":"Las respuestas quedan en distintos hilos.","textPreview":"Las respuestas quedan en distintos hilos.","textChars":41,"textLines":1,"bbox":[146,493,402,45]}
+{"kind":"textbox","id":"sh/s7e58zmd","slide":3,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[694,454,38,42]}
+{"kind":"textbox","id":"sh/3254vu5g","slide":3,"text":"Dar seguimiento","textPreview":"Dar seguimiento","textChars":15,"textLines":1,"bbox":[744,454,400,34]}
+{"kind":"textbox","id":"sh/i1w32p4v","slide":3,"text":"Consultar la información reunida para esa actividad.","textPreview":"Consultar la información reunida para esa actividad.","textChars":52,"textLines":1,"bbox":[744,493,425,45]}
+{"kind":"textbox","id":"sh/87a1cv2t","slide":3,"text":"Menos pasos dispersos por validar durante un piloto.","textPreview":"Menos pasos dispersos por validar durante un piloto.","textChars":52,"textLines":1,"bbox":[694,547,467,30]}
+{"kind":"notes","id":"nt/4ecjg9","slide":3,"text":"Flujo comparativo conceptual basado en las rutas disponibles de jugadores, categorías, partidos y convocatorias. Evitar afirmar automatización o integración automática con chat; el beneficio esperado debe medirse en el piloto."}
+{"kind":"slide","id":"sl/iebsbc","slide":4,"title":"GESTIÓN DEPORTIVA","textShapes":12}
+{"kind":"textbox","id":"sh/83qp8zi1","slide":4,"text":"GESTIÓN DEPORTIVA","textPreview":"GESTIÓN DEPORTIVA","textChars":17,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/72hofuhw","slide":4,"text":"Del calendario a la convocatoria","textPreview":"Del calendario a la convocatoria","textChars":32,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/61o76p0b","slide":4,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/h8zql4zy","slide":4,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/g7qpczid","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/v6h8juhs","slide":4,"text":"Parte de la actividad del equipo se puede consultar desde módulos conectados a la operación deportiva.","textPreview":"Parte de la actividad del equipo se puede consultar desde módulos conectados a la operación deportiva.","textChars":102,"textLines":1,"bbox":[68,163,440,104]}
+{"kind":"shape","id":"sh/u587ap07","slide":4,"bbox":[70,325,8,8]}
+{"kind":"textbox","id":"sh/xcf69kje","slide":4,"text":"Partidos y fixture por categoría","textPreview":"Partidos y fixture por categoría","textChars":32,"textLines":1,"bbox":[96,314,410,48]}
+{"kind":"shape","id":"sh/wb6p0fi9","slide":4,"bbox":[70,394,8,8]}
+{"kind":"textbox","id":"sh/apcbqpgn","slide":4,"text":"Nómina titular y suplentes","textPreview":"Nómina titular y suplentes","textChars":26,"textLines":1,"bbox":[96,383,410,48]}
+{"kind":"shape","id":"sh/bqlsjux8","slide":4,"bbox":[70,463,8,8]}
+{"kind":"textbox","id":"sh/wrutszyt","slide":4,"text":"Estado de convocatoria visible para revisión","textPreview":"Estado de convocatoria visible para revisión","textChars":44,"textLines":1,"bbox":[96,452,410,48]}
+{"kind":"textbox","id":"sh/xsnal4fe","slide":4,"text":"Pantallas de muestra","textPreview":"Pantallas de muestra","textChars":20,"textLines":1,"bbox":[68,571,220,23]}
+{"kind":"textbox","id":"sh/ytwbu9gj","slide":4,"text":"Los equipos, nombres y marcadores son datos ficticios.","textPreview":"Los equipos, nombres y marcadores son datos ficticios.","textChars":54,"textLines":1,"bbox":[68,596,450,34]}
+{"kind":"shape","id":"sh/ju5snex4","slide":4,"bbox":[553,157,285,505]}
+{"kind":"shape","id":"sh/kfetwjyp","slide":4,"bbox":[859,157,285,505]}
+{"kind":"shape","id":"sh/7i5srexg","slide":4,"bbox":[618,632,153,24]}
+{"kind":"textbox","id":"sh/3mpsfed8","slide":4,"text":"PARTIDOS","textPreview":"PARTIDOS","textChars":8,"textLines":1,"bbox":[628,634,133,20]}
+{"kind":"shape","id":"sh/ilgrm9c3","slide":4,"bbox":[917,632,169,24]}
+{"kind":"textbox","id":"sh/5o7ahove","slide":4,"text":"CONVOCATORIA","textPreview":"CONVOCATORIA","textChars":12,"textLines":1,"bbox":[927,634,149,20]}
+{"kind":"image","id":"im/6xsbep47","slide":4,"name":"","alt":"Vista ilustrativa del calendario y fixture de partidos","bbox":[561,162,269,495]}
+{"kind":"image","id":"im/lwzulknm","slide":4,"name":"","alt":"Vista ilustrativa de una convocatoria y nómina de equipo","bbox":[867,162,269,495]}
+{"kind":"notes","id":"nt/iebsbc","slide":4,"text":"Capturas de demostración de los módulos de partidos y convocatorias. No corresponden a un club cliente ni representan marcadores o datos reales. Rutas de producto verificadas en SportCoreOS-web/src/app/app.routes.ts."}
+{"kind":"slide","id":"sl/ricxb8","slide":5,"title":"ADMINISTRACIÓN","textShapes":12}
+{"kind":"textbox","id":"sh/214bypgb","slide":5,"text":"ADMINISTRACIÓN","textPreview":"ADMINISTRACIÓN","textChars":14,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/p4fu94fm","slide":5,"text":"Consultar recaudo sin reconstruir la historia","textPreview":"Consultar recaudo sin reconstruir la historia","textChars":45,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/o36t0zyh","slide":5,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/fedc3uxk","slide":5,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/ed4bupgz","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/10vu5kfq","slide":5,"text":"De los comprobantes por separado a una vista para revisar estados de cuenta y cartera.","textPreview":"De los comprobantes por separado a una vista para revisar estados de cuenta y cartera.","textChars":86,"textLines":1,"bbox":[68,163,570,76]}
+{"kind":"textbox","id":"sh/0zmtwzy5","slide":5,"text":"La administración puede consultar conceptos, vencimientos y estados de pago según los módulos y medios habilitados.","textPreview":"La administración puede consultar conceptos, vencimientos y estados de pago según los módulos y medios habilitados.","textChars":115,"textLines":1,"bbox":[68,264,535,100]}
+{"kind":"shape","id":"sh/ratczaxo","slide":5,"bbox":[68,402,540,1]}
+{"kind":"textbox","id":"sh/q9kbq5g3","slide":5,"text":"En vez de","textPreview":"En vez de","textChars":9,"textLines":1,"bbox":[68,424,162,29]}
+{"kind":"textbox","id":"sh/gfmxsfip","slide":5,"text":"Cruzar extractos, mensajes y listas manuales.","textPreview":"Cruzar extractos, mensajes y listas manuales.","textChars":45,"textLines":1,"bbox":[68,455,480,50]}
+{"kind":"textbox","id":"sh/1gvy1kza","slide":5,"text":"El club puede revisar","textPreview":"El club puede revisar","textChars":21,"textLines":1,"bbox":[68,524,260,29]}
+{"kind":"textbox","id":"sh/et4fq50j","slide":5,"text":"Pendientes, pagos e historial en la vista habilitada.","textPreview":"Pendientes, pagos e historial en la vista habilitada.","textChars":53,"textLines":1,"bbox":[68,555,500,50]}
+{"kind":"shape","id":"sh/fudgzah4","slide":5,"bbox":[700,153,438,507]}
+{"kind":"shape","id":"sh/tsbyx0zy","slide":5,"bbox":[743,616,350,27]}
+{"kind":"textbox","id":"sh/6pkfm50n","slide":5,"text":"CAPTURA DE DEMOSTRACIÓN · DATOS FICTICIOS","textPreview":"CAPTURA DE DEMOSTRACIÓN · DATOS FICTICIOS","textChars":41,"textLines":1,"bbox":[753,618,330,23]}
+{"kind":"textbox","id":"sh/rqtgvah8","slide":5,"text":"Las pasarelas y medios de pago dependen de disponibilidad y configuración.","textPreview":"Las pasarelas y medios de pago dependen de disponibilidad y configuración.","textChars":74,"textLines":1,"bbox":[68,626,575,35]}
+{"kind":"image","id":"im/76l8byd4","slide":5,"name":"","alt":"Pantalla ilustrativa de estado de cuenta, cartera y recaudos","bbox":[707,160,424,493]}
+{"kind":"notes","id":"nt/ricxb8","slide":5,"text":"La captura de cartera es ilustrativa e incluye nombres, montos y fechas ficticias. No usar como tarifa, cotización o caso de cliente. La interfaz contiene opción PSE/Wompi, pero disponibilidad y operación de pasarelas deben validarse con el equipo antes de comprometerlas comercialmente."}
+{"kind":"slide","id":"sl/aur7it","slide":6,"title":"ESPACIOS Y SERVICIOS","textShapes":14}
+{"kind":"textbox","id":"sh/25cbm18z","slide":6,"text":"ESPACIOS Y SERVICIOS","textPreview":"ESPACIOS Y SERVICIOS","textChars":20,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/p8naxgrq","slide":6,"text":"Los escenarios también se administran","textPreview":"Los escenarios también se administran","textChars":37,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/47etobq5","slide":6,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/ra5cz69w","slide":6,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/q9wbq18b","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/dwnu1grm","slide":6,"text":"La gestión de canchas y horarios puede formar parte del mismo panorama operativo del club.","textPreview":"La gestión de canchas y horarios puede formar parte del mismo panorama operativo del club.","textChars":90,"textLines":1,"bbox":[68,163,560,88]}
+{"kind":"textbox","id":"sh/cbetsbq1","slide":6,"text":"Disponibilidad","textPreview":"Disponibilidad","textChars":14,"textLines":1,"bbox":[68,301,210,31]}
+{"kind":"textbox","id":"sh/zypc3qps","slide":6,"text":"Consulta de escenarios y franjas de horario.","textPreview":"Consulta de escenarios y franjas de horario.","textChars":44,"textLines":1,"bbox":[281,301,340,47]}
+{"kind":"shape","id":"sh/exwbul87","slide":6,"bbox":[68,360,553,1]}
+{"kind":"textbox","id":"sh/wrmtc7ax","slide":6,"text":"Reservas","textPreview":"Reservas","textChars":8,"textLines":1,"bbox":[68,395,210,31]}
+{"kind":"textbox","id":"sh/hsfa5cri","slide":6,"text":"Organización del uso de espacios deportivos.","textPreview":"Organización del uso de espacios deportivos.","textChars":44,"textLines":1,"bbox":[281,395,340,47]}
+{"kind":"shape","id":"sh/a54baxs7","slide":6,"bbox":[68,454,553,1]}
+{"kind":"textbox","id":"sh/v6ds329s","slide":6,"text":"Servicios","textPreview":"Servicios","textChars":9,"textLines":1,"bbox":[68,489,210,31]}
+{"kind":"textbox","id":"sh/4v6tg7a9","slide":6,"text":"Oferta visible según configuración del club.","textPreview":"Oferta visible según configuración del club.","textChars":44,"textLines":1,"bbox":[281,489,340,47]}
+{"kind":"shape","id":"sh/5wfa9cru","slide":6,"bbox":[68,548,553,1]}
+{"kind":"textbox","id":"sh/itobexs3","slide":6,"text":"Hoy","textPreview":"Hoy","textChars":3,"textLines":1,"bbox":[68,592,54,22]}
+{"kind":"textbox","id":"sh/juxs729o","slide":6,"text":"Disponibilidad coordinada entre calendarios y mensajes.","textPreview":"Disponibilidad coordinada entre calendarios y mensajes.","textChars":55,"textLines":1,"bbox":[119,590,500,30]}
+{"kind":"shape","id":"sh/szqtkrq5","slide":6,"bbox":[700,151,438,511]}
+{"kind":"shape","id":"sh/1gvaxcju","slide":6,"bbox":[752,617,332,27]}
+{"kind":"textbox","id":"sh/0fmt4ri9","slide":6,"text":"SEDE, HORARIOS Y TARIFAS DE MUESTRA","textPreview":"SEDE, HORARIOS Y TARIFAS DE MUESTRA","textChars":35,"textLines":1,"bbox":[762,619,312,23]}
+{"kind":"image","id":"im/e1gbelwn","slide":6,"name":"","alt":"Vista ilustrativa del módulo de alquiler y disponibilidad de canchas","bbox":[707,158,424,465]}
+{"kind":"notes","id":"nt/aur7it","slide":6,"text":"La captura de canchas es demostrativa. El nombre de la sede, fechas, tarifas y disponibilidad visibles son ficticios. No presentar el valor mostrado como precio real. Las capacidades comerciales dependen de módulos activos."}
+{"kind":"slide","id":"sl/pc5lkr","slide":7,"title":"DESARROLLO DEL DEPORTISTA","textShapes":16}
+{"kind":"textbox","id":"sh/hszqh87q","slide":7,"text":"DESARROLLO DEL DEPORTISTA","textPreview":"DESARROLLO DEL DEPORTISTA","textChars":25,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/up876toz","slide":7,"text":"El seguimiento deportivo gana continuidad","textPreview":"El seguimiento deportivo gana continuidad","textChars":41,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/fqh8fypk","slide":7,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/snqp4jqt","slide":7,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/toz6do7e","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/6lo7298n","slide":7,"text":"Una historia deportiva se construye con observaciones y mediciones registradas a lo largo del proceso.","textPreview":"Una historia deportiva se construye con observaciones y mediciones registradas a lo largo del proceso.","textChars":102,"textLines":1,"bbox":[68,163,1090,62]}
+{"kind":"shape","id":"sh/7mxobep8","slide":7,"bbox":[68,260,485,344]}
+{"kind":"textbox","id":"sh/cjapgn6d","slide":7,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[94,292,52,36]}
+{"kind":"textbox","id":"sh/dkjqps7i","slide":7,"text":"Evaluaciones","textPreview":"Evaluaciones","textChars":12,"textLines":1,"bbox":[156,292,315,34]}
+{"kind":"textbox","id":"sh/pcvm14vy","slide":7,"text":"Biometría y pruebas físicas","textPreview":"Biometría y pruebas físicas","textChars":27,"textLines":1,"bbox":[156,330,340,40]}
+{"kind":"textbox","id":"sh/4rm5szet","slide":7,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[94,388,52,36]}
+{"kind":"textbox","id":"sh/3qd4zud8","slide":7,"text":"Entrenamiento","textPreview":"Entrenamiento","textChars":13,"textLines":1,"bbox":[156,388,315,34]}
+{"kind":"textbox","id":"sh/2p43qpwn","slide":7,"text":"Telemetría GPS","textPreview":"Telemetría GPS","textChars":14,"textLines":1,"bbox":[156,426,340,40]}
+{"kind":"textbox","id":"sh/hovmxkv2","slide":7,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[94,484,52,36]}
+{"kind":"textbox","id":"sh/gn2lozeh","slide":7,"text":"Observación","textPreview":"Observación","textChars":11,"textLines":1,"bbox":[156,484,315,34]}
+{"kind":"textbox","id":"sh/fmt4vudw","slide":7,"text":"Scouting e informes","textPreview":"Scouting e informes","textChars":19,"textLines":1,"bbox":[156,522,340,40]}
+{"kind":"textbox","id":"sh/ulk3mpwb","slide":7,"text":"La lectura y las decisiones siguen en manos del cuerpo técnico.","textPreview":"La lectura y las decisiones siguen en manos del cuerpo técnico.","textChars":63,"textLines":1,"bbox":[94,566,408,25]}
+{"kind":"shape","id":"sh/1kfm9ov6","slide":7,"bbox":[612,248,526,390]}
+{"kind":"shape","id":"sh/kzyxsrq9","slide":7,"bbox":[691,604,370,26]}
+{"kind":"textbox","id":"sh/507ylw7u","slide":7,"text":"MUESTRA FICTICIA · NO ES UNA EVALUACIÓN REAL","textPreview":"MUESTRA FICTICIA · NO ES UNA EVALUACIÓN REAL","textChars":44,"textLines":1,"bbox":[701,606,350,22]}
+{"kind":"image","id":"im/ja9gzipc","slide":7,"name":"","alt":"Informe deportivo de demostración con datos sintéticos","bbox":[620,254,510,345]}
+{"kind":"notes","id":"nt/pc5lkr","slide":7,"text":"La captura de boletín incluye perfil, texto de análisis y métricas generadas para una muestra; ningún valor ni interpretación se presenta como evaluación real. El módulo debe validarse con información autorizada, metodología del club y revisión del equipo técnico. No es diagnóstico médico."}
+{"kind":"slide","id":"sl/ec7x7g","slide":8,"title":"VALOR PARA EL CLUB","textShapes":14}
+{"kind":"textbox","id":"sh/10re9kvy","slide":8,"text":"VALOR PARA EL CLUB","textPreview":"VALOR PARA EL CLUB","textChars":18,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/ex0vy5w7","slide":8,"text":"Una vista útil para cada rol","textPreview":"Una vista útil para cada rol","textChars":28,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/zy9w7ads","slide":8,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/cvidwfe1","slide":8,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/dwre5kvm","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/qtgvu5wb","slide":8,"text":"La misma plataforma puede ordenar conversaciones distintas, con acceso según el perfil habilitado.","textPreview":"La misma plataforma puede ordenar conversaciones distintas, con acceso según el perfil habilitado.","textChars":98,"textLines":1,"bbox":[68,163,1060,64]}
+{"kind":"shape","id":"sh/rupw3adg","slide":8,"bbox":[68,269,232,62]}
+{"kind":"textbox","id":"sh/wr2x8zel","slide":8,"text":"Dirección","textPreview":"Dirección","textChars":9,"textLines":1,"bbox":[84,276,202,47]}
+{"kind":"textbox","id":"sh/xsbeh4vq","slide":8,"text":"Panorama de equipos, actividad y procesos administrativos.","textPreview":"Panorama de equipos, actividad y procesos administrativos.","textChars":58,"textLines":1,"bbox":[336,272,796,55]}
+{"kind":"shape","id":"sh/h4vmlsj6","slide":8,"bbox":[336,337,796,1]}
+{"kind":"shape","id":"sh/g3m5cnil","slide":8,"bbox":[68,362,232,62]}
+{"kind":"textbox","id":"sh/v2d4ji10","slide":8,"text":"Cuerpo técnico","textPreview":"Cuerpo técnico","textChars":14,"textLines":1,"bbox":[84,369,202,47]}
+{"kind":"textbox","id":"sh/u14nax0f","slide":8,"text":"Contexto del plantel, partidos, convocatoria y seguimiento.","textPreview":"Contexto del plantel, partidos, convocatoria y seguimiento.","textChars":59,"textLines":1,"bbox":[336,365,796,55]}
+{"kind":"shape","id":"sh/t0vmhsja","slide":8,"bbox":[336,430,796,1]}
+{"kind":"shape","id":"sh/8fm58nip","slide":8,"bbox":[68,455,232,62]}
+{"kind":"textbox","id":"sh/7ed4fi14","slide":8,"text":"Administración","textPreview":"Administración","textChars":14,"textLines":1,"bbox":[84,462,202,47]}
+{"kind":"textbox","id":"sh/6dkn6d0j","slide":8,"text":"Consulta de recaudo, cartera y servicios habilitados.","textPreview":"Consulta de recaudo, cartera y servicios habilitados.","textChars":53,"textLines":1,"bbox":[336,458,796,55]}
+{"kind":"shape","id":"sh/dwz6tcje","slide":8,"bbox":[336,523,796,1]}
+{"kind":"shape","id":"sh/sb65k7it","slide":8,"bbox":[68,548,232,62]}
+{"kind":"textbox","id":"sh/wryxcfu1","slide":8,"text":"Familias","textPreview":"Familias","textChars":8,"textLines":1,"bbox":[84,555,202,47]}
+{"kind":"textbox","id":"sh/xs7y5kbm","slide":8,"text":"Un canal digital para la información que el club decida compartir.","textPreview":"Un canal digital para la información que el club decida compartir.","textChars":66,"textLines":1,"bbox":[336,551,796,55]}
+{"kind":"shape","id":"sh/apgfa5cb","slide":8,"bbox":[336,616,796,1]}
+{"kind":"textbox","id":"sh/bqpg3atw","slide":8,"text":"El alcance se define con el club: módulos activos, permisos y datos que se compartirán.","textPreview":"El alcance se define con el club: módulos activos, permisos y datos que se compartirán.","textChars":87,"textLines":1,"bbox":[68,653,1080,20]}
+{"kind":"notes","id":"nt/ec7x7g","slide":8,"text":"El portal para padres está identificado como módulo. Presentar como canal para información que el club decida habilitar; no asegurar comunicaciones automáticas. Definir roles, permisos y tratamiento de datos de menores antes de la puesta en marcha."}
+{"kind":"slide","id":"sl/o9qsgh","slide":9,"title":"SIGUIENTE PASO · PILOTO","textShapes":17}
+{"kind":"textbox","id":"sh/v65w3up0","slide":9,"text":"SIGUIENTE PASO · PILOTO","textPreview":"SIGUIENTE PASO · PILOTO","textChars":23,"textLines":1,"bbox":[68,29,700,24]}
+{"kind":"textbox","id":"sh/g7exczql","slide":9,"text":"Demostrar el valor en la operación real","textPreview":"Demostrar el valor en la operación real","textChars":39,"textLines":1,"bbox":[68,59,1110,68]}
+{"kind":"shape","id":"sh/h8ne5k7q","slide":9,"bbox":[68,137,58,4]}
+{"kind":"textbox","id":"sh/6hwv6583","slide":9,"text":"SportCoreOS  ·  Gestión deportiva y administrativa","textPreview":"SportCoreOS  ·  Gestión deportiva y administrativa","textChars":50,"textLines":1,"bbox":[68,680,740,20]}
+{"kind":"textbox","id":"sh/7i5wzapo","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1155,680,56,20]}
+{"kind":"textbox","id":"sh/8jed8fq9","slide":9,"text":"Antes de prometer resultados, acordemos qué medir con el club.","textPreview":"Antes de prometer resultados, acordemos qué medir con el club.","textChars":62,"textLines":1,"bbox":[68,163,1065,53]}
+{"kind":"shape","id":"sh/t4ne1k7u","slide":9,"bbox":[68,276,350,253]}
+{"kind":"textbox","id":"sh/qdgfi98n","slide":9,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[93,299,60,44]}
+{"kind":"textbox","id":"sh/repwbep8","slide":9,"text":"Línea base","textPreview":"Línea base","textChars":10,"textLines":1,"bbox":[93,356,295,44]}
+{"kind":"textbox","id":"sh/3mdwn2pc","slide":9,"text":"Describir cómo se hacen hoy tres procesos prioritarios.","textPreview":"Describir cómo se hacen hoy tres procesos prioritarios.","textChars":55,"textLines":1,"bbox":[93,409,292,82]}
+{"kind":"shape","id":"sh/214fux8r","slide":9,"bbox":[454,276,350,253]}
+{"kind":"textbox","id":"sh/povepc7i","slide":9,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[479,299,60,44]}
+{"kind":"textbox","id":"sh/4nmxw7qx","slide":9,"text":"Uso guiado","textPreview":"Uso guiado","textChars":10,"textLines":1,"bbox":[479,356,295,44]}
+{"kind":"textbox","id":"sh/rqxgrmpo","slide":9,"text":"Configurar el flujo y acompañar a los roles participantes.","textPreview":"Configurar el flujo y acompañar a los roles participantes.","textChars":58,"textLines":1,"bbox":[479,409,292,82]}
+{"kind":"shape","id":"sh/qp4fyh83","slide":9,"bbox":[840,276,350,253]}
+{"kind":"textbox","id":"sh/dsfytc7e","slide":9,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[865,299,60,44]}
+{"kind":"textbox","id":"sh/cr6x0rqt","slide":9,"text":"Revisión","textPreview":"Revisión","textChars":8,"textLines":1,"bbox":[865,356,295,44]}
+{"kind":"textbox","id":"sh/zuxgvmpk","slide":9,"text":"Comparar tiempos, registros completos y puntos de fricción.","textPreview":"Comparar tiempos, registros completos y puntos de fricción.","textChars":59,"textLines":1,"bbox":[865,409,292,82]}
+{"kind":"textbox","id":"sh/etof2h8z","slide":9,"text":"Indicadores posibles","textPreview":"Indicadores posibles","textChars":20,"textLines":1,"bbox":[68,573,212,27]}
+{"kind":"textbox","id":"sh/apszuls7","slide":9,"text":"Tiempo para preparar convocatorias  ·  visibilidad de cartera  ·  registros deportivos completos","textPreview":"Tiempo para preparar convocatorias  ·  visibilidad de cartera  ·  registros deportivos completos","textChars":96,"textLines":1,"bbox":[284,570,848,37]}
+{"kind":"textbox","id":"sh/vq10nq9s","slide":9,"text":"Las metas se acuerdan con el club; el resultado dependerá del uso y la configuración.","textPreview":"Las metas se acuerdan con el club; el resultado dependerá del uso y la configuración.","textChars":85,"textLines":1,"bbox":[68,638,1040,24]}
+{"kind":"notes","id":"nt/o9qsgh","slide":9,"text":"Cierre comercial: proponer seleccionar de 2 a 3 procesos para un piloto y levantar la línea base antes de configurar. Los indicadores son propuestas, no resultados garantizados. Definir duración, responsables y objetivos con el cliente."}

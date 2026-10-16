@@ -1,0 +1,111 @@
+{"kind":"deck","id":"pr/dpapyy","name":"Deck"}
+{"kind":"layout","layoutId":"a1bb045e-c689-4a94-a2f6-bdec59dbc890","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"d71ea1db-e97b-4a86-b36e-bf423147740a","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/vtps9h","slide":1,"title":"SportCoreOS","textShapes":4}
+{"kind":"shape","id":"sh/kned0zel","slide":1,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/zm5crud0","slide":1,"text":"SportCoreOS","textPreview":"SportCoreOS","textChars":11,"textLines":1,"bbox":[72,176,650,80]}
+{"kind":"textbox","id":"sh/ylwvy9wf","slide":1,"text":"Gestión deportiva y administrativa para clubes","textPreview":"Gestión deportiva y administrativa para clubes","textChars":46,"textLines":1,"bbox":[76,270,625,112]}
+{"kind":"textbox","id":"sh/9s7exov2","slide":1,"text":"Una plataforma para organizar la operación diaria y acompañar el trabajo deportivo.","textPreview":"Una plataforma para organizar la operación diaria y acompañar el trabajo deportivo.","textChars":83,"textLines":1,"bbox":[76,414,565,90]}
+{"kind":"textbox","id":"sh/8ryd4jeh","slide":1,"text":"Presentación para clubes y escuelas deportivas","textPreview":"Presentación para clubes y escuelas deportivas","textChars":46,"textLines":1,"bbox":[76,613,540,28]}
+{"kind":"image","id":"im/a58vq9sf","slide":1,"name":"","alt":"Logotipo SportCoreOS","bbox":[810,108,360,360]}
+{"kind":"notes","id":"nt/vtps9h","slide":1,"text":"Portada comercial de SportCoreOS. Las funciones de la presentación deben mostrarse según módulos habilitados y configuración acordada con cada club."}
+{"kind":"slide","id":"sl/9les28","slide":2,"title":"Una plataforma para la operación del club","textShapes":12}
+{"kind":"shape","id":"sh/fqhcnil4","slide":2,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/grqtgnm9","slide":2,"text":"Una plataforma para la operación del club","textPreview":"Una plataforma para la operación del club","textChars":41,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/hszups3u","slide":2,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/61obad47","slide":2,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/72xsjils","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/sn6tc3md","slide":2,"text":"El club coordina información deportiva, actividad de los equipos y procesos administrativos.","textPreview":"El club coordina información deportiva, actividad de los equipos y procesos administrativos.","textChars":92,"textLines":1,"bbox":[72,154,1050,94]}
+{"kind":"textbox","id":"sh/tofal83y","slide":2,"text":"Gestión deportiva","textPreview":"Gestión deportiva","textChars":17,"textLines":1,"bbox":[72,316,520,40]}
+{"kind":"textbox","id":"sh/qxsbmx4r","slide":2,"text":"Jugadores, fichas y categorías organizados para el trabajo de los planteles.","textPreview":"Jugadores, fichas y categorías organizados para el trabajo de los planteles.","textChars":76,"textLines":1,"bbox":[72,364,500,66]}
+{"kind":"textbox","id":"sh/ri1cv2lw","slide":2,"text":"Agenda y competencia","textPreview":"Agenda y competencia","textChars":20,"textLines":1,"bbox":[660,316,520,40]}
+{"kind":"textbox","id":"sh/vqlonyt0","slide":2,"text":"Partidos, convocatorias y actividad del equipo en los módulos correspondientes.","textPreview":"Partidos, convocatorias y actividad del equipo en los módulos correspondientes.","textChars":79,"textLines":1,"bbox":[660,364,500,66]}
+{"kind":"textbox","id":"sh/upc7etsf","slide":2,"text":"Seguimiento","textPreview":"Seguimiento","textChars":11,"textLines":1,"bbox":[72,474,520,40]}
+{"kind":"textbox","id":"sh/hs36p8b6","slide":2,"text":"Biometría, pruebas físicas, telemetría GPS y scouting disponibles según la operación.","textPreview":"Biometría, pruebas físicas, telemetría GPS y scouting disponibles según la operación.","textChars":85,"textLines":1,"bbox":[72,522,500,66]}
+{"kind":"textbox","id":"sh/wrupg3al","slide":2,"text":"Administración","textPreview":"Administración","textChars":14,"textLines":1,"bbox":[660,474,520,40]}
+{"kind":"textbox","id":"sh/ju5orytw","slide":2,"text":"Cobros, escenarios, tienda, servicios y portal familiar según configuración.","textPreview":"Cobros, escenarios, tienda, servicios y portal familiar según configuración.","textChars":76,"textLines":1,"bbox":[660,522,500,66]}
+{"kind":"notes","id":"nt/9les28","slide":2,"text":"Capacidades basadas en las rutas del producto: SportCoreOS-web/src/app/app.routes.ts. La disponibilidad depende de los módulos activos y de la configuración del club."}
+{"kind":"slide","id":"sl/75oe1z","slide":3,"title":"Gestión deportiva y competencia","textShapes":9}
+{"kind":"shape","id":"sh/ja54nq9w","slide":3,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/kbelwbah","slide":3,"text":"Gestión deportiva y competencia","textPreview":"Gestión deportiva y competencia","textChars":31,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/5c7mpgrm","slide":3,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/alw3q1sz","slide":3,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/vm54j69k","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/wnelsba5","slide":3,"text":"De la ficha del deportista a la actividad del equipo","textPreview":"De la ficha del deportista a la actividad del equipo","textChars":52,"textLines":1,"bbox":[72,156,590,84]}
+{"kind":"shape","id":"sh/xonmlgrq","slide":3,"bbox":[76,288,10,10]}
+{"kind":"textbox","id":"sh/mhc3m1s3","slide":3,"text":"Registro de jugadores y organización por categorías.","textPreview":"Registro de jugadores y organización por categorías.","textChars":52,"textLines":1,"bbox":[102,278,520,56]}
+{"kind":"shape","id":"sh/nil4f69o","slide":3,"bbox":[76,365,10,10]}
+{"kind":"textbox","id":"sh/f2l07qx8","slide":3,"text":"Consulta de fixture y partidos.","textPreview":"Consulta de fixture y partidos.","textChars":31,"textLines":1,"bbox":[102,355,520,56]}
+{"kind":"shape","id":"sh/e1czylgn","slide":3,"bbox":[76,442,10,10]}
+{"kind":"textbox","id":"sh/143i90fy","slide":3,"text":"Preparación de convocatorias y nóminas.","textPreview":"Preparación de convocatorias y nóminas.","textChars":39,"textLines":1,"bbox":[102,432,520,56]}
+{"kind":"shape","id":"sh/03uh0vyt","slide":3,"bbox":[76,519,10,10]}
+{"kind":"textbox","id":"sh/n650bqx4","slide":3,"text":"Información de asistencia disponible en el flujo del club.","textPreview":"Información de asistencia disponible en el flujo del club.","textChars":58,"textLines":1,"bbox":[102,509,520,56]}
+{"kind":"textbox","id":"sh/p8nid0fa","slide":3,"text":"Interfaz ilustrativa, datos de demostración","textPreview":"Interfaz ilustrativa, datos de demostración","textChars":43,"textLines":1,"bbox":[690,126,465,22]}
+{"kind":"image","id":"im/9kre5cju","slide":3,"name":"","alt":"Captura ilustrativa del módulo de convocatorias con información de demostración","bbox":[845,155,310,500]}
+{"kind":"notes","id":"nt/75oe1z","slide":3,"text":"La captura proviene de SportCoreOS/marketing/assets/screenshots/screenshot_04_convocatorias_tactica_1080x1920.png. Los nombres y equipos visibles son de demostración, no representan un caso real. Las rutas del producto identifican jugadores, categorías, partidos y convocatorias."}
+{"kind":"slide","id":"sl/gujqc0","slide":4,"title":"Seguimiento deportivo","textShapes":12}
+{"kind":"shape","id":"sh/gba5kvyh","slide":4,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/fah4rqhw","slide":4,"text":"Seguimiento deportivo","textPreview":"Seguimiento deportivo","textChars":21,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/u98ni5gb","slide":4,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/pgj6xkfy","slide":4,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/4fa5ofyt","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/3e1ovax8","slide":4,"text":"Herramientas para acompañar el trabajo del cuerpo técnico","textPreview":"Herramientas para acompañar el trabajo del cuerpo técnico","textChars":57,"textLines":1,"bbox":[72,155,1060,74]}
+{"kind":"textbox","id":"sh/2dsnm5gn","slide":4,"text":"La plataforma permite registrar y consultar información deportiva según el flujo que utilice el club.","textPreview":"La plataforma permite registrar y consultar información deportiva según el flujo que utilice el club.","textChars":101,"textLines":1,"bbox":[72,240,1030,62]}
+{"kind":"textbox","id":"sh/d4361kfa","slide":4,"text":"Biometría y pruebas físicas","textPreview":"Biometría y pruebas físicas","textChars":27,"textLines":1,"bbox":[72,352,430,42]}
+{"kind":"textbox","id":"sh/c3u5sfyp","slide":4,"text":"Mediciones y evaluaciones registradas para dar contexto a la evolución del deportista.","textPreview":"Mediciones y evaluaciones registradas para dar contexto a la evolución del deportista.","textChars":86,"textLines":1,"bbox":[72,400,470,78]}
+{"kind":"textbox","id":"sh/exg3itwj","slide":4,"text":"Telemetría GPS y scouting","textPreview":"Telemetría GPS y scouting","textChars":25,"textLines":1,"bbox":[660,352,485,42]}
+{"kind":"textbox","id":"sh/fy9kbyx4","slide":4,"text":"Sesiones GPS y observaciones de scouting para apoyar el seguimiento deportivo.","textPreview":"Sesiones GPS y observaciones de scouting para apoyar el seguimiento deportivo.","textChars":78,"textLines":1,"bbox":[660,400,485,78]}
+{"kind":"textbox","id":"sh/gjilk3e9","slide":4,"text":"Copiloto de IA","textPreview":"Copiloto de IA","textChars":14,"textLines":1,"bbox":[72,518,430,42]}
+{"kind":"textbox","id":"sh/1kr2dofu","slide":4,"text":"Asistencia de consulta dentro del módulo técnico habilitado.","textPreview":"Asistencia de consulta dentro del módulo técnico habilitado.","textChars":60,"textLines":1,"bbox":[72,564,470,54]}
+{"kind":"textbox","id":"sh/2l03mtwf","slide":4,"text":"La interpretación permanece en manos del equipo técnico. No sustituye una valoración profesional.","textPreview":"La interpretación permanece en manos del equipo técnico. No sustituye una valoración profesional.","textChars":97,"textLines":1,"bbox":[660,528,490,78]}
+{"kind":"notes","id":"nt/gujqc0","slide":4,"text":"Módulos identificados en app.routes.ts: biometría, telemetría GPS, scouting y copiloto de IA. La disponibilidad y dispositivos requeridos deben verificarse en la demo. No presentar la herramienta como diagnóstico médico."}
+{"kind":"slide","id":"sl/2ikqsq","slide":5,"title":"Administración y recursos del club","textShapes":9}
+{"kind":"shape","id":"sh/t0fq5kb6","slide":5,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/6x47u5sf","slide":5,"text":"Administración y recursos del club","textPreview":"Administración y recursos del club","textChars":34,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/ryd83at0","slide":5,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/gn6p0zax","slide":5,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/1ofq94r2","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/e1o7ypsr","slide":5,"text":"Los procesos administrativos también forman parte de la operación deportiva.","textPreview":"Los procesos administrativos también forman parte de la operación deportiva.","textChars":76,"textLines":1,"bbox":[72,158,1060,82]}
+{"kind":"textbox","id":"sh/fmx87utc","slide":5,"text":"Finanzas","textPreview":"Finanzas","textChars":8,"textLines":1,"bbox":[72,300,260,40]}
+{"kind":"textbox","id":"sh/wr2povad","slide":5,"text":"Cobros, pensiones y estados de recaudo para consulta y gestión.","textPreview":"Cobros, pensiones y estados de recaudo para consulta y gestión.","textChars":63,"textLines":1,"bbox":[72,350,455,83]}
+{"kind":"textbox","id":"sh/xsv6x0by","slide":5,"text":"Escenarios y servicios","textPreview":"Escenarios y servicios","textChars":22,"textLines":1,"bbox":[660,300,450,40]}
+{"kind":"textbox","id":"sh/h0zup8bu","slide":5,"text":"Canchas, tienda y servicios deportivos según los módulos disponibles para el club.","textPreview":"Canchas, tienda y servicios deportivos según los módulos disponibles para el club.","textChars":82,"textLines":1,"bbox":[660,350,470,83]}
+{"kind":"shape","id":"sh/gzqtg3a9","slide":5,"bbox":[72,487,1058,2]}
+{"kind":"textbox","id":"sh/vyhcnyto","slide":5,"text":"La disponibilidad de pasarelas, medios de pago y otros servicios debe confirmarse para cada implementación.","textPreview":"La disponibilidad de pasarelas, medios de pago y otros servicios debe confirmarse para cada implementación.","textChars":107,"textLines":1,"bbox":[72,526,1030,72]}
+{"kind":"notes","id":"nt/2ikqsq","slide":5,"text":"Rutas de producto: finanzas/recaudo, canchas, tienda y servicios en SportCoreOS-web/src/app/app.routes.ts. Se incluye una salvedad porque la activación de integraciones y medios de pago puede depender de la configuración comercial y técnica."}
+{"kind":"slide","id":"sl/yx00g0","slide":6,"title":"Una experiencia digital para las familias","textShapes":7}
+{"kind":"shape","id":"sh/8bqpofy5","slide":6,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/7ahofaxk","slide":6,"text":"Una experiencia digital para las familias","textPreview":"Una experiencia digital para las familias","textChars":41,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/m987m5gz","slide":6,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/hgjqlkfm","slide":6,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/wfapsfy1","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/ve1ojaxg","slide":6,"text":"Un portal móvil asociado a la actividad del club","textPreview":"Un portal móvil asociado a la actividad del club","textChars":48,"textLines":1,"bbox":[72,164,1080,80]}
+{"kind":"textbox","id":"sh/uds7q5gv","slide":6,"text":"El portal para padres abre un espacio digital para que las familias consulten la información que el club habilite para ellas.","textPreview":"El portal para padres abre un espacio digital para que las familias consulten la información que el club habilite para ellas.","textChars":125,"textLines":1,"bbox":[72,278,990,108]}
+{"kind":"textbox","id":"sh/543qp4fi","slide":6,"text":"Cada club define qué información comparte, qué perfiles acceden y cómo acompaña a las familias durante la temporada.","textPreview":"Cada club define qué información comparte, qué perfiles acceden y cómo acompaña a las familias durante la temporada.","textChars":116,"textLines":1,"bbox":[72,431,990,90]}
+{"kind":"textbox","id":"sh/43apwzed","slide":6,"text":"El tratamiento de datos de deportistas menores requiere permisos y autorizaciones definidos por el club.","textPreview":"El tratamiento de datos de deportistas menores requiere permisos y autorizaciones definidos por el club.","textChars":104,"textLines":1,"bbox":[72,571,990,58]}
+{"kind":"notes","id":"nt/yx00g0","slide":6,"text":"El portal móvil para padres aparece como módulo PORTAL_PADRES en SportCoreOS-web/src/app/app.routes.ts. Las prácticas de permisos, comunicación y uso de datos deben validarse con el club."}
+{"kind":"slide","id":"sl/fhav6g","slide":7,"title":"Ventajas para la organización","textShapes":9}
+{"kind":"shape","id":"sh/cbqdojyp","slide":7,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/rahcvex4","slide":7,"text":"Ventajas para la organización","textPreview":"Ventajas para la organización","textChars":29,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/q98vmtgz","slide":7,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/1gje18fm","slide":7,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/0fads3y1","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/ze1czyxg","slide":7,"text":"Una referencia común puede ayudar al club a coordinar sus procesos con mayor contexto.","textPreview":"Una referencia común puede ayudar al club a coordinar sus procesos con mayor contexto.","textChars":86,"textLines":1,"bbox":[72,164,1050,118]}
+{"kind":"textbox","id":"sh/ed8vqtgv","slide":7,"text":"Más claridad","textPreview":"Más claridad","textChars":12,"textLines":1,"bbox":[72,355,340,40]}
+{"kind":"textbox","id":"sh/hkfup4f2","slide":7,"text":"Consulta las áreas deportivas y administrativas dentro del entorno habilitado.","textPreview":"Consulta las áreas deportivas y administrativas dentro del entorno habilitado.","textChars":78,"textLines":1,"bbox":[72,407,430,90]}
+{"kind":"textbox","id":"sh/gj6dgzyh","slide":7,"text":"Acceso por perfiles","textPreview":"Acceso por perfiles","textChars":19,"textLines":1,"bbox":[660,355,430,40]}
+{"kind":"textbox","id":"sh/i1cfq9or","slide":7,"text":"Organiza la experiencia de acuerdo con los roles de dirección, cuerpo técnico y administración.","textPreview":"Organiza la experiencia de acuerdo con los roles de dirección, cuerpo técnico y administración.","textChars":95,"textLines":1,"bbox":[660,407,465,90]}
+{"kind":"textbox","id":"sh/j25wjepc","slide":7,"text":"El resultado depende de los módulos activos, la calidad de los datos y la adopción del equipo.","textPreview":"El resultado depende de los módulos activos, la calidad de los datos y la adopción del equipo.","textChars":94,"textLines":1,"bbox":[72,560,1045,56]}
+{"kind":"notes","id":"nt/fhav6g","slide":7,"text":"Las ventajas se presentan como valor potencial de organización, no como resultados medidos ni garantizados. La configuración de roles forma parte de las rutas y permisos del producto."}
+{"kind":"slide","id":"sl/u7j6lf","slide":8,"title":"Una demostración basada en tu club","textShapes":8}
+{"kind":"shape","id":"sh/onqxsrul","slide":8,"bbox":[0,0,12,720]}
+{"kind":"textbox","id":"sh/nmhwzmdg","slide":8,"text":"Una demostración basada en tu club","textPreview":"Una demostración basada en tu club","textChars":34,"textLines":1,"bbox":[72,44,1080,60]}
+{"kind":"shape","id":"sh/2l8vq1cv","slide":8,"bbox":[72,116,64,4]}
+{"kind":"textbox","id":"sh/xsje5gvi","slide":8,"text":"SportCoreOS  |  Presentación para clubes y escuelas","textPreview":"SportCoreOS  |  Presentación para clubes y escuelas","textChars":51,"textLines":1,"bbox":[72,676,900,24]}
+{"kind":"textbox","id":"sh/craxwbux","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1150,676,54,24]}
+{"kind":"textbox","id":"sh/bq1w36dc","slide":8,"text":"Empecemos por la operación que quieres organizar.","textPreview":"Empecemos por la operación que quieres organizar.","textChars":49,"textLines":1,"bbox":[72,164,1060,78]}
+{"kind":"textbox","id":"sh/apsfu1cr","slide":8,"text":"En una demo personalizada podemos recorrer los módulos que respondan a las prioridades de tu escuela y revisar qué hace falta configurar.","textPreview":"En una demo personalizada podemos recorrer los módulos que respondan a las prioridades de tu escuela y revisar qué hace falta configurar.","textChars":137,"textLines":1,"bbox":[72,271,1030,92]}
+{"kind":"textbox","id":"sh/lg3e9gve","slide":8,"text":"Solicita una demostración personalizada","textPreview":"Solicita una demostración personalizada","textChars":39,"textLines":1,"bbox":[72,427,980,55]}
+{"kind":"textbox","id":"sh/kvax0but","slide":8,"text":"Exploramos el plantel, una jornada deportiva y los procesos administrativos de interés.","textPreview":"Exploramos el plantel, una jornada deportiva y los procesos administrativos de interés.","textChars":87,"textLines":1,"bbox":[72,501,1055,46]}
+{"kind":"textbox","id":"sh/ypg7ylgz","slide":8,"text":"Funciones e integraciones sujetas a disponibilidad y configuración.","textPreview":"Funciones e integraciones sujetas a disponibilidad y configuración.","textChars":67,"textLines":1,"bbox":[72,594,950,32]}
+{"kind":"notes","id":"nt/u7j6lf","slide":8,"text":"Llamado a la acción genérico porque el canal oficial de contacto debe confirmarse antes de distribuir la presentación. No se inventa correo, teléfono, precio o URL."}

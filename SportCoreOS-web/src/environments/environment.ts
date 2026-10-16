@@ -7,4 +7,18 @@ export const environment = {
   tokenKey: 'futcore_token',
   userKey: 'futcore_user',
   activeClubKey: 'futcore_active_club',
+  enableSuperAdminDemo: true,
+  superAdminDemoPersona: {
+    id: 'demo-superadmin',
+    label: 'Super Admin SaaS',
+    email: 'superadmin@sportcore.com',
+    password: 'sportcore2026',
+    rol: 'SUPER_ADMIN' as const,
+    rolLabel: 'Super Administrador Global SaaS (Solo Local)',
+    nombres: 'Super Administrador',
+    apellidos: 'Global',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120',
+    badgeColor: 'rose',
+    descripcion: 'Acceso global multi-tenant, gestión de clubes, planes y auditoría (Exclusivo Local)',
+  },
 };

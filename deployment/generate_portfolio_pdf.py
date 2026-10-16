@@ -3,24 +3,32 @@ import os
 import subprocess
 
 branding_dir = "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/branding"
+assets_dir = "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/assets/screenshots"
 output_html = "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/portafolio_temp.html"
 output_pdf = "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf"
 
-def get_b64(filename):
-    path = os.path.join(branding_dir, filename)
+def get_b64(path):
     if os.path.exists(path):
         with open(path, "rb") as f:
             data = f.read()
-            ext = filename.split(".")[-1]
+            ext = os.path.splitext(path)[1].lower().replace(".", "")
             mime = "image/jpeg" if ext in ["jpg", "jpeg"] else "image/svg+xml" if ext == "svg" else "image/png"
             return f"data:{mime};base64,{base64.b64encode(data).decode('utf-8')}"
     return ""
 
-logo_b64 = get_b64("sportcore_logo.jpg")
-banner_b64 = get_b64("sportcore_marketing_banner.jpg")
-mobile_icon_b64 = get_b64("sportcore_mobile_icon.jpg")
-splash_b64 = get_b64("sportcore_splashscreen.jpg")
-social_b64 = get_b64("sportcore_social_post.jpg")
+logo_b64 = get_b64(os.path.join(branding_dir, "sportcore_logo.jpg"))
+banner_b64 = get_b64(os.path.join(branding_dir, "sportcore_marketing_banner.jpg"))
+mobile_icon_b64 = get_b64(os.path.join(branding_dir, "sportcore_mobile_icon.jpg"))
+splash_b64 = get_b64(os.path.join(branding_dir, "sportcore_splashscreen.jpg"))
+social_b64 = get_b64(os.path.join(branding_dir, "sportcore_social_post.jpg"))
+
+# Module screenshots
+shot_dashboard = get_b64(os.path.join(assets_dir, "01_inicio_dashboard_raw.png"))
+shot_asistencia = get_b64(os.path.join(assets_dir, "02_entrenamientos_asistencia_raw.png"))
+shot_convocatoria = get_b64(os.path.join(assets_dir, "04_convocatorias_tactica_raw.png"))
+shot_carnet = get_b64(os.path.join(assets_dir, "07_carnet_digital_jugador_raw.png"))
+shot_boletin_ia = get_b64(os.path.join(assets_dir, "06_boletin_rendimiento_ia_raw.png"))
+shot_pagos = get_b64(os.path.join(assets_dir, "tablet10/09_tablet10_pagos_recaudos_raw.png"))
 
 html_content = f"""<!DOCTYPE html>
 <html lang="es">
@@ -541,8 +549,39 @@ html_content = f"""<!DOCTYPE html>
       font-weight: 600;
     }}
 
+    .visual-module-card {{
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      border-radius: 3.5mm;
+      padding: 3mm 3.5mm;
+      display: grid;
+      grid-template-columns: 1fr 30mm;
+      gap: 3mm;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }}
+
+    .visual-mockup-frame {{
+      width: 29mm;
+      height: 52mm;
+      border-radius: 3.5mm;
+      overflow: hidden;
+      border: 1.5px solid #334155;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.6), 0 0 10px rgba(16, 185, 129, 0.15);
+      background: #000000;
+      flex-shrink: 0;
+    }}
+
+    .visual-mockup-frame img {{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }}
+
     /* =========================================================================
-       PAGE 4: PRICING & ROI
+       PAGE 4: EVALUACIÓN ANTROPOMÉTRICA & CIENCIA DEPORTIVA
        ========================================================================= */
     .plan-card {{
       background: rgba(15, 23, 42, 0.9);
@@ -920,7 +959,7 @@ html_content = f"""<!DOCTYPE html>
 
 
   <!-- =======================================================================
-       PÁGINA 3: LOS 6 PILARES FUNCIONALES (MÓDULOS DE ÉLITE)
+       PÁGINA 3: GALERÍA VISUAL & MÓDULOS EN OPERACIÓN REAL
        ======================================================================= -->
   <div class="page">
     <div class="pitch-grid"></div>
@@ -936,153 +975,143 @@ html_content = f"""<!DOCTYPE html>
           </div>
         </div>
         <div class="header-badge">
-          <i class="fa-solid fa-cubes"></i>
-          <span>6 Módulos Core</span>
+          <i class="fa-solid fa-mobile-screen"></i>
+          <span>Evidencias en Vivo</span>
         </div>
       </div>
 
       <h2 class="section-title">
         <i class="fa-solid fa-layer-group"></i>
-        <span>Los 6 Pilares Tecnológicos de SportCoreOS</span>
+        <span>Los Módulos Core de SportCoreOS en Operación</span>
       </h2>
       <p class="section-subtitle">
-        Una suite modular, escalable y 100% responsive construida con los estándares más exigentes de la industria SaaS.
+        Interfaz moderna, intuitiva y 100% adaptativa diseñada para agilizar el trabajo diario de directores, entrenadores y familias.
       </p>
 
-      <!-- 6 Pillars 2x3 Grid -->
-      <div class="grid-2col" style="gap: 3mm;">
+      <!-- 2x2 Visual Cards Grid with Screenshots -->
+      <div class="grid-2col" style="gap: 3.5mm; flex: 1;">
         
-        <!-- Pillar 1 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-wallet"></i></div>
+        <!-- Module 1: Dashboard -->
+        <div class="visual-module-card">
+          <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             <div>
-              <h3 class="pillar-title">1. Fintech &amp; Recaudo PSE/Wompi</h3>
+              <div class="pillar-header" style="margin-bottom: 1.5mm;">
+                <div class="pillar-icon-wrap" style="background: rgba(16, 185, 129, 0.2); color: #34d399;"><i class="fa-solid fa-gauge-high"></i></div>
+                <h3 class="pillar-title" style="font-size: 8.5pt;">1. Dashboard &amp; Sedes</h3>
+              </div>
+              <p class="pillar-desc" style="font-size: 6.5pt; margin-bottom: 2mm;">
+                Supervisión ejecutiva de toda la academia: atletas inscritos, partidos activos, sedes deportivas y alertas de cartera morosa en tiempo real.
+              </p>
+              <div style="font-size: 6.2pt; color: #cbd5e1; line-height: 1.35;">
+                <div><i class="fa-solid fa-check" style="color: #10b981; margin-right: 1mm;"></i> <strong>KPIs en vivo:</strong> Censo de alumnos y torneos.</div>
+                <div><i class="fa-solid fa-check" style="color: #10b981; margin-right: 1mm;"></i> <strong>Multi-Sede:</strong> Canchas, filiales y sedes.</div>
+              </div>
+            </div>
+            <div class="pillar-tags">
+              <span class="pillar-tag">Dirección</span>
+              <span class="pillar-tag">Finanzas</span>
             </div>
           </div>
-          <p class="pillar-desc">
-            Motor de facturación recurrente de mensualidades, matrículas, uniformes y torneos. Integrado nativamente con la pasarela bancaria líder en Colombia. Reportes de conciliación y cartera en mora al instante.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">PSE</span>
-            <span class="pillar-tag">Nequi / Daviplata</span>
-            <span class="pillar-tag">Tarjetas Débito/Crédito</span>
-            <span class="pillar-tag">Recibos PDF QR</span>
+          <div class="visual-mockup-frame">
+            <img src="{shot_dashboard}" alt="Dashboard">
           </div>
         </div>
 
-        <!-- Pillar 2 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-bullhorn"></i></div>
+        <!-- Module 2: Convocatorias WhatsApp -->
+        <div class="visual-module-card">
+          <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             <div>
-              <h3 class="pillar-title">2. Convocatorias &amp; Partidos WhatsApp</h3>
+              <div class="pillar-header" style="margin-bottom: 1.5mm;">
+                <div class="pillar-icon-wrap" style="background: rgba(6, 182, 212, 0.2); color: #06b6d4;"><i class="fa-solid fa-bullhorn"></i></div>
+                <h3 class="pillar-title" style="font-size: 8.5pt;">2. Citaciones WhatsApp</h3>
+              </div>
+              <p class="pillar-desc" style="font-size: 6.5pt; margin-bottom: 2mm;">
+                Convocatorias oficiales a partidos y entrenamientos con 1 toque. Envío masivo con mapa satelital de la cancha y confirmación en tiempo real.
+              </p>
+              <div style="font-size: 6.2pt; color: #cbd5e1; line-height: 1.35;">
+                <div><i class="fa-solid fa-check" style="color: #06b6d4; margin-right: 1mm;"></i> <strong>Citación 1-Tap:</strong> WhatsApp masivo a padres.</div>
+                <div><i class="fa-solid fa-check" style="color: #06b6d4; margin-right: 1mm;"></i> <strong>GPS y Waze:</strong> Ubicación exacta de cancha.</div>
+              </div>
+            </div>
+            <div class="pillar-tags">
+              <span class="pillar-tag">1-Tap WA</span>
+              <span class="pillar-tag">Confirmación</span>
             </div>
           </div>
-          <p class="pillar-desc">
-            Programación de partidos amistosos y de liga. Envío masivo de citaciones personalizadas a acudientes con 1 clic por WhatsApp. Confirmación de asistencia en tiempo real y actas arbitrales digitales.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">WhatsApp API 1-Tap</span>
-            <span class="pillar-tag">Rutas Waze/Maps</span>
-            <span class="pillar-tag">Actas de Goles</span>
-            <span class="pillar-tag">Minutos Jugados</span>
+          <div class="visual-mockup-frame">
+            <img src="{shot_convocatoria}" alt="Convocatorias">
           </div>
         </div>
 
-        <!-- Pillar 3 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-heart-pulse"></i></div>
+        <!-- Module 3: Asistencia en Cancha -->
+        <div class="visual-module-card">
+          <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             <div>
-              <h3 class="pillar-title">3. Expediente 360° &amp; Biometría</h3>
+              <div class="pillar-header" style="margin-bottom: 1.5mm;">
+                <div class="pillar-icon-wrap" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;"><i class="fa-solid fa-clipboard-check"></i></div>
+                <h3 class="pillar-title" style="font-size: 8.5pt;">3. Asistencia en Cancha</h3>
+              </div>
+              <p class="pillar-desc" style="font-size: 6.5pt; margin-bottom: 2mm;">
+                Planilla digital para directores técnicos y preparadores físicos. Registro táctil de asistencia, retardos, excusas médicas y minutos jugados.
+              </p>
+              <div style="font-size: 6.2pt; color: #cbd5e1; line-height: 1.35;">
+                <div><i class="fa-solid fa-check" style="color: #f59e0b; margin-right: 1mm;"></i> <strong>Cero Papel:</strong> Planilla interactiva en móvil.</div>
+                <div><i class="fa-solid fa-check" style="color: #f59e0b; margin-right: 1mm;"></i> <strong>Historial:</strong> Porcentaje de asistencia mensual.</div>
+              </div>
+            </div>
+            <div class="pillar-tags">
+              <span class="pillar-tag">Planilla DT</span>
+              <span class="pillar-tag">Faltas &amp; Justificaciones</span>
             </div>
           </div>
-          <p class="pillar-desc">
-            Historial clínico, seguro médico, curvas percentiles antropométricas (peso, talla, IMC) y tests de velocidad/salto. Generación automatizada de boletines de rendimiento técnico semestral para padres.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">Test de Cooper</span>
-            <span class="pillar-tag">Antropometría</span>
-            <span class="pillar-tag">Radar FIFA</span>
-            <span class="pillar-tag">Boletín PDF Evaluativo</span>
+          <div class="visual-mockup-frame">
+            <img src="{shot_asistencia}" alt="Asistencia">
           </div>
         </div>
 
-        <!-- Pillar 4 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-satellite"></i></div>
+        <!-- Module 4: Carnet Digital QR & Estado de Cuenta -->
+        <div class="visual-module-card">
+          <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             <div>
-              <h3 class="pillar-title">4. Telemetría GPS &amp; Scouting</h3>
+              <div class="pillar-header" style="margin-bottom: 1.5mm;">
+                <div class="pillar-icon-wrap" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa;"><i class="fa-solid fa-id-card"></i></div>
+                <h3 class="pillar-title" style="font-size: 8.5pt;">4. Carnet QR &amp; Finanzas</h3>
+              </div>
+              <p class="pillar-desc" style="font-size: 6.5pt; margin-bottom: 2mm;">
+                Credencial deportiva oficial para torneos con verificación QR en vivo. Estado de cuenta transparente con pasarela PSE y descarga de recibos.
+              </p>
+              <div style="font-size: 6.2pt; color: #cbd5e1; line-height: 1.35;">
+                <div><i class="fa-solid fa-check" style="color: #a78bfa; margin-right: 1mm;"></i> <strong>Validación QR:</strong> Certificado de afiliación.</div>
+                <div><i class="fa-solid fa-check" style="color: #a78bfa; margin-right: 1mm;"></i> <strong>Pagos PSE/Wompi:</strong> Paz y salvo digital.</div>
+              </div>
+            </div>
+            <div class="pillar-tags">
+              <span class="pillar-tag">Carnet QR</span>
+              <span class="pillar-tag">PSE Recaudo</span>
             </div>
           </div>
-          <p class="pillar-desc">
-            Módulo de analítica táctica para registro de sprints, distancia recorrida, mapas de calor y ratio de carga aguda/crónica (ACWR) para prevención científica de sobrecargas y lesiones musculares.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">Mapas de Calor</span>
-            <span class="pillar-tag">Prevención ACWR</span>
-            <span class="pillar-tag">Ficha Scouting</span>
-            <span class="pillar-tag">Exportación Pro</span>
-          </div>
-        </div>
-
-        <!-- Pillar 5 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-map-location-dot"></i></div>
-            <div>
-              <h3 class="pillar-title">5. Alquiler de Canchas &amp; Tienda</h3>
-            </div>
-          </div>
-          <p class="pillar-desc">
-            Monetiza los espacios deportivos de tu sede con un sistema de reservas horarias de canchas sintéticas o naturales. Tienda virtual integrada para venta de indumentaria oficial del club.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">Reservas por Hora</span>
-            <span class="pillar-tag">Control de Luces</span>
-            <span class="pillar-tag">Stock Uniformes</span>
-            <span class="pillar-tag">Pagos Online</span>
-          </div>
-        </div>
-
-        <!-- Pillar 6 -->
-        <div class="pillar-card">
-          <div class="pillar-header">
-            <div class="pillar-icon-wrap"><i class="fa-solid fa-mobile-screen-button"></i></div>
-            <div>
-              <h3 class="pillar-title">6. App Móvil &amp; Carnet Digital</h3>
-            </div>
-          </div>
-          <p class="pillar-desc">
-            Aplicación móvil (iOS, Android y PWA) para padres de familia y cuerpo técnico. Carnet digital con código QR para verificación de identidad y acceso a instalaciones deportivas.
-          </p>
-          <div class="pillar-tags">
-            <span class="pillar-tag">iOS / Android PWA</span>
-            <span class="pillar-tag">Carnet QR</span>
-            <span class="pillar-tag">Push Notifications</span>
-            <span class="pillar-tag">Offline-Ready</span>
+          <div class="visual-mockup-frame">
+            <img src="{shot_carnet}" alt="Carnet">
           </div>
         </div>
 
       </div>
 
       <!-- Tech Stack Footer Banner -->
-      <div class="card" style="margin-top: auto; padding: 2.5mm 4mm; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 7pt; color: #94a3b8; font-weight: 600;">Stack de Clase Mundial:</span>
-        <div style="display: flex; gap: 3mm; font-size: 7pt; color: #cbd5e1; font-weight: 700;">
+      <div class="card" style="margin-top: auto; padding: 2.2mm 4mm; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 7pt; color: #94a3b8; font-weight: 600;">Ecosistema Tecnológico de Clase Mundial:</span>
+        <div style="display: flex; gap: 3.5mm; font-size: 7pt; color: #cbd5e1; font-weight: 700;">
           <span><i class="fa-brands fa-angular" style="color: #dd0031;"></i> Angular Signals</span>
           <span><i class="fa-brands fa-node-js" style="color: #22c55e;"></i> NestJS</span>
           <span><i class="fa-solid fa-database" style="color: #3b82f6;"></i> PostgreSQL</span>
-          <span><i class="fa-brands fa-aws" style="color: #f59e0b;"></i> Cloud Multi-Tenant</span>
+          <span><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Multi-Tenant SaaS</span>
         </div>
       </div>
 
       <div class="page-footer">
         <div class="footer-brand">
           <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
-          <span>SECTIC S.A.S. • SportCoreOS v1.0</span>
+          <span>SECTIC S.A.S. • SportCoreOS v1.0 • Módulos en Cancha</span>
         </div>
         <span class="footer-page-num">PÁGINA 03</span>
       </div>
@@ -1091,138 +1120,122 @@ html_content = f"""<!DOCTYPE html>
 
 
   <!-- =======================================================================
-       PÁGINA 4: PLANES COMERCIALES, PRICING & RETORNO DE INVERSIÓN
+       PÁGINA 4: EVALUACIÓN ANTROPOMÉTRICA & BOLETINES CON INTELIGENCIA ARTIFICIAL
        ======================================================================= -->
   <div class="page">
     <div class="pitch-grid"></div>
-    <div class="glow-sphere glow-emerald" style="top: 20mm; left: -15mm; width: 90mm; height: 90mm;"></div>
+    <div class="glow-sphere glow-emerald" style="top: 15mm; right: -15mm; width: 100mm; height: 100mm;"></div>
+    <div class="glow-sphere glow-cyan" style="bottom: 10mm; left: -15mm; width: 90mm; height: 90mm;"></div>
 
     <div class="content-layer">
       <div class="page-header">
         <div class="header-logo-group">
           <img src="{logo_b64}" class="header-logo-img" alt="Logo">
           <div class="header-titles">
-            <h1>Planes Comerciales &amp; Retorno de Inversión</h1>
-            <span>Propuesta Económica SaaS</span>
+            <h1>Evaluación Deportiva &amp; Boletines con IA</h1>
+            <span>Ciencia Formativa, Antropometría y Rendimiento Infantil</span>
           </div>
         </div>
         <div class="header-badge">
-          <i class="fa-solid fa-tags"></i>
-          <span>Tarifas 2026</span>
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Análisis Biométrico &amp; Familiar</span>
         </div>
       </div>
 
       <h2 class="section-title">
-        <i class="fa-solid fa-hand-holding-dollar"></i>
-        <span>Inversión Transparente &amp; Altamente Rentable</span>
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>¿Por qué Medir a los Niños y Entregar Informes a los Padres?</span>
       </h2>
       <p class="section-subtitle">
-        Modelo de suscripción mensual o anual por volumen de alumnos, sin costos ocultos de infraestructura ni servidores.
+        En el fútbol formativo, <strong style="color: #ffffff;">lo que no se mide no se puede mejorar</strong>. Entregar informes periódicos transforma la percepción familiar de la academia, blinda la salud del menor y erradica la deserción de deportistas.
       </p>
 
-      <!-- 3 Pricing Cards Grid -->
-      <div class="grid-3col" style="margin-bottom: 4mm;">
+      <!-- Main Layout: Left info pillars + Right phone mockup of Boletín -->
+      <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 4mm; flex: 1;">
         
-        <!-- Plan 1 -->
-        <div class="plan-card">
-          <h3 class="plan-name">🌱 Semillero</h3>
-          <span class="plan-cap">Hasta 60 Jugadores Activos</span>
-          <div class="plan-price-box">
-            <span class="plan-price">$89.000</span>
-            <span class="plan-period">COP / mes ($25 USD)</span>
+        <!-- Left Column: 4 Strategic Pillars -->
+        <div style="display: flex; flex-direction: column; gap: 2.2mm;">
+          
+          <div class="pillar-card" style="border-left: 3px solid #10b981; padding: 2.5mm 3.5mm;">
+            <div style="display: flex; align-items: center; gap: 2mm; margin-bottom: 0.8mm;">
+              <div style="background: rgba(16, 185, 129, 0.2); color: #34d399; width: 6.5mm; height: 6.5mm; border-radius: 1.5mm; display: flex; align-items: center; justify-content: center; font-size: 8.5pt;"><i class="fa-solid fa-shield-heart"></i></div>
+              <h4 style="font-size: 7.8pt; font-weight: 800; color: #ffffff;">1. Retención Familiar: De "Gasto" a "Inversión en su Hijo"</h4>
+            </div>
+            <p style="font-size: 6.4pt; color: #cbd5e1; line-height: 1.35;">
+              Cuando los padres reciben un reporte formal con gráficos de velocidad, resistencia y peso/talla, comprueban el valor real de su pago mensual. Academias con informes periódicos reportan una <strong>reducción del 40% en retiros y morosidad</strong>.
+            </p>
           </div>
-          <ul class="plan-features">
-            <li><i class="fa-solid fa-check"></i> Hasta 4 categorías Sub</li>
-            <li><i class="fa-solid fa-check"></i> 3 Cuentas Entrenador</li>
-            <li><i class="fa-solid fa-check"></i> Recaudo PSE / Wompi</li>
-            <li><i class="fa-solid fa-check"></i> Convocatorias WhatsApp</li>
-            <li><i class="fa-solid fa-check"></i> Portal Web para Padres</li>
-            <li><i class="fa-solid fa-check"></i> Ficha Antropométrica</li>
-            <li style="color: #64748b;"><i class="fa-solid fa-xmark" style="color: #64748b;"></i> Sin módulo canchas</li>
-          </ul>
+
+          <div class="pillar-card" style="border-left: 3px solid #06b6d4; padding: 2.5mm 3.5mm;">
+            <div style="display: flex; align-items: center; gap: 2mm; margin-bottom: 0.8mm;">
+              <div style="background: rgba(6, 182, 212, 0.2); color: #06b6d4; width: 6.5mm; height: 6.5mm; border-radius: 1.5mm; display: flex; align-items: center; justify-content: center; font-size: 8.5pt;"><i class="fa-solid fa-child-reaching"></i></div>
+              <h4 style="font-size: 7.8pt; font-weight: 800; color: #ffffff;">2. Salud Biológica &amp; Detección del Pico de Crecimiento (PHV)</h4>
+            </div>
+            <p style="font-size: 6.4pt; color: #cbd5e1; line-height: 1.35;">
+              Durante la pubertad, los huesos crecen más rápido que los tendones. Registrar la curva antropométrica trimestral permite modular cargas de entrenamiento y <strong>prevenir lesiones severas por sobreuso</strong> como Osgood-Schlatter o sobrecargas articulares.
+            </p>
+          </div>
+
+          <div class="pillar-card" style="border-left: 3px solid #f59e0b; padding: 2.5mm 3.5mm;">
+            <div style="display: flex; align-items: center; gap: 2mm; margin-bottom: 0.8mm;">
+              <div style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; width: 6.5mm; height: 6.5mm; border-radius: 1.5mm; display: flex; align-items: center; justify-content: center; font-size: 8.5pt;"><i class="fa-solid fa-trophy"></i></div>
+              <h4 style="font-size: 7.8pt; font-weight: 800; color: #ffffff;">3. Gamificación &amp; Autoestima Deportiva del Niño</h4>
+            </div>
+            <p style="font-size: 6.4pt; color: #cbd5e1; line-height: 1.35;">
+              El deportista compite contra sus propias marcas previas (ej. <em>"bajé 0.3s en el sprint de 30m"</em>). Visualizar su Radar FIFA y evolución técnica fortalece la disciplina, la autoconfianza y la cultura de superación constante en cancha.
+            </p>
+          </div>
+
+          <div class="pillar-card" style="border-left: 3px solid #8b5cf6; padding: 2.5mm 3.5mm;">
+            <div style="display: flex; align-items: center; gap: 2mm; margin-bottom: 0.8mm;">
+              <div style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; width: 6.5mm; height: 6.5mm; border-radius: 1.5mm; display: flex; align-items: center; justify-content: center; font-size: 8.5pt;"><i class="fa-solid fa-binoculars"></i></div>
+              <h4 style="font-size: 7.8pt; font-weight: 800; color: #ffffff;">4. Historial Inmutable para Scouting &amp; Clubes Pro</h4>
+            </div>
+            <p style="font-size: 6.4pt; color: #cbd5e1; line-height: 1.35;">
+              Los reclutadores de clubes profesionales no se fían de un solo partido; exigen la <strong>curva histórica de maduración deportiva</strong>. SportCoreOS crea una hoja de vida deportiva certificada con cada gol, minuto y test físico.
+            </p>
+          </div>
+
         </div>
 
-        <!-- Plan 2 (POPULAR) -->
-        <div class="plan-card popular">
-          <div class="popular-tag">MÁS ELEGIDO</div>
-          <h3 class="plan-name">⭐ Academia Pro</h3>
-          <span class="plan-cap">Hasta 180 Jugadores Activos</span>
-          <div class="plan-price-box">
-            <span class="plan-price">$189.000</span>
-            <span class="plan-period">COP / mes ($49 USD)</span>
+        <!-- Right Column: Visual Boletín Mockup with IA highlight -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4mm; padding: 3mm;">
+          
+          <div style="text-align: center; margin-bottom: 2mm; width: 100%;">
+            <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 6pt; font-weight: 800; padding: 1mm 2.5mm; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Boletín Automatizado con IA
+            </span>
+            <div style="font-size: 6.8pt; color: #94a3b8; margin-top: 1mm;">Generado en 1 toque y enviado directo al WhatsApp del acudiente</div>
           </div>
-          <ul class="plan-features">
-            <li><i class="fa-solid fa-check"></i> Hasta 10 categorías Sub</li>
-            <li><i class="fa-solid fa-check"></i> 8 Cuentas de Staff / DT</li>
-            <li><i class="fa-solid fa-check"></i> Recaudo PSE / Wompi</li>
-            <li><i class="fa-solid fa-check"></i> Control Dorsales &amp; Kits</li>
-            <li><i class="fa-solid fa-check"></i> Tests Físicos &amp; Biometría</li>
-            <li><i class="fa-solid fa-check"></i> Boletines Semestrales PDF</li>
-            <li><i class="fa-solid fa-check"></i> Soporte Prioritario WhatsApp</li>
-          </ul>
-        </div>
 
-        <!-- Plan 3 -->
-        <div class="plan-card">
-          <h3 class="plan-name">🏆 Club Élite</h3>
-          <span class="plan-cap">Jugadores ILIMITADOS</span>
-          <div class="plan-price-box">
-            <span class="plan-price">$349.000</span>
-            <span class="plan-period">COP / mes ($89 USD)</span>
+          <div style="width: 52mm; height: 96mm; border-radius: 4mm; overflow: hidden; border: 2px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(16, 185, 129, 0.2); background: #000;">
+            <img src="{shot_boletin_ia}" style="width: 100%; height: 100%; object-fit: cover;" alt="Boletín de Rendimiento IA">
           </div>
-          <ul class="plan-features">
-            <li><i class="fa-solid fa-check"></i> Categorías Ilimitadas</li>
-            <li><i class="fa-solid fa-check"></i> Entrenadores Ilimitados</li>
-            <li><i class="fa-solid fa-check"></i> Telemetría GPS &amp; ACWR</li>
-            <li><i class="fa-solid fa-check"></i> Módulo Alquiler Canchas</li>
-            <li><i class="fa-solid fa-check"></i> Tienda Virtual del Club</li>
-            <li><i class="fa-solid fa-check"></i> Dominio Web Propio</li>
-            <li><i class="fa-solid fa-check"></i> Gerente de Cuenta 24/7</li>
-          </ul>
+
+          <div style="margin-top: 2mm; width: 100%; display: flex; justify-content: center; gap: 1.5mm; flex-wrap: wrap;">
+            <span class="pillar-tag"><i class="fa-solid fa-radar" style="color: #10b981;"></i> Radar FIFA</span>
+            <span class="pillar-tag">Sprint 30m</span>
+            <span class="pillar-tag">Test Cooper</span>
+            <span class="pillar-tag">Antropometría</span>
+            <span class="pillar-tag">Percentiles OMS</span>
+          </div>
+
         </div>
 
       </div>
 
-      <!-- ROI & Business Impact Section -->
-      <h3 style="font-size: 10pt; font-weight: 800; color: #ffffff; margin-bottom: 2mm; display: flex; align-items: center; gap: 2mm;">
-        <i class="fa-solid fa-arrow-trend-up" style="color: #34d399;"></i>
-        <span>Retorno de Inversión Demostrable (ROI)</span>
-      </h3>
-
-      <div class="grid-4col" style="margin-bottom: 3.5mm;">
-        <div class="roi-stat-box">
-          <span class="roi-stat-num">+ $2.4M</span>
-          <span class="roi-stat-lbl">Recuperación mensual de cartera en mora</span>
+      <!-- Bottom Banner: Valor Diferencial -->
+      <div class="card card-highlight" style="margin-top: 3mm; padding: 2.2mm 4mm; display: flex; align-items: center; gap: 3mm;">
+        <i class="fa-solid fa-brain" style="font-size: 13pt; color: #34d399; flex-shrink: 0;"></i>
+        <div style="font-size: 6.8pt; color: #cbd5e1; line-height: 1.35;">
+          <strong style="color: #ffffff;">Inteligencia Artificial al Servicio del Formador:</strong> Los entrenadores no pierden horas redactando diagnósticos individuales; el motor de IA de SportCoreOS analiza los tests, identifica fortalezas y genera recomendaciones tácticas y nutricionales personalizadas para cada alumno.
         </div>
-        <div class="roi-stat-box">
-          <span class="roi-stat-num">15 Horas</span>
-          <span class="roi-stat-lbl">Ahorro semanal del personal directivo</span>
-        </div>
-        <div class="roi-stat-box">
-          <span class="roi-stat-num">100%</span>
-          <span class="roi-stat-lbl">Trazabilidad de pagos y recibos digitales</span>
-        </div>
-        <div class="roi-stat-box">
-          <span class="roi-stat-num">0%</span>
-          <span class="roi-stat-lbl">Planillas de papel o datos extraviados</span>
-        </div>
-      </div>
-
-      <!-- Annual Discount Banner -->
-      <div class="card card-highlight" style="margin-top: auto; padding: 2.5mm 4mm; display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 2.5mm;">
-          <i class="fa-solid fa-gift" style="color: #f59e0b; font-size: 12pt;"></i>
-          <span style="font-size: 7.2pt; color: #ffffff;">
-            <strong>Descuento Especial Pago Anual:</strong> Paga 10 meses y obtén <strong>12 meses de servicio completo</strong> (Ahorra 2 meses).
-          </span>
-        </div>
-        <span style="font-size: 7pt; font-weight: 800; color: #34d399; font-family: 'JetBrains Mono', monospace;">- 17% OFF</span>
       </div>
 
       <div class="page-footer">
         <div class="footer-brand">
           <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
-          <span>SECTIC S.A.S. • SportCoreOS v1.0</span>
+          <span>SECTIC S.A.S. • SportCoreOS v1.0 • Formación Deportiva Científica</span>
         </div>
         <span class="footer-page-num">PÁGINA 04</span>
       </div>
@@ -1261,7 +1274,7 @@ html_content = f"""<!DOCTYPE html>
       </p>
 
       <!-- 4 Steps Process Grid -->
-      <div class="grid-2col" style="gap: 3mm; margin-bottom: 4mm;">
+      <div class="grid-2col" style="gap: 3mm; margin-bottom: 3.5mm;">
         <div class="step-card">
           <div class="step-num">1</div>
           <div>
@@ -1296,26 +1309,26 @@ html_content = f"""<!DOCTYPE html>
       </div>
 
       <!-- Security & Compliance Banner -->
-      <div class="card" style="margin-bottom: 4mm; padding: 3mm 4mm; display: flex; align-items: center; gap: 3.5mm;">
-        <i class="fa-solid fa-lock" style="font-size: 16pt; color: #34d399;"></i>
+      <div class="card" style="margin-bottom: 3.5mm; padding: 2.8mm 4mm; display: flex; align-items: center; gap: 3.5mm;">
+        <i class="fa-solid fa-lock" style="font-size: 15pt; color: #34d399;"></i>
         <div style="font-size: 6.8pt; color: #cbd5e1; line-height: 1.35;">
-          <strong style="color: #ffffff;">Seguridad de Grado Empresarial:</strong> Cumplimiento estricto de la <strong>Ley 1581 de Protección de Datos Personales (Habeas Data)</strong> de menores de edad. Encriptación SSL 256-bit y respaldos automáticos cada 6 horas en infraestructura AWS.
+          <strong style="color: #ffffff;">Seguridad de Grado Empresarial:</strong> Cumplimiento estricto de la <strong>Ley 1581 de Protección de Datos Personales (Habeas Data)</strong> de menores de edad. Encriptación SSL 256-bit y respaldos automáticos periódicos en infraestructura Cloud.
         </div>
       </div>
 
       <!-- Contact Callout Box -->
       <div class="contact-box" style="margin-top: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2mm;">
           <div>
-            <h3 style="font-size: 13pt; font-weight: 900; color: #ffffff; letter-spacing: -0.02em;">
+            <h3 style="font-size: 12pt; font-weight: 900; color: #ffffff; letter-spacing: -0.02em;">
               ¿Listo para Llevar tu Academia al Siguiente Nivel?
             </h3>
-            <p style="font-size: 7.8pt; color: #cbd5e1; margin-top: 0.5mm;">
+            <p style="font-size: 7.5pt; color: #cbd5e1; margin-top: 0.5mm;">
               Agenda una demostración guiada de 15 minutos con nuestros especialistas en tecnología deportiva.
             </p>
           </div>
-          <div style="background: #10b981; color: #0b0f19; font-size: 7.5pt; font-weight: 900; padding: 2mm 4mm; border-radius: 20px; white-space: nowrap;">
-            DEMO GRATIS 7 DÍAS
+          <div style="background: #10b981; color: #0b0f19; font-size: 7.2pt; font-weight: 900; padding: 1.8mm 3.5mm; border-radius: 20px; white-space: nowrap;">
+            DEMO EN VIVO
           </div>
         </div>
 
@@ -1324,7 +1337,7 @@ html_content = f"""<!DOCTYPE html>
             <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
             <div>
               <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Línea Comercial WhatsApp:</span>
-              <strong style="color: #ffffff;">+57 (300) 123-4567 / +57 (310) 987-6543</strong>
+              <strong style="color: #ffffff;">+57 311 705 1171</strong>
             </div>
           </div>
 
@@ -1332,23 +1345,23 @@ html_content = f"""<!DOCTYPE html>
             <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
             <div>
               <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Correo Institucional:</span>
-              <strong style="color: #ffffff;">contacto@sectic.com • ventas@sportcoreos.com</strong>
+              <strong style="color: #ffffff;">anroswell@gmail.com</strong>
             </div>
           </div>
 
           <div class="contact-row">
             <div class="contact-icon"><i class="fa-solid fa-globe"></i></div>
             <div>
-              <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Sitio Web Oficial:</span>
-              <strong style="color: #34d399;">https://sportcoreos.sectic.com</strong>
+              <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Plataforma Oficial:</span>
+              <strong style="color: #34d399;">https://sportcoreos.secticsolar.site</strong>
             </div>
           </div>
 
           <div class="contact-row">
             <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
             <div>
-              <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Sede Principal:</span>
-              <strong style="color: #ffffff;">Cartagena &amp; Bogotá, Colombia</strong>
+              <span style="font-size: 6.5pt; color: #94a3b8; display: block;">Sede Comercial:</span>
+              <strong style="color: #ffffff;">Cartagena de Indias, Colombia (Servicio Latam)</strong>
             </div>
           </div>
         </div>
@@ -1384,10 +1397,26 @@ cmd = [
     f"file://{output_html}"
 ]
 
+import shutil
+
 print("Compilando PDF con Google Chrome Headless...")
 result = subprocess.run(cmd, capture_output=True, text=True)
 if result.returncode == 0 and os.path.exists(output_pdf):
     size_mb = os.path.getsize(output_pdf) / (1024 * 1024)
     print(f"PDF generado con éxito: {output_pdf} ({size_mb:.2f} MB)")
+    
+    # Replicate to target asset locations
+    destinations = [
+        "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/branding/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf",
+        "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/SportCoreOS-web/public/assets/branding/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf",
+        "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/SportCoreOS-web/src/assets/branding/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf",
+        "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/SportCoreOS-mobile/src/assets/branding/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf",
+        "/Users/sectic/Documents/Codigos Fuentes/SportCoreOS/assets/branding/PORTAFOLIO_DE_SERVICIOS_SPORTCOREOS_SECTIC.pdf"
+    ]
+    for dest in destinations:
+        if os.path.exists(os.path.dirname(dest)):
+            shutil.copy(output_pdf, dest)
+            print(f"Copiado a: {dest}")
 else:
     print(f"Error generando PDF: {result.stderr}")
+
