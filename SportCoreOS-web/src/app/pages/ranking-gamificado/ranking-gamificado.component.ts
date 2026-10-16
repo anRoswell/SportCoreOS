@@ -652,7 +652,7 @@ export class RankingGamificadoComponent implements OnInit {
         // Optimistic local update
         const nuevoProgreso = {
           id: `prog-${Date.now()}`,
-          club_id: '10000000-0000-0000-0000-000000000001',
+          club_id: this.api.activeClub().id || '',
           jugador_id: jug.id,
           reto_id: reto.id,
           nivel_solicitado: nivel.nivel,
@@ -761,7 +761,7 @@ export class RankingGamificadoComponent implements OnInit {
           } else {
             list.unshift({
               id: `auto-${Date.now()}-${l}`,
-              club_id: '10000000-0000-0000-0000-000000000001',
+              club_id: this.api.activeClub().id || '',
               jugador_id: jugadorId,
               reto_id: retoId,
               nivel_solicitado: l,

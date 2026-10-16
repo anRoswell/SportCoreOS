@@ -124,8 +124,9 @@ export class EscuelasComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
+        this.clubs.set([]);
         this.loading.set(false);
-        this.showToast('Error al consultar el catálogo de escuelas.', true);
+        this.showToast('No se pudo conectar con el catálogo de escuelas.', true);
       },
     });
   }

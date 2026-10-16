@@ -11,13 +11,15 @@
       </div>
 
       <!-- Club Activo Multi-Tenant -->
-      <div class="active-club-badge" [title]="api.activeClub().nombre">
-        <div class="club-avatar">{{ api.activeClub().sigla }}</div>
-        <div class="club-info" *ngIf="!api.sidebarCollapsed()">
-          <p class="club-name">{{ api.activeClub().nombre }}</p>
-          <span class="club-plan">{{ api.formatPlanNombre(api.activeClub().plan) }}</span>
+      @if (api.activeClub().id) {
+        <div class="active-club-badge" [title]="api.activeClub().nombre">
+          <div class="club-avatar">{{ api.activeClub().sigla || 'SC' }}</div>
+          <div class="club-info" *ngIf="!api.sidebarCollapsed()">
+            <p class="club-name">{{ api.activeClub().nombre }}</p>
+            <span class="club-plan">{{ api.formatPlanNombre(api.activeClub().plan) }}</span>
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Menú de Navegación -->
       <nav class="nav-menu">

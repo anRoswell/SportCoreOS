@@ -20,15 +20,20 @@
             type="button" 
             class="club-trigger-btn" 
             (click)="toggleClubDropdown($event)"
-            [title]="'Escuela activa: ' + api.activeClub().nombre + ' (' + api.activeClub().ciudad + ')'"
+            [title]="api.activeClub().id ? ('Escuela activa: ' + api.activeClub().nombre + (api.activeClub().ciudad ? ' (' + api.activeClub().ciudad + ')' : '')) : 'Sin conexión a base de datos o sin escuelas'"
             aria-haspopup="true"
             [attr.aria-expanded]="isOpenClubDropdown()">
             <div class="club-icon-wrap">
               <i class="fa-solid fa-shield-halved club-icon"></i>
             </div>
             <div class="club-info-wrap">
-              <span class="club-name">{{ api.activeClub().nombre }}</span>
-              <span class="club-meta">{{ api.activeClub().ciudad }} • {{ api.activeClub().sigla }}</span>
+              @if (api.activeClub().id) {
+                <span class="club-name">{{ api.activeClub().nombre }}</span>
+                <span class="club-meta">{{ api.activeClub().ciudad || 'Sede' }} • {{ api.activeClub().sigla || 'SC' }}</span>
+              } @else {
+                <span class="club-name">Sin Escuela Seleccionada</span>
+                <span class="club-meta">BD Desconectada / Vacía</span>
+              }
             </div>
             <i class="fa-solid fa-chevron-down caret-arrow" [class.rotated]="isOpenClubDropdown()"></i>
           </button>
@@ -104,7 +109,7 @@
                 } @empty {
                   <div class="empty-clubs">
                     <i class="fa-solid fa-circle-info"></i>
-                    <span>No se encontraron escuelas con '{{ searchClubQuery() }}'</span>
+                    <span>{{ api.availableClubs().length === 0 ? 'Sin escuelas registradas o sin conexión a la base de datos.' : ('No se encontraron escuelas con "' + searchClubQuery() + '"') }}</span>
                   </div>
                 }
               </div>

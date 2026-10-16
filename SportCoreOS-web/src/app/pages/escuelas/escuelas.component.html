@@ -59,8 +59,8 @@
         <i class="fa-solid fa-shield-halved"></i>
       </div>
       <div class="tenant-kpi-body">
-        <div class="kpi-val text-truncate">{{ api.activeClub().sigla }}</div>
-        <div class="kpi-label">Club Activo en Sesión: <span class="highlight">{{ api.activeClub().nombre }}</span></div>
+        <div class="kpi-val text-truncate">{{ api.activeClub().id ? api.activeClub().sigla : '—' }}</div>
+        <div class="kpi-label">Club Activo en Sesión: <span class="highlight">{{ api.activeClub().id ? api.activeClub().nombre : 'Ninguno (Sin conexión BD)' }}</span></div>
       </div>
     </div>
   </div>
@@ -111,7 +111,7 @@
     <div class="empty-state fut-card">
       <i class="fa-solid fa-school-circle-xmark empty-icon"></i>
       <h3>No se encontraron escuelas</h3>
-      <p>No hay academias que coincidan con los filtros de búsqueda aplicados.</p>
+      <p>{{ clubs().length === 0 ? 'No hay escuelas registradas en la base de datos o no se pudo establecer conexión con el backend.' : 'No hay academias que coincidan con los filtros de búsqueda aplicados.' }}</p>
       <button class="btn-primary" (click)="openCreateModal()">
         <i class="fa-solid fa-plus-circle"></i> Registrar Primera Escuela
       </button>

@@ -46,52 +46,19 @@ export interface JugadorExpediente360 {
   };
 }
 
-export const DEFAULT_CLUBS: Club[] = [
-  {
-    id: '10000000-0000-0000-0000-000000000001',
-    nombre: 'Club Deportivo Futuros Cracks FC',
-    slug: 'futuros-cracks-fc',
-    logo: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
-    plan: 'Plan Club Élite Pro',
-    sigla: 'FCFC',
-    ciudad: 'Cartagena',
-    pais: 'Colombia',
-    activo: true,
-  },
-  {
-    id: '10000000-0000-0000-0000-000000000002',
-    nombre: 'Academia Semillero Santa Fe',
-    slug: 'semillero-santa-fe',
-    logo: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
-    plan: 'Plan Semillero Oro',
-    sigla: 'SSF',
-    ciudad: 'Medellín',
-    pais: 'Colombia',
-    activo: true,
-  },
-  {
-    id: '10000000-0000-0000-0000-000000000003',
-    nombre: 'Millonarios Cantera Norte',
-    slug: 'millonarios-cantera-norte',
-    logo: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200',
-    plan: 'Plan Élite Liga',
-    sigla: 'MCN',
-    ciudad: 'Cali',
-    pais: 'Colombia',
-    activo: true,
-  },
-  {
-    id: '10000000-0000-0000-0000-000000000004',
-    nombre: 'Academia Atlético Nacional Cantera',
-    slug: 'atletico-nacional-cantera',
-    logo: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=200',
-    plan: 'Plan Club Élite Pro',
-    sigla: 'ANC',
-    ciudad: 'Barranquilla',
-    pais: 'Colombia',
-    activo: true,
-  },
-];
+export const EMPTY_CLUB: Club = {
+  id: '',
+  nombre: '',
+  slug: '',
+  logo: '',
+  plan: '',
+  sigla: '',
+  ciudad: '',
+  pais: '',
+  activo: false,
+};
+
+export const DEFAULT_CLUBS: Club[] = [];
 
 @Injectable({
   providedIn: 'root',
@@ -101,10 +68,10 @@ export class ApiService {
     ? '/api/v1'
     : (environment.apiUrl || 'http://localhost:3001/api/v1');
 
-  // Lista de Clubes Multi-Tenant (cargada dinámicamente desde la BD con fallback inmediato)
-  readonly availableClubs = signal<Club[]>(DEFAULT_CLUBS);
+  // Lista de Clubes Multi-Tenant (cargada dinámicamente desde la BD real; vacía si no hay conexión)
+  readonly availableClubs = signal<Club[]>([]);
 
-  // Club Activo Seleccionado (recuperado de localStorage si existe)
+  // Club Activo Seleccionado (recuperado de localStorage si existe, o EMPTY_CLUB)
   readonly activeClub = signal<Club>(this.getStoredActiveClub());
 
   // Control de Sidebar colapsable
@@ -122,13 +89,16 @@ export class ApiService {
       const stored = localStorage.getItem(environment.activeClubKey);
       if (stored) {
         try {
-          return JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.id) {
+            return parsed;
+          }
         } catch {
           // ignore error and fallback
         }
       }
     }
-    return DEFAULT_CLUBS[0];
+    return EMPTY_CLUB;
   }
 
   loadClubs(force = false): void {
@@ -152,10 +122,10 @@ export class ApiService {
           id: c.id,
           nombre: c.nombre,
           slug: c.slug,
-          logo: this.resolveFileUrl(c.logo_url) || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          logo: this.resolveFileUrl(c.logo_url) || '',
           plan: c.plan || 'PLAN_CLUB_ELITE_PRO',
           sigla: c.sigla || 'SC',
-          ciudad: c.ciudad || 'Colombia',
+          ciudad: c.ciudad || '',
           pais: c.pais || 'Colombia',
           activo: c.activo !== false,
         }));
@@ -166,6 +136,16 @@ export class ApiService {
           this.activeClub.set(found);
         } else if (mapped.length > 0) {
           this.activeClub.set(mapped[0]);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem(environment.activeClubKey, JSON.stringify(mapped[0]));
+          }
+        }
+      } else {
+        // Si no hay clubes en la BD o falló la conexión, mostramos la realidad: lista vacía
+        this.availableClubs.set([]);
+        this.activeClub.set(EMPTY_CLUB);
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem(environment.activeClubKey);
         }
       }
     });
@@ -194,7 +174,7 @@ export class ApiService {
           id: user.clubId,
           nombre: user.clubNombre || 'Academia Vinculada',
           slug: user.clubSlug || 'academia-vinculada',
-          logo: user.clubLogo || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          logo: user.clubLogo || '',
           plan: 'PLAN_CLUB_ELITE_PRO',
           sigla: 'SC',
           ciudad: 'Colombia',

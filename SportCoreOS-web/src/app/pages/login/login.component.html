@@ -185,17 +185,21 @@
               <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> O SELECCIONA UNA CREDENCIAL DEMO</span>
             </div>
 
-            <!-- Indicador de Club Activo -->
-            <div class="demo-school-badge">
-              <div class="school-shield-icon">
-                <i class="fa-solid fa-shield-halved"></i>
+            <!-- Indicador de Club Activo (Solo si existe club real activo en BD) -->
+            @if (api.activeClub().id && api.activeClub().nombre) {
+              <div class="demo-school-badge">
+                <div class="school-shield-icon">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="school-text-wrap">
+                  <span class="badge-label">Club / Escuela Activa:</span>
+                  <strong class="school-title">{{ api.activeClub().nombre }}</strong>
+                  @if (api.activeClub().ciudad) {
+                    <span class="badge-city">• {{ api.activeClub().ciudad }}</span>
+                  }
+                </div>
               </div>
-              <div class="school-text-wrap">
-                <span class="badge-label">Club / Escuela Activa:</span>
-                <strong class="school-title">Club Deportivo Futuros Cracks FC</strong>
-                <span class="badge-city">• Cartagena (Cantera Oficial)</span>
-              </div>
-            </div>
+            }
 
             <!-- Personas Demo de Prueba -->
             <div class="demo-personas-grid" [class.has-four-personas]="authService.demoPersonas.length === 4">
