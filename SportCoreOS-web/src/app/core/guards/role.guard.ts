@@ -31,6 +31,10 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     'Acceso Restringido'
   );
 
-  router.navigate(['/dashboard']);
+  if (profileService.isPadre()) {
+    router.navigate(['/portal/padres']);
+  } else {
+    router.navigate(['/dashboard']);
+  }
   return false;
 };

@@ -110,12 +110,14 @@
               </div>
 
               <!-- Footer de Acciones Super Admin -->
-              <div class="dropdown-footer">
-                <button type="button" class="btn-manage-schools" (click)="goToSchoolManagement($event)">
-                  <i class="fa-solid fa-cubes"></i>
-                  <span>Administrar Módulos & Licencias</span>
-                </button>
-              </div>
+              @if (profileService.hasRole(['SUPER_ADMIN'])) {
+                <div class="dropdown-footer">
+                  <button type="button" class="btn-manage-schools" (click)="goToSchoolManagement($event)">
+                    <i class="fa-solid fa-cubes"></i>
+                    <span>Administrar Módulos & Licencias</span>
+                  </button>
+                </div>
+              }
             </div>
           }
         </div>
@@ -176,9 +178,11 @@
                 <button class="dropdown-item" (click)="onOpenProfile()">
                   <i class="fa-regular fa-id-badge"></i> Mi Perfil Deportivo
                 </button>
-                <button class="dropdown-item" (click)="goToSchoolManagement($event)">
-                  <i class="fa-solid fa-sliders"></i> Ajustes de la Escuela
-                </button>
+                @if (profileService.hasRole(['SUPER_ADMIN'])) {
+                  <button class="dropdown-item" (click)="goToSchoolManagement($event)">
+                    <i class="fa-solid fa-sliders"></i> Ajustes de la Escuela
+                  </button>
+                }
               </div>
 
               <div class="dropdown-divider"></div>

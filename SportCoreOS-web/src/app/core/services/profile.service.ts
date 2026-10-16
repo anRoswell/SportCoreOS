@@ -31,13 +31,17 @@ export class ProfileService {
   readonly isFinanzas = computed(() => this.userProfile()?.rol === 'ADMIN_FINANCIERO' || this.isDirector());
   readonly isPadre = computed(() => this.userProfile()?.rol === 'PADRE_ACUDIENTE');
 
-  openProfileModal(): void {
-    this.isProfileModalOpen.set(true);
-  }
-
-  closeProfileModal(): void {
-    this.isProfileModalOpen.set(false);
-  }
+  // Helpers computados para visibilidad de secciones en el Sidebar
+  readonly canAccessDashboard = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'ADMIN_FINANCIERO']));
+  readonly canAccessGestionDeportiva = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'ADMIN_FINANCIERO']));
+  readonly canAccessCompeticion = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'PADRE_ACUDIENTE']));
+  readonly canAccessRendimiento = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'PADRE_ACUDIENTE']));
+  readonly canAccessIA = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT']));
+  readonly canAccessFinanzas = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO']));
+  readonly canAccessInfraestructura = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT', 'PADRE_ACUDIENTE']));
+  readonly canAccessMarketing = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO']));
+  readonly canAccessPortalPadres = computed(() => this.hasRole(['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'PADRE_ACUDIENTE']));
+  readonly canAccessConfiguracion = computed(() => this.isSuperAdmin());
 
   hasRole(allowedRoles: string[]): boolean {
     const current = this.userProfile();
@@ -45,6 +49,14 @@ export class ProfileService {
     // Super Admin tiene acceso total sin restricciones
     if (current.rol === 'SUPER_ADMIN') return true;
     return allowedRoles.includes(current.rol);
+  }
+
+  openProfileModal(): void {
+    this.isProfileModalOpen.set(true);
+  }
+
+  closeProfileModal(): void {
+    this.isProfileModalOpen.set(false);
   }
 
   updateProfile(dto: UpdateProfileDto): Promise<boolean> {

@@ -23,8 +23,12 @@ export const dashboardRoutes: Routes = [
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
-    canActivate: [authGuard],
-    data: { module: 'DASHBOARD', title: 'Dashboard Principal • SportCoreOS' },
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'DASHBOARD',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'ADMIN_FINANCIERO'],
+      title: 'Dashboard Principal • SportCoreOS' 
+    },
   },
 ];
 
@@ -108,7 +112,7 @@ export const competicionRoutes: Routes = [
           import('./pages/partidos/partidos.component').then((m) => m.PartidosComponent),
         data: { 
           module: 'COMPETICION_PARTIDOS',
-          roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'PADRE_ACUDIENTE'],
           title: 'Fixture & Partidos Oficiales'
         },
       },
@@ -123,7 +127,7 @@ export const competicionRoutes: Routes = [
           import('./pages/convocatorias/convocatorias.component').then((m) => m.ConvocatoriasComponent),
         data: { 
           module: 'COMPETICION_CONVOCATORIAS',
-          roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
           title: 'Convocatorias & Citaciones'
         },
       },
@@ -136,7 +140,7 @@ export const competicionRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'COMPETICION_PARTIDOS',
-      roles: ['DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT'],
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ENTRENADOR_DT', 'PADRE_ACUDIENTE'],
       title: 'Fixture & Partidos Oficiales'
     },
   },
@@ -356,7 +360,7 @@ export const infraestructuraRoutes: Routes = [
           import('./pages/tienda/tienda.component').then((m) => m.TiendaComponent),
         data: { 
           module: 'INFRAESTRUCTURA_TIENDA',
-          roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
+          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'PADRE_ACUDIENTE'],
           title: 'Tienda Oficial & Kits Deportivos'
         },
       },
@@ -366,7 +370,7 @@ export const infraestructuraRoutes: Routes = [
           import('./pages/servicios/servicios.component').then((m) => m.ServiciosComponent),
         data: { 
           module: 'SERVICIOS_MASTERCLASSES',
-          roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT', 'SUPER_ADMIN'],
+          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
           title: 'Clínicas & Masterclasses Pro'
         },
       },
@@ -379,7 +383,7 @@ export const infraestructuraRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'INFRAESTRUCTURA_CANCHAS',
-      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
       title: 'Alquiler de Canchas & Escenarios'
     },
   },
@@ -390,7 +394,7 @@ export const infraestructuraRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'INFRAESTRUCTURA_TIENDA',
-      roles: ['DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'ENTRENADOR_DT'],
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO', 'PADRE_ACUDIENTE'],
       title: 'Tienda Oficial & Kits Deportivos'
     },
   },
@@ -484,6 +488,11 @@ export const marketingRoutes: Routes = [
 export const portalPadresRoutes: Routes = [
   {
     path: 'portal',
+    canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'PORTAL_PADRES',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'PADRE_ACUDIENTE'],
+    },
     children: [
       {
         path: '',
@@ -496,6 +505,7 @@ export const portalPadresRoutes: Routes = [
           import('./pages/portal-padres/portal-padres.component').then((m) => m.PortalPadresComponent),
         data: { 
           module: 'PORTAL_PADRES',
+          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'PADRE_ACUDIENTE'],
           title: 'Portal Móvil para Padres de Familia'
         },
       },
@@ -505,8 +515,10 @@ export const portalPadresRoutes: Routes = [
     path: 'portal-padres',
     loadComponent: () =>
       import('./pages/portal-padres/portal-padres.component').then((m) => m.PortalPadresComponent),
+    canActivate: [authGuard, roleGuard],
     data: { 
       module: 'PORTAL_PADRES',
+      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'PADRE_ACUDIENTE'],
       title: 'Portal Móvil para Padres de Familia'
     },
   },
@@ -520,6 +532,10 @@ export const configuracionSaaSRoutes: Routes = [
   {
     path: 'configuracion',
     canActivate: [authGuard, roleGuard],
+    data: { 
+      module: 'CONFIG_SAAS',
+      roles: ['SUPER_ADMIN'],
+    },
     children: [
       {
         path: '',
@@ -532,7 +548,7 @@ export const configuracionSaaSRoutes: Routes = [
           import('./pages/modulos-escuela/modulos-escuela.component').then((m) => m.ModulosEscuelaComponent),
         data: { 
           module: 'CONFIG_MODULOS_ESCUELA',
-          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+          roles: ['SUPER_ADMIN'],
           title: 'Gestión de Módulos por Escuela'
         },
       },
@@ -542,7 +558,7 @@ export const configuracionSaaSRoutes: Routes = [
           import('./pages/parametros/parametros.component').then((m) => m.ParametrosComponent),
         data: { 
           module: 'CONFIG_PARAMETROS',
-          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+          roles: ['SUPER_ADMIN'],
           title: 'Parámetros Globales del Sistema'
         },
       },
@@ -552,7 +568,7 @@ export const configuracionSaaSRoutes: Routes = [
           import('./pages/roles-permisos/roles-permisos.component').then((m) => m.RolesPermisosComponent),
         data: { 
           module: 'CONFIG_ROLES_PERMISOS',
-          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+          roles: ['SUPER_ADMIN'],
           title: 'Matriz de Roles & Permisos RBAC'
         },
       },
@@ -562,7 +578,7 @@ export const configuracionSaaSRoutes: Routes = [
           import('./pages/idiomas/idiomas.component').then((m) => m.IdiomasComponent),
         data: { 
           module: 'CONFIG_IDIOMAS',
-          roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+          roles: ['SUPER_ADMIN'],
           title: 'Centro de Idiomas & i18n'
         },
       },
@@ -575,7 +591,7 @@ export const configuracionSaaSRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'CONFIG_MODULOS_ESCUELA',
-      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+      roles: ['SUPER_ADMIN'],
       title: 'Gestión de Módulos por Escuela'
     },
   },
@@ -586,7 +602,7 @@ export const configuracionSaaSRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'CONFIG_PARAMETROS',
-      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      roles: ['SUPER_ADMIN'],
       title: 'Parámetros Globales del Sistema'
     },
   },
@@ -597,7 +613,7 @@ export const configuracionSaaSRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'CONFIG_ROLES_PERMISOS',
-      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO'],
+      roles: ['SUPER_ADMIN'],
       title: 'Matriz de Roles & Permisos RBAC'
     },
   },
@@ -608,7 +624,7 @@ export const configuracionSaaSRoutes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { 
       module: 'CONFIG_IDIOMAS',
-      roles: ['SUPER_ADMIN', 'DIRECTOR_DEPORTIVO', 'ADMIN_FINANCIERO'],
+      roles: ['SUPER_ADMIN'],
       title: 'Centro de Idiomas & i18n'
     },
   },
@@ -620,27 +636,19 @@ export const configuracionSaaSRoutes: Routes = [
 export const publicRoutes: Routes = [
   {
     path: '',
+    redirectTo: 'login',
     pathMatch: 'full',
-    loadComponent: () =>
-      import('./pages/landing-public/landing-public.component').then((m) => m.LandingPublicComponent),
-    data: { 
-      module: 'PUBLIC_LANDING_PORTADA',
-      title: 'Academia Deportiva • SportCoreOS'
-    },
   },
   {
     path: 'home',
-    loadComponent: () =>
-      import('./pages/landing-public/landing-public.component').then((m) => m.LandingPublicComponent),
-    data: { 
-      module: 'PUBLIC_LANDING_PORTADA',
-      title: 'Inicio • SportCoreOS'
-    },
+    redirectTo: 'login',
+    pathMatch: 'full',
   },
   {
     path: 'p/:slug',
     loadComponent: () =>
       import('./pages/landing-public/landing-public.component').then((m) => m.LandingPublicComponent),
+    canActivate: [authGuard],
     data: { 
       module: 'PUBLIC_LANDING',
       title: 'Academia Deportiva • SportCoreOS'
@@ -671,7 +679,7 @@ export const routes: Routes = [
   ...publicRoutes,
   {
     path: '**',
-    redirectTo: '',
+    redirectTo: 'login',
   },
 ];
 

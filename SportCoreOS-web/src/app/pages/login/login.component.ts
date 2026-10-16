@@ -47,7 +47,8 @@ export class LoginComponent implements OnInit {
         this.api.setClubFromUser(user);
         this.loading.set(false);
         this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
-        this.router.navigate(['/dashboard']);
+        const targetRoute = user.rol === 'PADRE_ACUDIENTE' ? ['/portal/padres'] : ['/dashboard'];
+        this.router.navigate(targetRoute);
       },
       error: (err) => {
         this.loading.set(false);
@@ -65,7 +66,8 @@ export class LoginComponent implements OnInit {
         this.api.setClubFromUser(user);
         this.loading.set(false);
         this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
-        this.router.navigate(['/dashboard']);
+        const targetRoute = user.rol === 'PADRE_ACUDIENTE' ? ['/portal/padres'] : ['/dashboard'];
+        this.router.navigate(targetRoute);
       },
       error: (err) => {
         this.loading.set(false);

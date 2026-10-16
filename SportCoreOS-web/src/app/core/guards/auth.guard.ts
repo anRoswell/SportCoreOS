@@ -19,7 +19,8 @@ export const loginGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (authService.isAuthenticated()) {
-    router.navigate(['/dashboard']);
+    const isPadre = authService.currentUser()?.rol === 'PADRE_ACUDIENTE';
+    router.navigate([isPadre ? '/portal/padres' : '/dashboard']);
     return false;
   }
 
