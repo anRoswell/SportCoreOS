@@ -334,8 +334,8 @@ export class ModulosEscuelaComponent implements OnInit {
   }
 
   resolveSchoolLogoUrl(): string {
-    if (this.localLogoPreview()) return this.localLogoPreview();
-    if (this.newSchoolData.logoUrl && this.newSchoolData.logoUrl.trim()) return this.newSchoolData.logoUrl;
+    if (this.localLogoPreview()) return this.api.resolveFileUrl(this.localLogoPreview());
+    if (this.newSchoolData.logoUrl && this.newSchoolData.logoUrl.trim()) return this.api.resolveFileUrl(this.newSchoolData.logoUrl);
     return this.defaultLogoUrl;
   }
 
@@ -350,7 +350,11 @@ export class ModulosEscuelaComponent implements OnInit {
   uploadLogoFile(file: File): void {
     this.uploadingLogo.set(true);
     const reader = new FileReader();
-    reader.onload = (e) => this.localLogoPreview.set(e.target?.result as string);
+    reader.onload = (e) => {
+      if (this.uploadingLogo()) {
+        this.localLogoPreview.set(e.target?.result as string);
+      }
+    };
     reader.readAsDataURL(file);
 
     const identEscuela = this.newSchoolData.sigla?.trim() || this.newSchoolData.clubNombre?.trim() || '';
@@ -358,10 +362,10 @@ export class ModulosEscuelaComponent implements OnInit {
     this.api.uploadFile(file, 'clubes', 'CLUB', undefined, 'ESCUDO', identEscuela || undefined).subscribe({
       next: (res: any) => {
         this.uploadingLogo.set(false);
-        const url = res.url || res.fullUrl || res.fileUrl;
-        if (url) {
-          this.newSchoolData.logoUrl = url;
-          this.localLogoPreview.set(res.fullUrl || url);
+        const resolved = res.fullUrl || this.api.resolveFileUrl(res.url);
+        if (resolved) {
+          this.newSchoolData.logoUrl = resolved;
+          this.localLogoPreview.set(resolved);
         }
         this.showToast('¡Escudo cargado correctamente!');
       },

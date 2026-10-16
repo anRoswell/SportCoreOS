@@ -150,7 +150,7 @@ export class ApiService {
           id: c.id,
           nombre: c.nombre,
           slug: c.slug,
-          logo: c.logo_url || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          logo: this.resolveFileUrl(c.logo_url) || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
           plan: c.plan || 'PLAN_CLUB_ELITE_PRO',
           sigla: c.sigla || 'SC',
           ciudad: c.ciudad || 'Colombia',
@@ -332,21 +332,60 @@ export class ApiService {
   }
 
   getAssetBaseUrl(): string {
+    // 1. Si estamos en el navegador en un host remoto (QA o producción), usar el origin actual
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return window.location.origin;
+    }
+    // 2. Si hay apiBaseUrl en environment y no es localhost cuando estamos en un cliente remoto
+    if (environment.apiBaseUrl && !environment.apiBaseUrl.includes('localhost')) {
+      return environment.apiBaseUrl;
+    }
+    // 3. Si apiUrl es una URL absoluta, extraer su origin
     try {
       const url = new URL(this.apiUrl);
-      return `${url.protocol}//${url.host}`;
+      if (url.origin && url.origin !== 'null') {
+        return url.origin;
+      }
     } catch {
-      return 'http://localhost:3001';
+      // Ignorar si es relativa
     }
+    // 4. Si hay apiBaseUrl en environment para entorno local
+    if (environment.apiBaseUrl) {
+      return environment.apiBaseUrl;
+    }
+    // 5. Fallback para desarrollo local
+    return typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:3001` : 'http://localhost:3001';
   }
 
   resolveFileUrl(urlOrPath: string | null | undefined): string {
     if (!urlOrPath) return '';
-    const trimmed = urlOrPath.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:image')) {
+    let trimmed = urlOrPath.trim();
+
+    // Data URI o blob object URL para previsualizaciones inmediatas
+    if (trimmed.startsWith('data:image') || trimmed.startsWith('blob:')) {
       return trimmed;
     }
+
+    // Si estamos en un host remoto y la URL almacenada contiene 'localhost:3001' o '127.0.0.1:3001',
+    // corregir dinámicamente sustituyendo por el origen actual
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      if (trimmed.includes('localhost:3001') || trimmed.includes('127.0.0.1:3001') || trimmed.includes('localhost:3000')) {
+        trimmed = trimmed.replace(/^https?:\/\/(localhost|127\.0\.0\.1):(3001|3000)/i, window.location.origin);
+      }
+    }
+
+    // Si ya es una URL absoluta externa válida HTTP o HTTPS (Unsplash, CDN, etc.)
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+
+    // Si estamos en remoto (QA o prod), usar window.location.origin
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return `${window.location.origin}${cleanPath}`;
+    }
+
     return `${this.getAssetBaseUrl()}${cleanPath}`;
   }
 

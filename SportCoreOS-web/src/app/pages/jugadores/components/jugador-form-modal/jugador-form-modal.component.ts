@@ -128,8 +128,8 @@ export class JugadorFormModalComponent {
 
   resolvePhotoUrl(fotoUrl?: string, genero?: string): string {
     const preview = this.localPhotoPreview();
-    if (preview) return preview;
-    if (fotoUrl && fotoUrl.trim()) return fotoUrl;
+    if (preview) return this.api.resolveFileUrl(preview);
+    if (fotoUrl && fotoUrl.trim()) return this.api.resolveFileUrl(fotoUrl);
     return genero === 'FEMENINO'
       ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face'
       : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face';
