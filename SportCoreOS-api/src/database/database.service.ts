@@ -83,6 +83,71 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        -- Asegurar extensiones y esquema core
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+        CREATE SCHEMA IF NOT EXISTS core;
+
+        -- Tabla de acceso a módulos por tenant (Módulos Escuela)
+        CREATE TABLE IF NOT EXISTS core.tenant_module_access (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+          modulo_codigo VARCHAR(60) NOT NULL,
+          habilitado BOOLEAN DEFAULT true,
+          fecha_inicio DATE,
+          fecha_fin DATE,
+          es_indefinido BOOLEAN DEFAULT true,
+          created_by UUID,
+          updated_by UUID,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW(),
+          CONSTRAINT uq_tenant_module_club UNIQUE (club_id, modulo_codigo)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_tenant_module_club ON core.tenant_module_access(club_id);
+
+        -- Tabla de roles y permisos (RBAC)
+        CREATE TABLE IF NOT EXISTS core.roles_permisos (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+          rol VARCHAR(60) NOT NULL,
+          modulo VARCHAR(60) NOT NULL,
+          accion VARCHAR(60) NOT NULL,
+          permitido BOOLEAN DEFAULT true,
+          nivel_acceso VARCHAR(60) DEFAULT 'ALL',
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_permisos_matrix 
+          ON core.roles_permisos (COALESCE(club_id, '00000000-0000-0000-0000-000000000000'::uuid), rol, modulo, accion);
+        CREATE INDEX IF NOT EXISTS idx_roles_permisos_rol ON core.roles_permisos (rol);
+        CREATE INDEX IF NOT EXISTS idx_roles_permisos_club ON core.roles_permisos (club_id);
+
+        -- Tabla de archivos adjuntos
+        CREATE TABLE IF NOT EXISTS core.archivos_adjuntos (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          club_id UUID NOT NULL REFERENCES core.clubes(id) ON DELETE CASCADE,
+          entidad_tipo VARCHAR(60),
+          entidad_id UUID,
+          tipo_documento VARCHAR(60) NOT NULL DEFAULT 'GENERAL',
+          nombre_original VARCHAR(255) NOT NULL,
+          nombre_almacenamiento VARCHAR(255) NOT NULL,
+          url TEXT NOT NULL,
+          mime_type VARCHAR(100),
+          tamano_bytes BIGINT NOT NULL DEFAULT 0,
+          path_almacenamiento TEXT,
+          metadata JSONB DEFAULT '{}'::jsonb,
+          subido_por UUID,
+          activo BOOLEAN NOT NULL DEFAULT true,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_archivos_club ON core.archivos_adjuntos (club_id);
+        CREATE INDEX IF NOT EXISTS idx_archivos_entidad ON core.archivos_adjuntos (entidad_tipo, entidad_id);
+        CREATE INDEX IF NOT EXISTS idx_archivos_tipo ON core.archivos_adjuntos (tipo_documento);
+
         -- Normalizar valores del plan en core.clubes a códigos estandarizados sin espacios ni tildes
         UPDATE core.clubes SET plan = 'PLAN_CLUB_ELITE_PRO' WHERE plan ILIKE '%élite%' OR plan ILIKE '%elite%' OR plan = 'Plan Club Élite Pro' OR plan = 'Plan Élite Pro';
         UPDATE core.clubes SET plan = 'PLAN_SEMILLERO_ORO' WHERE plan ILIKE '%semillero%';
@@ -105,7 +170,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         WHERE NOT EXISTS (
           SELECT 1 FROM core.parametros_sistema WHERE clave = 'PLANES_SUSCRIPCION'
         );
-      `).catch(() => {});
+      `).catch((e) => {
+        this.logger.error(`Error en inicialización de tablas DDL: ${e.message}`, e.stack);
+      });
     } catch (err: any) {
       this.isPostgresConnected = false;
       this.logger.warn(

@@ -17,21 +17,50 @@ export interface RolePermissionRow {
 export class RolesRepository {
   constructor(private readonly db: DatabaseService) {}
 
+  async ensureTableExists(): Promise<void> {
+    await this.db.query(`
+      CREATE SCHEMA IF NOT EXISTS core;
+      CREATE TABLE IF NOT EXISTS core.roles_permisos (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        club_id UUID REFERENCES core.clubes(id) ON DELETE CASCADE,
+        rol VARCHAR(60) NOT NULL,
+        modulo VARCHAR(60) NOT NULL,
+        accion VARCHAR(60) NOT NULL,
+        permitido BOOLEAN DEFAULT true,
+        nivel_acceso VARCHAR(60) DEFAULT 'ALL',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_permisos_matrix 
+        ON core.roles_permisos (COALESCE(club_id, '00000000-0000-0000-0000-000000000000'::uuid), rol, modulo, accion);
+      CREATE INDEX IF NOT EXISTS idx_roles_permisos_rol ON core.roles_permisos (rol);
+      CREATE INDEX IF NOT EXISTS idx_roles_permisos_club ON core.roles_permisos (club_id);
+    `);
+  }
+
   async findPermissionsByClubAndRole(clubId: string | null, rol?: string): Promise<RolePermissionRow[]> {
-    let query = `
-      SELECT * FROM core.roles_permisos
-      WHERE (club_id = $1 OR ($1 IS NULL AND club_id IS NULL) OR club_id IS NULL)
-    `;
-    const params: any[] = [clubId || null];
+    try {
+      let query = `
+        SELECT * FROM core.roles_permisos
+        WHERE (club_id = $1 OR ($1 IS NULL AND club_id IS NULL) OR club_id IS NULL)
+      `;
+      const params: any[] = [clubId || null];
 
-    if (rol) {
-      params.push(rol);
-      query += ` AND rol = $${params.length}`;
+      if (rol) {
+        params.push(rol);
+        query += ` AND rol = $${params.length}`;
+      }
+
+      query += ` ORDER BY rol ASC, modulo ASC, accion ASC`;
+      const res = await this.db.query(query, params);
+      return res.rows;
+    } catch (err: any) {
+      if (err.code === '42P01') {
+        await this.ensureTableExists();
+        return this.findPermissionsByClubAndRole(clubId, rol);
+      }
+      throw err;
     }
-
-    query += ` ORDER BY rol ASC, modulo ASC, accion ASC`;
-    const res = await this.db.query(query, params);
-    return res.rows;
   }
 
   async upsertPermission(
@@ -42,19 +71,27 @@ export class RolesRepository {
     permitido: boolean,
     nivelAcceso: string = 'ALL',
   ): Promise<RolePermissionRow> {
-    const res = await this.db.query(
-      `INSERT INTO core.roles_permisos (
-        club_id, rol, modulo, accion, permitido, nivel_acceso, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-      ON CONFLICT ((COALESCE(club_id, '00000000-0000-0000-0000-000000000000'::uuid)), rol, modulo, accion)
-      DO UPDATE SET
-        permitido = EXCLUDED.permitido,
-        nivel_acceso = EXCLUDED.nivel_acceso,
-        updated_at = NOW()
-      RETURNING *`,
-      [clubId || null, rol, modulo, accion, permitido, nivelAcceso],
-    );
-    return res.rows[0];
+    try {
+      const res = await this.db.query(
+        `INSERT INTO core.roles_permisos (
+          club_id, rol, modulo, accion, permitido, nivel_acceso, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        ON CONFLICT ((COALESCE(club_id, '00000000-0000-0000-0000-000000000000'::uuid)), rol, modulo, accion)
+        DO UPDATE SET
+          permitido = EXCLUDED.permitido,
+          nivel_acceso = EXCLUDED.nivel_acceso,
+          updated_at = NOW()
+        RETURNING *`,
+        [clubId || null, rol, modulo, accion, permitido, nivelAcceso],
+      );
+      return res.rows[0];
+    } catch (err: any) {
+      if (err.code === '42P01') {
+        await this.ensureTableExists();
+        return this.upsertPermission(clubId, rol, modulo, accion, permitido, nivelAcceso);
+      }
+      throw err;
+    }
   }
 
   async findUsersWithRoles(clubId: string) {
