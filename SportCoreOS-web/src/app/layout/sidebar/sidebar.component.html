@@ -13,7 +13,17 @@
       <!-- Club Activo Multi-Tenant -->
       @if (api.activeClub().id) {
         <div class="active-club-badge" [title]="api.activeClub().nombre">
-          <div class="club-avatar">{{ api.activeClub().sigla || 'SC' }}</div>
+          <div class="club-avatar" [class.has-img]="api.activeClub().logo && !logoError()">
+            @if (api.activeClub().logo && !logoError()) {
+              <img 
+                [src]="resolveLogoUrl(api.activeClub().logo)" 
+                [alt]="api.activeClub().nombre" 
+                class="club-logo-img" 
+                (error)="onLogoError($event)" />
+            } @else {
+              <span class="club-sigla-text">{{ api.activeClub().sigla || 'SC' }}</span>
+            }
+          </div>
           <div class="club-info" *ngIf="!api.sidebarCollapsed()">
             <p class="club-name">{{ api.activeClub().nombre }}</p>
             <span class="club-plan">{{ api.formatPlanNombre(api.activeClub().plan) }}</span>

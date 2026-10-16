@@ -23,8 +23,12 @@
             [title]="api.activeClub().id ? ('Escuela activa: ' + api.activeClub().nombre + (api.activeClub().ciudad ? ' (' + api.activeClub().ciudad + ')' : '')) : 'Sin conexión a base de datos o sin escuelas'"
             aria-haspopup="true"
             [attr.aria-expanded]="isOpenClubDropdown()">
-            <div class="club-icon-wrap">
-              <i class="fa-solid fa-shield-halved club-icon"></i>
+            <div class="club-icon-wrap" [class.has-img]="api.activeClub().logo">
+              @if (api.activeClub().logo) {
+                <img [src]="api.resolveFileUrl(api.activeClub().logo)" [alt]="api.activeClub().nombre" class="club-icon-img" />
+              } @else {
+                <i class="fa-solid fa-shield-halved club-icon"></i>
+              }
             </div>
             <div class="club-info-wrap">
               @if (api.activeClub().id) {

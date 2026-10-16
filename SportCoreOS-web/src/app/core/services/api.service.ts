@@ -219,7 +219,7 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/clubes/onboarding`, data).pipe(
       map((res) => res.data || res),
       tap(() => {
-        this.loadClubs();
+        this.loadClubs(true);
       })
     );
   }
@@ -233,7 +233,7 @@ export class ApiService {
           id: c.id,
           nombre: c.nombre,
           slug: c.slug,
-          logo: this.resolveFileUrl(c.logo_url) || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
+          logo: this.resolveFileUrl(c.logo_url) || '',
           plan: c.plan || 'PLAN_CLUB_ELITE_PRO',
           sigla: c.sigla || 'SC',
           ciudad: c.ciudad || 'Colombia',
@@ -249,8 +249,30 @@ export class ApiService {
   updateClub(id: string, data: any): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/clubes/${id}`, data).pipe(
       map((res) => res.data || res),
-      tap(() => {
-        this.loadClubs();
+      tap((res) => {
+        const updated = res?.data || res || {};
+        const logoResolved = (data.logoUrl || data.logo_url || updated.logo_url || updated.logo)
+          ? this.resolveFileUrl(data.logoUrl || data.logo_url || updated.logo_url || updated.logo)
+          : undefined;
+
+        if (this.activeClub().id === id) {
+          const current = this.activeClub();
+          const merged: Club = {
+            ...current,
+            nombre: data.nombre || updated.nombre || current.nombre,
+            sigla: data.sigla || updated.sigla || current.sigla,
+            ciudad: data.ciudad !== undefined ? data.ciudad : (updated.ciudad !== undefined ? updated.ciudad : current.ciudad),
+            pais: data.pais !== undefined ? data.pais : (updated.pais !== undefined ? updated.pais : current.pais),
+            plan: data.plan || updated.plan || current.plan,
+            logo: logoResolved !== undefined ? logoResolved : current.logo,
+            activo: data.activo !== undefined ? data.activo : (updated.activo !== undefined ? updated.activo : current.activo),
+          };
+          this.activeClub.set(merged);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem(environment.activeClubKey, JSON.stringify(merged));
+          }
+        }
+        this.loadClubs(true);
       })
     );
   }
@@ -259,7 +281,7 @@ export class ApiService {
     return this.http.delete<any>(`${this.apiUrl}/clubes/${id}`).pipe(
       map((res) => res.data || res),
       tap(() => {
-        this.loadClubs();
+        this.loadClubs(true);
       })
     );
   }
