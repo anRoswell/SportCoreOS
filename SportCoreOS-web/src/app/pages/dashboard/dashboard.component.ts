@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService, KPIStats, LandingPage } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive';
@@ -53,7 +53,7 @@ interface TopPlayer {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, FlatpickrDirective, LandingPublicComponent],
+  imports: [CommonModule, FormsModule, FlatpickrDirective, LandingPublicComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
