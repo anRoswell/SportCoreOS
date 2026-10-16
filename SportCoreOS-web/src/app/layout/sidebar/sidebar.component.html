@@ -84,7 +84,6 @@
             <a routerLink="/competicion/partidos" routerLinkActive="active" class="nav-item" [title]="api.sidebarCollapsed() ? 'Partidos & Fixture' : ''">
               <i class="fa-solid fa-futbol"></i>
               <span *ngIf="!api.sidebarCollapsed()">Partidos & Fixture</span>
-              <span class="nav-pill-dot" *ngIf="!api.sidebarCollapsed()" title="2 Partidos esta semana"></span>
             </a>
           }
 

@@ -155,7 +155,9 @@
               (click)="setTab('partidos')">
               <i class="fa-solid fa-futbol"></i>
               <span>Próximos Partidos & GPS</span>
-              <span class="tab-badge">2</span>
+              @if (matches().length > 0) {
+                <span class="tab-badge">{{ matches().length }}</span>
+              }
             </button>
 
             <button 
@@ -237,10 +239,14 @@
                   <div class="match-attendance-status">
                     <div class="attendance-label-row">
                       <span>Confirmación de Nómina:</span>
-                      <strong>{{ match.confirmados_count }} / {{ match.total_convocados }} Jugadores</strong>
+                      @if (match.total_convocados > 0) {
+                        <strong>{{ match.confirmados_count }} / {{ match.total_convocados }} Jugadores</strong>
+                      } @else {
+                        <span class="text-muted">Sin convocatoria asignada</span>
+                      }
                     </div>
                     <div class="kpi-progress-bar">
-                      <div class="progress-fill fill-emerald" [style.width.%]="(match.confirmados_count / match.total_convocados) * 100"></div>
+                      <div class="progress-fill fill-emerald" [style.width.%]="match.total_convocados > 0 ? (match.confirmados_count / match.total_convocados) * 100 : 0"></div>
                     </div>
                   </div>
 
@@ -256,6 +262,15 @@
                     </button>
                   </div>
                 </div>
+              } @empty {
+                <div class="fut-card empty-state">
+                  <div class="empty-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                  <h3>Sin Próximos Partidos</h3>
+                  <p>No hay partidos oficiales programados actualmente para {{ api.activeClub().nombre }}.</p>
+                  <button class="btn-primary btn-sm mt-3" (click)="openScheduleModal()">
+                    <i class="fa-solid fa-plus"></i> Programar Partido
+                  </button>
+                </div>
               }
             </div>
           </div>
@@ -267,8 +282,20 @@
             <div class="fut-card tactic-panel">
               <div class="tactic-header">
                 <div>
-                  <h3>Convocatoria Sub-15 Élite 2011 • vs Santa Fe D.C.</h3>
-                  <p class="subtext">Alineación táctica 4-3-3 • Estado de confirmación móvil en tiempo real</p>
+                  <h3>
+                    @if (matches().length > 0) {
+                      Convocatoria {{ matches()[0].categoria_nombre }} • vs {{ matches()[0].rival_nombre }}
+                    } @else {
+                      Pizarra Táctica de Convocatoria
+                    }
+                  </h3>
+                  <p class="subtext">
+                    @if (matches().length > 0) {
+                      Alineación y estado de confirmación para el próximo encuentro
+                    } @else {
+                      Plantel disponible para citaciones oficiales
+                    }
+                  </p>
                 </div>
                 <button class="btn-primary btn-sm" (click)="onSendWhatsAppCitacion()">
                   <i class="fa-brands fa-whatsapp"></i> Enviar Citaciones a Padres
@@ -321,6 +348,12 @@
                           </button>
                         </td>
                       </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                          No hay jugadores registrados en esta escuela para la convocatoria táctica.
+                        </td>
+                      </tr>
                     }
                   </tbody>
                 </table>
@@ -340,8 +373,8 @@
                 </div>
                 <div class="finance-kpis-mini">
                   <div class="mini-kpi">
-                    <span>Hoy Recaudado:</span>
-                    <strong>$1,850,000 COP</strong>
+                    <span>Recaudado Mes:</span>
+                    <strong>\${{ (stats()?.finanzas?.recaudadoMes || 0) | number:'1.0-0' }} COP</strong>
                   </div>
                 </div>
               </div>
@@ -350,7 +383,7 @@
                 <table class="fut-table">
                   <thead>
                     <tr>
-                      <th>Ref. Wompi</th>
+                      <th>Ref. Transacción</th>
                       <th>Fecha</th>
                       <th>Alumno / Acudiente</th>
                       <th>Categoría</th>
@@ -378,6 +411,12 @@
                           <button class="btn-receipt" (click)="onDownloadReceipt(tx)">
                             <i class="fa-solid fa-file-pdf"></i> PDF
                           </button>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                          No hay transacciones ni recaudos registrados para esta escuela.
                         </td>
                       </tr>
                     }
@@ -429,6 +468,12 @@
                       <div class="progress-fill fill-emerald" [style.width.%]="player.asistencia_pct"></div>
                     </div>
                   </div>
+                </div>
+              } @empty {
+                <div class="fut-card empty-state" style="grid-column: 1 / -1;">
+                  <div class="empty-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                  <h3>Sin Evaluaciones Biométricas</h3>
+                  <p>Aún no se han registrado pruebas físicas ni test de velocidad para {{ api.activeClub().nombre }}.</p>
                 </div>
               }
             </div>

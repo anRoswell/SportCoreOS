@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -85,12 +85,19 @@ export class DashboardComponent implements OnInit {
     condicion: 'LOCAL' as 'LOCAL' | 'VISITANTE',
   };
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        untracked(() => {
+          this.loadDashboardData();
+          this.loadActiveClubLanding(club.id);
+        });
+      }
+    });
+  }
 
   ngOnInit(): void {
-    this.loadDashboardData();
-    this.loadActiveClubLanding();
-
     this.route.queryParams.subscribe((params) => {
       if (params['landing'] === '1' || params['landing'] === 'true' || params['showLanding'] === 'true') {
         this.showLandingModal.set(true);
@@ -136,28 +143,30 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 3. Cargar Partidos
+    // 3. Cargar Partidos (Datos Reales desde DB)
     this.api.getPartidos().subscribe((partidos) => {
       const list = Array.isArray(partidos) ? partidos : (partidos?.data || []);
       if (list && list.length > 0) {
         const mapped: MatchItem[] = list.map((p: any) => ({
           id: p.id,
           rival_nombre: p.rival_nombre,
-          categoria_nombre: p.categoria_nombre || 'Sub-15 Élite',
-          categoria_codigo: p.codigo_categoria || 'SUB_15',
+          categoria_nombre: p.categoria_nombre || 'General',
+          categoria_codigo: p.codigo_categoria || 'GENERAL',
           fecha_partido: p.fecha_partido,
           hora_partido: p.hora_partido,
           hora_citacion: p.hora_citacion || p.hora_partido,
           sede_cancha: p.sede_cancha,
           condicion_juego: p.condicion_juego || 'LOCAL',
-          indumentaria: p.indumentaria_kit || 'Kit Titular (Esmeralda)',
-          confirmados_count: p.confirmados_count || 16,
-          total_convocados: p.total_convocados || 18,
+          indumentaria: p.indumentaria_kit || 'Uniforme Oficial',
+          confirmados_count: Number(p.confirmados_count || 0),
+          total_convocados: Number(p.total_convocados || 0),
           lat: parseFloat(p.latitud || '4.7892'),
           lng: parseFloat(p.longitud || '-74.0412'),
-          torneo: 'Torneo Oficial Liga 2026',
+          torneo: p.tipo_partido || 'Competencia Oficial',
         }));
         this.matches.set(mapped);
+      } else {
+        this.matches.set([]);
       }
     });
 
@@ -171,13 +180,15 @@ export class DashboardComponent implements OnInit {
           nombre: `${j.nombres} ${j.apellidos}`,
           posicion: j.posicion_principal || 'VOL',
           pierna: j.pierna_habil || 'Diestro',
-          peso_kg: parseFloat(j.peso_kg || '55.0'),
-          talla_cm: parseFloat(j.talla_cm || '168.0'),
+          peso_kg: parseFloat(j.peso_kg || '0'),
+          talla_cm: parseFloat(j.talla_cm || '0'),
           estado: 'CONFIRMADO',
-          avatar: j.foto_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
-          rolTactic: idx < 11 ? `${j.posicion_principal} Titular` : 'Suplente',
+          avatar: j.foto_url || '',
+          rolTactic: idx < 11 ? `${j.posicion_principal || 'Jugador'} Titular` : 'Suplente',
         }));
         this.tacticRoster.set(mappedRoster);
+      } else {
+        this.tacticRoster.set([]);
       }
     });
 
@@ -187,15 +198,17 @@ export class DashboardComponent implements OnInit {
       if (list && list.length > 0) {
         const mappedTx: TransactionItem[] = list.slice(0, 6).map((c: any, idx: number) => ({
           id: c.id,
-          codigo_transaccion: `WMP-984${200 + idx}`,
-          jugador_nombre: c.jugador_nombre,
-          categoria: c.categoria_nombre,
-          monto: parseFloat(c.monto_total || '180000'),
-          metodo: idx % 2 === 0 ? 'PSE Bancolombia' : 'Daviplata',
-          fecha: c.fecha_limite_pago || 'Hoy, 08:30 AM',
+          codigo_transaccion: c.referencia_pago || `TX-${c.id ? c.id.substring(0, 8) : idx}`,
+          jugador_nombre: c.jugador_nombre || 'Alumno',
+          categoria: c.categoria_nombre || 'General',
+          monto: parseFloat(c.monto_total || '0'),
+          metodo: c.metodo_pago || (idx % 2 === 0 ? 'PSE Bancolombia' : 'Daviplata'),
+          fecha: c.fecha_limite_pago || 'Pendiente',
           estado: c.saldo_pendiente == 0 ? 'APROBADA' : 'PENDIENTE',
         }));
         this.transactions.set(mappedTx);
+      } else {
+        this.transactions.set([]);
       }
     });
 
@@ -207,16 +220,18 @@ export class DashboardComponent implements OnInit {
           id: b.id,
           nombre: `${b.jugador_nombre} #${b.numero_dorsal || ''}`,
           dorsal: b.numero_dorsal || 10,
-          categoria: b.categoria_nombre,
-          posicion: b.posicion_principal || 'Extremo',
-          score_rendimiento: 9.4,
-          cooper_metros: b.test_cooper_metros || 2780,
-          velocidad_max: b.velocidad_30m_seg ? parseFloat((30 / b.velocidad_30m_seg * 3.6).toFixed(1)) : 31.8,
+          categoria: b.categoria_nombre || 'General',
+          posicion: b.posicion_principal || 'Jugador',
+          score_rendimiento: b.imc ? parseFloat((10 - Math.abs(21.5 - b.imc) * 0.3).toFixed(1)) : 8.5,
+          cooper_metros: b.test_cooper_metros || 0,
+          velocidad_max: b.velocidad_30m_seg ? parseFloat(((30 / b.velocidad_30m_seg) * 3.6).toFixed(1)) : 0,
           asistencia_pct: 100,
-          avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100',
+          avatar: b.foto_url || '',
           estado_medico: 'APTO',
         }));
         this.topPlayers.set(mappedTop);
+      } else {
+        this.topPlayers.set([]);
       }
     });
   }

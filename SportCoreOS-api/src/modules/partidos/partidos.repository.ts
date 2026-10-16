@@ -68,6 +68,8 @@ export class PartidosRepository extends BaseRepository {
     const queryParams = [...params, limit, offset];
     const dataRes = await this.db.query(
       `SELECT p.*, c.nombre as categoria_nombre, c.codigo_categoria,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as total_convocados,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id AND conv.estado_confirmacion = 'CONFIRMADO') as confirmados_count,
               (SELECT COUNT(*) FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as tiene_convocatoria
        FROM competicion.partidos p
        JOIN deportivo.categorias c ON c.id = p.categoria_id
@@ -88,7 +90,9 @@ export class PartidosRepository extends BaseRepository {
 
   async findDetalle(partidoId: string, clubId: string) {
     const pRes = await this.db.query(
-      `SELECT p.*, c.nombre as categoria_nombre, c.codigo_categoria
+      `SELECT p.*, c.nombre as categoria_nombre, c.codigo_categoria,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as total_convocados,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id AND conv.estado_confirmacion = 'CONFIRMADO') as confirmados_count
        FROM competicion.partidos p
        JOIN deportivo.categorias c ON c.id = p.categoria_id
        WHERE p.id = $1 AND p.club_id = $2`,
