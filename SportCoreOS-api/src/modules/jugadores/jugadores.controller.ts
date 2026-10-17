@@ -10,7 +10,9 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { JugadoresService } from './jugadores.service';
 import {
@@ -75,6 +77,35 @@ export class JugadoresController {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
     });
+  }
+
+  @Get('plantilla-excel')
+  @ApiOperation({ summary: 'Descargar plantilla oficial en Excel (.xlsx) para importación masiva de jugadores y acudientes' })
+  async descargarPlantillaExcel(@Res() res: Response) {
+    const buffer = await this.jugadoresService.generarPlantillaExcel();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_importacion_jugadores_sportcoreos.xlsx"');
+    return res.end(buffer);
+  }
+
+  @Post('importar-masivo/preview')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Visualización previa y validación de filas del archivo Excel/CSV antes de importar' })
+  async previewImportacion(
+    @CurrentUser() user: any,
+    @Body() body: { filas: any[] },
+  ) {
+    return this.jugadoresService.previewImportacionMasiva(user.clubId, body.filas || []);
+  }
+
+  @Post('importar-masivo/ejecutar')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Ejecución e inserción atómica de jugadores, categorías, acudientes y cuentas de usuario' })
+  async ejecutarImportacion(
+    @CurrentUser() user: any,
+    @Body() body: { filas: any[] },
+  ) {
+    return this.jugadoresService.ejecutarImportacionMasiva(user.clubId, body.filas || []);
   }
 
   @Get(':id')

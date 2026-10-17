@@ -487,4 +487,84 @@ export class JugadoresRepository {
       totalPages: jugadoresPaginados.totalPages,
     };
   }
+
+  async findAcudienteByDocumento(numeroDocumento: string) {
+    const res = await this.db.query(
+      `SELECT * FROM deportivo.acudientes WHERE numero_documento = $1 LIMIT 1`,
+      [numeroDocumento.trim()]
+    );
+    return res.rows[0] || null;
+  }
+
+  async findOrCreateCategoria(clubId: string, nombreCategoria: string): Promise<any> {
+    const cleanNombre = (nombreCategoria || 'General').trim();
+    const existing = await this.db.query(
+      `SELECT * FROM deportivo.categorias 
+       WHERE club_id = $1 AND LOWER(nombre) = LOWER($2)
+       LIMIT 1`,
+      [clubId, cleanNombre]
+    );
+    if (existing.rows[0]) {
+      return existing.rows[0];
+    }
+
+    const baseCode = cleanNombre
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .substring(0, 10) || 'CAT-GEN';
+    
+    const colors = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#E11D48', '#84CC16'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    const res = await this.db.query(
+      `INSERT INTO deportivo.categorias (
+        club_id, nombre, codigo_categoria, color_distintivo, activa, cupo_maximo
+      ) VALUES ($1, $2, $3, $4, true, 30)
+      RETURNING *`,
+      [clubId, cleanNombre, baseCode, color]
+    );
+    return res.rows[0];
+  }
+
+  async findUserByEmail(email: string) {
+    const res = await this.db.query(
+      `SELECT id, email, nombre, apellido, rol FROM core.usuarios WHERE LOWER(email) = LOWER($1) LIMIT 1`,
+      [email.trim()]
+    );
+    return res.rows[0] || null;
+  }
+
+  async createUserWithMembership(user: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    passwordHash: string;
+    rol: string;
+    telefono?: string;
+  }, clubId: string) {
+    const userRes = await this.db.query(
+      `INSERT INTO core.usuarios (nombre, apellido, email, password_hash, rol, telefono, activo)
+       VALUES ($1, $2, $3, $4, $5, $6, true)
+       RETURNING id, nombre, apellido, email, rol, telefono, activo, created_at`,
+      [user.nombre, user.apellido, user.email.toLowerCase().trim(), user.passwordHash, user.rol, user.telefono || null]
+    );
+    const created = userRes.rows[0];
+
+    if (clubId) {
+      await this.db.query(
+        `INSERT INTO core.membresias_club (usuario_id, club_id, rol_club, activo)
+         VALUES ($1, $2, $3, true)
+         ON CONFLICT DO NOTHING`,
+        [created.id, clubId, created.rol]
+      );
+    }
+    return created;
+  }
+
+  async updateAcudienteUsuarioId(acudienteId: string, usuarioId: string) {
+    await this.db.query(
+      `UPDATE deportivo.acudientes SET usuario_id = $1 WHERE id = $2`,
+      [usuarioId, acudienteId]
+    );
+  }
 }
