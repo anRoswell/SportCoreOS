@@ -1,84 +1,84 @@
 <div class="dashboard-page">
-      <!-- HEADER DE BIENVENIDA CON BRANDING DEPORTIVO -->
+      <!-- WELCOME HERO HEADER WITH ATHLETIC BRANDING -->
       <div class="dashboard-hero-header">
         <div class="hero-left-wrapper">
           <div class="hero-brand-emblem">
-            <img src="assets/branding/sportcore_icon.jpg" alt="SportCoreOS Logo Oficial" class="hero-official-logo" />
+            <img src="assets/branding/sportcore_icon.jpg" alt="SportCoreOS Official Logo" class="hero-official-logo" />
             <div class="emblem-pulse-ring"></div>
           </div>
           <div class="hero-left">
             <div class="club-badge-row">
-              <span class="season-badge">TEMPORADA OFICIAL 2026</span>
+              <span class="season-badge">OFFICIAL 2026 SEASON</span>
               <span class="tenant-badge"><i class="fa-solid fa-shield-halved"></i> {{ api.activeClub().nombre }}</span>
               <span class="platform-badge">
                 <i class="fa-solid fa-circle-check"></i> SportCore<strong>OS</strong> PRO
               </span>
             </div>
             <h1 class="hero-greeting">
-              ¡Hola, {{ authService.currentUser()?.nombres || 'Director' }}!
+              Welcome, {{ authService.currentUser()?.nombres || 'Director' }}!
             </h1>
             <p class="hero-subtext">
-              Panel de Control Estratégico • Visión 360° en tiempo real de plantilla, finanzas PSE y fixture.
+              Strategic Control Center • Real-time 360° overview of squad roster, online finances and official fixture.
             </p>
           </div>
         </div>
 
         <div class="hero-actions">
-          <button type="button" class="btn-landing-preview" (click)="openLandingModal()" [title]="'Ver Landing Page Oficial de ' + api.activeClub().nombre">
+          <button type="button" class="btn-landing-preview" (click)="openLandingModal()" [title]="'View Official Landing Page for ' + api.activeClub().nombre">
             <i class="fa-solid fa-globe"></i>
-            <span>Ver Landing del Club</span>
+            <span>Club Landing Page</span>
             @if (activeClubLanding()) {
               <span class="live-dot-mini"></span>
             }
           </button>
           <button class="btn-secondary" (click)="onExportReport()">
             <i class="fa-solid fa-file-pdf"></i>
-            <span>Exportar Informe 360°</span>
+            <span>Export 360° Report</span>
           </button>
           <button class="btn-primary" (click)="openScheduleModal()">
             <i class="fa-solid fa-calendar-plus"></i>
-            <span>Programar Partido</span>
+            <span>Schedule Match</span>
           </button>
         </div>
       </div>
 
-      <!-- 4 KPIS DEPORTIVOS & FINANCIEROS ULTRA PRO -->
+      <!-- 4 ATHLETIC & FINANCIAL EXECUTIVE KPIS -->
       <div class="kpi-grid">
-        <!-- KPI 1: Jugadores & Cantera -->
+        <!-- KPI 1: Players & Academy Roster -->
         <div class="fut-card kpi-card">
           <div class="kpi-top">
             <div class="kpi-icon-box bg-emerald">
               <i class="fa-solid fa-user-ninja"></i>
             </div>
-            <span class="badge badge-success">+12% Mes</span>
+            <span class="badge badge-success">+12% Month</span>
           </div>
           <div class="kpi-data">
-            <span class="kpi-label">JUGADORES ACTIVOS</span>
+            <span class="kpi-label">ACTIVE PLAYERS</span>
             <div class="kpi-value-row">
               <span class="kpi-number">{{ stats()?.jugadoresActivos || 0 }}</span>
-              <span class="kpi-unit">alumnos</span>
+              <span class="kpi-unit">students</span>
             </div>
             <div class="kpi-progress-bar">
               <div class="progress-fill fill-emerald" style="width: 88%;"></div>
             </div>
             <div class="kpi-footer-detail">
-              <span><strong>{{ stats()?.jugadoresActivos || 0 }}</strong> matriculados</span>
-              <span><strong>{{ stats()?.jugadoresLesionados || 0 }}</strong> en recuperación</span>
-              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> categorías</span>
+              <span><strong>{{ stats()?.jugadoresActivos || 0 }}</strong> enrolled</span>
+              <span><strong>{{ stats()?.jugadoresLesionados || 0 }}</strong> in recovery</span>
+              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> categories</span>
             </div>
           </div>
         </div>
 
-        <!-- KPI 2: Recaudo PSE / Wompi -->
+        <!-- KPI 2: Tuition Collections / Gateway -->
         <div class="fut-card kpi-card">
           <div class="kpi-top">
             <div class="kpi-icon-box bg-blue">
               <i class="fa-solid fa-sack-dollar"></i>
             </div>
-            <span class="badge badge-blue">{{ stats()?.finanzas?.porcentajeRecaudo || 0 }}% Efectivo</span>
+            <span class="badge badge-blue">{{ stats()?.finanzas?.porcentajeRecaudo || 0 }}% Collected</span>
           </div>
           <div class="kpi-data">
-            <span class="kpi-label">RECAUDO MES (PENSIONES)</span>
+            <span class="kpi-label">MONTHLY REVENUE (TUITIONS)</span>
             <div class="kpi-value-row">
               <span class="kpi-number">$ {{ (stats()?.finanzas?.recaudadoMes || 0) | number }}</span>
               <span class="kpi-unit">COP</span>
@@ -87,24 +87,24 @@
               <div class="progress-fill fill-blue" [style.width.%]="stats()?.finanzas?.porcentajeRecaudo || 0"></div>
             </div>
             <div class="kpi-footer-detail">
-              <span>Facturado: <strong>$ {{ (stats()?.finanzas?.facturadoMes || 0) | number }}</strong></span>
-              <span>Vía: <strong>PSE / Wompi</strong></span>
+              <span>Billed: <strong>$ {{ (stats()?.finanzas?.facturadoMes || 0) | number }}</strong></span>
+              <span>Via: <strong>Online Gateway</strong></span>
             </div>
           </div>
         </div>
 
-        <!-- KPI 3: Cartera Morosa & Cobranza -->
+        <!-- KPI 3: Overdue Balances & Collections -->
         <div class="fut-card kpi-card">
           <div class="kpi-top">
             <div class="kpi-icon-box bg-amber">
               <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <button class="badge-action-btn" (click)="onSendBulkReminders()" title="Enviar recordatorio WhatsApp">
-              <i class="fa-brands fa-whatsapp"></i> Cobrar
+            <button class="badge-action-btn" (click)="onSendBulkReminders()" title="Send WhatsApp payment reminders">
+              <i class="fa-brands fa-whatsapp"></i> Collect
             </button>
           </div>
           <div class="kpi-data">
-            <span class="kpi-label">CARTERA EN MORA</span>
+            <span class="kpi-label">OVERDUE BALANCES</span>
             <div class="kpi-value-row">
               <span class="kpi-number text-amber">$ {{ (stats()?.finanzas?.carteraMora || 0) | number }}</span>
               <span class="kpi-unit">COP</span>
@@ -113,39 +113,39 @@
               <div class="progress-fill fill-amber" style="width: 15%;"></div>
             </div>
             <div class="kpi-footer-detail">
-              <span>Cobranza: <strong>WhatsApp PSE</strong></span>
-              <span><strong>Auto-recordatorio:</strong> ON</span>
+              <span>Collections: <strong>WhatsApp Pay</strong></span>
+              <span><strong>Auto-reminder:</strong> ON</span>
             </div>
           </div>
         </div>
 
-        <!-- KPI 4: Convocatorias & Asistencia -->
+        <!-- KPI 4: Fixture & Call-ups -->
         <div class="fut-card kpi-card">
           <div class="kpi-top">
             <div class="kpi-icon-box bg-purple">
               <i class="fa-solid fa-trophy"></i>
             </div>
-            <span class="badge badge-success">Fixture Oficial</span>
+            <span class="badge badge-success">Official Fixture</span>
           </div>
           <div class="kpi-data">
-            <span class="kpi-label">EFICACIA & CITACIONES</span>
+            <span class="kpi-label">EFFICIENCY & CALL-UPS</span>
             <div class="kpi-value-row">
               <span class="kpi-number">{{ matches().length }}</span>
-              <span class="kpi-unit">partidos programados</span>
+              <span class="kpi-unit">scheduled matches</span>
             </div>
             <div class="kpi-progress-bar">
               <div class="progress-fill fill-purple" style="width: 96.4%;"></div>
             </div>
             <div class="kpi-footer-detail">
-              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> categorías activas</span>
-              <span><strong>100%</strong> monitoreado</span>
+              <span><strong>{{ stats()?.totalCategorias || 0 }}</strong> active categories</span>
+              <span><strong>100%</strong> tracked</span>
             </div>
           </div>
         </div>
       </div>
 
 
-      <!-- TABS NAVEGABLES DEL DASHBOARD -->
+      <!-- DASHBOARD NAVIGATION TABS -->
       <div class="dashboard-tabs-section">
         <div class="tabs-header">
           <div class="tabs-buttons">
@@ -154,7 +154,7 @@
               [class.active]="activeTab() === 'partidos'" 
               (click)="setTab('partidos')">
               <i class="fa-solid fa-futbol"></i>
-              <span>Próximos Partidos & GPS</span>
+              <span>Upcoming Matches & GPS</span>
               @if (matches().length > 0) {
                 <span class="tab-badge">{{ matches().length }}</span>
               }
@@ -165,7 +165,7 @@
               [class.active]="activeTab() === 'convocatoria'" 
               (click)="setTab('convocatoria')">
               <i class="fa-solid fa-clipboard-user"></i>
-              <span>Pizarra Táctica Express</span>
+              <span>Express Tactical Board</span>
             </button>
 
             <button 
@@ -173,7 +173,7 @@
               [class.active]="activeTab() === 'recaudo'" 
               (click)="setTab('recaudo')">
               <i class="fa-solid fa-receipt"></i>
-              <span>Monitor Recaudo PSE en Vivo</span>
+              <span>Live Revenue Monitor</span>
               <span class="tab-badge-live">LIVE</span>
             </button>
 
@@ -182,12 +182,12 @@
               [class.active]="activeTab() === 'biometria'" 
               (click)="setTab('biometria')">
               <i class="fa-solid fa-heart-pulse"></i>
-              <span>Radar Físico & Médica</span>
+              <span>Physical Radar & Medical</span>
             </button>
           </div>
         </div>
 
-        <!-- CONTENIDO TAB 1: PRÓXIMOS PARTIDOS & SEDE GPS -->
+        <!-- TAB 1 CONTENT: UPCOMING MATCHES & GPS VENUE -->
         @if (activeTab() === 'partidos') {
           <div class="tab-content-pane">
             <div class="matches-grid">
@@ -197,7 +197,7 @@
                   <div class="match-card-top">
                     <div class="category-pill">{{ match.categoria_nombre }}</div>
                     <span class="badge" [class.badge-blue]="match.condicion_juego === 'LOCAL'" [class.badge-warning]="match.condicion_juego === 'VISITANTE'">
-                      {{ match.condicion_juego }}
+                      {{ match.condicion_juego === 'LOCAL' ? 'HOME' : 'AWAY' }}
                     </span>
                   </div>
 
@@ -223,11 +223,11 @@
                   <div class="match-details-box">
                     <div class="detail-row">
                       <i class="fa-regular fa-calendar text-emerald"></i>
-                      <span><strong>Fecha:</strong> {{ match.fecha_partido }} (Citación: {{ match.hora_citacion }})</span>
+                      <span><strong>Date:</strong> {{ match.fecha_partido }} (Call-up: {{ match.hora_citacion }})</span>
                     </div>
                     <div class="detail-row">
                       <i class="fa-solid fa-location-dot text-amber"></i>
-                      <span><strong>Sede:</strong> {{ match.sede_cancha }}</span>
+                      <span><strong>Venue:</strong> {{ match.sede_cancha }}</span>
                     </div>
                     <div class="detail-row">
                       <i class="fa-solid fa-shirt text-blue"></i>
@@ -238,11 +238,11 @@
                   <!-- Progress of attendance -->
                   <div class="match-attendance-status">
                     <div class="attendance-label-row">
-                      <span>Confirmación de Nómina:</span>
+                      <span>Roster Attendance Confirmation:</span>
                       @if (match.total_convocados > 0) {
-                        <strong>{{ match.confirmados_count }} / {{ match.total_convocados }} Jugadores</strong>
+                        <strong>{{ match.confirmados_count }} / {{ match.total_convocados }} Players</strong>
                       } @else {
-                        <span class="text-muted">Sin convocatoria asignada</span>
+                        <span class="text-muted">No call-up roster assigned yet</span>
                       }
                     </div>
                     <div class="kpi-progress-bar">
@@ -254,21 +254,21 @@
                   <div class="match-actions">
                     <button class="btn-gps" (click)="openGpsRoute(match)">
                       <i class="fa-solid fa-route"></i>
-                      <span>Ruta GPS (Waze / Maps)</span>
+                      <span>GPS Route (Waze / Maps)</span>
                     </button>
                     <button class="btn-roster" (click)="setTab('convocatoria')">
                       <i class="fa-solid fa-users-viewfinder"></i>
-                      <span>Ver Nómina</span>
+                      <span>View Squad List</span>
                     </button>
                   </div>
                 </div>
               } @empty {
                 <div class="fut-card empty-state">
                   <div class="empty-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
-                  <h3>Sin Próximos Partidos</h3>
-                  <p>No hay partidos oficiales programados actualmente para {{ api.activeClub().nombre }}.</p>
+                  <h3>No Upcoming Matches</h3>
+                  <p>There are no official matches currently scheduled for {{ api.activeClub().nombre }}.</p>
                   <button class="btn-primary btn-sm mt-3" (click)="openScheduleModal()">
-                    <i class="fa-solid fa-plus"></i> Programar Partido
+                    <i class="fa-solid fa-plus"></i> Schedule Match
                   </button>
                 </div>
               }
@@ -276,11 +276,11 @@
           </div>
         }
 
-        <!-- CONTENIDO TAB 2: PIZARRA TÁCTICA EXPRESS -->
+        <!-- TAB 2 CONTENT: EXPRESS TACTICAL BOARD -->
         @if (activeTab() === 'convocatoria') {
           <div class="tab-content-pane">
             <div class="fut-card tactic-panel">
-              <!-- HEADER Y BARRA DE HERRAMIENTAS TÁCTICA -->
+              <!-- TACTICAL HEADER & TOOLBAR -->
               <div class="tactic-header">
                 <div class="tactic-title-wrap">
                   <div class="tactic-icon-badge">
@@ -289,53 +289,53 @@
                   <div>
                     <h3>
                       @if (matches().length > 0) {
-                        Pizarra Táctica • vs {{ matches()[0].rival_nombre }} ({{ matches()[0].categoria_nombre }})
+                        Tactical Board • vs {{ matches()[0].rival_nombre }} ({{ matches()[0].categoria_nombre }})
                       } @else {
-                        Pizarra Táctica Express & Convocatoria
+                        Express Tactical Board & Call-up
                       }
                     </h3>
                     <p class="subtext">
-                      Alineación titular interactiva, esquema táctico y confirmación en tiempo real
+                      Interactive starting XI, tactical formation and real-time attendance confirmation
                     </p>
                   </div>
                 </div>
 
                 <div class="tactic-actions-bar">
-                  <!-- SELECTOR DE VISTAS (CANCHA / LISTA / TARJETAS) -->
-                  <div class="view-mode-toggle" role="group" aria-label="Modo de vista">
+                  <!-- VIEW SELECTOR (PITCH / LIST / CARDS) -->
+                  <div class="view-mode-toggle" role="group" aria-label="View mode">
                     <button 
                       type="button" 
                       class="view-btn" 
                       [class.active]="tacticView() === 'cancha'" 
                       (click)="setTacticView('cancha')" 
-                      title="Vista Cancha Táctica 2D">
+                      title="2D Tactical Pitch View">
                       <i class="fa-solid fa-futbol"></i>
-                      <span>Cancha</span>
+                      <span>Pitch</span>
                     </button>
                     <button 
                       type="button" 
                       class="view-btn" 
                       [class.active]="tacticView() === 'lista'" 
                       (click)="setTacticView('lista')" 
-                      title="Vista Nómina en Lista">
+                      title="Roster List View">
                       <i class="fa-solid fa-table-list"></i>
-                      <span>Lista</span>
+                      <span>List</span>
                     </button>
                     <button 
                       type="button" 
                       class="view-btn" 
                       [class.active]="tacticView() === 'tarjetas'" 
                       (click)="setTacticView('tarjetas')" 
-                      title="Vista Tarjetas de Plantel">
+                      title="Squad Cards View">
                       <i class="fa-solid fa-id-card"></i>
-                      <span>Tarjetas</span>
+                      <span>Cards</span>
                     </button>
                   </div>
 
-                  <!-- SELECTOR DE FORMACIÓN (VISIBLE SI ES VISTA CANCHA) -->
+                  <!-- FORMATION SELECTOR (VISIBLE IN PITCH VIEW) -->
                   @if (tacticView() === 'cancha') {
                     <div class="formation-selector">
-                      <label><i class="fa-solid fa-chess-board"></i> Esquema:</label>
+                      <label><i class="fa-solid fa-chess-board"></i> Formation:</label>
                       <select [ngModel]="selectedFormation()" (ngModelChange)="setFormation($event)" class="formation-select">
                         @for (f of availableFormations; track f) {
                           <option [value]="f">{{ f }}</option>
@@ -344,96 +344,98 @@
                     </div>
                   }
 
-                  <!-- BOTÓN CITACIONES WHATSAPP -->
+                  <!-- WHATSAPP CALL-UPS BUTTON -->
                   <button class="btn-primary btn-sm btn-whatsapp-cit" (click)="onSendWhatsAppCitacion()">
-                    <i class="fa-brands fa-whatsapp"></i> <span>Citaciones Masivas</span>
+                    <i class="fa-brands fa-whatsapp"></i> <span>Bulk Call-ups</span>
                   </button>
                 </div>
               </div>
 
               <!-- ============================================================= -->
-              <!-- VISTA 1: CANCHA TÁCTICA 2D INTERACTIVA -->
+              <!-- VIEW 1: INTERACTIVE 2D TACTICAL PITCH -->
               <!-- ============================================================= -->
               @if (tacticView() === 'cancha') {
                 <div class="tactical-pitch-wrapper">
-                  <!-- Barra informativa superior de cancha -->
+                  <!-- Top pitch meta bar -->
                   <div class="pitch-meta-top">
                     <div class="formation-badge-chip">
                       <i class="fa-solid fa-shield-halved"></i>
-                      <span>Formación: <strong>{{ selectedFormation() }}</strong></span>
+                      <span>Formation: <strong>{{ selectedFormation() }}</strong></span>
                     </div>
 
                     <div class="pitch-legend">
-                      <span class="legend-item"><span class="dot dot-por"></span> POR</span>
+                      <span class="legend-item"><span class="dot dot-por"></span> GK</span>
                       <span class="legend-item"><span class="dot dot-def"></span> DEF</span>
-                      <span class="legend-item"><span class="dot dot-med"></span> MED</span>
-                      <span class="legend-item"><span class="dot dot-del"></span> DEL</span>
+                      <span class="legend-item"><span class="dot dot-med"></span> MID</span>
+                      <span class="legend-item"><span class="dot dot-del"></span> FWD</span>
                     </div>
 
                     <div class="pitch-instructions">
-                      <i class="fa-solid fa-hand-pointer"></i> Toca o posa el cursor sobre un jugador para ver su ficha
+                      <i class="fa-solid fa-hand-pointer"></i> Hover or click any player token to view profile
                     </div>
                   </div>
 
-                  <!-- CAMPO DE FÚTBOL 2D -->
+                  <!-- 2D SOCCER PITCH -->
                   <div class="soccer-pitch-field">
-                    <!-- SVG LÍNEAS REGLAMENTARIAS -->
-                    <svg class="pitch-svg-lines" viewBox="0 0 500 700" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="grass-stripes" x1="0" y1="0" x2="0" y2="100%" gradientUnits="userSpaceOnUse">
-                          <stop offset="0%" stop-color="#0c4f34" />
-                          <stop offset="10%" stop-color="#0e593c" />
-                          <stop offset="20%" stop-color="#0c4f34" />
-                          <stop offset="30%" stop-color="#0e593c" />
-                          <stop offset="40%" stop-color="#0c4f34" />
-                          <stop offset="50%" stop-color="#0e593c" />
-                          <stop offset="60%" stop-color="#0c4f34" />
-                          <stop offset="70%" stop-color="#0e593c" />
-                          <stop offset="80%" stop-color="#0c4f34" />
-                          <stop offset="90%" stop-color="#0e593c" />
-                          <stop offset="100%" stop-color="#0c4f34" />
-                        </linearGradient>
-                      </defs>
-                      <rect width="500" height="700" fill="url(#grass-stripes)" rx="16" />
+                    <!-- TURF AND LINES -->
+                    <div class="pitch-turf-canvas">
+                      <svg class="pitch-svg-lines" viewBox="0 0 500 700" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="grass-stripes" x1="0" y1="0" x2="0" y2="100%" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#0c4f34" />
+                            <stop offset="10%" stop-color="#0e593c" />
+                            <stop offset="20%" stop-color="#0c4f34" />
+                            <stop offset="30%" stop-color="#0e593c" />
+                            <stop offset="40%" stop-color="#0c4f34" />
+                            <stop offset="50%" stop-color="#0e593c" />
+                            <stop offset="60%" stop-color="#0c4f34" />
+                            <stop offset="70%" stop-color="#0e593c" />
+                            <stop offset="80%" stop-color="#0c4f34" />
+                            <stop offset="90%" stop-color="#0e593c" />
+                            <stop offset="100%" stop-color="#0c4f34" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="500" height="700" fill="url(#grass-stripes)" rx="16" />
 
-                      <!-- Línea de banda exterior -->
-                      <rect x="25" y="25" width="450" height="650" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" rx="6" />
+                        <!-- Outer sideline -->
+                        <rect x="25" y="25" width="450" height="650" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" rx="6" />
 
-                      <!-- Línea de medio campo -->
-                      <line x1="25" y1="350" x2="475" y2="350" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <circle cx="250" cy="350" r="60" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <circle cx="250" cy="350" r="4" fill="#ffffff" stroke-opacity="0.8" />
+                        <!-- Midfield line -->
+                        <line x1="25" y1="350" x2="475" y2="350" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <circle cx="250" cy="350" r="60" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <circle cx="250" cy="350" r="4" fill="#ffffff" stroke-opacity="0.8" />
 
-                      <!-- ÁREA RIVAL (ARRIBA) -->
-                      <rect x="130" y="25" width="240" height="110" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <rect x="185" y="25" width="130" height="40" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                      <circle cx="250" cy="90" r="3.5" fill="#ffffff" stroke-opacity="0.8" />
-                      <path d="M 200 135 A 55 55 0 0 0 300 135" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <rect x="200" y="10" width="100" height="15" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-opacity="0.75" stroke-width="2" />
+                        <!-- OPPONENT AREA (TOP) -->
+                        <rect x="130" y="25" width="240" height="110" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <rect x="185" y="25" width="130" height="40" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                        <circle cx="250" cy="90" r="3.5" fill="#ffffff" stroke-opacity="0.8" />
+                        <path d="M 200 135 A 55 55 0 0 0 300 135" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <rect x="200" y="10" width="100" height="15" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-opacity="0.75" stroke-width="2" />
 
-                      <!-- NUESTRA ÁREA (ABAJO) -->
-                      <rect x="130" y="565" width="240" height="110" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <rect x="185" y="635" width="130" height="40" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                      <circle cx="250" cy="610" r="3.5" fill="#ffffff" stroke-opacity="0.8" />
-                      <path d="M 200 565 A 55 55 0 0 1 300 565" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
-                      <rect x="200" y="675" width="100" height="15" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-opacity="0.75" stroke-width="2" />
+                        <!-- OUR GOAL AREA (BOTTOM) -->
+                        <rect x="130" y="565" width="240" height="110" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <rect x="185" y="635" width="130" height="40" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                        <circle cx="250" cy="610" r="3.5" fill="#ffffff" stroke-opacity="0.8" />
+                        <path d="M 200 565 A 55 55 0 0 1 300 565" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+                        <rect x="200" y="675" width="100" height="15" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-opacity="0.75" stroke-width="2" />
 
-                      <!-- Córners -->
-                      <path d="M 25 45 A 20 20 0 0 0 45 25" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                      <path d="M 455 25 A 20 20 0 0 0 475 45" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                      <path d="M 25 655 A 20 20 0 0 1 45 675" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                      <path d="M 455 675 A 20 20 0 0 1 475 655" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
-                    </svg>
+                        <!-- Corners -->
+                        <path d="M 25 45 A 20 20 0 0 0 45 25" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                        <path d="M 455 25 A 20 20 0 0 0 475 45" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                        <path d="M 25 655 A 20 20 0 0 1 45 675" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                        <path d="M 455 675 A 20 20 0 0 1 475 655" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2" />
+                      </svg>
+                    </div>
 
-                    <!-- LABELS ZONA TÁCTICA -->
+                    <!-- TACTICAL ZONE LABELS -->
                     <div class="pitch-side-label pitch-label-top">
-                      <i class="fa-solid fa-bullseye"></i> ZONA DE ATAQUE / ARCO RIVAL
+                      <i class="fa-solid fa-bullseye"></i> ATTACK ZONE / OPPONENT GOAL
                     </div>
                     <div class="pitch-side-label pitch-label-bottom">
-                      <i class="fa-solid fa-shield-heart"></i> NUESTRA PORTERÍA / ZONA DEFENSIVA
+                      <i class="fa-solid fa-shield-heart"></i> OUR GOAL / DEFENSIVE ZONE
                     </div>
 
-                    <!-- FICHAS DE JUGADORES TITULARES -->
+                    <!-- STARTING XI PLAYER TOKENS -->
                     @for (player of pitchPlayers(); track player.id) {
                       <div 
                         class="pitch-player-token"
@@ -448,7 +450,7 @@
                         (mouseleave)="hoveredTacticPlayer.set(null)"
                         (click)="openPlayerModal(player)">
                         
-                        <!-- Token circular con dorsal -->
+                        <!-- Circular token with jersey number -->
                         <div class="token-disc">
                           <span class="token-dorsal">{{ player.dorsal }}</span>
                           @if (player.isAssigned) {
@@ -462,31 +464,42 @@
                           }
                         </div>
 
-                        <!-- Etiqueta con posición y nombre corto -->
+                        <!-- Label with tactical role & short name -->
                         <div class="token-label">
                           <span class="token-pos">{{ player.role }}</span>
                           <span class="token-name">{{ getShortName(player.nombre) }}</span>
                         </div>
 
-                        <!-- PREVIEW FLOTANTE EN HOVER -->
+                        <!-- FLOATING HOVER / TOUCH PREVIEW (POPS OUT OF FIELD CLEANLY) -->
                         @if (hoveredTacticPlayer()?.id === player.id && player.isAssigned) {
-                          <div class="pitch-player-tooltip">
+                          <div 
+                            class="pitch-player-tooltip"
+                            [class.tooltip-down]="player.y < 35"
+                            [class.tooltip-up]="player.y >= 35"
+                            [class.align-left]="player.x < 30"
+                            [class.align-right]="player.x > 70"
+                            (click)="$event.stopPropagation(); openPlayerModal(player)">
                             <div class="tooltip-header">
                               <span class="tooltip-dorsal">#{{ player.dorsal }}</span>
-                              <strong>{{ player.nombre }}</strong>
+                              <strong class="tooltip-name">{{ player.nombre }}</strong>
                             </div>
                             <div class="tooltip-meta">
-                              <span><i class="fa-solid fa-bullseye"></i> {{ player.posicion }} ({{ player.role }})</span>
-                              <span><i class="fa-solid fa-shoe-prints"></i> {{ player.pierna }}</span>
+                              <span><i class="fa-solid fa-shield-halved text-emerald"></i> {{ player.posicion }} ({{ player.role }})</span>
+                              <span><i class="fa-solid fa-shoe-prints text-blue"></i> Foot: {{ player.pierna }}</span>
                               @if (player.talla_cm) {
-                                <span><i class="fa-solid fa-ruler-vertical"></i> {{ player.talla_cm }} cm</span>
+                                <span><i class="fa-solid fa-ruler-vertical text-amber"></i> Height: {{ player.talla_cm }} cm</span>
                               }
                             </div>
                             <div class="tooltip-status">
                               <span class="badge badge-sm" [class.badge-success]="player.estado === 'CONFIRMADO'" [class.badge-warning]="player.estado === 'PENDIENTE'" [class.badge-danger]="player.estado === 'EXCUSADO'">
-                                {{ player.estado }}
+                                <i class="fa-solid fa-circle-check mr-1" *ngIf="player.estado === 'CONFIRMADO'"></i>
+                                <i class="fa-regular fa-clock mr-1" *ngIf="player.estado === 'PENDIENTE'"></i>
+                                <i class="fa-solid fa-circle-xmark mr-1" *ngIf="player.estado === 'EXCUSADO'"></i>
+                                {{ player.estado === 'CONFIRMADO' ? 'Confirmed' : player.estado === 'PENDIENTE' ? 'Pending' : 'Excused' }}
                               </span>
-                              <small>Toca para ver ficha completa</small>
+                              <span class="tooltip-hint">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> View full profile
+                              </span>
                             </div>
                           </div>
                         }
@@ -494,11 +507,42 @@
                     }
                   </div>
 
-                  <!-- BANQUILLO DE SUPLENTES DISPONIBLES -->
+                  <!-- ACTIVE PLAYER QUICK STRIP -->
+                  @if (hoveredTacticPlayer() && hoveredTacticPlayer()?.isAssigned) {
+                    <div class="active-player-strip" (click)="openPlayerModal(hoveredTacticPlayer())">
+                      <div class="strip-left">
+                        <div class="strip-dorsal">#{{ hoveredTacticPlayer()?.dorsal }}</div>
+                        <div class="strip-details">
+                          <div class="strip-name-row">
+                            <strong>{{ hoveredTacticPlayer()?.nombre }}</strong>
+                            <span class="badge badge-sm" 
+                              [class.badge-success]="hoveredTacticPlayer()?.estado === 'CONFIRMADO'" 
+                              [class.badge-warning]="hoveredTacticPlayer()?.estado === 'PENDIENTE'" 
+                              [class.badge-danger]="hoveredTacticPlayer()?.estado === 'EXCUSADO'">
+                              {{ hoveredTacticPlayer()?.estado === 'CONFIRMADO' ? 'Confirmed' : hoveredTacticPlayer()?.estado === 'PENDIENTE' ? 'Pending' : 'Excused' }}
+                            </span>
+                          </div>
+                          <div class="strip-meta">
+                            <span><i class="fa-solid fa-shield-halved text-emerald"></i> {{ hoveredTacticPlayer()?.posicion }} ({{ hoveredTacticPlayer()?.role }})</span>
+                            <span><i class="fa-solid fa-shoe-prints text-blue"></i> {{ hoveredTacticPlayer()?.pierna }}</span>
+                            @if (hoveredTacticPlayer()?.talla_cm) {
+                              <span><i class="fa-solid fa-ruler-vertical text-amber"></i> {{ hoveredTacticPlayer()?.talla_cm }} cm</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-strip-cta">
+                        <span>View Full Profile</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  }
+
+                  <!-- SUBSTITUTES BENCH -->
                   <div class="bench-substitutes-card">
                     <div class="bench-header">
-                      <h4><i class="fa-solid fa-chair text-emerald"></i> Banquillo de Suplentes ({{ benchPlayers().length }} Disponibles)</h4>
-                      <span class="bench-hint">Haz clic en cualquier suplente para ver su ficha técnica</span>
+                      <h4><i class="fa-solid fa-chair text-emerald"></i> Substitutes Bench ({{ benchPlayers().length }} Available)</h4>
+                      <span class="bench-hint">Click any substitute to view their tactical card</span>
                     </div>
 
                     <div class="bench-players-grid">
@@ -515,7 +559,7 @@
                         </div>
                       } @empty {
                         <div class="bench-empty">
-                          <i class="fa-solid fa-users-slash"></i> No hay suplentes adicionales convocados.
+                          <i class="fa-solid fa-users-slash"></i> No additional substitutes called up.
                         </div>
                       }
                     </div>
@@ -524,20 +568,20 @@
               }
 
               <!-- ============================================================= -->
-              <!-- VISTA 2: NÓMINA EN LISTA TABULAR -->
+              <!-- VIEW 2: ROSTER LIST IN TABULAR FORMAT -->
               <!-- ============================================================= -->
               @if (tacticView() === 'lista') {
                 <div class="roster-table-container">
                   <table class="fut-table">
                     <thead>
                       <tr>
-                        <th>Dorsal</th>
-                        <th>Jugador</th>
-                        <th>Posición</th>
-                        <th>Pierna</th>
-                        <th>Biometría</th>
-                        <th>Estado Citación</th>
-                        <th>Acción</th>
+                        <th>Jersey</th>
+                        <th>Player</th>
+                        <th>Position</th>
+                        <th>Foot</th>
+                        <th>Biometrics</th>
+                        <th>Call-up Status</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -560,15 +604,15 @@
                           <td>{{ jugador.peso_kg }} kg • {{ jugador.talla_cm }} cm</td>
                           <td>
                             @if (jugador.estado === 'CONFIRMADO') {
-                              <span class="badge badge-success"><i class="fa-solid fa-check"></i> Confirmado</span>
+                              <span class="badge badge-success"><i class="fa-solid fa-check"></i> Confirmed</span>
                             } @else if (jugador.estado === 'PENDIENTE') {
-                              <span class="badge badge-warning"><i class="fa-regular fa-clock"></i> Pendiente</span>
+                              <span class="badge badge-warning"><i class="fa-regular fa-clock"></i> Pending</span>
                             } @else {
-                              <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Excusado</span>
+                              <span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Excused</span>
                             }
                           </td>
                           <td>
-                            <button class="btn-toggle-status" (click)="$event.stopPropagation(); togglePlayerStatus(jugador)" title="Cambiar Estado">
+                            <button class="btn-toggle-status" (click)="$event.stopPropagation(); togglePlayerStatus(jugador)" title="Toggle Status">
                               <i class="fa-solid fa-rotate"></i>
                             </button>
                           </td>
@@ -576,7 +620,7 @@
                       } @empty {
                         <tr>
                           <td colspan="7" class="text-center py-4 text-muted">
-                            No hay jugadores registrados en esta escuela para la convocatoria táctica.
+                            No players registered in this academy for the tactical call-up.
                           </td>
                         </tr>
                       }
@@ -586,7 +630,7 @@
               }
 
               <!-- ============================================================= -->
-              <!-- VISTA 3: TARJETAS VISUALES DE PLANTEL -->
+              <!-- VIEW 3: VISUAL SQUAD CARDS -->
               <!-- ============================================================= -->
               @if (tacticView() === 'tarjetas') {
                 <div class="tactic-cards-grid">
@@ -621,10 +665,10 @@
 
                         <div class="card-footer-action">
                           <span class="badge badge-sm" [class.badge-success]="jugador.estado === 'CONFIRMADO'" [class.badge-warning]="jugador.estado === 'PENDIENTE'" [class.badge-danger]="jugador.estado === 'EXCUSADO'">
-                            {{ jugador.estado }}
+                            {{ jugador.estado === 'CONFIRMADO' ? 'Confirmed' : jugador.estado === 'PENDIENTE' ? 'Pending' : 'Excused' }}
                           </span>
-                          <button class="btn-card-inspect" title="Ver Ficha Completa">
-                            <i class="fa-solid fa-id-badge"></i> Ver Ficha
+                          <button class="btn-card-inspect" title="View Full Profile">
+                            <i class="fa-solid fa-id-badge"></i> View Profile
                           </button>
                         </div>
                       </div>
@@ -632,7 +676,7 @@
                   } @empty {
                     <div class="empty-cards-state">
                       <i class="fa-solid fa-users-slash"></i>
-                      <p>No hay jugadores disponibles en la plantilla.</p>
+                      <p>No players available in the squad.</p>
                     </div>
                   }
                 </div>
@@ -641,18 +685,18 @@
           </div>
         }
 
-        <!-- CONTENIDO TAB 3: MONITOR DE RECAUDO PSE EN VIVO -->
+        <!-- TAB 3 CONTENT: LIVE REVENUE MONITOR -->
         @if (activeTab() === 'recaudo') {
           <div class="tab-content-pane">
             <div class="fut-card finance-panel">
               <div class="finance-header">
                 <div>
-                  <h3>Flujo de Transacciones PSE / Wompi Recientes</h3>
-                  <p class="subtext">Conciliación bancaria automática con expedición instantánea de recibos de caja</p>
+                  <h3>Recent Payment & Tuition Transactions</h3>
+                  <p class="subtext">Automated bank reconciliation with instant digital receipt generation</p>
                 </div>
                 <div class="finance-kpis-mini">
                   <div class="mini-kpi">
-                    <span>Recaudado Mes:</span>
+                    <span>Month Revenue:</span>
                     <strong>\${{ (stats()?.finanzas?.recaudadoMes || 0) | number:'1.0-0' }} COP</strong>
                   </div>
                 </div>
@@ -662,14 +706,14 @@
                 <table class="fut-table">
                   <thead>
                     <tr>
-                      <th>Ref. Transacción</th>
-                      <th>Fecha</th>
-                      <th>Alumno / Acudiente</th>
-                      <th>Categoría</th>
-                      <th>Medio de Pago</th>
-                      <th>Valor COP</th>
-                      <th>Estado</th>
-                      <th>Recibo</th>
+                      <th>Tx Reference</th>
+                      <th>Date</th>
+                      <th>Student / Parent</th>
+                      <th>Category</th>
+                      <th>Payment Method</th>
+                      <th>Amount (COP)</th>
+                      <th>Status</th>
+                      <th>Receipt</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -683,7 +727,7 @@
                         <td><strong>\${{ tx.monto | number:'1.0-0' }}</strong></td>
                         <td>
                           <span class="badge" [class.badge-success]="tx.estado === 'APROBADA'" [class.badge-warning]="tx.estado === 'PENDIENTE'">
-                            {{ tx.estado }}
+                            {{ tx.estado === 'APROBADA' ? 'APPROVED' : tx.estado === 'PENDIENTE' ? 'PENDING' : 'REJECTED' }}
                           </span>
                         </td>
                         <td>
@@ -695,7 +739,7 @@
                     } @empty {
                       <tr>
                         <td colspan="8" class="text-center py-4 text-muted">
-                          No hay transacciones ni recaudos registrados para esta escuela.
+                          No transactions or billing records registered for this academy.
                         </td>
                       </tr>
                     }
@@ -706,7 +750,7 @@
           </div>
         }
 
-        <!-- CONTENIDO TAB 4: RADAR FÍSICO & MÉDICA -->
+        <!-- TAB 4 CONTENT: PHYSICAL RADAR & MEDICAL -->
         @if (activeTab() === 'biometria') {
           <div class="tab-content-pane">
             <div class="biometria-grid">
@@ -719,7 +763,7 @@
                       <span class="meta-sub">#{{ player.dorsal }} • {{ player.posicion }} • {{ player.categoria }}</span>
                     </div>
                     <span class="badge" [class.badge-success]="player.estado_medico === 'APTO'" [class.badge-warning]="player.estado_medico === 'EN_OBSERVACION'">
-                      {{ player.estado_medico }}
+                      {{ player.estado_medico === 'APTO' ? 'FIT' : player.estado_medico === 'EN_OBSERVACION' ? 'OBSERVATION' : 'RECOVERY' }}
                     </span>
                   </div>
 
@@ -730,17 +774,17 @@
                     </div>
                     <div class="radar-stat">
                       <span class="stat-num">{{ player.cooper_metros }}m</span>
-                      <span class="stat-lbl">Test Cooper</span>
+                      <span class="stat-lbl">Cooper Test</span>
                     </div>
                     <div class="radar-stat">
                       <span class="stat-num text-blue">{{ player.velocidad_max }} km/h</span>
-                      <span class="stat-lbl">Velocidad Pico</span>
+                      <span class="stat-lbl">Peak Speed</span>
                     </div>
                   </div>
 
                   <div class="asistencia-bar-wrap">
                     <div class="bar-labels">
-                      <span>Asistencia Entrenamientos:</span>
+                      <span>Training Attendance:</span>
                       <strong>{{ player.asistencia_pct }}%</strong>
                     </div>
                     <div class="kpi-progress-bar">
@@ -751,8 +795,8 @@
               } @empty {
                 <div class="fut-card empty-state" style="grid-column: 1 / -1;">
                   <div class="empty-icon"><i class="fa-solid fa-heart-pulse"></i></div>
-                  <h3>Sin Evaluaciones Biométricas</h3>
-                  <p>Aún no se han registrado pruebas físicas ni test de velocidad para {{ api.activeClub().nombre }}.</p>
+                  <h3>No Biometric Evaluations</h3>
+                  <p>No physical assessments or speed tests have been recorded yet for {{ api.activeClub().nombre }}.</p>
                 </div>
               }
             </div>
@@ -760,7 +804,7 @@
         }
       </div>
 
-      <!-- MODAL: PROGRAMAR NUEVO PARTIDO -->
+      <!-- MODAL: SCHEDULE NEW OFFICIAL MATCH -->
       @if (showScheduleModal()) {
         <div class="modal-overlay" (click)="closeScheduleModal()">
           <div class="modal-dialog modal-card fut-card" (click)="$event.stopPropagation()">
@@ -770,21 +814,21 @@
                   <i class="fa-solid fa-calendar-plus"></i>
                 </div>
                 <div class="modal-title-text">
-                  <h3>Programar Nuevo Partido Oficial</h3>
-                  <p class="modal-subtitle">Configura el encuentro, categoría y genera la convocatoria táctica</p>
+                  <h3>Schedule New Official Match</h3>
+                  <p class="modal-subtitle">Set up fixture details, select category and generate tactical call-up</p>
                 </div>
               </div>
-              <button class="modal-close-btn" (click)="closeScheduleModal()" aria-label="Cerrar modal">
+              <button class="modal-close-btn" (click)="closeScheduleModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
 
             <form (ngSubmit)="submitScheduleForm()" class="modal-form">
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Datos del Encuentro</span>
+                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Match Details</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-users"></i> Categoría Competitiva <span class="required-star">*</span></label>
+                    <label><i class="fa-solid fa-users"></i> Competitive Category <span class="required-star">*</span></label>
                     <select [(ngModel)]="newMatch.categoriaId" name="categoriaId" class="sport-input" required>
                       @for (cat of categorias(); track cat.id) {
                         <option [value]="cat.id">{{ cat.nombre }} ({{ cat.codigo_categoria }})</option>
@@ -793,45 +837,45 @@
                   </div>
 
                   <div class="input-group">
-                    <label><i class="fa-solid fa-shield-cat"></i> Equipo Rival <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="newMatch.rivalNombre" name="rivalNombre" placeholder="ej. Santa Fe D.C." class="sport-input" required />
+                    <label><i class="fa-solid fa-shield-cat"></i> Opponent Team <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="newMatch.rivalNombre" name="rivalNombre" placeholder="e.g. Santa Fe D.C." class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Horarios & Citación</span>
+                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Schedule & Call-up Time</span>
                 <div class="form-row g3">
                   <div class="input-group">
-                    <label><i class="fa-regular fa-calendar"></i> Fecha de Juego <span class="required-star">*</span></label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="newMatch.fecha" name="fecha" class="sport-input" required />
+                    <label><i class="fa-regular fa-calendar"></i> Match Date <span class="required-star">*</span></label>
+                    <input type="text" appFlatpickr placeholder="dd/mm/yyyy" [(ngModel)]="newMatch.fecha" name="fecha" class="sport-input" required />
                   </div>
 
                   <div class="input-group">
-                    <label><i class="fa-regular fa-clock"></i> Hora Partido <span class="required-star">*</span></label>
+                    <label><i class="fa-regular fa-clock"></i> Match Kick-off <span class="required-star">*</span></label>
                     <input type="time" [(ngModel)]="newMatch.horaPartido" name="horaPartido" class="sport-input" required />
                   </div>
 
                   <div class="input-group">
-                    <label><i class="fa-solid fa-stopwatch"></i> Hora Citación <span class="required-star">*</span></label>
+                    <label><i class="fa-solid fa-stopwatch"></i> Call-up Time <span class="required-star">*</span></label>
                     <input type="time" [(ngModel)]="newMatch.horaCitacion" name="horaCitacion" class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Ubicación & Condición</span>
+                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Venue & Pitch Location</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-map-pin"></i> Sede / Cancha Deportiva <span class="required-star">*</span></label>
-                    <input type="text" [(ngModel)]="newMatch.sedeCancha" name="sedeCancha" placeholder="ej. Sede Arrayanes - Cancha 1" class="sport-input" required />
+                    <label><i class="fa-solid fa-map-pin"></i> Venue / Sports Pitch <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="newMatch.sedeCancha" name="sedeCancha" placeholder="e.g. Arrayanes Sports Complex - Pitch 1" class="sport-input" required />
                   </div>
 
                   <div class="input-group">
-                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condición</label>
+                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condition</label>
                     <select [(ngModel)]="newMatch.condicion" name="condicion" class="sport-input">
-                      <option value="LOCAL">LOCAL</option>
-                      <option value="VISITANTE">VISITANTE</option>
+                      <option value="LOCAL">HOME</option>
+                      <option value="VISITANTE">AWAY</option>
                     </select>
                   </div>
                 </div>
@@ -839,10 +883,10 @@
 
               <div class="modal-actions">
                 <button type="button" class="btn-secondary" (click)="closeScheduleModal()">
-                  <i class="fa-solid fa-xmark"></i> Cancelar
+                  <i class="fa-solid fa-xmark"></i> Cancel
                 </button>
                 <button type="submit" class="btn-primary">
-                  <i class="fa-solid fa-calendar-check"></i> Guardar y Crear Convocatoria
+                  <i class="fa-solid fa-calendar-check"></i> Save & Generate Call-up
                 </button>
               </div>
             </form>
@@ -850,7 +894,7 @@
         </div>
       }
 
-      <!-- TOAST NOTIFICATION FLOTANTE -->
+      <!-- FLOATING TOAST NOTIFICATION -->
       @if (toastMessage()) {
         <div class="toast-floating-alert">
           <i class="fa-solid fa-circle-check"></i>
@@ -858,26 +902,26 @@
         </div>
       }
 
-      <!-- MODAL FULLSCREEN DE LA LANDING PAGE DEL CLUB -->
+      <!-- FULLSCREEN CLUB LANDING PAGE MODAL -->
       @if (showLandingModal()) {
         <div class="landing-fullscreen-modal-overlay">
           <div class="landing-modal-top-bar">
             <div class="modal-bar-left">
               <span class="modal-status-badge">
                 <span class="pulse-dot"></span>
-                PORTADA WEB OFICIAL • {{ api.activeClub().nombre }}
+                OFFICIAL WEB PORTAL • {{ api.activeClub().nombre }}
               </span>
             </div>
             <div class="modal-bar-right">
               @if (activeClubLanding()?.slug) {
-                <a [href]="'/p/' + activeClubLanding()?.slug" target="_blank" class="btn-top-open-tab" title="Abrir en pestaña nueva">
+                <a [href]="'/p/' + activeClubLanding()?.slug" target="_blank" class="btn-top-open-tab" title="Open in new browser tab">
                   <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>
-                  <span>Abrir Web</span>
+                  <span>Open Web</span>
                 </a>
               }
-              <button type="button" class="btn-close-landing-modal" (click)="closeLandingModal()" title="Cerrar vista previa y volver al Dashboard">
+              <button type="button" class="btn-close-landing-modal" (click)="closeLandingModal()" title="Close preview and return to Dashboard">
                 <i class="fa-solid fa-xmark mr-1"></i>
-                <span>Volver al Dashboard</span>
+                <span>Back to Dashboard</span>
               </button>
             </div>
           </div>
@@ -893,7 +937,7 @@
         </div>
       }
 
-      <!-- MODAL DETALLE / FICHA TÁCTICA DEL JUGADOR CONVOCADO -->
+      <!-- MODAL: CALLED-UP PLAYER TACTICAL PROFILE -->
       @if (selectedTacticPlayer()) {
         <div class="modal-overlay" (click)="closePlayerModal()">
           <div class="modal-card modal-tactic-player" (click)="$event.stopPropagation()">
@@ -903,15 +947,15 @@
                   <i class="fa-solid fa-id-badge"></i>
                 </div>
                 <div class="modal-title-text">
-                  <h2>Ficha Táctica del Convocado</h2>
+                  <h2>Called-up Player Profile</h2>
                   <p class="modal-subtitle">{{ selectedTacticPlayer()?.categoria_nombre }} • {{ api.activeClub().nombre }}</p>
                 </div>
               </div>
-              <button class="btn-close" (click)="closePlayerModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-close" (click)="closePlayerModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="player-modal-body">
-              <!-- HERO BANNER DEL JUGADOR -->
+              <!-- PLAYER HERO BANNER -->
               <div class="player-hero-banner">
                 <div class="hero-avatar-wrap">
                   @if (selectedTacticPlayer()?.avatar) {
@@ -934,14 +978,14 @@
                     @if (selectedTacticPlayer()?.posicion_secundaria) {
                       <span class="tag-chip"><i class="fa-solid fa-arrows-split-up-and-left"></i> Sec: {{ selectedTacticPlayer()?.posicion_secundaria }}</span>
                     }
-                    <span class="tag-chip"><i class="fa-solid fa-shoe-prints"></i> {{ selectedTacticPlayer()?.pierna }}</span>
+                    <span class="tag-chip"><i class="fa-solid fa-shoe-prints"></i> Foot: {{ selectedTacticPlayer()?.pierna }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- SELECTOR INTERACTIVO DE ESTADO DE CITACIÓN (1 CLIC) -->
+              <!-- INTERACTIVE CALL-UP STATUS SELECTOR -->
               <div class="status-selector-box">
-                <label><i class="fa-solid fa-bell"></i> Estado de Citación para el Encuentro:</label>
+                <label><i class="fa-solid fa-bell"></i> Call-up Status for this Match:</label>
                 <div class="status-options-row">
                   <button 
                     type="button" 
@@ -949,7 +993,7 @@
                     [class.is-selected]="selectedTacticPlayer()?.estado === 'CONFIRMADO'"
                     (click)="setPlayerStatus(selectedTacticPlayer(), 'CONFIRMADO')">
                     <i class="fa-solid fa-circle-check"></i>
-                    <span>Confirmado</span>
+                    <span>Confirmed</span>
                   </button>
                   <button 
                     type="button" 
@@ -957,7 +1001,7 @@
                     [class.is-selected]="selectedTacticPlayer()?.estado === 'PENDIENTE'"
                     (click)="setPlayerStatus(selectedTacticPlayer(), 'PENDIENTE')">
                     <i class="fa-regular fa-clock"></i>
-                    <span>Pendiente</span>
+                    <span>Pending</span>
                   </button>
                   <button 
                     type="button" 
@@ -965,17 +1009,17 @@
                     [class.is-selected]="selectedTacticPlayer()?.estado === 'EXCUSADO'"
                     (click)="setPlayerStatus(selectedTacticPlayer(), 'EXCUSADO')">
                     <i class="fa-solid fa-circle-xmark"></i>
-                    <span>Excusado</span>
+                    <span>Excused</span>
                   </button>
                 </div>
               </div>
 
-              <!-- FICHA TÉCNICA & MÉTRICAS BIOMÉTRICAS -->
+              <!-- BIOMETRICS & TECHNICAL METRICS -->
               <div class="player-metrics-grid">
                 <div class="metric-card">
                   <div class="metric-icon"><i class="fa-solid fa-ruler-vertical text-emerald"></i></div>
                   <div class="metric-data">
-                    <span class="metric-label">Estatura</span>
+                    <span class="metric-label">Height</span>
                     <strong>{{ selectedTacticPlayer()?.talla_cm || '—' }} <small>cm</small></strong>
                   </div>
                 </div>
@@ -983,7 +1027,7 @@
                 <div class="metric-card">
                   <div class="metric-icon"><i class="fa-solid fa-weight-scale text-blue"></i></div>
                   <div class="metric-data">
-                    <span class="metric-label">Peso Corporal</span>
+                    <span class="metric-label">Body Weight</span>
                     <strong>{{ selectedTacticPlayer()?.peso_kg || '—' }} <small>kg</small></strong>
                   </div>
                 </div>
@@ -991,7 +1035,7 @@
                 <div class="metric-card">
                   <div class="metric-icon"><i class="fa-solid fa-heart-pulse text-amber"></i></div>
                   <div class="metric-data">
-                    <span class="metric-label">Índice Masa (IMC)</span>
+                    <span class="metric-label">BMI</span>
                     <strong>{{ selectedTacticPlayer()?.imc || '—' }}</strong>
                   </div>
                 </div>
@@ -999,29 +1043,29 @@
                 <div class="metric-card">
                   <div class="metric-icon"><i class="fa-solid fa-trophy text-purple"></i></div>
                   <div class="metric-data">
-                    <span class="metric-label">Puntos XP Academia</span>
+                    <span class="metric-label">Academy XP Points</span>
                     <strong>{{ selectedTacticPlayer()?.xp_total || 0 }} <small>XP</small></strong>
                   </div>
                 </div>
               </div>
 
-              <!-- INFO DE SALUD & COBERTURA MÉDICA -->
+              <!-- HEALTH & MEDICAL COVERAGE -->
               <div class="player-medical-callout">
                 <i class="fa-solid fa-kit-medical text-emerald"></i>
                 <div>
-                  <strong>Cobertura Médica & EPS:</strong>
-                  <span>{{ selectedTacticPlayer()?.eps || 'EPS Sanitas / Seguro deportivo institucional' }}</span>
+                  <strong>Medical Insurance & Coverage:</strong>
+                  <span>{{ selectedTacticPlayer()?.eps || 'EPS Sanitas / Institutional Sports Insurance' }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- ACCIONES DEL MODAL -->
+            <!-- MODAL ACTIONS -->
             <div class="modal-actions">
               <button type="button" class="btn-whatsapp-direct" (click)="sendIndividualWhatsApp(selectedTacticPlayer())">
-                <i class="fa-brands fa-whatsapp"></i> Notificar Citación por WhatsApp
+                <i class="fa-brands fa-whatsapp"></i> Notify Call-up via WhatsApp
               </button>
               <button type="button" class="btn-secondary" (click)="closePlayerModal()">
-                Cerrar
+                Close
               </button>
             </div>
           </div>

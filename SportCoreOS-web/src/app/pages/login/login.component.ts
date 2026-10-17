@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.email || !this.password) {
-      this.showToast('Por favor diligencia el correo y la contraseña.', true);
+      this.showToast('Please enter both email and password.', true);
       return;
     }
 
@@ -46,13 +46,13 @@ export class LoginComponent implements OnInit {
       next: (user) => {
         this.api.setClubFromUser(user);
         this.loading.set(false);
-        this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
+        this.showToast(`Welcome ${user.nombres}! Access authorized.`, false);
         const targetRoute = user.rol === 'PADRE_ACUDIENTE' ? ['/portal/padres'] : ['/dashboard'];
         this.router.navigate(targetRoute);
       },
       error: (err) => {
         this.loading.set(false);
-        const errorMsg = err?.error?.message || 'Credenciales inválidas. Verifica tu correo y clave.';
+        const errorMsg = err?.error?.message || 'Invalid credentials. Please verify your email and password.';
         this.showToast(errorMsg, true);
       },
     });
@@ -65,20 +65,20 @@ export class LoginComponent implements OnInit {
       next: (user) => {
         this.api.setClubFromUser(user);
         this.loading.set(false);
-        this.showToast(`¡Bienvenido ${user.nombres}! Acceso autorizado.`, false);
+        this.showToast(`Welcome ${user.nombres}! Access authorized.`, false);
         const targetRoute = user.rol === 'PADRE_ACUDIENTE' ? ['/portal/padres'] : ['/dashboard'];
         this.router.navigate(targetRoute);
       },
       error: (err) => {
         this.loading.set(false);
-        const errorMsg = err?.error?.message || 'Error al autenticar perfil demo.';
+        const errorMsg = err?.error?.message || 'Error authenticating demo profile.';
         this.showToast(errorMsg, true);
       },
     });
   }
 
   onForgotPassword(): void {
-    this.showToast('Se ha enviado un enlace de restablecimiento a tu correo.', false);
+    this.showToast('A password reset link has been sent to your email.', false);
   }
 
   private showToast(msg: string, isError: boolean): void {

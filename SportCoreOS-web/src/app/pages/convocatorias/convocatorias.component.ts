@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -28,6 +28,21 @@ import { ConvocatoriaPosterModalComponent } from './components/convocatoria-post
 export class ConvocatoriasComponent implements OnInit {
   readonly api = inject(ApiService);
   private route = inject(ActivatedRoute);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.loadPartidos();
+        });
+      }
+    });
+  }
 
   readonly RolConvocatoria = RolConvocatoria;
   readonly EstadoConfirmacionConvocatoria = EstadoConfirmacionConvocatoria;
@@ -67,6 +82,10 @@ export class ConvocatoriasComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadPartidos();
+  }
+
+  loadPartidos(): void {
     this.api.getPartidos().subscribe((data) => {
       const partidos = Array.isArray(data) ? data : (data?.data || []);
       this.matches.set(partidos);
@@ -76,6 +95,10 @@ export class ConvocatoriasComponent implements OnInit {
           this.selectedPartidoId.set(targetId);
           this.loadConvocatoria(targetId);
         });
+      } else {
+        this.selectedPartidoId.set('');
+        this.currentMatch.set(null);
+        this.convocados.set([]);
       }
     });
   }
@@ -107,12 +130,12 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.addJugadorConvocatoria(partidoId, event.jugadorId, event.rol, event.posicion).subscribe({
       next: () => {
-        this.showToast('Jugador añadido exitosamente a la convocatoria');
+        this.showToast('Player successfully added to match call-up');
         this.closeAddPlayerModal();
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error al añadir jugador a la convocatoria');
+        this.showToast('Error adding player to call-up');
       },
     });
   }
@@ -123,11 +146,11 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.removeJugadorConvocatoria(partidoId, player.jugador_id || player.id || '').subscribe({
       next: () => {
-        this.showToast(`${player.nombres} ${player.apellidos} retirado de la convocatoria`);
+        this.showToast(`${player.nombres} ${player.apellidos} removed from call-up`);
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error al desconvocar al jugador');
+        this.showToast('Error removing player from call-up');
       },
     });
   }
@@ -138,11 +161,11 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.cambiarRolConvocatoria(partidoId, event.player.jugador_id || event.player.id || '', event.newRole).subscribe({
       next: () => {
-        this.showToast(`Jugador movido a ${event.newRole === RolConvocatoria.TITULAR ? 'Once Titular' : 'Banco de Suplentes'}`);
+        this.showToast(`Player moved to ${event.newRole === RolConvocatoria.TITULAR ? 'Starting XI' : 'Substitutes Bench'}`);
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error al cambiar rol de convocatoria');
+        this.showToast('Error updating call-up role');
       },
     });
   }
@@ -154,10 +177,10 @@ export class ConvocatoriasComponent implements OnInit {
     this.api.sugerirConvocatoria(partidoId, 11, 7).subscribe({
       next: (res) => {
         this.convocados.set(res.jugadores || []);
-        this.showToast('¡Nómina sugerida generada según la nómina activa de la categoría!');
+        this.showToast('Suggested lineup generated from active category roster!');
       },
       error: () => {
-        this.showToast('Error al generar sugerencia de convocatoria');
+        this.showToast('Error generating suggested lineup');
       },
     });
   }
@@ -174,10 +197,10 @@ export class ConvocatoriasComponent implements OnInit {
     this.api.responderConvocatoria(player.id || '', nextEstado, undefined, player.jugador_id).subscribe({
       next: () => {
         player.estado_confirmacion = nextEstado;
-        this.showToast(`${player.nombres} ${player.apellidos} marcado como ${nextEstado}`);
+        this.showToast(`${player.nombres} ${player.apellidos} marked as ${nextEstado}`);
       },
       error: () => {
-        this.showToast('Error al actualizar estado de convocatoria');
+        this.showToast('Error updating call-up status');
       },
     });
   }
@@ -187,11 +210,11 @@ export class ConvocatoriasComponent implements OnInit {
     if (!match || !match.sede_cancha) return;
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.sede_cancha)}`;
     window.open(url, '_blank');
-    this.showToast(`Abriendo mapa para ${match.sede_cancha}`);
+    this.showToast(`Opening map navigation for ${match.sede_cancha}`);
   }
 
   onSendWhatsAppCitacion(): void {
-    this.showToast('¡Citaciones enviadas masivamente por WhatsApp a todos los acudientes!');
+    this.showToast('Match call-ups broadcasted via WhatsApp to all parents/guardians!');
   }
 
   openPosterModal(): void {
@@ -219,7 +242,7 @@ export class ConvocatoriasComponent implements OnInit {
           this.aiGeneratedCopy.set(res.copy_redes_sociales);
         }
         this.isGeneratingAi.set(false);
-        this.showToast('✨ ¡Diseño y copy generados exitosamente con Gemini AI!');
+        this.showToast('✨ Matchday graphic and copy successfully generated with Gemini AI!');
       },
       error: () => {
         this.isGeneratingAi.set(false);
@@ -234,13 +257,13 @@ export class ConvocatoriasComponent implements OnInit {
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
         .then(() => {
-          this.showToast('📋 ¡Texto para redes copiado al portapapeles!');
+          this.showToast('📋 Social media copy copied to clipboard!');
         })
         .catch(() => {
-          this.showToast('📋 ¡Texto para redes seleccionado!');
+          this.showToast('📋 Social media copy selected!');
         });
     } else {
-      this.showToast('📋 Texto listo para publicar en redes sociales');
+      this.showToast('📋 Text ready for social media publishing');
     }
   }
 

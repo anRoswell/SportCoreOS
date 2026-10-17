@@ -14,7 +14,7 @@ export interface LanguageOption {
   providedIn: 'root',
 })
 export class I18nService {
-  private readonly STORAGE_KEY = 'sportcore_lang';
+  private readonly STORAGE_KEY = 'sportcore_lang_v2';
 
   readonly availableLanguages = signal<LanguageOption[]>([
     { code: 'es', label: 'Español', nativeName: 'Español (Latinoamérica)', flag: '🇪🇸', region: 'Colombia / LATAM' },
@@ -47,7 +47,63 @@ export class I18nService {
       'nav.modulosEscuela': 'Módulos Escuela',
       'nav.parametros': 'Parámetros Sistema',
       'nav.rolesPermisos': 'Roles & Permisos',
-      'nav.idiomas': 'Idiomas & Multiidioma',
+      'nav.ranking': 'Ranking & Gamificación',
+      'nav.servicios': 'Clínicas & Masterclasses',
+      'nav.sliders': 'Banners & Sliders',
+      'nav.landingBuilder': 'Landing Builder & Experiencias',
+      'nav.escuelas': 'Escuelas & Academias',
+
+      // Grupos de Navegación
+      'navGroup.family': 'PORTAL FAMILIAR',
+      'navGroup.main': 'GESTIÓN PRINCIPAL',
+      'navGroup.competition': 'COMPETICIÓN & FIXTURE',
+      'navGroup.science': 'CIENCIAS DEL DEPORTE & RENDIMIENTO',
+      'navGroup.ai': 'INTELIGENCIA ARTIFICIAL',
+      'navGroup.finance': 'FINANZAS & COMERCIO',
+      'navGroup.marketing': 'MARKETING & COMUNICACIÓN',
+      'navGroup.config': 'CONFIGURACIÓN & SAAS',
+
+      // Navbar
+      'navbar.searchPlaceholder': 'Buscar jugador, dorsal, categoría, partido...',
+      'navbar.activeAcademy': 'Escuela activa',
+      'navbar.noAcademy': 'Sin Escuela Seleccionada',
+      'navbar.dbDisconnected': 'BD Desconectada / Vacía',
+      'navbar.academiesList': 'Academias & Escuelas',
+      'navbar.refreshList': 'Actualizar lista de escuelas',
+      'navbar.filterByNameOrCity': 'Filtrar por nombre o ciudad...',
+      'navbar.manageModules': 'Administrar Módulos & Licencias',
+      'navbar.lightMode': 'Modo Claro',
+      'navbar.darkMode': 'Modo Oscuro',
+      'navbar.notifications': 'Notificaciones del Sistema',
+      'navbar.myProfile': 'Mi Perfil Deportivo',
+      'navbar.settings': 'Configuración de Cuenta',
+      'navbar.logout': 'Cerrar Sesión',
+      'navbar.emptyClubs': 'Sin escuelas registradas o sin conexión a la base de datos.',
+
+      // Dashboard
+      'dashboard.badge': 'Centro Operativo Ejecutivo',
+      'dashboard.title': 'Tablero Estratégico & KPIs en Tiempo Real',
+      'dashboard.subtitle': 'Gestión táctica, monitoreo financiero, plantel deportivo y fixture oficial',
+      'dashboard.btnSchedule': 'Programar Partido',
+      'dashboard.btnLanding': 'Experiencia Pública',
+      'dashboard.kpiActivePlayers': 'Alumnos Activos',
+      'dashboard.kpiAttendance': 'Asistencia Global',
+      'dashboard.kpiRevenue': 'Recaudo del Mes',
+      'dashboard.kpiNextMatch': 'Próximo Partido',
+      'dashboard.tabTactics': 'Pizarra Táctica Express & Cancha',
+      'dashboard.tabMatches': 'Fixture & Calendario de Partidos',
+      'dashboard.tabRevenue': 'Monitor de Recaudo en Vivo',
+      'dashboard.tabFitness': 'Top Rendimiento & Radar Físico',
+      'dashboard.pitchView': 'Vista Cancha',
+      'dashboard.listView': 'Lista Plantel',
+      'dashboard.cardsView': 'Fichas Jugadores',
+      'dashboard.formation': 'Formación Táctica',
+      'dashboard.startingXi': 'Titulares en Cancha',
+      'dashboard.bench': 'Banquillo de Suplentes',
+      'dashboard.viewAllPlayers': 'Ver Todos los Jugadores',
+      'dashboard.viewAllMatches': 'Ver Fixture Completo',
+      'dashboard.viewAllFinances': 'Ver Finanzas Completas',
+      'dashboard.viewAllBiometria': 'Ver Evaluaciones',
 
       // Acciones Comunes
       'action.save': 'Guardar',
@@ -128,6 +184,63 @@ export class I18nService {
       'nav.parametros': 'System Parameters',
       'nav.rolesPermisos': 'Roles & Permissions',
       'nav.idiomas': 'Languages & i18n',
+      'nav.ranking': 'Ranking & Gamification',
+      'nav.servicios': 'Clinics & Masterclasses',
+      'nav.sliders': 'Promotional Banners',
+      'nav.landingBuilder': 'Landing Builder & Pages',
+      'nav.escuelas': 'Schools & Academies',
+
+      // Navigation Groups
+      'navGroup.family': 'FAMILY PORTAL',
+      'navGroup.main': 'MAIN MANAGEMENT',
+      'navGroup.competition': 'COMPETITION & FIXTURES',
+      'navGroup.science': 'SPORTS SCIENCE & PERFORMANCE',
+      'navGroup.ai': 'ARTIFICIAL INTELLIGENCE',
+      'navGroup.finance': 'FINANCE & COMMERCE',
+      'navGroup.marketing': 'MARKETING & COMMUNICATION',
+      'navGroup.config': 'CONFIGURATION & SAAS',
+
+      // Navbar
+      'navbar.searchPlaceholder': 'Search player, jersey, category, match...',
+      'navbar.activeAcademy': 'Active Academy',
+      'navbar.noAcademy': 'No Academy Selected',
+      'navbar.dbDisconnected': 'DB Disconnected / Empty',
+      'navbar.academiesList': 'Academies & Schools',
+      'navbar.refreshList': 'Refresh academy list',
+      'navbar.filterByNameOrCity': 'Filter by name or city...',
+      'navbar.manageModules': 'Manage Modules & Licenses',
+      'navbar.lightMode': 'Light Mode',
+      'navbar.darkMode': 'Dark Mode',
+      'navbar.notifications': 'System Notifications',
+      'navbar.myProfile': 'My Athletic Profile',
+      'navbar.settings': 'Account Settings',
+      'navbar.logout': 'Log Out',
+      'navbar.emptyClubs': 'No academies registered or database empty.',
+
+      // Dashboard
+      'dashboard.badge': 'Executive Operational Center',
+      'dashboard.title': 'Strategic Dashboard & Real-Time KPIs',
+      'dashboard.subtitle': 'Tactical management, financial monitoring, athletic squad and official fixture',
+      'dashboard.btnSchedule': 'Schedule Match',
+      'dashboard.btnLanding': 'Public Experience',
+      'dashboard.kpiActivePlayers': 'Active Students',
+      'dashboard.kpiAttendance': 'Global Attendance',
+      'dashboard.kpiRevenue': 'Monthly Revenue',
+      'dashboard.kpiNextMatch': 'Next Match',
+      'dashboard.tabTactics': 'Express Tactical Board & Pitch',
+      'dashboard.tabMatches': 'Fixture & Match Calendar',
+      'dashboard.tabRevenue': 'Live Revenue Monitor',
+      'dashboard.tabFitness': 'Top Performance & Physical Radar',
+      'dashboard.pitchView': 'Pitch View',
+      'dashboard.listView': 'Roster List',
+      'dashboard.cardsView': 'Player Cards',
+      'dashboard.formation': 'Tactical Formation',
+      'dashboard.startingXi': 'Starting XI in Pitch',
+      'dashboard.bench': 'Substitutes Bench',
+      'dashboard.viewAllPlayers': 'View All Players',
+      'dashboard.viewAllMatches': 'View Full Fixture',
+      'dashboard.viewAllFinances': 'View Full Finances',
+      'dashboard.viewAllBiometria': 'View All Evaluations',
 
       // Common Actions
       'action.save': 'Save',
@@ -271,14 +384,16 @@ export class I18nService {
     },
   };
 
-  constructor() {}
+  constructor() {
+    document.documentElement.lang = this.currentLang();
+  }
 
   private getInitialLanguage(): LanguageCode {
     const saved = localStorage.getItem(this.STORAGE_KEY) as LanguageCode;
     if (saved && (saved === 'es' || saved === 'en' || saved === 'pt')) {
       return saved;
     }
-    return 'es';
+    return 'en';
   }
 
   setLanguage(lang: LanguageCode): void {

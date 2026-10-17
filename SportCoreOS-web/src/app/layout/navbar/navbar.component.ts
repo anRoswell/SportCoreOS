@@ -7,11 +7,12 @@ import { ApiService, Club } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, LanguageSelectorComponent, TranslatePipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })

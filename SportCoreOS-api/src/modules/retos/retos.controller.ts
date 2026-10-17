@@ -11,37 +11,37 @@ export class RetosController {
 
   @Get('catalogo')
   @ApiOperation({ summary: 'Obtener catálogo general de retos individuales con niveles de dificultad' })
-  async getCatalogo(@Req() req: any) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
+  async getCatalogo(@CurrentUser() user: any, @Req() req: any) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
     return this.retosService.getCatalogo(clubId);
   }
 
   @Get('jugador/:jugadorId')
   @ApiOperation({ summary: 'Obtener histórico y estado de retos individuales de un jugador' })
-  async getProgresoJugador(@Param('jugadorId') jugadorId: string, @Req() req: any) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
+  async getProgresoJugador(@Param('jugadorId') jugadorId: string, @CurrentUser() user: any, @Req() req: any) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
     return this.retosService.getProgresoJugador(jugadorId, clubId);
   }
 
   @Get('jugador/:jugadorId/metricas')
   @ApiOperation({ summary: 'Obtener porcentaje y métricas de XP ganada por retos del jugador' })
-  async getMetricasJugador(@Param('jugadorId') jugadorId: string, @Req() req: any) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
+  async getMetricasJugador(@Param('jugadorId') jugadorId: string, @CurrentUser() user: any, @Req() req: any) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
     return this.retosService.getMetricasJugador(jugadorId, clubId);
   }
 
   @Post('solicitar')
   @ApiOperation({ summary: 'Alumno solicita certificar un reto individual (pasa a estado COMPROBABLE)' })
-  async solicitarComprobacion(@Body() dto: any, @Req() req: any) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
+  async solicitarComprobacion(@Body() dto: any, @CurrentUser() user: any, @Req() req: any) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
     return this.retosService.solicitarComprobacion(clubId, dto);
   }
 
   @Get('pendientes')
   @ApiOperation({ summary: 'Director Técnico lista retos pendientes de comprobación en cancha' })
   @ApiQuery({ name: 'categoriaId', required: false, type: String, description: 'Filtrar por categoría' })
-  async getPendientes(@Query('categoriaId') categoriaId: string, @Req() req: any) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
+  async getPendientes(@Query('categoriaId') categoriaId: string, @CurrentUser() user: any, @Req() req: any) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
     return this.retosService.getPendientesEvaluacion(clubId, categoriaId);
   }
 
@@ -50,14 +50,15 @@ export class RetosController {
   async evaluarReto(
     @Param('progresoId') progresoId: string,
     @Body() dto: { aprobado: boolean; evaluadorDtId?: string; evaluadorDtNombre?: string; observaciones?: string },
+    @CurrentUser() user: any,
     @Req() req: any,
   ) {
-    const clubId = req.user?.clubId || req.headers['x-club-id'] || '10000000-0000-0000-0000-000000000001';
-    const evaluadorNombre = dto.evaluadorDtNombre || (req.user ? `${req.user.nombre} ${req.user.apellido}` : 'Director Técnico');
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
+    const evaluadorNombre = dto.evaluadorDtNombre || (user ? `${user.nombre} ${user.apellido}` : req.user ? `${req.user.nombre} ${req.user.apellido}` : 'Director Técnico');
     return this.retosService.evaluarReto(progresoId, clubId, {
       ...dto,
       evaluadorDtNombre: evaluadorNombre,
-      evaluadorDtId: dto.evaluadorDtId || req.user?.sub || null,
+      evaluadorDtId: dto.evaluadorDtId || user?.sub || req.user?.sub || null,
     });
   }
 }

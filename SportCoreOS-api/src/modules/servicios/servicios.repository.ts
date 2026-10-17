@@ -15,8 +15,14 @@ export class ServiciosRepository {
       soloActivos?: boolean;
     },
   ) {
-    const whereParts = ['s.club_id = $1'];
-    const params: any[] = [clubId];
+    const DEMO_CLUB_ID = '10000000-0000-0000-0000-000000000001';
+    // Permitir ver las clínicas y masterclasses de ejemplo siempre (catálogo demo transversal) más las creadas por el club
+    const whereParts = [
+      clubId && clubId !== DEMO_CLUB_ID
+        ? `(s.club_id = $1 OR s.club_id = '${DEMO_CLUB_ID}')`
+        : 's.club_id = $1',
+    ];
+    const params: any[] = [clubId || DEMO_CLUB_ID];
 
     if (options?.soloActivos !== false) {
       whereParts.push('s.activo = true');
@@ -38,7 +44,7 @@ export class ServiciosRepository {
              (SELECT COUNT(*) FROM public.inscripciones_servicios i WHERE i.servicio_id = s.id AND i.estado_pago = 'APROBADO') as total_inscritos
       FROM public.servicios_especializados s
       WHERE ${whereParts.join(' AND ')}
-      ORDER BY s.destacado DESC, s.created_at DESC
+      ORDER BY (CASE WHEN s.club_id = $1 THEN 0 ELSE 1 END), s.destacado DESC, s.created_at DESC
     `;
 
     const res = await this.db.query(query, params);
@@ -46,12 +52,13 @@ export class ServiciosRepository {
   }
 
   async findServicioById(id: string, clubId: string) {
+    const DEMO_CLUB_ID = '10000000-0000-0000-0000-000000000001';
     const res = await this.db.query(
       `SELECT s.*,
               (SELECT COUNT(*) FROM public.inscripciones_servicios i WHERE i.servicio_id = s.id AND i.estado_pago = 'APROBADO') as total_inscritos
        FROM public.servicios_especializados s
-       WHERE s.id = $1 AND s.club_id = $2`,
-      [id, clubId],
+       WHERE s.id = $1 AND (s.club_id = $2 OR s.club_id = '${DEMO_CLUB_ID}')`,
+      [id, clubId || DEMO_CLUB_ID],
     );
     return res.rows[0] || null;
   }
@@ -247,13 +254,14 @@ export class ServiciosRepository {
   }
 
   async findInscripcionesByServicio(servicioId: string, clubId: string) {
+    const DEMO_CLUB_ID = '10000000-0000-0000-0000-000000000001';
     const res = await this.db.query(
       `SELECT i.*, s.titulo as servicio_titulo, s.icono, s.color_tema, s.horario_rango, s.dias_semana, s.cancha_nombre
        FROM public.inscripciones_servicios i
        JOIN public.servicios_especializados s ON s.id = i.servicio_id
-       WHERE i.servicio_id = $1 AND i.club_id = $2
+       WHERE i.servicio_id = $1 AND (i.club_id = $2 OR i.club_id = '${DEMO_CLUB_ID}')
        ORDER BY i.fecha_inscripcion DESC`,
-      [servicioId, clubId],
+      [servicioId, clubId || DEMO_CLUB_ID],
     );
     return res.rows;
   }

@@ -1,51 +1,51 @@
 <div class="login-wrapper">
-      <!-- Barra Superior Flotante: Selector de Tema -->
+      <!-- Floating Top Bar: Theme Toggle -->
       <div class="login-floating-actions">
         <button 
           class="theme-toggle-floating" 
           (click)="themeService.toggleTheme()" 
-          [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+          [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
           @if (themeService.isDark()) {
             <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
-            <span>Modo Claro</span>
+            <span>Light Mode</span>
           } @else {
             <i class="fa-solid fa-moon" style="color: #38bdf8;"></i>
-            <span>Modo Oscuro</span>
+            <span>Dark Mode</span>
           }
         </button>
       </div>
 
       <div class="login-container">
-        <!-- COLUMNA IZQUIERDA: HERO SPORT BRANDING -->
+        <!-- LEFT COLUMN: HERO SPORT BRANDING -->
         <div class="login-hero">
           <div class="hero-content">
             <!-- Brand Badge -->
             <div class="brand-badge-pill">
               <span class="pulse-dot"></span>
-              <span>PLATAFORMA SAAS DEPORTIVA</span>
+              <span>SPORTS SAAS PLATFORM</span>
             </div>
 
             <h1 class="hero-title">
-              La Suite Integral para <span class="highlight">Academias de Fútbol</span> de Alto Rendimiento.
+              The Comprehensive Suite for <span class="highlight">Football Academies</span> of High Performance.
             </h1>
 
             <p class="hero-subtitle">
-              Automatiza la cobranza de pensiones vía PSE/Wompi, organiza convocatorias por WhatsApp en 1 toque, gestiona expedientes 360° y visualiza biometría y telemetría de tus futuras estrellas.
+              Automate tuition collections via online gateways, coordinate WhatsApp call-ups in 1 tap, manage 360° player records, and track biometrics and telemetry for your future stars.
             </p>
 
-            <!-- Grid de Métricas de Confianza -->
+            <!-- Trust Metrics Grid -->
             <div class="hero-stats-grid">
               <div class="stat-card">
                 <div class="stat-number">+140</div>
-                <div class="stat-label">Clubes & Escuelas</div>
+                <div class="stat-label">Clubs & Academies</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number">$1.2B</div>
-                <div class="stat-label">Recaudo PSE / Mes</div>
+                <div class="stat-number">$1.2M</div>
+                <div class="stat-label">Monthly Collections</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number">98.6%</div>
-                <div class="stat-label">Asistencia Confirmada</div>
+                <div class="stat-label">Confirmed Attendance</div>
               </div>
             </div>
 
@@ -53,21 +53,21 @@
             <div class="features-list">
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Gestión de Categorías Sub-7 a Sub-20 con control de dorsales únicos</span>
+                <span>Age group management from U-7 to U-20 with unique squad numbering</span>
               </div>
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Portal Móvil para Padres con pago de mensualidades express</span>
+                <span>Parent Mobile Portal with one-click express tuition payments</span>
               </div>
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Enrutamiento GPS a canchas deportivas con Waze y Google Maps</span>
+                <span>Turn-by-turn GPS routing to athletic pitches via Google Maps & Waze</span>
               </div>
             </div>
 
             <!-- Trust Footer -->
             <div class="hero-trust-footer">
-              <span>Tecnología certificada:</span>
+              <span>Certified Technology:</span>
               <div class="trust-badges">
                 <span class="trust-badge"><i class="fa-solid fa-shield-halved"></i> SSL 256-bit</span>
                 <span class="trust-badge"><i class="fa-solid fa-bolt"></i> Wompi / PSE</span>
@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <!-- COLUMNA DERECHA: FORMULARIO DE ACCESO & PERSONAS DEMO -->
+        <!-- RIGHT COLUMN: ACCESS FORM & DEMO PERSONAS -->
         <div class="login-form-panel">
           <!-- Ambient Glow Shapes & Grid Texture -->
           <div class="ambient-glow glow-top-right"></div>
@@ -85,7 +85,7 @@
           <div class="tactical-grid-pattern"></div>
 
           <div class="form-wrapper">
-            <!-- Header del Formulario con Logotipo Oficial -->
+            <!-- Form Header with Official Logo -->
             <div class="form-header">
               <div class="brand-header-row">
                 <div class="brand-logo">
@@ -104,24 +104,24 @@
 
                 <div class="saas-secure-badge">
                   <span class="live-dot"></span>
-                  <span>Sistema Operativo Seguro</span>
+                  <span>Secure Operating System</span>
                 </div>
               </div>
 
               <div class="welcome-row">
-                <h3 class="welcome-heading">Panel de Acceso Institucional</h3>
-                <p class="welcome-desc">Ingresa tus credenciales autorizadas o selecciona una credencial demo para explorar.</p>
+                <h3 class="welcome-heading">Institutional Access Portal</h3>
+                <p class="welcome-desc">Enter your authorized credentials or select a demo persona below to explore the platform.</p>
               </div>
             </div>
 
-            <!-- Formulario Principal en 2 Columnas -->
+            <!-- Main Form in 2 Columns -->
             <form (ngSubmit)="onSubmit()" class="login-form">
               <div class="form-row-2col">
-                <!-- Campo Email -->
+                <!-- Email Field -->
                 <div class="input-group">
                   <label for="email">
                     <span class="label-icon-badge"><i class="fa-solid fa-envelope"></i></span>
-                    <span>Correo Institucional</span>
+                    <span>Institutional Email</span>
                   </label>
                   <div class="input-wrapper">
                     <input 
@@ -135,14 +135,14 @@
                   </div>
                 </div>
 
-                <!-- Campo Contraseña -->
+                <!-- Password Field -->
                 <div class="input-group">
                   <div class="label-row">
                     <label for="password">
                       <span class="label-icon-badge"><i class="fa-solid fa-lock"></i></span>
-                      <span>Contraseña de Acceso</span>
+                      <span>Access Password</span>
                     </label>
-                    <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">¿Olvidaste clave?</a>
+                    <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">Forgot password?</a>
                   </div>
                   <div class="input-wrapper">
                     <input 
@@ -153,46 +153,46 @@
                       placeholder="••••••••••••" 
                       required 
                       class="sport-input" />
-                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Mostrar/Ocultar contraseña">
+                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Show/Hide password">
                       <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Fila Submit y Recordar Sesión -->
+              <!-- Submit Row and Remember Me -->
               <div class="form-actions-bar">
                 <label class="checkbox-label">
                   <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
                   <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
-                  <span class="label-text">Mantener sesión activa en este dispositivo</span>
+                  <span class="label-text">Keep me signed in on this device</span>
                 </label>
 
                 <button type="submit" class="btn-login" [disabled]="loading()">
                   @if (loading()) {
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span>Autenticando...</span>
+                    <span>Authenticating...</span>
                   } @else {
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    <span>Ingresar al Sistema</span>
+                    <span>Sign In to Platform</span>
                   }
                 </button>
               </div>
             </form>
 
-            <!-- Separador Estilizado -->
+            <!-- Styled Divider -->
             <div class="divider">
-              <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> O SELECCIONA UNA CREDENCIAL DEMO</span>
+              <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> OR SELECT A DEMO CREDENTIAL</span>
             </div>
 
-            <!-- Indicador de Club Activo (Solo si existe club real activo en BD) -->
+            <!-- Active Club Indicator (if active in database) -->
             @if (api.activeClub().id && api.activeClub().nombre) {
               <div class="demo-school-badge">
                 <div class="school-shield-icon">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div class="school-text-wrap">
-                  <span class="badge-label">Club / Escuela Activa:</span>
+                  <span class="badge-label">Active Club / Academy:</span>
                   <strong class="school-title">{{ api.activeClub().nombre }}</strong>
                   @if (api.activeClub().ciudad) {
                     <span class="badge-city">• {{ api.activeClub().ciudad }}</span>
@@ -201,7 +201,7 @@
               </div>
             }
 
-            <!-- Personas Demo de Prueba -->
+            <!-- Demo Personas Grid -->
             <div class="demo-personas-grid" [class.has-four-personas]="authService.demoPersonas.length === 4">
               @for (persona of authService.demoPersonas; track persona.id) {
                 <button 
@@ -224,14 +224,14 @@
               }
             </div>
 
-            <!-- Callout Informativo de Seguridad SaaS -->
+            <!-- SaaS Security Information Callout -->
             <div class="saas-info-callout">
               <div class="callout-icon">
                 <i class="fa-solid fa-shield-check"></i>
               </div>
               <div class="callout-content">
-                <strong class="callout-title">Acceso Institucional Centralizado</strong>
-                <span class="callout-desc">El registro de nuevas academias y la habilitación de módulos es administrado por la dirección central de SportCoreOS.</span>
+                <strong class="callout-title">Centralized Institutional Access</strong>
+                <span class="callout-desc">New academy registrations and module activation are managed directly by SportCoreOS headquarters.</span>
               </div>
               <div class="callout-cert">
                 <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>
@@ -246,9 +246,9 @@
               </div>
             }
 
-            <!-- Footer de la Empresa -->
+            <!-- Company Footer -->
             <div class="form-footer">
-              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Infraestructura Cloud Deportiva • Todos los derechos reservados</p>
+              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Athletic Cloud Infrastructure • All rights reserved</p>
             </div>
           </div>
         </div>

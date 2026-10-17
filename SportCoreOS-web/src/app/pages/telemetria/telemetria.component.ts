@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -15,6 +15,23 @@ import { FlatpickrDirective } from '../../shared/directives/flatpickr.directive'
 export class TelemetriaComponent implements OnInit {
   private api = inject(ApiService);
   private catalogos = inject(CatalogosService);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.currentSesionesPage.set(1);
+          this.loadSesiones();
+          this.loadJugadores();
+        });
+      }
+    });
+  }
 
   readonly dispositivosGps = this.catalogos.dispositivosGps;
   readonly sesionesList = signal<any[]>([]);

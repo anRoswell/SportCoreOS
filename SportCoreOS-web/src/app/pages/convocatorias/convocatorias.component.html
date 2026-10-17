@@ -2,12 +2,12 @@
   <!-- HEADER -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Convocatoria & Citación de Jugadores</h1>
-      <p class="page-subtitle">Selección técnica del plantel, alineación titular vs suplentes y confirmación de acudientes</p>
+      <h1 class="page-title">Match Call-ups & Lineup Roster</h1>
+      <p class="page-subtitle">Technical squad selection, starting XI vs substitutes lineup, and parent confirmation tracking</p>
     </div>
     <div class="header-actions">
       <div class="match-selector-group">
-        <label class="filter-label"><i class="fa-solid fa-futbol"></i> Partido:</label>
+        <label class="filter-label"><i class="fa-solid fa-futbol"></i> Match:</label>
         <select [ngModel]="selectedPartidoId()" (ngModelChange)="onSelectPartido($event)" class="sport-select">
           @for (m of matches(); track m.id) {
             <option [value]="m.id">{{ m.fecha_partido }} - vs {{ m.rival_nombre }} ({{ m.categoria_nombre }})</option>
@@ -15,16 +15,16 @@
         </select>
       </div>
       <button class="btn-secondary" (click)="openAddPlayerModalWithRole(RolConvocatoria.TITULAR)" [disabled]="!currentMatch()">
-        <i class="fa-solid fa-user-plus text-emerald"></i> + Convocar Jugador
+        <i class="fa-solid fa-user-plus text-emerald"></i> + Call up Player
       </button>
-      <button class="btn-secondary" (click)="onSuggestConvocatoria()" [disabled]="!currentMatch()" title="Pre-cargar nómina sugerida">
-        <i class="fa-solid fa-wand-magic-sparkles text-amber"></i> Sugerir Nómina
+      <button class="btn-secondary" (click)="onSuggestConvocatoria()" [disabled]="!currentMatch()" title="Auto-suggest lineup from active roster">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber"></i> Suggest Lineup
       </button>
-      <button class="btn-secondary btn-poster-social" (click)="openPosterModal()" [disabled]="convocados().length === 0" title="Generar póster oficial para redes sociales">
-        <i class="fa-solid fa-image text-emerald"></i> Generar Gráfica Redes
+      <button class="btn-secondary btn-poster-social" (click)="openPosterModal()" [disabled]="convocados().length === 0" title="Generate official social media matchday graphic">
+        <i class="fa-solid fa-image text-emerald"></i> Generate Social Graphic
       </button>
       <button class="btn-primary" (click)="onSendWhatsAppCitacion()" [disabled]="convocados().length === 0">
-        <i class="fa-solid fa-paper-plane"></i> Enviar Citación WhatsApp
+        <i class="fa-solid fa-paper-plane"></i> Send WhatsApp Call-up
       </button>
     </div>
   </div>
@@ -43,7 +43,7 @@
     <div class="squad-grid">
       <!-- ONCE TITULAR -->
       <app-convocatoria-squad-column
-        [title]="'Alineación Titular (' + titulares().length + '/11)'"
+        [title]="'Starting XI (' + titulares().length + '/11)'"
         [roleType]="RolConvocatoria.TITULAR"
         [players]="titulares()"
         [confirmedCount]="titularesConfirmadosCount()"
@@ -56,7 +56,7 @@
 
       <!-- BANCO DE SUPLENTES -->
       <app-convocatoria-squad-column
-        [title]="'Banco de Suplentes (' + suplentes().length + ')'"
+        [title]="'Substitutes Bench (' + suplentes().length + ')'"
         [roleType]="RolConvocatoria.SUPLENTE"
         [players]="suplentes()"
         [confirmedCount]="suplentesConfirmadosCount()"
@@ -70,7 +70,7 @@
   } @else {
     <div class="fut-card empty-state">
       <i class="fa-solid fa-clipboard-user"></i>
-      <p>No hay partidos disponibles para mostrar convocatorias.</p>
+      <p>No matches available to display call-ups.</p>
     </div>
   }
 

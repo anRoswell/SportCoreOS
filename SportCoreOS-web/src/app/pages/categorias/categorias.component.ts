@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -12,6 +12,22 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class CategoriasComponent implements OnInit {
   private api = inject(ApiService);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.loadCategorias();
+          this.loadEntrenadores();
+        });
+      }
+    });
+  }
 
   readonly categorias = signal<any[]>([]);
   readonly entrenadores = signal<any[]>([]);

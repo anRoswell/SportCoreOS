@@ -79,11 +79,11 @@ export class CatalogosService {
 
   // 6. Kits de Indumentaria / Uniformes
   readonly kitsIndumentaria = signal<CatalogoItem[]>([
-    { codigo: 'Kit Titular (Esmeralda)', nombre: 'Kit Titular (Esmeralda Pro)' },
-    { codigo: 'Kit Alterno (Blanco)', nombre: 'Kit Alterno (Blanco Élite)' },
-    { codigo: 'Kit Tercero (Negro/Dorado)', nombre: 'Kit Tercero (Negro / Dorado)' },
-    { codigo: 'Kit Portero (Amarillo Neón)', nombre: 'Kit Portero (Amarillo Neón)' },
-    { codigo: 'Peto Entrenamiento', nombre: 'Peto de Entrenamiento Fluo' },
+    { codigo: 'Kit Titular (Esmeralda)', nombre: 'Home Kit (Emerald Pro)' },
+    { codigo: 'Kit Alterno (Blanco)', nombre: 'Away Kit (White Elite)' },
+    { codigo: 'Kit Tercero (Negro/Dorado)', nombre: 'Third Kit (Black / Gold)' },
+    { codigo: 'Kit Portero (Amarillo Neón)', nombre: 'Goalkeeper Kit (Neon Yellow)' },
+    { codigo: 'Peto Entrenamiento', nombre: 'Training Bib (Fluo)' },
   ]);
 
   // 7. Dispositivos / Sensores GPS

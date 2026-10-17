@@ -2,12 +2,12 @@
       <!-- HEADER & FILTERS BAR -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">Fixture & Calendario de Partidos</h1>
-          <p class="page-subtitle">Torneos oficiales, partidos amistosos y actas digitales de juego en tiempo real</p>
+          <h1 class="page-title">Fixture & Match Schedule</h1>
+          <p class="page-subtitle">Official tournaments, friendly matches and real-time digital match records</p>
         </div>
         <div class="header-actions">
           <button class="btn-primary" (click)="openScheduleModal()">
-            <i class="fa-solid fa-calendar-plus"></i> Programar Nuevo Partido
+            <i class="fa-solid fa-calendar-plus"></i> Schedule New Match
           </button>
         </div>
       </div>
@@ -15,35 +15,35 @@
       <!-- FILTERS BAR -->
       <div class="filters-row fut-card">
         <div class="filter-item">
-          <label><i class="fa-solid fa-users"></i> Categoría:</label>
+          <label><i class="fa-solid fa-users"></i> Category:</label>
           <select [ngModel]="selectedCategoriaId()" (ngModelChange)="selectedCategoriaId.set($event); onFilterChange()" class="sport-select">
-            <option value="TODAS">Todas las Categorías</option>
+            <option value="TODAS">All Categories</option>
             @for (cat of categorias(); track cat.id) {
               <option [value]="cat.id">{{ cat.nombre }}</option>
             }
           </select>
         </div>
         <div class="filter-item">
-          <label><i class="fa-solid fa-circle-check"></i> Estado:</label>
+          <label><i class="fa-solid fa-circle-check"></i> Status:</label>
           <select [ngModel]="selectedEstado()" (ngModelChange)="selectedEstado.set($event); onFilterChange()" class="sport-select">
-            <option value="TODOS">Todos los Estados</option>
-            <option value="PROGRAMADO">Programado</option>
-            <option value="FINALIZADO">Finalizado</option>
-            <option value="EN_VIVO">En Vivo / En Juego</option>
+            <option value="TODOS">All Statuses</option>
+            <option value="PROGRAMADO">Scheduled</option>
+            <option value="FINALIZADO">Completed</option>
+            <option value="EN_VIVO">Live / In Progress</option>
           </select>
         </div>
         <div class="filter-item search-box">
-          <label><i class="fa-solid fa-magnifying-glass"></i> Buscar:</label>
+          <label><i class="fa-solid fa-magnifying-glass"></i> Search:</label>
           <div class="search-input-wrapper">
             <input 
               type="text" 
               [ngModel]="searchQuery()" 
               (ngModelChange)="onSearchInput($event)" 
-              placeholder="Buscar por rival o sede..." 
+              placeholder="Search by opponent or venue..." 
               class="sport-input search-input" 
             />
             @if (searchQuery()) {
-              <button class="btn-clear-search" (click)="clearSearch()" title="Limpiar búsqueda">
+              <button class="btn-clear-search" (click)="clearSearch()" title="Clear search">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             }
@@ -56,15 +56,15 @@
         <table class="fut-table">
           <thead>
             <tr>
-              <th class="th-fecha">Fecha / Hora</th>
-              <th class="th-cat">Categoría</th>
-              <th class="th-rival">Rival</th>
-              <th class="th-cond text-center">Condición</th>
-              <th class="th-sede">Sede / Cancha</th>
-              <th class="th-kit">Uniforme</th>
-              <th class="th-score text-center">Marcador</th>
-              <th class="th-estado text-center">Estado</th>
-              <th class="th-actions text-center">Acciones</th>
+              <th class="th-fecha">Date / Time</th>
+              <th class="th-cat">Category</th>
+              <th class="th-rival">Opponent</th>
+              <th class="th-cond text-center">Condition</th>
+              <th class="th-sede">Venue / Pitch</th>
+              <th class="th-kit">Uniform</th>
+              <th class="th-score text-center">Score</th>
+              <th class="th-estado text-center">Status</th>
+              <th class="th-actions text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -72,26 +72,26 @@
               <tr>
                 <td colspan="9" class="empty-table-cell">
                   <i class="fa-solid fa-spinner fa-spin text-emerald"></i>
-                  <p>Consultando calendario de partidos en la Base de Datos...</p>
+                  <p>Querying match schedule from Database...</p>
                 </td>
               </tr>
             } @else {
               @for (p of partidos(); track p.id) {
                 <tr class="match-table-row">
                   <td class="td-fecha">
-                    <div class="date-box" [title]="'Fecha: ' + formatFecha(p.fecha_partido) + ' - Hora: ' + formatHora(p.hora_partido) + (p.hora_citacion ? ' (Cit: ' + formatHora(p.hora_citacion) + ')' : '')">
+                    <div class="date-box" [title]="'Date: ' + formatFecha(p.fecha_partido) + ' - Time: ' + formatHora(p.hora_partido) + (p.hora_citacion ? ' (Call-up: ' + formatHora(p.hora_citacion) + ')' : '')">
                       <span class="date-text">{{ formatFecha(p.fecha_partido) }}</span>
                       <small>
                         <i class="fa-regular fa-clock"></i> {{ formatHora(p.hora_partido) }}
                         @if (p.hora_citacion && formatHora(p.hora_citacion) !== formatHora(p.hora_partido)) {
-                          <span class="cit-tag">(Cit: {{ formatHora(p.hora_citacion) }})</span>
+                          <span class="cit-tag">(Call: {{ formatHora(p.hora_citacion) }})</span>
                         }
                       </small>
                     </div>
                   </td>
                   <td class="td-cat">
-                    <span class="badge badge-blue badge-categoria" [title]="p.categoria_nombre || 'Categoría'">
-                      {{ p.categoria_nombre || 'Categoría' }}
+                    <span class="badge badge-blue badge-categoria" [title]="p.categoria_nombre || 'Category'">
+                      {{ p.categoria_nombre || 'Category' }}
                     </span>
                   </td>
                   <td class="td-rival">
@@ -99,20 +99,20 @@
                   </td>
                   <td class="td-cond text-center">
                     <span class="badge" [class.badge-success]="p.condicion_juego === 'LOCAL'" [class.badge-warning]="p.condicion_juego === 'VISITANTE'">
-                      {{ p.condicion_juego }}
+                      {{ p.condicion_juego === 'LOCAL' ? 'HOME' : 'AWAY' }}
                     </span>
                   </td>
                   <td class="td-sede">
                     <div class="sede-cell" [title]="p.sede_cancha">
                       <span class="sede-name">{{ p.sede_cancha }}</span>
-                      <button class="btn-gps-link" (click)="openGps(p)" title="Ver en Google Maps">
+                      <button class="btn-gps-link" (click)="openGps(p)" title="View in Google Maps">
                         <i class="fa-solid fa-map-location-dot"></i>
                       </button>
                     </div>
                   </td>
                   <td class="td-kit">
-                    <span class="kit-tag" [title]="p.indumentaria_kit || 'Titular'">
-                      {{ p.indumentaria_kit || 'Titular' }}
+                    <span class="kit-tag" [title]="p.indumentaria_kit || 'Home Kit'">
+                      {{ p.indumentaria_kit || 'Home Kit' }}
                     </span>
                   </td>
                   <td class="td-score text-center">
@@ -122,21 +122,21 @@
                   </td>
                   <td class="td-estado text-center">
                     <span class="badge" [class.badge-success]="p.estado_partido === 'PROGRAMADO'" [class.badge-blue]="p.estado_partido === 'FINALIZADO'">
-                      {{ p.estado_partido }}
+                      {{ p.estado_partido === 'PROGRAMADO' ? 'SCHEDULED' : p.estado_partido === 'FINALIZADO' ? 'COMPLETED' : p.estado_partido }}
                     </span>
                   </td>
                   <td class="td-actions text-center">
                     <div class="actions-row">
-                      <button class="btn-secondary btn-sm btn-edit-match" (click)="openEditModal(p)" title="Editar Partido">
-                        <i class="fa-solid fa-pen-to-square"></i> Editar
+                      <button class="btn-secondary btn-sm btn-edit-match" (click)="openEditModal(p)" title="Edit Match">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit
                       </button>
-                      <button class="btn-secondary btn-sm" (click)="goToConvocatoria(p)" title="Ver y gestionar convocatoria">
-                        <i class="fa-solid fa-users"></i> Convocatoria
+                      <button class="btn-secondary btn-sm" (click)="goToConvocatoria(p)" title="Manage Match Call-up">
+                        <i class="fa-solid fa-users"></i> Call-up
                       </button>
-                      <button class="btn-primary btn-sm btn-acta" (click)="openActaModal(p)" title="Ver acta digital y eventos">
-                        <i class="fa-solid fa-clipboard-list"></i> Acta
+                      <button class="btn-primary btn-sm btn-acta" (click)="openActaModal(p)" title="Digital Match Report">
+                        <i class="fa-solid fa-clipboard-list"></i> Report
                       </button>
-                      <button class="btn-secondary btn-sm btn-delete-match" (click)="openDeleteModal(p)" title="Eliminar / Cancelar Partido">
+                      <button class="btn-secondary btn-sm btn-delete-match" (click)="openDeleteModal(p)" title="Delete / Cancel Match">
                         <i class="fa-solid fa-trash-can"></i>
                       </button>
                     </div>
@@ -146,7 +146,7 @@
                 <tr>
                   <td colspan="9" class="empty-table-cell">
                     <i class="fa-solid fa-futbol"></i>
-                    <p>No hay partidos registrados para los filtros seleccionados.</p>
+                    <p>No matches found for the selected filters.</p>
                   </td>
                 </tr>
               }
@@ -154,12 +154,12 @@
           </tbody>
         </table>
 
-        <!-- BARRA DE PAGINACIÓN SERVER-SIDE -->
+        <!-- SERVER-SIDE PAGINATION BAR -->
         <div class="pagination-bar">
           <div class="pagination-info">
-            <span>Mostrando <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> de <strong>{{ totalRecords() }}</strong> partidos</span>
+            <span>Showing <strong>{{ showingStart() }} - {{ showingEnd() }}</strong> of <strong>{{ totalRecords() }}</strong> matches</span>
             <div class="page-size-selector">
-              <label>Por página:</label>
+              <label>Per page:</label>
               <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="page-size-select">
                 <option [value]="5">5</option>
                 <option [value]="10">10</option>
@@ -174,16 +174,16 @@
               class="page-btn nav-btn" 
               [disabled]="currentPage() === 1 || loading()" 
               (click)="setPage(1)" 
-              title="Primera Página">
+              title="First Page">
               <i class="fa-solid fa-angles-left"></i>
             </button>
             <button 
               class="page-btn nav-btn" 
               [disabled]="currentPage() === 1 || loading()" 
               (click)="setPage(currentPage() - 1)" 
-              title="Página Anterior">
+              title="Previous Page">
               <i class="fa-solid fa-angle-left"></i>
-              <span>Anterior</span>
+              <span>Previous</span>
             </button>
 
             <div class="page-numbers">
@@ -202,22 +202,22 @@
               class="page-btn nav-btn" 
               [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
               (click)="setPage(currentPage() + 1)" 
-              title="Página Siguiente">
-              <span>Siguiente</span>
+              title="Next Page">
+              <span>Next</span>
               <i class="fa-solid fa-angle-right"></i>
             </button>
             <button 
               class="page-btn nav-btn" 
               [disabled]="currentPage() === totalPages() || totalPages() === 0 || loading()" 
               (click)="setPage(totalPages())" 
-              title="Última Página">
+              title="Last Page">
               <i class="fa-solid fa-angles-right"></i>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- MODAL PROGRAMAR PARTIDO -->
+      <!-- MODAL: SCHEDULE NEW MATCH -->
       @if (showScheduleModal()) {
         <div class="modal-overlay" (click)="closeScheduleModal()">
           <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
@@ -227,19 +227,19 @@
                   <i class="fa-solid fa-calendar-plus"></i>
                 </div>
                 <div class="modal-title-text">
-                  <h2>Programar Partido Oficial</h2>
-                  <p class="modal-subtitle">Crea el compromiso en el fixture y habilita la convocatoria técnica</p>
+                  <h2>Schedule Official Match</h2>
+                  <p class="modal-subtitle">Creates the fixture match and enables technical call-up</p>
                 </div>
               </div>
-              <button class="btn-close" (click)="closeScheduleModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-close" (click)="closeScheduleModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <form (ngSubmit)="submitSchedule()" class="modal-form">
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Datos del Encuentro</span>
+                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Match Details</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-users"></i> Categoría *</label>
+                    <label><i class="fa-solid fa-users"></i> Category *</label>
                     <select [(ngModel)]="newMatch.categoria_id" name="categoria_id" class="sport-input" required>
                       @for (cat of categorias(); track cat.id) {
                         <option [value]="cat.id">{{ cat.nombre }} ({{ cat.codigo_categoria }})</option>
@@ -247,49 +247,49 @@
                     </select>
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-shield-cat"></i> Equipo Rival *</label>
-                    <input type="text" [(ngModel)]="newMatch.rival_nombre" name="rival_nombre" placeholder="ej. Santa Fe D.C." class="sport-input" required />
+                    <label><i class="fa-solid fa-shield-cat"></i> Opponent Team *</label>
+                    <input type="text" [(ngModel)]="newMatch.rival_nombre" name="rival_nombre" placeholder="e.g. Santa Fe D.C." class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Horarios & Citación</span>
+                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Schedule & Call-up Time</span>
                 <div class="form-row g3">
                   <div class="input-group">
-                    <label><i class="fa-regular fa-calendar"></i> Fecha de Juego *</label>
+                    <label><i class="fa-regular fa-calendar"></i> Match Date *</label>
                     <input type="text" appFlatpickr [altInput]="false" placeholder="YYYY-MM-DD" [(ngModel)]="newMatch.fecha_partido" name="fecha_partido" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-regular fa-clock"></i> Hora Partido *</label>
+                    <label><i class="fa-regular fa-clock"></i> Match Kick-off *</label>
                     <input type="time" [(ngModel)]="newMatch.hora_partido" name="hora_partido" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-stopwatch"></i> Hora Citación</label>
+                    <label><i class="fa-solid fa-stopwatch"></i> Call-up Time</label>
                     <input type="time" [(ngModel)]="newMatch.hora_citacion" name="hora_citacion" class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Logística & Cancha</span>
+                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Logistics & Venue</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-map-pin"></i> Sede / Cancha *</label>
-                    <input type="text" [(ngModel)]="newMatch.sede_cancha" name="sede_cancha" placeholder="ej. Arrayanes - Cancha Sintética 1" class="sport-input" required />
+                    <label><i class="fa-solid fa-map-pin"></i> Venue / Pitch *</label>
+                    <input type="text" [(ngModel)]="newMatch.sede_cancha" name="sede_cancha" placeholder="e.g. Arrayanes Sports Complex - Pitch 1" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condición *</label>
+                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condition *</label>
                     <select [(ngModel)]="newMatch.condicion_juego" name="condicion_juego" class="sport-input">
-                      <option value="LOCAL">LOCAL</option>
-                      <option value="VISITANTE">VISITANTE</option>
+                      <option value="LOCAL">HOME</option>
+                      <option value="VISITANTE">AWAY</option>
                     </select>
                   </div>
                 </div>
 
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-shirt"></i> Indumentaria / Uniforme</label>
+                    <label><i class="fa-solid fa-shirt"></i> Team Uniform / Kit</label>
                     <div class="sport-select-wrapper">
                       <select [(ngModel)]="newMatch.indumentaria_kit" name="indumentaria_kit" class="sport-input">
                         @for (kit of kitsIndumentaria(); track kit.codigo) {
@@ -304,10 +304,10 @@
 
               <div class="modal-actions">
                 <button type="button" class="btn-secondary" (click)="closeScheduleModal()">
-                  <i class="fa-solid fa-xmark"></i> Cancelar
+                  <i class="fa-solid fa-xmark"></i> Cancel
                 </button>
                 <button type="submit" class="btn-primary">
-                  <i class="fa-solid fa-calendar-check"></i> Guardar y Convocar Plantel
+                  <i class="fa-solid fa-calendar-check"></i> Save & Call Up Squad
                 </button>
               </div>
             </form>
@@ -315,7 +315,7 @@
         </div>
       }
 
-      <!-- MODAL EDITAR PARTIDO (CON BOTONES DE ACCIÓN) -->
+      <!-- MODAL: EDIT MATCH DETAILS -->
       @if (showEditModal() && selectedMatchToEdit()) {
         <div class="modal-overlay" (click)="closeEditModal()">
           <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
@@ -325,19 +325,19 @@
                   <i class="fa-solid fa-pen-to-square"></i>
                 </div>
                 <div class="modal-title-text">
-                  <h2>Editar Compromiso Deportivo</h2>
-                  <p class="modal-subtitle">Modifica horarios, marcador oficial, condición y sede de juego</p>
+                  <h2>Edit Match Details</h2>
+                  <p class="modal-subtitle">Modify schedule, official score, condition and pitch venue</p>
                 </div>
               </div>
-              <button class="btn-close" (click)="closeEditModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-close" (click)="closeEditModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <form (ngSubmit)="submitEditMatch()" class="modal-form">
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Datos del Encuentro</span>
+                <span class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> Match Details</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-users"></i> Categoría *</label>
+                    <label><i class="fa-solid fa-users"></i> Category *</label>
                     <select [(ngModel)]="editMatch.categoria_id" name="editCatId" class="sport-input" required>
                       @for (cat of categorias(); track cat.id) {
                         <option [value]="cat.id">{{ cat.nombre }} ({{ cat.codigo_categoria }})</option>
@@ -345,70 +345,70 @@
                     </select>
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-shield-cat"></i> Equipo Rival *</label>
+                    <label><i class="fa-solid fa-shield-cat"></i> Opponent Team *</label>
                     <input type="text" [(ngModel)]="editMatch.rival_nombre" name="editRival" class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Horarios & Citación</span>
+                <span class="modal-section-title"><i class="fa-regular fa-clock"></i> Schedule & Call-up Time</span>
                 <div class="form-row g3">
                   <div class="input-group">
-                    <label><i class="fa-regular fa-calendar"></i> Fecha de Juego *</label>
-                    <input type="text" appFlatpickr placeholder="dd/mm/aaaa" [(ngModel)]="editMatch.fecha_partido" name="editFecha" class="sport-input" required />
+                    <label><i class="fa-regular fa-calendar"></i> Match Date *</label>
+                    <input type="text" appFlatpickr placeholder="dd/mm/yyyy" [(ngModel)]="editMatch.fecha_partido" name="editFecha" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-regular fa-clock"></i> Hora Partido *</label>
+                    <label><i class="fa-regular fa-clock"></i> Match Kick-off *</label>
                     <input type="time" [(ngModel)]="editMatch.hora_partido" name="editHora" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-stopwatch"></i> Hora Citación</label>
+                    <label><i class="fa-solid fa-stopwatch"></i> Call-up Time</label>
                     <input type="time" [(ngModel)]="editMatch.hora_citacion" name="editCitacion" class="sport-input" required />
                   </div>
                 </div>
               </div>
 
               <div class="modal-section">
-                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Logística & Marcador</span>
+                <span class="modal-section-title"><i class="fa-solid fa-location-dot"></i> Logistics & Score</span>
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-map-pin"></i> Sede / Cancha *</label>
+                    <label><i class="fa-solid fa-map-pin"></i> Venue / Pitch *</label>
                     <input type="text" [(ngModel)]="editMatch.sede_cancha" name="editSede" class="sport-input" required />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condición *</label>
+                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Condition *</label>
                     <select [(ngModel)]="editMatch.condicion_juego" name="editCondicion" class="sport-input">
-                      <option value="LOCAL">LOCAL</option>
-                      <option value="VISITANTE">VISITANTE</option>
+                      <option value="LOCAL">HOME</option>
+                      <option value="VISITANTE">AWAY</option>
                     </select>
                   </div>
                 </div>
 
                 <div class="form-row g3">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-futbol"></i> Goles Club</label>
+                    <label><i class="fa-solid fa-futbol"></i> Club Goals</label>
                     <input type="number" [(ngModel)]="editMatch.goles_club" name="editGolesClub" min="0" class="sport-input" />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-futbol"></i> Goles Rival</label>
+                    <label><i class="fa-solid fa-futbol"></i> Opponent Goals</label>
                     <input type="number" [(ngModel)]="editMatch.goles_rival" name="editGolesRival" min="0" class="sport-input" />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-toggle-on"></i> Estado Partido</label>
+                    <label><i class="fa-solid fa-toggle-on"></i> Match Status</label>
                     <select [(ngModel)]="editMatch.estado_partido" name="editEstado" class="sport-input">
-                      <option value="PROGRAMADO">PROGRAMADO</option>
-                      <option value="EN_CURSO">EN CURSO</option>
-                      <option value="FINALIZADO">FINALIZADO</option>
-                      <option value="APLAZADO">APLAZADO</option>
-                      <option value="CANCELADO">CANCELADO</option>
+                      <option value="PROGRAMADO">SCHEDULED</option>
+                      <option value="EN_CURSO">IN PROGRESS</option>
+                      <option value="FINALIZADO">COMPLETED</option>
+                      <option value="APLAZADO">POSTPONED</option>
+                      <option value="CANCELADO">CANCELED</option>
                     </select>
                   </div>
                 </div>
 
                 <div class="form-row g2">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-shirt"></i> Indumentaria / Uniforme</label>
+                    <label><i class="fa-solid fa-shirt"></i> Team Uniform / Kit</label>
                     <div class="sport-select-wrapper">
                       <select [(ngModel)]="editMatch.indumentaria_kit" name="editIndumentaria" class="sport-input">
                         @for (kit of kitsIndumentaria(); track kit.codigo) {
@@ -421,13 +421,13 @@
                 </div>
               </div>
 
-              <!-- BOTONES DE ACCIÓN (FOOTER) -->
+              <!-- ACTION BUTTONS -->
               <div class="modal-actions">
                 <button type="button" class="btn-secondary" (click)="closeEditModal()">
-                  <i class="fa-solid fa-xmark"></i> Cancelar
+                  <i class="fa-solid fa-xmark"></i> Cancel
                 </button>
                 <button type="submit" class="btn-primary">
-                  <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                  <i class="fa-solid fa-floppy-disk"></i> Save Changes
                 </button>
               </div>
             </form>
@@ -435,7 +435,7 @@
         </div>
       }
 
-      <!-- MODAL ACTA DIGITAL DE PARTIDO -->
+      <!-- MODAL: DIGITAL MATCH REPORT -->
       @if (showActaModal() && selectedPartido()) {
         <div class="modal-overlay" (click)="closeActaModal()">
           <div class="modal-card modal-lg modal-xl" (click)="$event.stopPropagation()">
@@ -445,15 +445,15 @@
                   <i class="fa-solid fa-clipboard-check"></i>
                 </div>
                 <div class="modal-title-text">
-                  <h2>Acta Digital de Juego</h2>
+                  <h2>Digital Match Report</h2>
                   <p class="modal-subtitle">{{ selectedPartido()?.categoria_nombre }} • {{ api.activeClub().nombre }} vs {{ selectedPartido()?.rival_nombre }}</p>
                 </div>
               </div>
-              <button class="btn-close" (click)="closeActaModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-close" (click)="closeActaModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="modal-body-scroll">
-              <!-- Resumen del Partido -->
+              <!-- Match Score Summary -->
               <div class="acta-score-header">
                 <div class="acta-team">
                   <span class="acta-team-name">{{ api.activeClub().nombre }}</span>
@@ -466,43 +466,43 @@
                 </div>
               </div>
 
-              <!-- Registrar Nuevo Evento -->
+              <!-- Log New Match Incident -->
               <div class="acta-event-form fut-card">
-                <h4><i class="fa-solid fa-plus-circle text-emerald"></i> Registrar Incidencia / Evento</h4>
+                <h4><i class="fa-solid fa-plus-circle text-emerald"></i> Log Match Incident / Event</h4>
                 <div class="form-row g3">
                   <div class="input-group">
-                    <label><i class="fa-solid fa-stopwatch"></i> Minuto</label>
+                    <label><i class="fa-solid fa-stopwatch"></i> Minute</label>
                     <input type="number" [(ngModel)]="newEvent.minuto_juego" name="minuto_juego" min="1" max="120" class="sport-input" />
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-flag"></i> Tipo de Evento</label>
+                    <label><i class="fa-solid fa-flag"></i> Event Type</label>
                     <select [(ngModel)]="newEvent.tipo_evento" name="tipo_evento" class="sport-input">
-                      <option value="GOL">⚽ Gol</option>
-                      <option value="TARJETA_AMARILLA">🟨 Tarjeta Amarilla</option>
-                      <option value="TARJETA_ROJA">🟥 Tarjeta Roja</option>
-                      <option value="ASISTENCIA">👟 Asistencia</option>
+                      <option value="GOL">⚽ Goal</option>
+                      <option value="TARJETA_AMARILLA">🟨 Yellow Card</option>
+                      <option value="TARJETA_ROJA">🟥 Red Card</option>
+                      <option value="ASISTENCIA">👟 Assist</option>
                     </select>
                   </div>
                   <div class="input-group">
-                    <label><i class="fa-solid fa-comment-dots"></i> Descripción / Detalle</label>
-                    <input type="text" [(ngModel)]="newEvent.descripcion" name="descripcion" placeholder="ej. Remate cruzado al ángulo" class="sport-input" />
+                    <label><i class="fa-solid fa-comment-dots"></i> Description / Details</label>
+                    <input type="text" [(ngModel)]="newEvent.descripcion" name="descripcion" placeholder="e.g. Cross-shot into top corner" class="sport-input" />
                   </div>
                 </div>
                 <button type="button" class="btn-primary btn-sm" (click)="submitAddEvent()">
-                  <i class="fa-solid fa-plus"></i> Añadir Evento al Acta
+                  <i class="fa-solid fa-plus"></i> Add Event to Report
                 </button>
               </div>
 
-              <!-- Línea de Tiempo de Eventos -->
+              <!-- Events Timeline -->
               <div class="events-timeline">
-                <h4><i class="fa-solid fa-timeline text-emerald"></i> Cronología Oficial de Eventos</h4>
+                <h4><i class="fa-solid fa-timeline text-emerald"></i> Official Events Timeline</h4>
                 @if (actaEvents().length > 0) {
                   <div class="timeline-list">
                     @for (ev of actaEvents(); track ev.id) {
                       <div class="timeline-item">
                         <span class="minute-badge">{{ ev.minuto_juego }}'</span>
                         <div class="event-desc">
-                          <strong>{{ ev.tipo_evento }}</strong>
+                          <strong>{{ ev.tipo_evento === 'GOL' ? '⚽ Goal' : ev.tipo_evento === 'TARJETA_AMARILLA' ? '🟨 Yellow Card' : ev.tipo_evento === 'TARJETA_ROJA' ? '🟥 Red Card' : ev.tipo_evento === 'ASISTENCIA' ? '👟 Assist' : ev.tipo_evento }}</strong>
                           @if (ev.jugador_nombre) {
                             <span> - {{ ev.jugador_nombre }} (#{{ ev.numero_dorsal }})</span>
                           }
@@ -514,33 +514,35 @@
                     }
                   </div>
                 } @else {
-                  <p class="text-muted">No hay eventos registrados en el acta aún.</p>
+                  <p class="text-muted">No events recorded in match report yet.</p>
                 }
               </div>
             </div>
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" (click)="closeActaModal()">
-                <i class="fa-solid fa-xmark"></i> Cerrar Acta
+                <i class="fa-solid fa-xmark"></i> Close Report
               </button>
             </div>
           </div>
         </div>
       }
 
-      <!-- MODAL CONFIRMAR ELIMINACIÓN DE PARTIDO -->
+      <!-- MODAL: CONFIRM MATCH REMOVAL -->
       @if (showDeleteModal() && matchToDelete()) {
         <div class="modal-overlay" (click)="closeDeleteModal()">
           <div class="delete-confirm-modal-card" (click)="$event.stopPropagation()">
-            <div class="delete-confirm-header">
-              <div class="delete-confirm-icon-wrap">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+            <div class="delete-confirm-header header-danger">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge badge-danger-glow">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="modal-title-text">
+                  <h3>Delete Match from Calendar?</h3>
+                  <p class="modal-subtitle">You are about to cancel and remove this match from the club's official fixture</p>
+                </div>
               </div>
-              <div class="delete-confirm-title-wrap">
-                <h3>¿Eliminar Partido del Calendario?</h3>
-                <p>Estás a punto de anular este compromiso del fixture oficial del club</p>
-              </div>
-              <button class="btn-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+              <button class="btn-close" (click)="closeDeleteModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="delete-confirm-body">
@@ -549,9 +551,12 @@
                   <i class="fa-solid fa-futbol"></i>
                 </div>
                 <div class="player-retire-info">
-                  <span class="retire-player-name">vs. {{ matchToDelete()?.rival_nombre }}</span>
+                  <div class="retire-title-row">
+                    <span class="retire-player-name">vs. {{ matchToDelete()?.rival_nombre }}</span>
+                    <span class="badge badge-sm badge-danger">Official Match</span>
+                  </div>
                   <div class="retire-player-tags">
-                    <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ matchToDelete()?.categoria_nombre || 'Categoría' }}</span>
+                    <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ matchToDelete()?.categoria_nombre || 'Category' }}</span>
                     <span class="meta-tag"><i class="fa-regular fa-calendar"></i> {{ formatFecha(matchToDelete()?.fecha_partido) }} ({{ formatHora(matchToDelete()?.hora_partido) }})</span>
                     <span class="meta-tag"><i class="fa-solid fa-location-dot"></i> {{ matchToDelete()?.sede_cancha }}</span>
                   </div>
@@ -561,11 +566,11 @@
               <div class="warning-callout">
                 <i class="fa-solid fa-triangle-exclamation warning-callout-icon"></i>
                 <div class="warning-callout-content">
-                  <h4>Consecuencias de la Operación:</h4>
+                  <h4>Consequences of this Action:</h4>
                   <ul>
-                    <li>Se anularán las convocatorias y citaciones asociadas a este encuentro.</li>
-                    <li>Las estadísticas y eventos registrados en el acta no se contabilizarán en la tabla.</li>
-                    <li>Esta acción es definitiva y retirará el evento del calendario de los padres y deportistas.</li>
+                    <li>Call-ups and invitations linked to this match will be invalidated.</li>
+                    <li>Match stats and incidents recorded in the report will be excluded from tables.</li>
+                    <li>This action is permanent and will remove the event from family calendars.</li>
                   </ul>
                 </div>
               </div>
@@ -573,10 +578,10 @@
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" (click)="closeDeleteModal()">
-                <i class="fa-solid fa-arrow-left"></i> Conservar Partido
+                <i class="fa-solid fa-arrow-left"></i> Keep Match
               </button>
               <button type="button" class="btn-confirm-delete" (click)="confirmDeleteMatch()">
-                <i class="fa-solid fa-trash-can"></i> Sí, Eliminar Partido
+                <i class="fa-solid fa-trash-can"></i> Yes, Delete Match
               </button>
             </div>
           </div>

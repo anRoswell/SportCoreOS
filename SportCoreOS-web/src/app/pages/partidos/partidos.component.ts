@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,6 +17,23 @@ export class PartidosComponent implements OnInit {
   api = inject(ApiService);
   private catalogos = inject(CatalogosService);
   private router = inject(Router);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.currentPage.set(1);
+          this.loadCategorias();
+          this.loadPartidos();
+        });
+      }
+    });
+  }
 
   readonly kitsIndumentaria = this.catalogos.kitsIndumentaria;
   readonly partidos = signal<any[]>([]);
@@ -239,34 +256,34 @@ export class PartidosComponent implements OnInit {
 
   submitSchedule(): void {
     if (!this.newMatch.categoria_id) {
-      this.showToast('Debes seleccionar una categoría (*)');
+      this.showToast('Please select a category (*)');
       return;
     }
     if (!this.newMatch.rival_nombre?.trim()) {
-      this.showToast('El nombre del equipo rival es obligatorio (*)');
+      this.showToast('Opponent team name is required (*)');
       return;
     }
     if (!this.newMatch.fecha_partido) {
-      this.showToast('Indica la fecha del encuentro (*)');
+      this.showToast('Please specify the match date (*)');
       return;
     }
     if (!this.newMatch.hora_partido) {
-      this.showToast('Indica la hora de inicio del partido (*)');
+      this.showToast('Please specify the kick-off time (*)');
       return;
     }
     if (!this.newMatch.sede_cancha?.trim()) {
-      this.showToast('La sede o cancha es obligatoria (*)');
+      this.showToast('Venue or pitch is required (*)');
       return;
     }
 
     this.api.createPartido(this.newMatch).subscribe({
       next: () => {
-        this.showToast('¡Partido programado y convocatoria creada exitosamente!');
+        this.showToast('Match scheduled and call-up created successfully!');
         this.closeScheduleModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error al programar partido.');
+        this.showToast('Error scheduling match.');
       },
     });
   }
@@ -276,34 +293,34 @@ export class PartidosComponent implements OnInit {
     if (!partido || !partido.id) return;
 
     if (!this.editMatch.categoria_id) {
-      this.showToast('Debes seleccionar una categoría (*)');
+      this.showToast('Please select a category (*)');
       return;
     }
     if (!this.editMatch.rival_nombre?.trim()) {
-      this.showToast('El nombre del equipo rival es obligatorio (*)');
+      this.showToast('Opponent team name is required (*)');
       return;
     }
     if (!this.editMatch.fecha_partido) {
-      this.showToast('Indica la fecha del encuentro (*)');
+      this.showToast('Please specify the match date (*)');
       return;
     }
     if (!this.editMatch.hora_partido) {
-      this.showToast('Indica la hora de inicio del partido (*)');
+      this.showToast('Please specify the kick-off time (*)');
       return;
     }
     if (!this.editMatch.sede_cancha?.trim()) {
-      this.showToast('La sede o cancha es obligatoria (*)');
+      this.showToast('Venue or pitch is required (*)');
       return;
     }
 
     this.api.updatePartido(partido.id, this.editMatch).subscribe({
       next: () => {
-        this.showToast('¡Compromiso deportivo actualizado exitosamente!');
+        this.showToast('Match updated successfully!');
         this.closeEditModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error al actualizar el partido.');
+        this.showToast('Error updating match.');
       },
     });
   }
@@ -332,12 +349,12 @@ export class PartidosComponent implements OnInit {
 
     this.api.addEventoPartido(partido.id, this.newEvent).subscribe({
       next: (created) => {
-        this.showToast('¡Evento registrado en el acta digital!');
+        this.showToast('Event recorded in digital match report!');
         this.actaEvents.update((evs) => [...evs, created]);
         this.newEvent.descripcion = '';
       },
       error: () => {
-        this.showToast('Error al registrar evento');
+        this.showToast('Error recording event');
       },
     });
   }
@@ -345,7 +362,7 @@ export class PartidosComponent implements OnInit {
   openGps(partido: any): void {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partido.sede_cancha)}`;
     window.open(url, '_blank');
-    this.showToast(`Abriendo ubicación para ${partido.sede_cancha}`);
+    this.showToast(`Opening location for ${partido.sede_cancha}`);
   }
 
   openDeleteModal(partido: any): void {
@@ -364,12 +381,12 @@ export class PartidosComponent implements OnInit {
 
     this.api.deletePartido(match.id).subscribe({
       next: () => {
-        this.showToast(`Partido vs ${match.rival_nombre} eliminado del calendario.`);
+        this.showToast(`Match vs ${match.rival_nombre} removed from calendar.`);
         this.closeDeleteModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error al eliminar el partido.');
+        this.showToast('Error deleting match.');
       }
     });
   }

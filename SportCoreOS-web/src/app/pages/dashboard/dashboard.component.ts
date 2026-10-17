@@ -402,7 +402,7 @@ export class DashboardComponent implements OnInit {
 
   setFormation(formation: string): void {
     this.selectedFormation.set(formation);
-    this.showToast(`Esquema táctico actualizado a ${formation}`);
+    this.showToast(`Tactical formation updated to ${formation}`);
   }
 
   openPlayerModal(player: any): void {
@@ -417,17 +417,18 @@ export class DashboardComponent implements OnInit {
   setPlayerStatus(player: any, estado: 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO'): void {
     if (!player) return;
     player.estado = estado;
-    this.showToast(`${player.nombre} marcado como ${estado}`);
+    const label = estado === 'CONFIRMADO' ? 'Confirmed' : estado === 'PENDIENTE' ? 'Pending' : 'Excused';
+    this.showToast(`${player.nombre} marked as ${label}`);
   }
 
   sendIndividualWhatsApp(player: any): void {
     if (!player) return;
     const match = this.matches()[0];
     const matchInfo = match 
-      ? `al partido vs ${match.rival_nombre} (${match.categoria_nombre}) el ${match.fecha_partido} a las ${match.hora_partido} en ${match.sede_cancha}`
-      : 'al próximo compromiso oficial del club';
+      ? `to match vs ${match.rival_nombre} (${match.categoria_nombre}) on ${match.fecha_partido} at ${match.hora_partido} in ${match.sede_cancha}`
+      : 'to the next official club fixture';
     const text = encodeURIComponent(
-      `Hola! Te contactamos desde ${this.api.activeClub().nombre}. Le informamos que ${player.nombre} está convocado como ${player.rolTactic || 'jugador'} ${matchInfo}. Por favor confirma la asistencia de tu hijo respondiendo a este mensaje.`
+      `Hello! Contacting you from ${this.api.activeClub().nombre}. Please be informed that ${player.nombre} is called up as ${player.rolTactic || 'player'} ${matchInfo}. Please confirm attendance by replying to this message.`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   }
@@ -450,7 +451,7 @@ export class DashboardComponent implements OnInit {
 
   submitScheduleForm(): void {
     if (!this.newMatch.rivalNombre || !this.newMatch.sedeCancha || !this.newMatch.categoriaId) {
-      this.showToast('Completa los campos obligatorios del partido.');
+      this.showToast('Please complete all required match fields.');
       return;
     }
 
@@ -462,17 +463,17 @@ export class DashboardComponent implements OnInit {
       hora_citacion: this.newMatch.horaCitacion,
       sede_cancha: this.newMatch.sedeCancha,
       condicion_juego: this.newMatch.condicion,
-      indumentaria_kit: 'Kit Titular (Esmeralda)',
+      indumentaria_kit: 'Home Kit (Emerald)',
     };
 
     this.api.createPartido(payload).subscribe({
       next: () => {
         this.closeScheduleModal();
-        this.showToast('¡Partido programado y convocatoria creada con éxito en la BD!');
+        this.showToast('Match scheduled and call-up created successfully!');
         this.loadDashboardData();
       },
       error: () => {
-        this.showToast('Error al crear el partido');
+        this.showToast('Error scheduling match');
       },
     });
   }
@@ -480,23 +481,23 @@ export class DashboardComponent implements OnInit {
   openGpsRoute(match: MatchItem): void {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.sede_cancha)}`;
     window.open(url, '_blank');
-    this.showToast(`Abriendo ruta GPS para "${match.sede_cancha}"`);
+    this.showToast(`Opening GPS route for "${match.sede_cancha}"`);
   }
 
   onSendWhatsAppCitacion(): void {
-    this.showToast('Citaciones enviadas masivamente por WhatsApp a los padres de familia.');
+    this.showToast('Call-up notifications dispatched via WhatsApp to families.');
   }
 
   onSendBulkReminders(): void {
-    this.showToast('Recordatorios de pago de pensión enviados masivamente vía WhatsApp.');
+    this.showToast('Tuition fee payment reminders dispatched via WhatsApp.');
   }
 
   onExportReport(): void {
-    this.showToast('Generando y descargando Informe Ejecutivo 360° en PDF...');
+    this.showToast('Generating and downloading 360° Executive PDF Report...');
   }
 
   onDownloadReceipt(tx: TransactionItem): void {
-    this.showToast(`Descargando recibo de caja oficial para ${tx.jugador_nombre}...`);
+    this.showToast(`Downloading official payment receipt for ${tx.jugador_nombre}...`);
   }
 
   togglePlayerStatus(jugador: any): void {
@@ -504,7 +505,8 @@ export class DashboardComponent implements OnInit {
     const currentIdx = estados.indexOf(jugador.estado);
     const nextEstado = estados[(currentIdx + 1) % estados.length];
     jugador.estado = nextEstado;
-    this.showToast(`${jugador.nombre} marcado como ${nextEstado}`);
+    const label = nextEstado === 'CONFIRMADO' ? 'Confirmed' : nextEstado === 'PENDIENTE' ? 'Pending' : 'Excused';
+    this.showToast(`${jugador.nombre} marked as ${label}`);
   }
 
   private showToast(msg: string): void {

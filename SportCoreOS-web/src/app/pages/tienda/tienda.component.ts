@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { TiendaTab, TiendaCategoriaProducto } from '../../core/enums/domain.enums';
@@ -30,6 +30,22 @@ import { TiendaDeleteModalComponent } from './components/tienda-delete-modal/tie
 })
 export class TiendaComponent implements OnInit {
   private api = inject(ApiService);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.currentPage.set(1);
+          this.loadData();
+        });
+      }
+    });
+  }
 
   readonly TiendaTab = TiendaTab;
 

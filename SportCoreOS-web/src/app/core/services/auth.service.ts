@@ -54,55 +54,55 @@ export interface LoginResponse {
 const STANDARD_DEMO_PERSONAS: DemoPersona[] = [
   {
     id: 'demo-dir',
-    label: 'Director Deportivo',
+    label: 'Sports Director',
     email: 'carlos.valderrama@sportcore.com',
     password: 'sportcore2026',
     rol: 'DIRECTOR_DEPORTIVO',
-    rolLabel: 'Director Metodológico & Deportivo',
+    rolLabel: 'Methodological & Sports Director',
     nombres: 'Carlos',
     apellidos: 'Valderrama',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120',
     badgeColor: 'emerald',
-    descripcion: 'Acceso total a planteles, fixture, finanzas y visorías',
+    descripcion: 'Full access to rosters, fixture, financial ledger, and scouting',
   },
   {
     id: 'demo-dt',
-    label: 'Entrenador / DT',
+    label: 'Head Coach / DT',
     email: 'mario.yepes@sportcore.com',
     password: 'sportcore2026',
     rol: 'ENTRENADOR_DT',
-    rolLabel: 'Director Técnico Sub-15 & Sub-17',
+    rolLabel: 'Head Coach U-15 & U-17',
     nombres: 'Mario',
     apellidos: 'Yepes',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120',
     badgeColor: 'blue',
-    descripcion: 'Convocatorias, actas en vivo, radar táctico y biometría',
+    descripcion: 'Call-ups, live match report, tactical radar, and biometrics',
   },
   {
     id: 'demo-padre',
-    label: 'Padre de Familia',
+    label: 'Parent / Guardian',
     email: 'padre.diaz@sportcore.com',
     password: 'sportcore2026',
     rol: 'PADRE_ACUDIENTE',
-    rolLabel: 'Acudiente (Jugador: Samuel Díaz #10)',
+    rolLabel: 'Guardian (Player: Samuel Díaz #10)',
     nombres: 'Luis',
     apellidos: 'Díaz Padre',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120',
     badgeColor: 'purple',
-    descripcion: 'Confirmación de citaciones, pago express PSE y boletines',
+    descripcion: 'Call-up confirmation, quick online payments, and report cards',
   },
   {
     id: 'demo-finanzas',
-    label: 'Admin Financiero',
+    label: 'Finance Admin',
     email: 'finanzas@sportcore.com',
     password: 'sportcore2026',
     rol: 'ADMIN_FINANCIERO',
-    rolLabel: 'Coordinador de Cartera & PSE',
+    rolLabel: 'Receivables & Billing Coordinator',
     nombres: 'Diana',
     apellidos: 'Morales',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120',
     badgeColor: 'amber',
-    descripcion: 'Conciliación Wompi, facturación masiva y cobro de canchas',
+    descripcion: 'Automated gateway reconciliation, bulk invoicing, and field rentals',
   },
 ];
 
@@ -152,11 +152,11 @@ export class AuthService {
 
   getRoleLabel(rol: string): string {
     const labels: Record<string, string> = {
-      SUPER_ADMIN: 'Super Administrador Global',
-      DIRECTOR_DEPORTIVO: 'Director Deportivo',
-      ENTRENADOR_DT: 'Director Técnico / Entrenador',
-      PADRE_ACUDIENTE: 'Padre / Acudiente',
-      ADMIN_FINANCIERO: 'Administrador Financiero',
+      SUPER_ADMIN: 'Global Super Administrator',
+      DIRECTOR_DEPORTIVO: 'Sports Director',
+      ENTRENADOR_DT: 'Head Coach / DT',
+      PADRE_ACUDIENTE: 'Parent / Guardian',
+      ADMIN_FINANCIERO: 'Finance Administrator',
     };
     return labels[rol] || rol;
   }
@@ -195,7 +195,7 @@ export class AuthService {
   loginWithPersona(personaId: string): Observable<UserProfile> {
     const persona = this.demoPersonas.find((p) => p.id === personaId) || this.demoPersonas[0];
     if (!persona) {
-      return throwError(() => new Error('Perfil demo no disponible en este entorno.'));
+      return throwError(() => new Error('Demo profile not available in this environment.'));
     }
     return this.login(persona.email, persona.password);
   }
@@ -211,7 +211,7 @@ export class AuthService {
       if (user.clubId) {
         const storedClub = {
           id: user.clubId,
-          nombre: user.clubNombre || 'Academia Vinculada',
+          nombre: user.clubNombre || 'Linked Academy',
           slug: user.clubSlug || 'academia-vinculada',
           logo: user.clubLogo || 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200',
           plan: 'Plan Élite Pro',

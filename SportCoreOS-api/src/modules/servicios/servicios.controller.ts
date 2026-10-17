@@ -26,7 +26,7 @@ export class ServiciosController {
   @Get('inscripciones/pendientes')
   @ApiOperation({ summary: 'Listar inscripciones pendientes de validación por Tesorería' })
   async getInscripcionesPendientes(@CurrentUser() user: any) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.getInscripcionesPendientes(clubId);
   }
 
@@ -39,7 +39,7 @@ export class ServiciosController {
     @Query('categoria') categoria?: string,
     @Query('search') search?: string,
   ) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.getServicios(clubId, {
       categoria,
       search,
@@ -49,7 +49,7 @@ export class ServiciosController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalle de una clínica especializada por ID' })
   async getServicioById(@Param('id') id: string, @CurrentUser() user: any) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.getServicioById(id, clubId);
   }
 
@@ -57,7 +57,7 @@ export class ServiciosController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear una nueva clínica deportiva o programa especializado' })
   async createServicio(@CurrentUser() user: any, @Body() dto: CreateServicioDto) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.createServicio(clubId, dto);
   }
 
@@ -69,7 +69,7 @@ export class ServiciosController {
     @CurrentUser() user: any,
     @Body() dto: InscribirServicioDto,
   ) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.inscribirServicio(clubId, id, dto);
   }
 
@@ -80,14 +80,14 @@ export class ServiciosController {
     @CurrentUser() user: any,
     @Body() dto: AprobarInscripcionDto,
   ) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.aprobarInscripcion(clubId, id, user, dto);
   }
 
   @Get(':id/inscripciones')
   @ApiOperation({ summary: 'Listar participantes inscritos en una clínica especializada' })
   async getInscripciones(@Param('id') id: string, @CurrentUser() user: any) {
-    const clubId = user.clubId || '10000000-0000-0000-0000-000000000001';
+    const clubId = user.clubId;
     return this.serviciosService.getInscripciones(id, clubId);
   }
 }

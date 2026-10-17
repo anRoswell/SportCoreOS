@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -80,6 +80,26 @@ import { RankingLeccionInteractivaComponent } from './components/ranking-leccion
 export class RankingGamificadoComponent implements OnInit {
   private api = inject(ApiService);
   private catalogos = inject(CatalogosService);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.currentPage.set(1);
+          this.cargarCategorias();
+          this.cargarTop3Podio();
+          this.cargarJugadoresDesdeBD();
+          this.cargarRetosCatalogo();
+          this.cargarRetosPendientesDT();
+        });
+      }
+    });
+  }
 
   readonly TabRanking = TabRanking;
   readonly FiltroTemporalRanking = FiltroTemporalRanking;

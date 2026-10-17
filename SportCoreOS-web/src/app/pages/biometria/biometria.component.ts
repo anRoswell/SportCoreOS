@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, untracked, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import {
@@ -35,6 +35,23 @@ import { BiometriaFormModalComponent, NewBiometriaForm } from './components/biom
 })
 export class BiometriaComponent implements OnInit {
   private api = inject(ApiService);
+
+  private lastLoadedClubId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const club = this.api.activeClub();
+      if (club && club.id) {
+        if (this.lastLoadedClubId === club.id) return;
+        this.lastLoadedClubId = club.id;
+        untracked(() => {
+          this.currentPage.set(1);
+          this.loadData();
+          this.loadAuxData();
+        });
+      }
+    });
+  }
 
   readonly mediciones = signal<EvaluacionBiometrica[]>([]);
   readonly categorias = signal<any[]>([]);

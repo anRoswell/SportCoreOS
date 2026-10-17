@@ -1,26 +1,26 @@
 <header class="navbar">
-      <!-- Sección Izquierda: Toggle Sidebar + Búsqueda -->
+      <!-- Left Section: Toggle Sidebar + Search -->
       <div class="navbar-left">
-        <button class="toggle-sidebar-btn" (click)="api.toggleSidebar()" title="Colapsar / Expandir Menú">
+        <button class="toggle-sidebar-btn" (click)="api.toggleSidebar()" title="Collapse / Expand Menu">
           <i class="fa-solid fa-bars-staggered"></i>
         </button>
 
         <div class="search-bar">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" placeholder="Buscar jugador, dorsal, categoría, partido..." />
+          <input type="text" [placeholder]="'navbar.searchPlaceholder' | translate" />
           <span class="search-kbd">⌘K</span>
         </div>
       </div>
 
-      <!-- Sección Derecha: Selector Club, Multiidioma, Theme Switcher, Notificaciones, Acciones, Perfil -->
+      <!-- Right Section: Club Selector, Language Selector, Theme Switcher, Notifications, User Profile -->
       <div class="navbar-actions">
-        <!-- Selector Multi-Tenant de Escuelas y Clubes (Dropdown Rico + Fallback Select) -->
+        <!-- Multi-Tenant School/Club Selector (Rich Dropdown + Fallback Select) -->
         <div class="club-selector-container">
           <button 
             type="button" 
             class="club-trigger-btn" 
             (click)="toggleClubDropdown($event)"
-            [title]="api.activeClub().id ? ('Escuela activa: ' + api.activeClub().nombre + (api.activeClub().ciudad ? ' (' + api.activeClub().ciudad + ')' : '')) : 'Sin conexión a base de datos o sin escuelas'"
+            [title]="api.activeClub().id ? (('navbar.activeAcademy' | translate) + ': ' + api.activeClub().nombre + (api.activeClub().ciudad ? ' (' + api.activeClub().ciudad + ')' : '')) : ('navbar.emptyClubs' | translate)"
             aria-haspopup="true"
             [attr.aria-expanded]="isOpenClubDropdown()">
             <div class="club-icon-wrap" [class.has-img]="api.activeClub().logo">
@@ -33,16 +33,16 @@
             <div class="club-info-wrap">
               @if (api.activeClub().id) {
                 <span class="club-name">{{ api.activeClub().nombre }}</span>
-                <span class="club-meta">{{ api.activeClub().ciudad || 'Sede' }} • {{ api.activeClub().sigla || 'SC' }}</span>
+                <span class="club-meta">{{ api.activeClub().ciudad || 'HQ' }} • {{ api.activeClub().sigla || 'SC' }}</span>
               } @else {
-                <span class="club-name">Sin Escuela Seleccionada</span>
-                <span class="club-meta">BD Desconectada / Vacía</span>
+                <span class="club-name">{{ 'navbar.noAcademy' | translate }}</span>
+                <span class="club-meta">{{ 'navbar.dbDisconnected' | translate }}</span>
               }
             </div>
             <i class="fa-solid fa-chevron-down caret-arrow" [class.rotated]="isOpenClubDropdown()"></i>
           </button>
 
-          <!-- Select nativo accesible para sincronización y pruebas automatizadas E2E -->
+          <!-- Accessible native select for E2E automated tests -->
           <select 
             class="club-select visually-hidden-for-tests" 
             [ngModel]="api.activeClub().id" 
@@ -54,27 +54,27 @@
             }
           </select>
 
-          <!-- Dropdown Popup de Escuelas Disponibles -->
+          <!-- Dropdown Popup of Available Schools -->
           @if (isOpenClubDropdown()) {
             <div class="club-dropdown-card">
               <div class="dropdown-header">
                 <div class="header-title-row">
                   <span class="dropdown-title">
-                    <i class="fa-solid fa-school text-emerald"></i> Academias & Escuelas ({{ api.availableClubs().length }})
+                    <i class="fa-solid fa-school text-emerald"></i> {{ 'navbar.academiesList' | translate }} ({{ api.availableClubs().length }})
                   </span>
-                  <button type="button" class="btn-refresh-clubs" (click)="refreshClubs($event)" title="Actualizar lista de escuelas">
+                  <button type="button" class="btn-refresh-clubs" (click)="refreshClubs($event)" [title]="'navbar.refreshList' | translate">
                     <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isRefreshing()"></i>
                   </button>
                 </div>
                 
-                <!-- Buscador de Escuelas en Vivo -->
+                <!-- Live Search Filter for Schools -->
                 <div class="club-search-input-wrap">
                   <i class="fa-solid fa-magnifying-glass"></i>
                   <input 
                     type="text" 
                     [ngModel]="searchClubQuery()" 
                     (ngModelChange)="searchClubQuery.set($event)"
-                    placeholder="Filtrar por nombre o ciudad..." 
+                    [placeholder]="'navbar.filterByNameOrCity' | translate" 
                     class="club-filter-input" 
                     (click)="$event.stopPropagation()" />
                 </div>
@@ -113,17 +113,17 @@
                 } @empty {
                   <div class="empty-clubs">
                     <i class="fa-solid fa-circle-info"></i>
-                    <span>{{ api.availableClubs().length === 0 ? 'Sin escuelas registradas o sin conexión a la base de datos.' : ('No se encontraron escuelas con "' + searchClubQuery() + '"') }}</span>
+                    <span>{{ api.availableClubs().length === 0 ? ('navbar.emptyClubs' | translate) : ('No academies found matching "' + searchClubQuery() + '"') }}</span>
                   </div>
                 }
               </div>
 
-              <!-- Footer de Acciones Super Admin -->
+              <!-- Super Admin Action Footer -->
               @if (profileService.hasRole(['SUPER_ADMIN'])) {
                 <div class="dropdown-footer">
                   <button type="button" class="btn-manage-schools" (click)="goToSchoolManagement($event)">
                     <i class="fa-solid fa-cubes"></i>
-                    <span>Administrar Módulos & Licencias</span>
+                    <span>{{ 'navbar.manageModules' | translate }}</span>
                   </button>
                 </div>
               }
@@ -131,33 +131,33 @@
           }
         </div>
 
-        <!-- Selector Multiidioma (i18n) -->
+        <!-- Language Selector (i18n) -->
         <app-language-selector></app-language-selector>
 
-        <!-- Botón Selector de Tema (Light / Dark Mode) -->
+        <!-- Theme Toggle Button (Light / Dark Mode) -->
         <button 
           class="theme-toggle-btn" 
           (click)="themeService.toggleTheme()" 
-          [attr.aria-label]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'"
-          [title]="themeService.isDark() ? 'Cambiar a Modo Claro (Limpio)' : 'Cambiar a Modo Oscuro (Dark Sport)'">
+          [attr.aria-label]="themeService.isDark() ? ('navbar.lightMode' | translate) : ('navbar.darkMode' | translate)"
+          [title]="themeService.isDark() ? ('common.themeLight' | translate) : ('common.themeDark' | translate)">
           <div class="theme-icon-wrap" [class.is-dark]="themeService.isDark()">
             @if (themeService.isDark()) {
               <i class="fa-solid fa-sun sun-icon"></i>
-              <span class="theme-label">Modo Claro</span>
+              <span class="theme-label">{{ 'navbar.lightMode' | translate }}</span>
             } @else {
               <i class="fa-solid fa-moon moon-icon"></i>
-              <span class="theme-label">Modo Oscuro</span>
+              <span class="theme-label">{{ 'navbar.darkMode' | translate }}</span>
             }
           </div>
         </button>
 
-        <!-- Notificaciones -->
-        <button class="icon-btn" title="Notificaciones del Sistema">
+        <!-- Notifications -->
+        <button class="icon-btn" [title]="'navbar.notifications' | translate">
           <i class="fa-regular fa-bell"></i>
           <span class="dot"></span>
         </button>
 
-        <!-- Menú de Usuario con Dropdown & Logout -->
+        <!-- User Menu with Dropdown & Logout -->
         <div class="user-menu-container">
           <button class="user-profile-btn" (click)="toggleUserDropdown()">
             <img [src]="authService.currentUser()?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'" alt="Avatar" class="avatar" />
@@ -185,11 +185,11 @@
 
               <div class="dropdown-actions">
                 <button class="dropdown-item" (click)="onOpenProfile()">
-                  <i class="fa-regular fa-id-badge"></i> Mi Perfil Deportivo
+                  <i class="fa-regular fa-id-badge"></i> {{ 'navbar.myProfile' | translate }}
                 </button>
                 @if (profileService.hasRole(['SUPER_ADMIN'])) {
                   <button class="dropdown-item" (click)="goToSchoolManagement($event)">
-                    <i class="fa-solid fa-sliders"></i> Ajustes de la Escuela
+                    <i class="fa-solid fa-sliders"></i> {{ 'navbar.settings' | translate }}
                   </button>
                 }
               </div>
@@ -198,7 +198,7 @@
 
               <button class="dropdown-logout-btn" (click)="onLogout()">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Cerrar Sesión</span>
+                <span>{{ 'navbar.logout' | translate }}</span>
               </button>
             </div>
           }
