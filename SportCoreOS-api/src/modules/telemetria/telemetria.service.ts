@@ -41,4 +41,8 @@ export class TelemetriaService {
   async findMetricasByJugador(jugadorId: string, clubId: string) {
     return this.telemetriaRepo.findMetricasByJugador(jugadorId, clubId);
   }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    return this.telemetriaRepo.getInitData(clubId, options);
+  }
 }

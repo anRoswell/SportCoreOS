@@ -64,4 +64,8 @@ export class RetosService {
     }
     return this.retosRepo.getMetricasJugador(jugadorId, clubId);
   }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number; categoriaId?: string }) {
+    return this.retosRepo.getInitData(clubId, options);
+  }
 }

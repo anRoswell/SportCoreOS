@@ -152,4 +152,40 @@ export class TelemetriaRepository {
     );
     return res.rows;
   }
+
+  async findJugadoresDropdown(clubId: string) {
+    const res = await this.db.query(
+      `SELECT j.id, CONCAT(j.nombres, ' ', j.apellidos) as nombre_completo,
+              j.nombres, j.apellidos, j.categoria_id, c.nombre as categoria_nombre,
+              j.numero_dorsal, j.posicion_principal, j.foto_url as avatar_url
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       WHERE j.club_id = $1 AND j.estado_matricula = 'ACTIVO'
+       ORDER BY j.apellidos ASC, j.nombres ASC`,
+      [clubId]
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    const [sesionesPaginadas, jugadores] = await Promise.all([
+      this.findAllSesiones(clubId, options),
+      this.findJugadoresDropdown(clubId),
+    ]);
+
+    let activeSesion = null;
+    if (sesionesPaginadas.data && sesionesPaginadas.data.length > 0) {
+      activeSesion = await this.findSesionById(sesionesPaginadas.data[0].id, clubId);
+    }
+
+    return {
+      sesiones: sesionesPaginadas.data,
+      total: sesionesPaginadas.total,
+      page: sesionesPaginadas.page,
+      limit: sesionesPaginadas.limit,
+      totalPages: sesionesPaginadas.totalPages,
+      activeSesion,
+      jugadores,
+    };
+  }
 }

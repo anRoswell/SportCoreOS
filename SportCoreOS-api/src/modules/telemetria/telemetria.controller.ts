@@ -12,6 +12,21 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class TelemetriaController {
   constructor(private readonly telemetriaService: TelemetriaService) {}
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos de inicialización para el módulo de Telemetría (sesiones, sesión activa completa, jugadores)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.telemetriaService.getInitData(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Get('sesiones')
   @ApiOperation({ summary: 'Listar todas las sesiones de telemetría GPS del club con paginación' })
   @ApiQuery({ name: 'page', required: false, type: Number })

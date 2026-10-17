@@ -75,9 +75,30 @@ export class FinanzasComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadCategorias();
-    this.loadResumen();
-    this.loadCargos();
+    this.loadInitData();
+  }
+
+  loadInitData(): void {
+    this.loading.set(true);
+    this.api.getFinanzasInitData({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+    }).subscribe({
+      next: (res) => {
+        if (res.resumen) {
+          this.resumen.set(res.resumen);
+        }
+        this.categorias.set(res.categorias || []);
+        const rows = res.cargos || [];
+        this.cargos.set(rows);
+        this.totalRecords.set(res.total || rows.length);
+        this.totalPages.set(res.totalPages || Math.ceil((res.total || rows.length) / this.pageSize()) || 1);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
   }
 
   loadCategorias(): void {

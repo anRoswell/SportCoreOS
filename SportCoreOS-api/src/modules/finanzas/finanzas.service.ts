@@ -31,4 +31,8 @@ export class FinanzasService {
   async registrarPago(id: string, clubId: string, monto: number) {
     return this.finanzasRepository.registrarPago(id, clubId, monto);
   }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    return this.finanzasRepository.getInitData(clubId, options);
+  }
 }

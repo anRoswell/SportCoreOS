@@ -231,4 +231,31 @@ export class PartidosRepository extends BaseRepository {
     );
     return res.rows[0];
   }
+
+  async findCategoriasClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT c.id, c.nombre, c.codigo_categoria, c.color_distintivo, c.cupo_maximo
+       FROM deportivo.categorias c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    const [categorias, partidosPaginados] = await Promise.all([
+      this.findCategoriasClub(clubId),
+      this.findPartidosByClub(clubId, { page: options?.page || 1, limit: options?.limit || 10 }),
+    ]);
+
+    return {
+      categorias,
+      partidos: partidosPaginados.data,
+      total: partidosPaginados.total,
+      page: partidosPaginados.page,
+      limit: partidosPaginados.limit,
+      totalPages: partidosPaginados.totalPages,
+    };
+  }
 }

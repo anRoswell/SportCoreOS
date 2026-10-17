@@ -214,11 +214,74 @@ export class RankingGamificadoComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.cargarCategorias();
-    this.cargarTop3Podio();
-    this.cargarJugadoresDesdeBD();
-    this.cargarRetosCatalogo();
-    this.cargarRetosPendientesDT();
+    this.loadInitData();
+  }
+
+  loadInitData(): void {
+    this.isLoading.set(true);
+    this.api.getRankingInitData({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+      categoriaId: this.categoriaSeleccionada(),
+    }).subscribe({
+      next: (init: any) => {
+        // 1. Categorías
+        if (init?.categorias && init.categorias.length > 0) {
+          const mapped = init.categorias.map((c: any) => ({
+            id: c.id,
+            nombre: c.nombre,
+            color: c.color_distintivo || '#10b981'
+          }));
+          this.categoriasDisponibles.set(mapped);
+        }
+
+        // 2. Top 3
+        if (init?.top3 && init.top3.length > 0) {
+          this.top3.set(init.top3.map((j: any, idx: number) => this.mapJugadorToRankItem(j, idx + 1)));
+        } else {
+          this.top3.set([]);
+        }
+
+        // 3. Leaderboard
+        const jugadoresList = init?.leaderboard || [];
+        const total = init?.total !== undefined ? init.total : jugadoresList.length;
+        if (jugadoresList.length > 0) {
+          const startRank = (this.currentPage() - 1) * this.pageSize() + 1;
+          const items: AlumnoRankItem[] = jugadoresList.map((j: any, idx: number) =>
+            this.mapJugadorToRankItem(j, startRank + idx)
+          );
+          let filteredItems = items;
+          if (this.tierSeleccionado() !== 'TODOS') {
+            filteredItems = items.filter(a => a.tier === this.tierSeleccionado());
+          }
+          this.alumnos.set(filteredItems);
+          this.totalRecords.set(total > 0 ? total : filteredItems.length);
+        } else {
+          this.alumnos.set([]);
+          this.totalRecords.set(0);
+        }
+
+        // 4. Catálogo de Retos
+        if (init?.retosCatalogo) {
+          this.retosCatalogo.set(init.retosCatalogo);
+        }
+
+        // 5. Retos pendientes DT
+        if (init?.retosPendientesDT) {
+          this.retosPendientesDT.set(init.retosPendientesDT);
+        }
+
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.cargarCategorias();
+        this.cargarTop3Podio();
+        this.cargarJugadoresDesdeBD();
+        this.cargarRetosCatalogo();
+        this.cargarRetosPendientesDT();
+      }
+    });
   }
 
   cargarCategorias(): void {

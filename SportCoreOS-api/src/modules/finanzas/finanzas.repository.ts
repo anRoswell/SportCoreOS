@@ -198,4 +198,33 @@ export class FinanzasRepository extends BaseRepository {
 
     return updateRes.rows[0];
   }
+
+  async findCategoriasClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT c.id, c.nombre, c.codigo_categoria, c.color_distintivo, c.cupo_maximo
+       FROM deportivo.categorias c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    const [resumen, categorias, cargosPaginados] = await Promise.all([
+      this.getResumenFinanciero(clubId),
+      this.findCategoriasClub(clubId),
+      this.getCargosPorCobrar(clubId, { page: options?.page || 1, limit: options?.limit || 10 }),
+    ]);
+
+    return {
+      resumen,
+      categorias,
+      cargos: cargosPaginados.data,
+      total: cargosPaginados.total,
+      page: cargosPaginados.page,
+      limit: cargosPaginados.limit,
+      totalPages: cargosPaginados.totalPages,
+    };
+  }
 }

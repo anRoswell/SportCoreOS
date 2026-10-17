@@ -161,8 +161,30 @@ export class JugadoresComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.loadCategorias();
-    this.loadJugadores();
+    this.loadInitData();
+  }
+
+  loadInitData() {
+    this.loading.set(true);
+    this.api.getJugadoresInitData({ page: this.currentPage(), limit: this.pageSize() }).subscribe({
+      next: (init) => {
+        if (init?.categorias) {
+          this.categorias.set(init.categorias);
+        }
+        const rows = init?.jugadores || [];
+        const total = typeof init?.total === 'number' ? init.total : rows.length;
+        const totalPages = typeof init?.totalPages === 'number' ? init.totalPages : Math.max(1, Math.ceil(total / this.pageSize()));
+
+        this.jugadores.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalPages);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error cargando init data de jugadores:', err);
+        this.loading.set(false);
+      },
+    });
   }
 
   loadCategorias() {

@@ -11,6 +11,12 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Cargar toda la data inicial del Dashboard en una sola llamada agregada (InitData Pattern)' })
+  async getInitData(@CurrentUser() user: any) {
+    return this.dashboardService.getDashboardInitData(user.clubId);
+  }
+
   @Get('kpis')
   @ApiOperation({ summary: 'Obtener métricas ejecutivas, próximos partidos y recaudo mensual' })
   async getKPIs(@CurrentUser() user: any) {

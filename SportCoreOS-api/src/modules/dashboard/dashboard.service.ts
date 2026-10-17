@@ -1,6 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DashboardRepository, DashboardExecutiveKPIs } from './dashboard.repository';
 
+export interface DashboardInitDataDto {
+  kpis: DashboardExecutiveKPIs;
+  categorias: any[];
+  proximosPartidos: any[];
+  pizarraTacticos: any[];
+  ultimasTransacciones: any[];
+  topBiometria: any[];
+  clubLanding: any | null;
+}
+
 @Injectable()
 export class DashboardService {
   constructor(private readonly dashboardRepo: DashboardRepository) {}
@@ -32,6 +42,36 @@ export class DashboardService {
         porcentajeRecaudo,
       },
       distribucionPosiciones,
+    };
+  }
+
+  async getDashboardInitData(clubId: string): Promise<DashboardInitDataDto> {
+    const [
+      kpis,
+      categorias,
+      proximosPartidos,
+      pizarraTacticos,
+      ultimasTransacciones,
+      topBiometria,
+      clubLanding,
+    ] = await Promise.all([
+      this.getExecutiveKPIs(clubId),
+      this.dashboardRepo.findCategoriasActivas(clubId),
+      this.dashboardRepo.findProximosPartidos(clubId, 10),
+      this.dashboardRepo.findJugadoresPizarra(clubId, 18),
+      this.dashboardRepo.findUltimasTransacciones(clubId, 6),
+      this.dashboardRepo.findTopBiometria(clubId, 3),
+      this.dashboardRepo.findClubLanding(clubId),
+    ]);
+
+    return {
+      kpis,
+      categorias,
+      proximosPartidos,
+      pizarraTacticos,
+      ultimasTransacciones,
+      topBiometria,
+      clubLanding,
     };
   }
 }

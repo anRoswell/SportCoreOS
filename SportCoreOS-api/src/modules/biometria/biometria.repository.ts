@@ -166,4 +166,47 @@ export class BiometriaRepository {
       totalPages: Math.max(1, Math.ceil(total / limit)),
     };
   }
+
+  async findCategoriasClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT c.id, c.nombre, c.codigo_categoria, c.color_distintivo, c.cupo_maximo
+       FROM deportivo.categorias c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async findJugadoresDropdown(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT j.id, CONCAT(j.nombres, ' ', j.apellidos) as nombre_completo,
+              j.nombres, j.apellidos, j.categoria_id, c.nombre as categoria_nombre,
+              j.numero_dorsal, j.posicion_principal, j.foto_url as avatar_url
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       WHERE j.club_id = $1 AND j.estado_matricula = 'ACTIVO'
+       ORDER BY j.apellidos ASC, j.nombres ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: FindBiometriaFilterOptions) {
+    const [evaluacionesPaginadas, categorias, jugadores] = await Promise.all([
+      this.findByClubPaginated(clubId, options),
+      this.findCategoriasClub(clubId),
+      this.findJugadoresDropdown(clubId),
+    ]);
+
+    return {
+      evaluaciones: evaluacionesPaginadas.data,
+      total: evaluacionesPaginadas.total,
+      page: evaluacionesPaginadas.page,
+      limit: evaluacionesPaginadas.limit,
+      totalPages: evaluacionesPaginadas.totalPages,
+      categorias,
+      jugadores,
+    };
+  }
 }

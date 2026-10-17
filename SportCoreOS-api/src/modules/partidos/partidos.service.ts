@@ -47,4 +47,8 @@ export class PartidosService {
   async addEvento(partidoId: string, data: any) {
     return this.partidosRepository.createEventoActa(partidoId, data);
   }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    return this.partidosRepository.getInitData(clubId, options);
+  }
 }

@@ -249,4 +249,8 @@ export class JugadoresService {
       evaluacion,
     };
   }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    return this.jugadoresRepository.getInitData(clubId, options);
+  }
 }

@@ -62,6 +62,21 @@ export class JugadoresController {
     });
   }
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos de inicialización para el módulo de Jugadores (categorías, listado inicial paginado)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.jugadoresService.getInitData(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener datos básicos de un jugador por ID' })
   async getById(@Param('id') id: string, @CurrentUser() user: any) {

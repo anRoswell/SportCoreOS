@@ -29,4 +29,8 @@ export class BiometriaService {
   async findByClub(clubId: string, options?: FindBiometriaFilterOptions) {
     return this.biometriaRepo.findByClubPaginated(clubId, options);
   }
+
+  async getInitData(clubId: string, options?: FindBiometriaFilterOptions) {
+    return this.biometriaRepo.getInitData(clubId, options);
+  }
 }

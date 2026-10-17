@@ -544,4 +544,123 @@ export class RetosRepository {
       }
     ];
   }
+
+  async findCategoriasClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT c.id, c.nombre, c.codigo_categoria, c.color_distintivo, c.cupo_maximo
+       FROM deportivo.categorias c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async findRankingJugadores(clubId: string, options?: { page?: number; limit?: number; categoriaId?: string; search?: string }) {
+    const page = Math.max(1, Number(options?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(options?.limit) || 8));
+    const offset = (page - 1) * limit;
+
+    const whereParts = ['j.club_id = $1', "j.estado_matricula = 'ACTIVO'"];
+    const params: any[] = [clubId];
+
+    if (options?.categoriaId && options.categoriaId !== 'TODAS') {
+      params.push(options.categoriaId);
+      whereParts.push(`j.categoria_id = $${params.length}`);
+    }
+
+    if (options?.search && options.search.trim()) {
+      params.push(`%${options.search.trim()}%`);
+      const pIdx = params.length;
+      whereParts.push(`(j.nombres ILIKE $${pIdx} OR j.apellidos ILIKE $${pIdx})`);
+    }
+
+    const countRes = await this.db.query(
+      `SELECT COUNT(*) as count FROM deportivo.jugadores j WHERE ${whereParts.join(' AND ')}`,
+      params,
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    const queryParams = [...params, limit, offset];
+    const dataRes = await this.db.query(
+      `SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento,
+              j.numero_documento, j.fecha_nacimiento, j.genero, j.foto_url,
+              j.posicion_principal, j.posicion_secundaria, j.pierna_habil, j.numero_dorsal,
+              j.eps, j.estado_matricula,
+              COALESCE(j.xp_total, 0) as xp_total,
+              COALESCE(j.xp_asistencia, 0) as xp_asistencia,
+              COALESCE(j.xp_rendimiento_dt, 0) as xp_rendimiento_dt,
+              COALESCE(j.xp_misiones, 0) as xp_misiones,
+              COALESCE(j.xp_tactica, 0) as xp_tactica,
+              COALESCE(j.xp_penalizaciones, 0) as xp_penalizaciones,
+              COALESCE(j.xp_liga, 0) as xp_liga,
+              c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo,
+              b.peso_kg, b.talla_cm, b.imc, b.fecha_evaluacion as ultima_evaluacion
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       LEFT JOIN LATERAL (
+         SELECT peso_kg, talla_cm, imc, fecha_evaluacion
+         FROM rendimiento.evaluaciones_biometricas eb
+         WHERE eb.jugador_id = j.id
+         ORDER BY eb.fecha_evaluacion DESC
+         LIMIT 1
+       ) b ON true
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY COALESCE(j.xp_total, 0) DESC, j.apellidos ASC
+       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
+      queryParams,
+    );
+
+    return {
+      data: dataRes.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
+  }
+
+  async findTop3(clubId: string, categoriaId?: string) {
+    const whereParts = ['j.club_id = $1', "j.estado_matricula = 'ACTIVO'"];
+    const params: any[] = [clubId];
+    if (categoriaId && categoriaId !== 'TODAS') {
+      params.push(categoriaId);
+      whereParts.push(`j.categoria_id = $${params.length}`);
+    }
+    const res = await this.db.query(
+      `SELECT j.id, j.club_id, j.categoria_id, j.nombres, j.apellidos, j.tipo_documento,
+              j.numero_documento, j.foto_url, j.posicion_principal, j.numero_dorsal,
+              COALESCE(j.xp_total, 0) as xp_total,
+              c.nombre as categoria_nombre, c.codigo_categoria, c.color_distintivo
+       FROM deportivo.jugadores j
+       JOIN deportivo.categorias c ON c.id = j.categoria_id
+       WHERE ${whereParts.join(' AND ')}
+       ORDER BY COALESCE(j.xp_total, 0) DESC, j.apellidos ASC
+       LIMIT 3`,
+      params,
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number; categoriaId?: string }) {
+    const [categorias, top3, leaderboard, retosCatalogo, retosPendientesDT] = await Promise.all([
+      this.findCategoriasClub(clubId),
+      this.findTop3(clubId, options?.categoriaId),
+      this.findRankingJugadores(clubId, options),
+      this.findCatalogo(clubId),
+      this.findPendientesEvaluacion(clubId, options?.categoriaId),
+    ]);
+
+    return {
+      categorias,
+      top3,
+      leaderboard: leaderboard.data,
+      total: leaderboard.total,
+      page: leaderboard.page,
+      limit: leaderboard.limit,
+      totalPages: leaderboard.totalPages,
+      retosCatalogo,
+      retosPendientesDT,
+    };
+  }
 }

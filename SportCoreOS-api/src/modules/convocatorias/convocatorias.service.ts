@@ -76,4 +76,36 @@ export class ConvocatoriasService {
 
     return this.findByPartido(partidoId);
   }
+
+  async getConvocatoriasInitData(clubId: string, preferredPartidoId?: string) {
+    const partidos = await this.convocatoriasRepo.findPartidosClub(clubId);
+    let partidoActivo: any = null;
+    let convocados: any[] = [];
+    let jugadoresDisponibles: any[] = [];
+
+    if (partidos && partidos.length > 0) {
+      const targetId = preferredPartidoId && partidos.some((p: any) => p.id === preferredPartidoId)
+        ? preferredPartidoId
+        : partidos[0].id;
+
+      const [info, convs] = await Promise.all([
+        this.convocatoriasRepo.findPartidoInfo(targetId),
+        this.convocatoriasRepo.findJugadoresConvocados(targetId),
+      ]);
+
+      partidoActivo = info;
+      convocados = convs;
+
+      if (info && info.categoria_id) {
+        jugadoresDisponibles = await this.convocatoriasRepo.findJugadoresCategoria(info.categoria_id, clubId);
+      }
+    }
+
+    return {
+      partidos,
+      partidoActivo,
+      convocados,
+      jugadoresDisponibles,
+    };
+  }
 }

@@ -79,8 +79,74 @@ export class TelemetriaComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadSesiones();
-    this.loadJugadores();
+    this.loadInitData();
+  }
+
+  loadInitData(): void {
+    this.loading.set(true);
+    this.api.getTelemetriaInitData({
+      page: this.currentSesionesPage(),
+      limit: this.sesionesPageSize(),
+    }).subscribe({
+      next: (init: any) => {
+        const raw = Array.isArray(init?.sesiones) ? init.sesiones : [];
+        const sesiones = raw.map((s: any) => ({
+          ...s,
+          nombre_sesion: s.nombre_sesion || s.rival_nombre || ((s.tipo_sesion === 'PARTIDO_OFICIAL' || s.tipo_sesion === 'partido' ? 'Partido Oficial' : 'Entrenamiento Táctico') + ' • ' + s.fecha_sesion),
+        }));
+        const total = init?.total !== undefined ? init.total : sesiones.length;
+        const totalP = init?.totalPages !== undefined ? init.totalPages : Math.ceil(total / this.sesionesPageSize()) || 1;
+
+        this.sesionesList.set(sesiones);
+        this.totalSesiones.set(total);
+        this.totalSesionesPages.set(totalP);
+
+        if (init?.jugadores) {
+          this.jugadoresList.set(init.jugadores);
+        }
+
+        if (init?.activeSesion) {
+          this.applySesionDetail(init.activeSesion);
+        } else if (sesiones.length > 0) {
+          this.selectSesion(sesiones[0]);
+        } else {
+          this.selectedSesion.set(null);
+          this.activeHeatmapPlayer.set(null);
+        }
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.sesionesList.set([]);
+        this.totalSesiones.set(0);
+        this.totalSesionesPages.set(1);
+        this.selectedSesion.set(null);
+        this.activeHeatmapPlayer.set(null);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  applySesionDetail(ses: any): void {
+    if (ses?.metricas && ses.metricas.length > 0) {
+      const mapped = ses.metricas.map((m: any) => ({
+        id: m.id,
+        jugador_id: m.jugador_id,
+        jugador_nombre: m.nombres ? `${m.nombres} ${m.apellidos}` : (m.jugador_nombre || 'Jugador'),
+        posicion: m.posicion_principal || m.posicion || 'delantero',
+        distancia_total_km: (Number(m.distancia_total_m || 9400) / 1000).toFixed(1),
+        velocidad_maxima_kmh: (Number(m.velocidad_max_kmh || 31.8)).toFixed(1),
+        sprints_alta_intensidad: m.sprints_conteo || 18,
+        player_load: Math.round(Number(m.player_load_au || 540)),
+        frecuencia_cardiaca_max: m.frecuencia_cardiaca_max || 188,
+        heatmap: m.coordenadas_heatmap_json || [],
+      }));
+      this.selectedSesion.set({ ...ses, metricas: mapped });
+      this.activeHeatmapPlayer.set(mapped[0]);
+    } else {
+      this.selectedSesion.set(ses);
+      this.activeHeatmapPlayer.set(null);
+    }
   }
 
   loadSesiones(preferredId?: string): void {
@@ -145,27 +211,7 @@ export class TelemetriaComponent implements OnInit {
     if (!s?.id) return;
     this.api.getSesionTelemetriaById(s.id).subscribe({
       next: (full) => {
-        const ses = full || s;
-        if (ses?.metricas && ses.metricas.length > 0) {
-          const mapped = ses.metricas.map((m: any) => ({
-            id: m.id,
-            jugador_id: m.jugador_id,
-            jugador_nombre: m.nombres ? `${m.nombres} ${m.apellidos}` : (m.jugador_nombre || 'Jugador'),
-            posicion: m.posicion_principal || m.posicion || 'delantero',
-            distancia_total_km: (Number(m.distancia_total_m || 9400) / 1000).toFixed(1),
-            velocidad_maxima_kmh: (Number(m.velocidad_max_kmh || 31.8)).toFixed(1),
-            sprints_alta_intensidad: m.sprints_conteo || 18,
-            player_load: Math.round(Number(m.player_load_au || 540)),
-            frecuencia_cardiaca_max: m.frecuencia_cardiaca_max || 188,
-            heatmap: m.coordenadas_heatmap_json || [],
-          }));
-          ses.metricas = mapped;
-          this.selectedSesion.set(ses);
-          this.activeHeatmapPlayer.set(mapped[0]);
-        } else {
-          this.selectedSesion.set(ses);
-          this.activeHeatmapPlayer.set(null);
-        }
+        this.applySesionDetail(full || s);
       },
       error: () => {
         this.selectedSesion.set(s);

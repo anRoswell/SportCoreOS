@@ -11,6 +11,21 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class BiometriaController {
   constructor(private readonly biometriaService: BiometriaService) {}
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos iniciales completos del módulo de Biometría (evaluaciones paginadas, categorías, jugadores)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.biometriaService.getInitData(user.clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar evaluaciones biométricas paginadas con filtros y búsqueda' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página' })

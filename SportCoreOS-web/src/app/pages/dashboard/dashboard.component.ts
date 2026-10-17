@@ -150,6 +150,7 @@ export class DashboardComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   readonly stats = signal<KPIStats | null>(null);
+  readonly isLoadingInit = signal<boolean>(true);
   readonly activeTab = signal<'partidos' | 'convocatoria' | 'recaudo' | 'biometria'>('partidos');
   readonly showScheduleModal = signal<boolean>(false);
   readonly showLandingModal = signal<boolean>(false);
@@ -235,7 +236,6 @@ export class DashboardComponent implements OnInit {
         this.lastLoadedClubId = club.id;
         untracked(() => {
           this.loadDashboardData();
-          this.loadActiveClubLanding(club.id);
         });
       }
     });
@@ -273,121 +273,133 @@ export class DashboardComponent implements OnInit {
     this.showLandingModal.set(false);
   }
 
+  /**
+   * Carga Atómica de Datos Iniciales (InitData Pattern):
+   * Reemplaza 8 peticiones HTTP concurrentes por 1 sola llamada optimizada al backend
+   */
   loadDashboardData(): void {
-    // 1. Cargar KPIs
-    this.api.getDashboardKPIs().subscribe((data) => {
-      this.stats.set(data);
-    });
+    this.isLoadingInit.set(true);
 
-    // 2. Cargar Categorías
-    this.api.getCategorias().subscribe((cats) => {
-      this.categorias.set(cats || []);
-      if (cats && cats.length > 0 && !this.newMatch.categoriaId) {
-        this.newMatch.categoriaId = cats[0].id;
-      }
-    });
+    this.api.getDashboardInitData().subscribe({
+      next: (data) => {
+        // 1. KPIs Ejecutivos
+        if (data.kpis) {
+          this.stats.set(data.kpis);
+        }
 
-    // 3. Cargar Partidos (Datos Reales desde DB)
-    this.api.getPartidos().subscribe((partidos) => {
-      const list = Array.isArray(partidos) ? partidos : (partidos?.data || []);
-      if (list && list.length > 0) {
-        const mapped: MatchItem[] = list.map((p: any) => ({
-          id: p.id,
-          rival_nombre: p.rival_nombre,
-          categoria_nombre: p.categoria_nombre || 'General',
-          categoria_codigo: p.codigo_categoria || 'GENERAL',
-          fecha_partido: p.fecha_partido,
-          hora_partido: p.hora_partido,
-          hora_citacion: p.hora_citacion || p.hora_partido,
-          sede_cancha: p.sede_cancha,
-          condicion_juego: p.condicion_juego || 'LOCAL',
-          indumentaria: p.indumentaria_kit || 'Uniforme Oficial',
-          confirmados_count: Number(p.confirmados_count || 0),
-          total_convocados: Number(p.total_convocados || 0),
-          lat: parseFloat(p.latitud || '4.7892'),
-          lng: parseFloat(p.longitud || '-74.0412'),
-          torneo: p.torneo_nombre || 'Competencia Oficial',
-        }));
-        this.matches.set(mapped);
-      } else {
-        this.matches.set([]);
-      }
-    });
+        // 2. Categorías Activas
+        const cats = data.categorias || [];
+        this.categorias.set(cats);
+        if (cats.length > 0 && !this.newMatch.categoriaId) {
+          this.newMatch.categoriaId = cats[0].id;
+        }
 
-    // 4. Cargar Jugadores para Pizarra Táctica
-    this.api.getJugadores().subscribe((jugs) => {
-      const list = Array.isArray(jugs) ? jugs : (jugs?.data || []);
-      if (list && list.length > 0) {
-        const mappedRoster: TacticPlayer[] = list.slice(0, 18).map((j: any, idx: number) => {
-          const peso = parseFloat(j.peso_kg || '0');
-          const talla = parseFloat(j.talla_cm || '0');
-          const imcCalculado = j.imc ? parseFloat(j.imc) : (talla > 0 && peso > 0 ? parseFloat((peso / Math.pow(talla / 100, 2)).toFixed(1)) : undefined);
-          return {
-            id: j.id,
-            dorsal: j.numero_dorsal || (idx + 1),
-            nombre: `${j.nombres || ''} ${j.apellidos || ''}`.trim() || 'Jugador',
-            nombres: j.nombres,
-            apellidos: j.apellidos,
-            categoria_nombre: j.categoria_nombre || 'General Formativa',
-            posicion: j.posicion_principal || 'VOL',
-            posicion_secundaria: j.posicion_secundaria || '',
-            pierna: j.pierna_habil || 'Diestro',
-            peso_kg: peso,
-            talla_cm: talla,
-            imc: imcCalculado,
-            eps: j.eps || 'EPS Sanitas / Seguro Deportivo',
-            estado: (idx % 6 === 5 ? 'EXCUSADO' : idx % 6 === 4 ? 'PENDIENTE' : 'CONFIRMADO') as 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO',
-            avatar: j.foto_url || '',
-            rolTactic: idx < 11 ? 'Titular en Cancha' : 'Suplente en Banquillo',
-            xp_total: Number(j.xp_total || 0),
-          };
-        });
-        this.tacticRoster.set(mappedRoster);
-      } else {
-        this.tacticRoster.set([]);
-      }
-    });
+        // 3. Próximos Partidos
+        const partidos = data.proximosPartidos || [];
+        if (partidos.length > 0) {
+          const mapped: MatchItem[] = partidos.map((p: any) => ({
+            id: p.id,
+            rival_nombre: p.rival_nombre,
+            categoria_nombre: p.categoria_nombre || 'General',
+            categoria_codigo: p.codigo_categoria || 'GENERAL',
+            fecha_partido: p.fecha_partido,
+            hora_partido: p.hora_partido,
+            hora_citacion: p.hora_citacion || p.hora_partido,
+            sede_cancha: p.sede_cancha,
+            condicion_juego: p.condicion_juego || 'LOCAL',
+            indumentaria: p.indumentaria_kit || 'Home Kit',
+            confirmados_count: Number(p.confirmados_count || 0),
+            total_convocados: Number(p.total_convocados || 0),
+            lat: parseFloat(p.latitud || '4.7892'),
+            lng: parseFloat(p.longitud || '-74.0412'),
+            torneo: p.torneo_nombre || 'Official Competition',
+          }));
+          this.matches.set(mapped);
+        } else {
+          this.matches.set([]);
+        }
 
-    // 5. Cargar Cargos para Monitor Recaudo en Vivo
-    this.api.getCargos().subscribe((cargos) => {
-      const list = Array.isArray(cargos) ? cargos : (cargos?.data || []);
-      if (list && list.length > 0) {
-        const mappedTx: TransactionItem[] = list.slice(0, 6).map((c: any, idx: number) => ({
-          id: c.id,
-          codigo_transaccion: c.referencia_pago || `TX-${c.id ? c.id.substring(0, 8) : idx}`,
-          jugador_nombre: c.jugador_nombre || 'Alumno',
-          categoria: c.categoria_nombre || 'General',
-          monto: parseFloat(c.monto_total || '0'),
-          metodo: c.metodo_pago || (idx % 2 === 0 ? 'PSE Bancolombia' : 'Daviplata'),
-          fecha: c.fecha_limite_pago || 'Pendiente',
-          estado: c.saldo_pendiente == 0 ? 'APROBADA' : 'PENDIENTE',
-        }));
-        this.transactions.set(mappedTx);
-      } else {
-        this.transactions.set([]);
-      }
-    });
+        // 4. Jugadores para Pizarra Táctica Express
+        const jugs = data.pizarraTacticos || [];
+        if (jugs.length > 0) {
+          const mappedRoster: TacticPlayer[] = jugs.map((j: any, idx: number) => {
+            const peso = parseFloat(j.peso_kg || '0');
+            const talla = parseFloat(j.talla_cm || '0');
+            const imcCalculado = j.imc ? parseFloat(j.imc) : (talla > 0 && peso > 0 ? parseFloat((peso / Math.pow(talla / 100, 2)).toFixed(1)) : undefined);
+            return {
+              id: j.id,
+              dorsal: j.numero_dorsal || (idx + 1),
+              nombre: `${j.nombres || ''} ${j.apellidos || ''}`.trim() || 'Player',
+              nombres: j.nombres,
+              apellidos: j.apellidos,
+              categoria_nombre: j.categoria_nombre || 'General Formative',
+              posicion: j.posicion_principal || 'VOL',
+              posicion_secundaria: j.posicion_secundaria || '',
+              pierna: j.pierna_habil || 'Right',
+              peso_kg: peso,
+              talla_cm: talla,
+              imc: imcCalculado,
+              eps: j.eps || 'Health Insurance',
+              estado: (idx % 6 === 5 ? 'EXCUSADO' : idx % 6 === 4 ? 'PENDIENTE' : 'CONFIRMADO') as 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO',
+              avatar: j.foto_url || '',
+              rolTactic: idx < 11 ? 'Starting XI' : 'Substitutes Bench',
+              xp_total: Number(j.xp_total || 0),
+            };
+          });
+          this.tacticRoster.set(mappedRoster);
+        } else {
+          this.tacticRoster.set([]);
+        }
 
-    // 6. Cargar Biometría para Radar Físico & Top Players
-    this.api.getBiometria().subscribe((bios) => {
-      const list = Array.isArray(bios) ? bios : (bios?.data || []);
-      if (list && list.length > 0) {
-        const mappedTop: TopPlayer[] = list.slice(0, 3).map((b: any) => ({
-          id: b.id,
-          nombre: `${b.jugador_nombre} #${b.numero_dorsal || ''}`,
-          dorsal: b.numero_dorsal || 10,
-          categoria: b.categoria_nombre || 'General',
-          posicion: b.posicion_principal || 'Jugador',
-          score_rendimiento: b.imc ? parseFloat((10 - Math.abs(21.5 - b.imc) * 0.3).toFixed(1)) : 8.5,
-          cooper_metros: b.test_cooper_metros || 0,
-          velocidad_max: b.velocidad_30m_seg ? parseFloat(((30 / b.velocidad_30m_seg) * 3.6).toFixed(1)) : 0,
-          asistencia_pct: 100,
-          avatar: b.foto_url || '',
-          estado_medico: 'APTO',
-        }));
-        this.topPlayers.set(mappedTop);
-      } else {
-        this.topPlayers.set([]);
+        // 5. Transacciones Recientes para Monitor Recaudo en Vivo
+        const cargos = data.ultimasTransacciones || [];
+        if (cargos.length > 0) {
+          const mappedTx: TransactionItem[] = cargos.map((c: any, idx: number) => ({
+            id: c.id,
+            codigo_transaccion: c.referencia_pago || `TX-${c.id ? c.id.substring(0, 8) : idx}`,
+            jugador_nombre: c.jugador_nombre || 'Student',
+            categoria: c.categoria_nombre || 'General',
+            monto: parseFloat(c.monto_total || '0'),
+            metodo: c.metodo_pago || (idx % 2 === 0 ? 'Online Gateway' : 'Bank Transfer'),
+            fecha: c.fecha_limite_pago || 'Pending',
+            estado: c.saldo_pendiente == 0 ? 'APROBADA' : 'PENDIENTE',
+          }));
+          this.transactions.set(mappedTx);
+        } else {
+          this.transactions.set([]);
+        }
+
+        // 6. Top Biometría para Radar Físico & Top Players
+        const bios = data.topBiometria || [];
+        if (bios.length > 0) {
+          const mappedTop: TopPlayer[] = bios.map((b: any) => ({
+            id: b.id,
+            nombre: `${b.jugador_nombre} #${b.numero_dorsal || ''}`,
+            dorsal: b.numero_dorsal || 10,
+            categoria: b.categoria_nombre || 'General',
+            posicion: b.posicion_principal || 'Player',
+            score_rendimiento: b.imc ? parseFloat((10 - Math.abs(21.5 - b.imc) * 0.3).toFixed(1)) : 8.5,
+            cooper_metros: b.test_cooper_metros || 0,
+            velocidad_max: b.velocidad_30m_seg ? parseFloat(((30 / b.velocidad_30m_seg) * 3.6).toFixed(1)) : 0,
+            asistencia_pct: 100,
+            avatar: b.foto_url || '',
+            estado_medico: 'APTO',
+          }));
+          this.topPlayers.set(mappedTop);
+        } else {
+          this.topPlayers.set([]);
+        }
+
+        // 7. Landing Pública del Club (si existe)
+        if (data.clubLanding && data.clubLanding.titulo) {
+          this.activeClubLanding.set(data.clubLanding);
+        }
+
+        this.isLoadingInit.set(false);
+      },
+      error: (err) => {
+        console.error('Error in dashboard initData:', err);
+        this.isLoadingInit.set(false);
       }
     });
   }

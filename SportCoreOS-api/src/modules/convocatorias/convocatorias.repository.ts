@@ -169,4 +169,31 @@ export class ConvocatoriasRepository {
       [partidoId, jugadorId, rol, posicion],
     );
   }
+
+  async findPartidosClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT p.id, p.rival_nombre, p.fecha_partido, p.hora_partido, p.hora_citacion,
+              p.sede_cancha, p.condicion_juego, p.indumentaria_kit, p.categoria_id,
+              c.nombre as categoria_nombre, c.codigo_categoria,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as total_convocados,
+              (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id AND conv.estado_confirmacion = 'CONFIRMADO') as confirmados_count
+       FROM competicion.partidos p
+       JOIN deportivo.categorias c ON c.id = p.categoria_id
+       WHERE p.club_id = $1
+       ORDER BY p.fecha_partido ASC, p.hora_partido ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async findJugadoresCategoria(categoriaId: string, clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT j.id, j.nombres, j.apellidos, j.numero_dorsal, j.posicion_principal, j.foto_url
+       FROM deportivo.jugadores j
+       WHERE j.categoria_id = $1 AND j.club_id = $2 AND j.estado_matricula = 'ACTIVO'
+       ORDER BY j.numero_dorsal ASC NULLS LAST, j.apellidos ASC`,
+      [categoriaId, clubId],
+    );
+    return res.rows;
+  }
 }

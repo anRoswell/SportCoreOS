@@ -12,6 +12,21 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class PartidosController {
   constructor(private readonly partidosService: PartidosService) {}
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos iniciales completos de partidos y fixture (InitData Pattern)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.partidosService.getInitData(user.clubId, {
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 10,
+    });
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar calendario y fixture de partidos con paginación' })
   @ApiQuery({ name: 'page', required: false, type: Number })

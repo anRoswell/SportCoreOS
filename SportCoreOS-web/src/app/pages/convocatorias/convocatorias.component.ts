@@ -38,7 +38,7 @@ export class ConvocatoriasComponent implements OnInit {
         if (this.lastLoadedClubId === club.id) return;
         this.lastLoadedClubId = club.id;
         untracked(() => {
-          this.loadPartidos();
+          this.loadInitData();
         });
       }
     });
@@ -82,20 +82,29 @@ export class ConvocatoriasComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadPartidos();
+    this.route.queryParams.subscribe((params) => {
+      const preferredId = params['partidoId'] || undefined;
+      this.loadInitData(preferredId);
+    });
   }
 
-  loadPartidos(): void {
-    this.api.getPartidos().subscribe((data) => {
-      const partidos = Array.isArray(data) ? data : (data?.data || []);
-      this.matches.set(partidos);
-      if (partidos && partidos.length > 0) {
-        this.route.queryParams.subscribe((params) => {
-          const targetId = params['partidoId'] || partidos[0].id;
-          this.selectedPartidoId.set(targetId);
-          this.loadConvocatoria(targetId);
-        });
-      } else {
+  loadInitData(preferredPartidoId?: string): void {
+    this.api.getConvocatoriasInitData(preferredPartidoId).subscribe({
+      next: (res) => {
+        const partidos = res.partidos || [];
+        this.matches.set(partidos);
+        if (res.partidoActivo) {
+          this.selectedPartidoId.set(res.partidoActivo.id);
+          this.currentMatch.set(res.partidoActivo);
+          this.convocados.set(res.convocados || []);
+        } else {
+          this.selectedPartidoId.set('');
+          this.currentMatch.set(null);
+          this.convocados.set([]);
+        }
+      },
+      error: () => {
+        this.matches.set([]);
         this.selectedPartidoId.set('');
         this.currentMatch.set(null);
         this.convocados.set([]);

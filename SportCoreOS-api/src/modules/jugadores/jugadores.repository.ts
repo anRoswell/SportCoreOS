@@ -460,4 +460,31 @@ export class JugadoresRepository {
     ]);
     return res.rows[0];
   }
+
+  async findCategoriasClub(clubId: string): Promise<any[]> {
+    const res = await this.db.query(
+      `SELECT c.id, c.nombre, c.codigo_categoria, c.color_distintivo, c.cupo_maximo
+       FROM deportivo.categorias c
+       WHERE c.club_id = $1 AND c.activa = true
+       ORDER BY c.nombre ASC`,
+      [clubId],
+    );
+    return res.rows;
+  }
+
+  async getInitData(clubId: string, options?: { page?: number; limit?: number }) {
+    const [categorias, jugadoresPaginados] = await Promise.all([
+      this.findCategoriasClub(clubId),
+      this.findJugadoresByClub(clubId, { page: options?.page || 1, limit: options?.limit || 10 }),
+    ]);
+
+    return {
+      categorias,
+      jugadores: jugadoresPaginados.data,
+      total: jugadoresPaginados.total,
+      page: jugadoresPaginados.page,
+      limit: jugadoresPaginados.limit,
+      totalPages: jugadoresPaginados.totalPages,
+    };
+  }
 }

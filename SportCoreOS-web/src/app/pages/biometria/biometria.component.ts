@@ -132,8 +132,33 @@ export class BiometriaComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadData();
-    this.loadAuxData();
+    this.loadInitData();
+  }
+
+  loadInitData(): void {
+    this.loading.set(true);
+    this.api.getBiometriaInitData({ page: this.currentPage(), limit: this.pageSize() }).subscribe({
+      next: (init) => {
+        if (init?.categorias) {
+          this.categorias.set(init.categorias);
+        }
+        if (init?.jugadores) {
+          this.jugadores.set(init.jugadores);
+        }
+        const rows = init?.evaluaciones || [];
+        const total = typeof init?.total === 'number' ? init.total : rows.length;
+        const totalPages = typeof init?.totalPages === 'number' ? init.totalPages : Math.max(1, Math.ceil(total / this.pageSize()));
+
+        this.mediciones.set(rows);
+        this.totalRecords.set(total);
+        this.totalPages.set(totalPages);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error cargando init data de biometria:', err);
+        this.loading.set(false);
+      },
+    });
   }
 
   loadAuxData(): void {

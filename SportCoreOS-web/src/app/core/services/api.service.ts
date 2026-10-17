@@ -32,6 +32,16 @@ export interface KPIStats {
   distribucionPosiciones: any[];
 }
 
+export interface DashboardInitData {
+  kpis: KPIStats;
+  categorias: any[];
+  proximosPartidos: any[];
+  pizarraTacticos: any[];
+  ultimasTransacciones: any[];
+  topBiometria: any[];
+  clubLanding: any | null;
+}
+
 export interface JugadorExpediente360 {
   jugador: any;
   acudientes: any[];
@@ -307,6 +317,31 @@ export class ApiService {
     );
   }
 
+  getDashboardInitData(): Observable<DashboardInitData> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard/init-data`).pipe(
+      map(res => res.data || res),
+      catchError(err => {
+        console.error('Error loading dashboard init data:', err);
+        return of({
+          kpis: {
+            jugadoresActivos: 0,
+            jugadoresLesionados: 0,
+            totalCategorias: 0,
+            proximosPartidos: [],
+            finanzas: { facturadoMes: 0, recaudadoMes: 0, carteraMora: 0, porcentajeRecaudo: 0 },
+            distribucionPosiciones: [],
+          },
+          categorias: [],
+          proximosPartidos: [],
+          pizarraTacticos: [],
+          ultimasTransacciones: [],
+          topBiometria: [],
+          clubLanding: null,
+        });
+      })
+    );
+  }
+
   getCategorias(options?: { page?: number; limit?: number; search?: string; rama?: string }): Observable<any[]> {
     let params = new HttpParams();
     if (options?.page !== undefined) params = params.set('page', options.page);
@@ -320,6 +355,15 @@ export class ApiService {
         return Array.isArray(payload) ? payload : (payload?.data || []);
       }),
       catchError(() => of([])),
+    );
+  }
+
+  getJugadoresInitData(options?: { page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    return this.http.get<any>(`${this.apiUrl}/jugadores/init-data`, { params }).pipe(
+      map(res => res.data || res)
     );
   }
 
@@ -520,6 +564,15 @@ export class ApiService {
   }
 
   // PARTIDOS & FIXTURE
+  getPartidosInitData(options?: { page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    return this.http.get<any>(`${this.apiUrl}/partidos/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getPartidos(
     optionsOrCatId?:
       | string
@@ -579,6 +632,16 @@ export class ApiService {
   }
 
   // CONVOCATORIAS
+  getConvocatoriasInitData(partidoId?: string): Observable<any> {
+    let params = new HttpParams();
+    if (partidoId) {
+      params = params.set('partidoId', partidoId);
+    }
+    return this.http.get<any>(`${this.apiUrl}/convocatorias/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getConvocatoria(partidoId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/convocatorias/partido/${partidoId}`).pipe(
       map(res => res.data || res)
@@ -627,6 +690,15 @@ export class ApiService {
   }
 
   // FINANZAS & PAGOS PSE
+  getFinanzasInitData(options?: { page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    return this.http.get<any>(`${this.apiUrl}/finanzas/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getResumenFinanzas(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/finanzas/resumen`).pipe(
       map(res => res.data || res)
@@ -674,6 +746,15 @@ export class ApiService {
   }
 
   // BIOMETRÍA & RENDIMIENTO
+  getBiometriaInitData(options?: { page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    return this.http.get<any>(`${this.apiUrl}/biometria/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getBiometria(
     page?: number,
     limit?: number,
@@ -944,6 +1025,15 @@ export class ApiService {
   // ==========================================
   // MÓDULO 12: TELEMETRÍA GPS & HEATMAPS
   // ==========================================
+  getTelemetriaInitData(options?: { page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    return this.http.get<any>(`${this.apiUrl}/telemetria/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getSesionesTelemetria(options?: { page?: number; limit?: number; search?: string; tipoSesion?: string }): Observable<any> {
     let params = new HttpParams();
     if (options?.page !== undefined) params = params.set('page', options.page);
@@ -1174,6 +1264,16 @@ export class ApiService {
   // ==========================================
   // MÓDULO 17: RETOS INDIVIDUALES COMPROBABLES & EVALUACIÓN DT
   // ==========================================
+  getRankingInitData(options?: { page?: number; limit?: number; categoriaId?: string }): Observable<any> {
+    let params = new HttpParams();
+    if (options?.page !== undefined) params = params.set('page', options.page);
+    if (options?.limit !== undefined) params = params.set('limit', options.limit);
+    if (options?.categoriaId && options.categoriaId !== 'TODAS') params = params.set('categoriaId', options.categoriaId);
+    return this.http.get<any>(`${this.apiUrl}/retos/init-data`, { params }).pipe(
+      map(res => res.data || res)
+    );
+  }
+
   getRetosCatalogo(): Observable<any[]> {
     return this.http.get<any>(`${this.apiUrl}/retos/catalogo`).pipe(
       map(res => res.data || res),

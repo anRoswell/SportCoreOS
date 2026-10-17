@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ConvocatoriasService } from './convocatorias.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Convocatorias a Partidos')
 @ApiBearerAuth()
@@ -9,6 +10,16 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller('convocatorias')
 export class ConvocatoriasController {
   constructor(private readonly convocatoriasService: ConvocatoriasService) {}
+
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos completos iniciales de convocatorias (InitData Pattern)' })
+  @ApiQuery({ name: 'partidoId', required: false, description: 'ID de partido preferido' })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('partidoId') partidoId?: string,
+  ) {
+    return this.convocatoriasService.getConvocatoriasInitData(user.clubId, partidoId);
+  }
 
   @Get('partido/:partidoId')
   @ApiOperation({ summary: 'Obtener convocatoria oficial de un partido con lista de citados' })

@@ -11,6 +11,21 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class FinanzasController {
   constructor(private readonly finanzasService: FinanzasService) {}
 
+  @Get('init-data')
+  @ApiOperation({ summary: 'Obtener datos iniciales completos de finanzas y recaudo (InitData Pattern)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.finanzasService.getInitData(user.clubId, {
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 10,
+    });
+  }
+
   @Get('resumen')
   @ApiOperation({ summary: 'Obtener métricas de recaudo mensual, facturación y cartera morosa' })
   async getResumen(@CurrentUser() user: any) {

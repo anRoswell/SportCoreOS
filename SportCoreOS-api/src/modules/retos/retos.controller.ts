@@ -9,6 +9,28 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class RetosController {
   constructor(private readonly retosService: RetosService) {}
 
+  @Get('init-data')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener datos de inicialización para el módulo de Ranking & Gamificación' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'categoriaId', required: false, type: String })
+  async getInitData(
+    @CurrentUser() user: any,
+    @Req() req: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('categoriaId') categoriaId?: string,
+  ) {
+    const clubId = req.headers?.['x-club-id'] || user?.clubId || req.clubId;
+    return this.retosService.getInitData(clubId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      categoriaId,
+    });
+  }
+
   @Get('catalogo')
   @ApiOperation({ summary: 'Obtener catálogo general de retos individuales con niveles de dificultad' })
   async getCatalogo(@CurrentUser() user: any, @Req() req: any) {

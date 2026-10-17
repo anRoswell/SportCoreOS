@@ -119,8 +119,32 @@ export class PartidosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCategorias();
-    this.loadPartidos();
+    this.loadInitData();
+  }
+
+  loadInitData(): void {
+    this.loading.set(true);
+    this.api.getPartidosInitData({
+      page: this.currentPage(),
+      limit: this.pageSize(),
+    }).subscribe({
+      next: (res) => {
+        const cats = res.categorias || [];
+        this.categorias.set(cats);
+        if (cats.length > 0 && !this.newMatch.categoria_id) {
+          this.newMatch.categoria_id = cats[0].id;
+        }
+
+        const rows = res.partidos || [];
+        this.partidos.set(rows);
+        this.totalRecords.set(res.total || rows.length);
+        this.totalPages.set(res.totalPages || Math.ceil((res.total || rows.length) / this.pageSize()) || 1);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
   }
 
   loadCategorias(): void {
