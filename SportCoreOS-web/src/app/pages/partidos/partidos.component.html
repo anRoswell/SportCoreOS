@@ -80,7 +80,7 @@
                 <tr class="match-table-row">
                   <td>
                     <div class="date-box">
-                      <strong>{{ p.fecha_partido }}</strong>
+                      <span class="date-text">{{ p.fecha_partido }}</span>
                       <small><i class="fa-regular fa-clock"></i> {{ p.hora_partido }} (Cit: {{ p.hora_citacion || p.hora_partido }})</small>
                     </div>
                   </td>
@@ -88,7 +88,7 @@
                     <span class="badge badge-blue">{{ p.categoria_nombre || 'Categoría' }}</span>
                   </td>
                   <td>
-                    <strong class="rival-name">{{ p.rival_nombre }}</strong>
+                    <span class="rival-name">{{ p.rival_nombre }}</span>
                   </td>
                   <td>
                     <span class="badge" [class.badge-success]="p.condicion_juego === 'LOCAL'" [class.badge-warning]="p.condicion_juego === 'VISITANTE'">
