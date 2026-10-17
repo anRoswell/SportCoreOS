@@ -50,6 +50,93 @@ interface TopPlayer {
   estado_medico: 'APTO' | 'EN_OBSERVACION' | 'RECUPERACION';
 }
 
+export interface TacticPlayer {
+  id: string;
+  dorsal: number | string;
+  nombre: string;
+  nombres?: string;
+  apellidos?: string;
+  categoria_nombre?: string;
+  posicion: string;
+  posicion_secundaria?: string;
+  pierna: string;
+  peso_kg: number;
+  talla_cm: number;
+  imc?: number;
+  eps?: string;
+  estado: 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO';
+  avatar: string;
+  rolTactic: string;
+  xp_total?: number;
+  role?: string;
+  line?: 'POR' | 'DEF' | 'MED' | 'DEL';
+  x?: number;
+  y?: number;
+  isAssigned?: boolean;
+}
+
+export interface FormationSlot {
+  role: string;
+  line: 'POR' | 'DEF' | 'MED' | 'DEL';
+  x: number;
+  y: number;
+}
+
+const FORMATIONS: Record<string, FormationSlot[]> = {
+  '4-3-3': [
+    { role: 'POR', line: 'POR', x: 50, y: 88 },
+    { role: 'LI',  line: 'DEF', x: 14, y: 70 },
+    { role: 'DFC', line: 'DEF', x: 38, y: 72 },
+    { role: 'DFC', line: 'DEF', x: 62, y: 72 },
+    { role: 'LD',  line: 'DEF', x: 86, y: 70 },
+    { role: 'MCD', line: 'MED', x: 50, y: 53 },
+    { role: 'MC',  line: 'MED', x: 28, y: 44 },
+    { role: 'MC',  line: 'MED', x: 72, y: 44 },
+    { role: 'EI',  line: 'DEL', x: 18, y: 22 },
+    { role: 'DC',  line: 'DEL', x: 50, y: 16 },
+    { role: 'ED',  line: 'DEL', x: 82, y: 22 },
+  ],
+  '4-4-2': [
+    { role: 'POR', line: 'POR', x: 50, y: 88 },
+    { role: 'LI',  line: 'DEF', x: 14, y: 70 },
+    { role: 'DFC', line: 'DEF', x: 38, y: 72 },
+    { role: 'DFC', line: 'DEF', x: 62, y: 72 },
+    { role: 'LD',  line: 'DEF', x: 86, y: 70 },
+    { role: 'MI',  line: 'MED', x: 15, y: 47 },
+    { role: 'MC',  line: 'MED', x: 38, y: 49 },
+    { role: 'MC',  line: 'MED', x: 62, y: 49 },
+    { role: 'MD',  line: 'MED', x: 85, y: 47 },
+    { role: 'DC',  line: 'DEL', x: 36, y: 19 },
+    { role: 'DC',  line: 'DEL', x: 64, y: 19 },
+  ],
+  '4-2-3-1': [
+    { role: 'POR', line: 'POR', x: 50, y: 88 },
+    { role: 'LI',  line: 'DEF', x: 14, y: 71 },
+    { role: 'DFC', line: 'DEF', x: 38, y: 73 },
+    { role: 'DFC', line: 'DEF', x: 62, y: 73 },
+    { role: 'LD',  line: 'DEF', x: 86, y: 71 },
+    { role: 'MCD', line: 'MED', x: 35, y: 56 },
+    { role: 'MCD', line: 'MED', x: 65, y: 56 },
+    { role: 'MI',  line: 'MED', x: 18, y: 37 },
+    { role: 'MCO', line: 'MED', x: 50, y: 36 },
+    { role: 'MD',  line: 'MED', x: 82, y: 37 },
+    { role: 'DC',  line: 'DEL', x: 50, y: 17 },
+  ],
+  '3-5-2': [
+    { role: 'POR', line: 'POR', x: 50, y: 88 },
+    { role: 'DFC', line: 'DEF', x: 25, y: 72 },
+    { role: 'DFC', line: 'DEF', x: 50, y: 74 },
+    { role: 'DFC', line: 'DEF', x: 75, y: 72 },
+    { role: 'CRI', line: 'MED', x: 12, y: 48 },
+    { role: 'MC',  line: 'MED', x: 33, y: 50 },
+    { role: 'MCD', line: 'MED', x: 50, y: 56 },
+    { role: 'MC',  line: 'MED', x: 67, y: 50 },
+    { role: 'CRD', line: 'MED', x: 88, y: 48 },
+    { role: 'DC',  line: 'DEL', x: 36, y: 19 },
+    { role: 'DC',  line: 'DEL', x: 64, y: 19 },
+  ],
+};
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -71,9 +158,59 @@ export class DashboardComponent implements OnInit {
   readonly categorias = signal<any[]>([]);
 
   readonly matches = signal<MatchItem[]>([]);
-  readonly tacticRoster = signal<any[]>([]);
+  readonly tacticRoster = signal<TacticPlayer[]>([]);
   readonly transactions = signal<TransactionItem[]>([]);
   readonly topPlayers = signal<TopPlayer[]>([]);
+
+  // Pizarra Táctica Express
+  readonly tacticView = signal<'cancha' | 'lista' | 'tarjetas'>('cancha');
+  readonly selectedFormation = signal<string>('4-3-3');
+  readonly availableFormations = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2'];
+  readonly selectedTacticPlayer = signal<TacticPlayer | null>(null);
+  readonly hoveredTacticPlayer = signal<TacticPlayer | null>(null);
+
+  readonly pitchPlayers = computed(() => {
+    const roster = this.tacticRoster();
+    const formationSlots = FORMATIONS[this.selectedFormation()] || FORMATIONS['4-3-3'];
+
+    return formationSlots.map((slot, index) => {
+      const player = roster[index];
+      if (player) {
+        return {
+          ...player,
+          role: slot.role,
+          line: slot.line,
+          x: slot.x,
+          y: slot.y,
+          isAssigned: true
+        };
+      } else {
+        return {
+          id: `vacante-${index}`,
+          dorsal: '—',
+          nombre: `Posición ${slot.role}`,
+          posicion: slot.role,
+          pierna: '—',
+          peso_kg: 0,
+          talla_cm: 0,
+          estado: 'PENDIENTE' as const,
+          avatar: '',
+          rolTactic: `Vacante ${slot.role}`,
+          role: slot.role,
+          line: slot.line,
+          x: slot.x,
+          y: slot.y,
+          isAssigned: false
+        };
+      }
+    });
+  });
+
+  readonly benchPlayers = computed(() => {
+    const roster = this.tacticRoster();
+    if (roster.length <= 11) return [];
+    return roster.slice(11);
+  });
 
   newMatch = {
     categoriaId: '',
@@ -181,18 +318,30 @@ export class DashboardComponent implements OnInit {
     this.api.getJugadores().subscribe((jugs) => {
       const list = Array.isArray(jugs) ? jugs : (jugs?.data || []);
       if (list && list.length > 0) {
-        const mappedRoster = list.slice(0, 12).map((j: any, idx: number) => ({
-          id: j.id,
-          dorsal: j.numero_dorsal || (idx + 1),
-          nombre: `${j.nombres} ${j.apellidos}`,
-          posicion: j.posicion_principal || 'VOL',
-          pierna: j.pierna_habil || 'Diestro',
-          peso_kg: parseFloat(j.peso_kg || '0'),
-          talla_cm: parseFloat(j.talla_cm || '0'),
-          estado: 'CONFIRMADO',
-          avatar: j.foto_url || '',
-          rolTactic: idx < 11 ? `${j.posicion_principal || 'Jugador'} Titular` : 'Suplente',
-        }));
+        const mappedRoster: TacticPlayer[] = list.slice(0, 18).map((j: any, idx: number) => {
+          const peso = parseFloat(j.peso_kg || '0');
+          const talla = parseFloat(j.talla_cm || '0');
+          const imcCalculado = j.imc ? parseFloat(j.imc) : (talla > 0 && peso > 0 ? parseFloat((peso / Math.pow(talla / 100, 2)).toFixed(1)) : undefined);
+          return {
+            id: j.id,
+            dorsal: j.numero_dorsal || (idx + 1),
+            nombre: `${j.nombres || ''} ${j.apellidos || ''}`.trim() || 'Jugador',
+            nombres: j.nombres,
+            apellidos: j.apellidos,
+            categoria_nombre: j.categoria_nombre || 'General Formativa',
+            posicion: j.posicion_principal || 'VOL',
+            posicion_secundaria: j.posicion_secundaria || '',
+            pierna: j.pierna_habil || 'Diestro',
+            peso_kg: peso,
+            talla_cm: talla,
+            imc: imcCalculado,
+            eps: j.eps || 'EPS Sanitas / Seguro Deportivo',
+            estado: (idx % 6 === 5 ? 'EXCUSADO' : idx % 6 === 4 ? 'PENDIENTE' : 'CONFIRMADO') as 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO',
+            avatar: j.foto_url || '',
+            rolTactic: idx < 11 ? 'Titular en Cancha' : 'Suplente en Banquillo',
+            xp_total: Number(j.xp_total || 0),
+          };
+        });
         this.tacticRoster.set(mappedRoster);
       } else {
         this.tacticRoster.set([]);
@@ -245,6 +394,50 @@ export class DashboardComponent implements OnInit {
 
   setTab(tab: 'partidos' | 'convocatoria' | 'recaudo' | 'biometria'): void {
     this.activeTab.set(tab);
+  }
+
+  setTacticView(view: 'cancha' | 'lista' | 'tarjetas'): void {
+    this.tacticView.set(view);
+  }
+
+  setFormation(formation: string): void {
+    this.selectedFormation.set(formation);
+    this.showToast(`Esquema táctico actualizado a ${formation}`);
+  }
+
+  openPlayerModal(player: any): void {
+    if (!player || player.isAssigned === false) return;
+    this.selectedTacticPlayer.set(player);
+  }
+
+  closePlayerModal(): void {
+    this.selectedTacticPlayer.set(null);
+  }
+
+  setPlayerStatus(player: any, estado: 'CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO'): void {
+    if (!player) return;
+    player.estado = estado;
+    this.showToast(`${player.nombre} marcado como ${estado}`);
+  }
+
+  sendIndividualWhatsApp(player: any): void {
+    if (!player) return;
+    const match = this.matches()[0];
+    const matchInfo = match 
+      ? `al partido vs ${match.rival_nombre} (${match.categoria_nombre}) el ${match.fecha_partido} a las ${match.hora_partido} en ${match.sede_cancha}`
+      : 'al próximo compromiso oficial del club';
+    const text = encodeURIComponent(
+      `Hola! Te contactamos desde ${this.api.activeClub().nombre}. Le informamos que ${player.nombre} está convocado como ${player.rolTactic || 'jugador'} ${matchInfo}. Por favor confirma la asistencia de tu hijo respondiendo a este mensaje.`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  }
+
+  getShortName(nombre: string): string {
+    if (!nombre) return '';
+    const parts = nombre.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0];
+    if (parts.length >= 2) return `${parts[0][0]}. ${parts[1]}`;
+    return nombre;
   }
 
   openScheduleModal(): void {
@@ -307,7 +500,7 @@ export class DashboardComponent implements OnInit {
   }
 
   togglePlayerStatus(jugador: any): void {
-    const estados = ['CONFIRMADO', 'PENDIENTE', 'EXCUSADO'];
+    const estados: ('CONFIRMADO' | 'PENDIENTE' | 'EXCUSADO')[] = ['CONFIRMADO', 'PENDIENTE', 'EXCUSADO'];
     const currentIdx = estados.indexOf(jugador.estado);
     const nextEstado = estados[(currentIdx + 1) % estados.length];
     jugador.estado = nextEstado;
