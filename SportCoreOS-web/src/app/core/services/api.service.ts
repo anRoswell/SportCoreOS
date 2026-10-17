@@ -133,7 +133,18 @@ export class ApiService {
         const currentActive = this.activeClub();
         const found = mapped.find(c => c.id === currentActive.id);
         if (found) {
-          this.activeClub.set(found);
+          const hasChanged =
+            found.id !== currentActive.id ||
+            found.nombre !== currentActive.nombre ||
+            found.logo !== currentActive.logo ||
+            found.sigla !== currentActive.sigla ||
+            found.activo !== currentActive.activo;
+          if (hasChanged) {
+            this.activeClub.set(found);
+            if (typeof window !== 'undefined' && window.localStorage) {
+              localStorage.setItem(environment.activeClubKey, JSON.stringify(found));
+            }
+          }
         } else if (mapped.length > 0) {
           this.activeClub.set(mapped[0]);
           if (typeof window !== 'undefined' && window.localStorage) {

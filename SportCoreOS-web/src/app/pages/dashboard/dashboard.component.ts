@@ -85,10 +85,17 @@ export class DashboardComponent implements OnInit {
     condicion: 'LOCAL' as 'LOCAL' | 'VISITANTE',
   };
 
+  private lastLoadedClubId: string | null = null;
+
   constructor() {
     effect(() => {
       const club = this.api.activeClub();
       if (club && club.id) {
+        // Evitar consultas duplicadas si la escuela activa no ha cambiado
+        if (this.lastLoadedClubId === club.id) {
+          return;
+        }
+        this.lastLoadedClubId = club.id;
         untracked(() => {
           this.loadDashboardData();
           this.loadActiveClubLanding(club.id);
