@@ -84,6 +84,23 @@ export class PartidosComponent implements OnInit {
     return Math.min(end, this.totalRecords());
   });
 
+  formatFecha(fecha: string | Date | null | undefined): string {
+    if (!fecha) return '—';
+    const str = String(fecha).substring(0, 10);
+    if (str.includes('-')) {
+      const parts = str.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+    return str;
+  }
+
+  formatHora(hora: string | null | undefined): string {
+    if (!hora) return '—';
+    return hora.substring(0, 5);
+  }
+
   ngOnInit(): void {
     this.loadCategorias();
     this.loadPartidos();

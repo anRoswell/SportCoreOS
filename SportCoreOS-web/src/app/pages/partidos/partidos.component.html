@@ -56,15 +56,15 @@
         <table class="fut-table">
           <thead>
             <tr>
-              <th>Fecha / Hora</th>
-              <th>Categoría</th>
-              <th>Rival</th>
-              <th>Condición</th>
-              <th>Sede / Cancha</th>
-              <th>Uniforme</th>
-              <th>Marcador</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th class="th-fecha">Fecha / Hora</th>
+              <th class="th-cat">Categoría</th>
+              <th class="th-rival">Rival</th>
+              <th class="th-cond text-center">Condición</th>
+              <th class="th-sede">Sede / Cancha</th>
+              <th class="th-kit">Uniforme</th>
+              <th class="th-score text-center">Marcador</th>
+              <th class="th-estado text-center">Estado</th>
+              <th class="th-actions text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -78,45 +78,54 @@
             } @else {
               @for (p of partidos(); track p.id) {
                 <tr class="match-table-row">
-                  <td>
-                    <div class="date-box">
-                      <span class="date-text">{{ p.fecha_partido }}</span>
-                      <small><i class="fa-regular fa-clock"></i> {{ p.hora_partido }} (Cit: {{ p.hora_citacion || p.hora_partido }})</small>
+                  <td class="td-fecha">
+                    <div class="date-box" [title]="'Fecha: ' + formatFecha(p.fecha_partido) + ' - Hora: ' + formatHora(p.hora_partido) + (p.hora_citacion ? ' (Cit: ' + formatHora(p.hora_citacion) + ')' : '')">
+                      <span class="date-text">{{ formatFecha(p.fecha_partido) }}</span>
+                      <small>
+                        <i class="fa-regular fa-clock"></i> {{ formatHora(p.hora_partido) }}
+                        @if (p.hora_citacion && formatHora(p.hora_citacion) !== formatHora(p.hora_partido)) {
+                          <span class="cit-tag">(Cit: {{ formatHora(p.hora_citacion) }})</span>
+                        }
+                      </small>
                     </div>
                   </td>
-                  <td>
-                    <span class="badge badge-blue">{{ p.categoria_nombre || 'Categoría' }}</span>
+                  <td class="td-cat">
+                    <span class="badge badge-blue badge-categoria" [title]="p.categoria_nombre || 'Categoría'">
+                      {{ p.categoria_nombre || 'Categoría' }}
+                    </span>
                   </td>
-                  <td>
-                    <span class="rival-name">{{ p.rival_nombre }}</span>
+                  <td class="td-rival">
+                    <span class="rival-name" [title]="p.rival_nombre">{{ p.rival_nombre }}</span>
                   </td>
-                  <td>
+                  <td class="td-cond text-center">
                     <span class="badge" [class.badge-success]="p.condicion_juego === 'LOCAL'" [class.badge-warning]="p.condicion_juego === 'VISITANTE'">
                       {{ p.condicion_juego }}
                     </span>
                   </td>
-                  <td>
-                    <div class="sede-cell">
-                      <span>{{ p.sede_cancha }}</span>
+                  <td class="td-sede">
+                    <div class="sede-cell" [title]="p.sede_cancha">
+                      <span class="sede-name">{{ p.sede_cancha }}</span>
                       <button class="btn-gps-link" (click)="openGps(p)" title="Ver en Google Maps">
                         <i class="fa-solid fa-map-location-dot"></i>
                       </button>
                     </div>
                   </td>
-                  <td>
-                    <span class="kit-tag">{{ p.indumentaria_kit || 'Titular' }}</span>
+                  <td class="td-kit">
+                    <span class="kit-tag" [title]="p.indumentaria_kit || 'Titular'">
+                      {{ p.indumentaria_kit || 'Titular' }}
+                    </span>
                   </td>
-                  <td>
+                  <td class="td-score text-center">
                     <div class="score-badge">
                       <span>{{ p.goles_club !== null ? p.goles_club : 0 }}</span> - <span>{{ p.goles_rival !== null ? p.goles_rival : 0 }}</span>
                     </div>
                   </td>
-                  <td>
+                  <td class="td-estado text-center">
                     <span class="badge" [class.badge-success]="p.estado_partido === 'PROGRAMADO'" [class.badge-blue]="p.estado_partido === 'FINALIZADO'">
                       {{ p.estado_partido }}
                     </span>
                   </td>
-                  <td>
+                  <td class="td-actions text-center">
                     <div class="actions-row">
                       <button class="btn-secondary btn-sm btn-edit-match" (click)="openEditModal(p)" title="Editar Partido">
                         <i class="fa-solid fa-pen-to-square"></i> Editar
@@ -543,7 +552,7 @@
                   <span class="retire-player-name">vs. {{ matchToDelete()?.rival_nombre }}</span>
                   <div class="retire-player-tags">
                     <span class="meta-tag"><i class="fa-solid fa-layer-group"></i> {{ matchToDelete()?.categoria_nombre || 'Categoría' }}</span>
-                    <span class="meta-tag"><i class="fa-regular fa-calendar"></i> {{ matchToDelete()?.fecha_partido }} ({{ matchToDelete()?.hora_partido }})</span>
+                    <span class="meta-tag"><i class="fa-regular fa-calendar"></i> {{ formatFecha(matchToDelete()?.fecha_partido) }} ({{ formatHora(matchToDelete()?.hora_partido) }})</span>
                     <span class="meta-tag"><i class="fa-solid fa-location-dot"></i> {{ matchToDelete()?.sede_cancha }}</span>
                   </div>
                 </div>
