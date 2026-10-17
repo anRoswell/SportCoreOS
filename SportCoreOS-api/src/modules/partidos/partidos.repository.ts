@@ -53,7 +53,7 @@ export class PartidosRepository extends BaseRepository {
     if (search && search.trim()) {
       params.push(`%${search.trim()}%`);
       const pIdx = params.length;
-      whereParts.push(`(p.rival_nombre ILIKE $${pIdx} OR p.sede_cancha ILIKE $${pIdx} OR p.tipo_partido ILIKE $${pIdx})`);
+      whereParts.push(`(p.rival_nombre ILIKE $${pIdx} OR p.sede_cancha ILIKE $${pIdx} OR p.estado_partido ILIKE $${pIdx})`);
     }
 
     const countRes = await this.db.query(

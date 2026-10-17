@@ -162,7 +162,7 @@ export class DashboardComponent implements OnInit {
           total_convocados: Number(p.total_convocados || 0),
           lat: parseFloat(p.latitud || '4.7892'),
           lng: parseFloat(p.longitud || '-74.0412'),
-          torneo: p.tipo_partido || 'Competencia Oficial',
+          torneo: p.torneo_nombre || 'Competencia Oficial',
         }));
         this.matches.set(mapped);
       } else {

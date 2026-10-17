@@ -45,7 +45,7 @@ export class DashboardRepository {
   async findProximosPartidos(clubId: string, limit: number = 5): Promise<any[]> {
     const res = await this.db.query(
       `SELECT p.id, p.rival_nombre, p.fecha_partido, p.hora_partido, p.hora_citacion, p.sede_cancha,
-              p.condicion_juego, p.indumentaria_kit, p.tipo_partido,
+              p.condicion_juego, p.indumentaria_kit,
               c.nombre as categoria_nombre, c.codigo_categoria,
               (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id) as total_convocados,
               (SELECT COUNT(*)::int FROM competicion.convocatorias conv WHERE conv.partido_id = p.id AND conv.estado_confirmacion = 'CONFIRMADO') as confirmados_count
