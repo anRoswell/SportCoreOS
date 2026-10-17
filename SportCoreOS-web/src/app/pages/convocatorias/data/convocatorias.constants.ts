@@ -1,4 +1,4 @@
-import { RolConvocatoria, EstadoConfirmacionConvocatoria } from '../../../core/enums/domain.enums';
+import { RolConvocatoria, EstadoConfirmacionConvocatoria, CondicionJuego } from '../../../core/enums/domain.enums';
 
 export enum PosterThemeConvocatoria {
   EMERALD = 'emerald',
@@ -30,7 +30,7 @@ export interface PartidoConvocatoria {
   hora_citacion?: string;
   rival_nombre?: string;
   sede_cancha?: string;
-  condicion_juego?: 'LOCAL' | 'VISITANTE' | string;
+  condicion_juego?: CondicionJuego | string;
   ubicacion_gps?: string;
 }
 

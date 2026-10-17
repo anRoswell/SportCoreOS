@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { BaseRepository } from '../../common/repositories/base.repository';
+import { EstadoPago, FiltroGeneral } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class FinanzasRepository extends BaseRepository {
@@ -56,13 +57,13 @@ export class FinanzasRepository extends BaseRepository {
     const whereParts = ['cj.club_id = $1'];
     const params: any[] = [clubId];
 
-    if (categoriaId && categoriaId !== 'TODAS') {
+    if (categoriaId && categoriaId !== FiltroGeneral.TODAS) {
       params.push(categoriaId);
       whereParts.push(`j.categoria_id = $${params.length}`);
     }
 
-    if (estadoPago && estadoPago !== 'TODOS') {
-      if (estadoPago === 'PAGADO') {
+    if (estadoPago && estadoPago !== FiltroGeneral.TODOS) {
+      if (estadoPago === EstadoPago.PAGADO) {
         whereParts.push('cj.saldo_pendiente <= 0');
       } else if (estadoPago === 'MORA') {
         whereParts.push('cj.saldo_pendiente > 0');
@@ -186,7 +187,7 @@ export class FinanzasRepository extends BaseRepository {
     const nuevoPagado = pagadoAnterior + monto;
     const neto = parseFloat(cargo.monto_total) - parseFloat(cargo.monto_descuento_beca || '0');
     const nuevoSaldo = Math.max(0, neto - nuevoPagado);
-    const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
+    const nuevoEstado = nuevoSaldo === 0 ? EstadoPago.PAGADO : EstadoPago.PARCIAL;
 
     const updateRes = await this.db.query(
       `UPDATE finanzas.cargos_jugador

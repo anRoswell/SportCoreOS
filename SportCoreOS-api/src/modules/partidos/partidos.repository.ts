@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { BaseRepository } from '../../common/repositories/base.repository';
+import { CondicionJuego, EstadoPartido, FiltroGeneral } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class PartidosRepository extends BaseRepository {
@@ -40,12 +41,12 @@ export class PartidosRepository extends BaseRepository {
     const whereParts = ['p.club_id = $1'];
     const params: any[] = [clubId];
 
-    if (categoriaId && categoriaId !== 'TODAS') {
+    if (categoriaId && categoriaId !== FiltroGeneral.TODAS) {
       params.push(categoriaId);
       whereParts.push(`p.categoria_id = $${params.length}`);
     }
 
-    if (estado && estado !== 'TODOS') {
+    if (estado && estado !== FiltroGeneral.TODOS) {
       params.push(estado);
       whereParts.push(`p.estado_partido = $${params.length}`);
     }
@@ -126,7 +127,7 @@ export class PartidosRepository extends BaseRepository {
          club_id, categoria_id, rival_nombre, fecha_partido, hora_partido,
          hora_citacion, sede_cancha, condicion_juego, indumentaria_kit,
          latitud, longitud, estado_partido, goles_club, goles_rival
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PROGRAMADO', 0, 0)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, '${EstadoPartido.PROGRAMADO}', 0, 0)
        RETURNING *`,
       [
         clubId,
@@ -136,7 +137,7 @@ export class PartidosRepository extends BaseRepository {
         data.hora_partido,
         data.hora_citacion || data.hora_partido,
         data.sede_cancha,
-        data.condicion_juego || 'LOCAL',
+        data.condicion_juego || CondicionJuego.LOCAL,
         data.indumentaria_kit || 'Kit Oficial Titular',
         data.latitud || 4.7110,
         data.longitud || -74.0721,

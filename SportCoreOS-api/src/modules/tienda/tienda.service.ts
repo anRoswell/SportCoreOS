@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { TiendaRepository } from './tienda.repository';
 import { CreateProductoDto, CreatePedidoDto, DespacharPedidoDto, AjustarStockDto } from './tienda.dto';
+import { EstadoPago, EstadoDespachoPedido, MetodoPago } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class TiendaService {
@@ -93,9 +94,9 @@ export class TiendaService {
       estampado_dorsal: dto.estampado_dorsal || null,
       comprador_nombre: dto.comprador_nombre || null,
       comprador_telefono: dto.comprador_telefono || null,
-      estado_pago: 'PAGADO',
-      estado_despacho: 'PENDIENTE_ENTREGA',
-      metodo_pago: dto.metodo_pago || 'WOMPI_PSE',
+      estado_pago: EstadoPago.PAGADO,
+      estado_despacho: EstadoDespachoPedido.PENDIENTE_ENTREGA,
+      metodo_pago: dto.metodo_pago || MetodoPago.WOMPI_PSE,
       codigo_qr: codigoQr,
     };
 

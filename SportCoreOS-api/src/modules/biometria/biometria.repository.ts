@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { FiltroGeneral, DiagnosticoBiometricoFiltro } from '../../common/enums/domain.enums';
 
 export interface EvaluacionBiometricaEntity {
   id: string;
@@ -99,19 +100,19 @@ export class BiometriaRepository {
     const whereParts = ['j.club_id = $1'];
     const params: any[] = [clubId];
 
-    if (options?.categoriaId && options.categoriaId !== 'TODAS') {
+    if (options?.categoriaId && options.categoriaId !== FiltroGeneral.TODAS) {
       params.push(options.categoriaId);
       whereParts.push(`j.categoria_id = $${params.length}`);
     }
 
-    if (options?.diagnostico && options.diagnostico !== 'TODOS') {
-      if (options.diagnostico === 'OPTIMO') {
+    if (options?.diagnostico && options.diagnostico !== FiltroGeneral.TODOS) {
+      if (options.diagnostico === DiagnosticoBiometricoFiltro.OPTIMO) {
         whereParts.push('(eb.imc >= 18.5 AND eb.imc <= 24.9)');
-      } else if (options.diagnostico === 'SOBREPESO') {
+      } else if (options.diagnostico === DiagnosticoBiometricoFiltro.SOBREPESO) {
         whereParts.push('(eb.imc >= 25.0 AND eb.imc <= 29.9)');
-      } else if (options.diagnostico === 'OBESIDAD') {
+      } else if (options.diagnostico === DiagnosticoBiometricoFiltro.OBESIDAD) {
         whereParts.push('(eb.imc >= 30.0)');
-      } else if (options.diagnostico === 'BAJOPESO') {
+      } else if (options.diagnostico === DiagnosticoBiometricoFiltro.BAJOPESO) {
         whereParts.push('(eb.imc < 18.5)');
       }
     }

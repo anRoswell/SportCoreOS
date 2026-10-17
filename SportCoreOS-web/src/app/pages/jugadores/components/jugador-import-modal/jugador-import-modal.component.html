@@ -1,0 +1,412 @@
+<div *ngIf="visible" class="import-modal-overlay" (click)="onClose()">
+  <div class="import-modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- HEADER DEL MODAL -->
+    <div class="import-modal-header">
+      <div class="header-left">
+        <div class="icon-bubble emerald">
+          <i class="fa-solid fa-file-excel"></i>
+        </div>
+        <div>
+          <h2 class="modal-title">Importación Masiva de Jugadores & Familias</h2>
+          <p class="modal-subtitle">
+            Carga de plantel por archivo Excel, auto-creación de categorías y provisión inteligente de accesos familiares.
+          </p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="onClose()" title="Cerrar ventana">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- STEPPER PROGRESS BAR -->
+    <div class="import-stepper">
+      <div class="step-item" [class.active]="currentStep() >= 1" [class.completed]="currentStep() > 1">
+        <div class="step-circle">1</div>
+        <span class="step-label">Carga de Archivo</span>
+      </div>
+      <div class="step-connector" [class.active]="currentStep() > 1"></div>
+      <div class="step-item" [class.active]="currentStep() >= 2" [class.completed]="currentStep() > 2">
+        <div class="step-circle">2</div>
+        <span class="step-label">Validación & Vista Previa</span>
+      </div>
+      <div class="step-connector" [class.active]="currentStep() > 2"></div>
+      <div class="step-item" [class.active]="currentStep() === 3">
+        <div class="step-circle">3</div>
+        <span class="step-label">Cuentas & Confirmación</span>
+      </div>
+    </div>
+
+    <!-- MENSAJES DE ERROR GLOBALES -->
+    <div *ngIf="errorMessage()" class="alert-banner error">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+      <button class="alert-dismiss" (click)="errorMessage.set('')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- PASO 1: CARGA DE ARCHIVO & DESCARGA DE PLANTILLA -->
+    <!-- ======================================================== -->
+    <div *ngIf="currentStep() === 1" class="step-content step-upload">
+      
+      <!-- Banner de descarga de plantilla oficial -->
+      <div class="template-download-card">
+        <div class="template-info">
+          <div class="template-badge">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>PLANTILLA OFICIAL RECOMENDADA</span>
+          </div>
+          <h3>¿Aún no tienes el archivo con el formato oficial?</h3>
+          <p>
+            Descarga nuestra plantilla estructurada con validaciones automáticas, columnas para deportistas, categorías, datos del acudiente y hoja de instrucciones con ejemplos reales.
+          </p>
+        </div>
+        <button class="btn-download-template" (click)="descargarPlantilla()" [disabled]="downloadingTemplate()">
+          <i class="fa-solid" [class.fa-download]="!downloadingTemplate()" [class.fa-spinner]="downloadingTemplate()" [class.fa-spin]="downloadingTemplate()"></i>
+          <span>{{ downloadingTemplate() ? 'Generando Plantilla...' : 'Descargar Plantilla Excel (.xlsx)' }}</span>
+        </button>
+      </div>
+
+      <!-- Zona Drag & Drop -->
+      <div 
+        class="drop-zone" 
+        [class.dragging]="isDragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)">
+        
+        <input 
+          #fileInput 
+          type="file" 
+          accept=".xlsx, .xls, .csv" 
+          (change)="onFileSelected($event)" 
+          class="file-input-hidden" />
+
+        <div class="drop-zone-icon">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <h3>Arrastra tu archivo Excel aquí o haz clic para seleccionarlo</h3>
+        <p class="drop-hint">Formatos soportados: Microsoft Excel (.xlsx, .xls) o CSV delimitado por comas</p>
+
+        <button class="btn-browse" (click)="fileInput.click()" [disabled]="parsingFile() || loadingPreview()">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>Examinar Archivos</span>
+        </button>
+
+        <!-- Indicador de procesamiento -->
+        <div *ngIf="parsingFile() || loadingPreview()" class="parsing-indicator">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+          <span>{{ parsingFile() ? 'Leyendo datos del Excel...' : 'Analizando categorías, dorsales y edades con el servidor...' }}</span>
+        </div>
+      </div>
+
+      <!-- Guía Rápida de Reglas de Negocio -->
+      <div class="business-rules-grid">
+        <div class="rule-box">
+          <div class="rule-icon"><i class="fa-solid fa-tags"></i></div>
+          <div class="rule-text">
+            <strong>Auto-creación de Categorías</strong>
+            <span>Si una categoría no existe en el club, el sistema la crea automáticamente en tiempo real.</span>
+          </div>
+        </div>
+        <div class="rule-box">
+          <div class="rule-icon"><i class="fa-solid fa-user-shield"></i></div>
+          <div class="rule-text">
+            <strong>Cuentas para Acudientes</strong>
+            <span>Se crea usuario PADRE_ACUDIENTE para que la familia pague cuotas y vea la evolución de su hijo.</span>
+          </div>
+        </div>
+        <div class="rule-box">
+          <div class="rule-icon"><i class="fa-solid fa-child-reaching"></i></div>
+          <div class="rule-text">
+            <strong>Cuentas Atletas (≥ 14 años)</strong>
+            <span>Los futbolistas de 14 años o más reciben su propio usuario JUGADOR para ver sus entrenamientos y evaluaciones.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- PASO 2: VALIDACIÓN & VISTA PREVIA DETALLADA -->
+    <!-- ======================================================== -->
+    <div *ngIf="currentStep() === 2" class="step-content step-preview">
+      
+      <!-- Métricas Resumen -->
+      <div *ngIf="previewData() as p" class="preview-kpi-bar">
+        <div class="kpi-mini-card">
+          <span class="label">Total Filas</span>
+          <span class="value">{{ p.totalFilas }}</span>
+        </div>
+        <div class="kpi-mini-card emerald">
+          <span class="label">Válidas para Importar</span>
+          <span class="value">{{ p.filasValidasCount }}</span>
+        </div>
+        <div class="kpi-mini-card" [class.rose]="p.filasConErrorCount > 0">
+          <span class="label">Con Errores</span>
+          <span class="value">{{ p.filasConErrorCount }}</span>
+        </div>
+        <div class="kpi-mini-card purple">
+          <span class="label">Categorías Nuevas</span>
+          <span class="value">{{ p.nuevasCategorias.length }}</span>
+        </div>
+        <div class="kpi-mini-card blue">
+          <span class="label">Cuentas Acudientes</span>
+          <span class="value">{{ p.estimadoUsuariosAcudiente }}</span>
+        </div>
+        <div class="kpi-mini-card amber">
+          <span class="label">Cuentas Atletas (≥14)</span>
+          <span class="value">{{ p.estimadoUsuariosJugador }}</span>
+        </div>
+      </div>
+
+      <!-- Chips de Categorías Nuevas Detectadas -->
+      <div *ngIf="previewData()?.nuevasCategorias?.length" class="new-categories-banner">
+        <span class="banner-title"><i class="fa-solid fa-sparkles"></i> Categorías nuevas que serán creadas automáticamente:</span>
+        <div class="chips-container">
+          <span *ngFor="let cat of previewData()!.nuevasCategorias" class="cat-chip">
+            <i class="fa-solid fa-folder-plus"></i> {{ cat }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Barra de Filtros de la Tabla Preview -->
+      <div class="table-filter-bar">
+        <div class="filter-pills">
+          <button class="pill-btn" [class.active]="filterMode() === ImportFilterMode.TODAS" (click)="filterMode.set(ImportFilterMode.TODAS)">
+            Todas ({{ previewData()?.totalFilas || 0 }})
+          </button>
+          <button class="pill-btn" [class.active]="filterMode() === ImportFilterMode.VALIDAS" (click)="filterMode.set(ImportFilterMode.VALIDAS)">
+            <i class="fa-solid fa-circle-check"></i> Válidas
+          </button>
+          <button class="pill-btn" [class.active]="filterMode() === ImportFilterMode.ADVERTENCIAS" (click)="filterMode.set(ImportFilterMode.ADVERTENCIAS)">
+            <i class="fa-solid fa-triangle-exclamation"></i> Con Advertencias
+          </button>
+          <button class="pill-btn" [class.active]="filterMode() === ImportFilterMode.ERRORES" (click)="filterMode.set(ImportFilterMode.ERRORES)">
+            <i class="fa-solid fa-circle-xmark"></i> Con Errores ({{ previewData()?.filasConErrorCount || 0 }})
+          </button>
+        </div>
+        <span class="showing-count">Mostrando {{ filteredPreviewRows().length }} registros</span>
+      </div>
+
+      <!-- Tabla de Datos Preview -->
+      <div class="preview-table-wrapper">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th>Estado</th>
+              <th>Jugador</th>
+              <th>Documento</th>
+              <th>Edad / Nacimiento</th>
+              <th>Categoría</th>
+              <th>Posición / Dorsal</th>
+              <th>Acudiente</th>
+              <th>Cuenta Atleta</th>
+              <th>Detalles / Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of filteredPreviewRows()" [class.row-error]="!row.esValida" [class.row-warning]="row.advertencias?.length > 0">
+              <td class="col-num">{{ row.filaNum }}</td>
+              <td>
+                <span *ngIf="row.esValida && (!row.advertencias || row.advertencias.length === 0)" class="status-badge valid">
+                  <i class="fa-solid fa-check"></i> Válido
+                </span>
+                <span *ngIf="row.esValida && row.advertencias?.length > 0" class="status-badge warning">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Advertencia
+                </span>
+                <span *ngIf="!row.esValida" class="status-badge error">
+                  <i class="fa-solid fa-circle-xmark"></i> Inválido
+                </span>
+              </td>
+              <td class="font-bold">{{ row.nombres }} {{ row.apellidos }}</td>
+              <td>
+                <span class="doc-badge">{{ row.tipoDoc }}</span> {{ row.numeroDocumento }}
+              </td>
+              <td>
+                <span class="age-badge">{{ row.edad }} años</span>
+                <span class="birth-date">{{ row.fechaNacimiento }}</span>
+              </td>
+              <td>
+                <span class="category-badge" [class.is-new]="row.esNuevaCategoria">
+                  <i *ngIf="row.esNuevaCategoria" class="fa-solid fa-sparkles"></i>
+                  {{ row.categoriaNombre }}
+                </span>
+              </td>
+              <td>
+                <span class="position-tag">{{ row.posicionPrincipal }}</span>
+                <span *ngIf="row.numeroDorsal" class="dorsal-tag">#{{ row.numeroDorsal }}</span>
+              </td>
+              <td>
+                <div *ngIf="row.tieneAcudiente" class="acudiente-cell">
+                  <span class="acu-name">{{ row.acudienteNombre }}</span>
+                  <span class="acu-doc"><i class="fa-solid fa-id-card"></i> {{ row.acudienteDocumento || 'Sin doc' }}</span>
+                  <span class="badge-role-acu"><i class="fa-solid fa-key"></i> Crea Padre</span>
+                </div>
+                <span *ngIf="!row.tieneAcudiente" class="no-data">Sin acudiente</span>
+              </td>
+              <td>
+                <span *ngIf="row.crearUsuarioJugador" class="player-account-badge ready">
+                  <i class="fa-solid fa-user-check"></i> Crea Usuario (≥14)
+                </span>
+                <span *ngIf="!row.crearUsuarioJugador" class="player-account-badge minor">
+                  <i class="fa-solid fa-ban"></i> Menor (&lt;14)
+                </span>
+              </td>
+              <td>
+                <div *ngIf="row.errores?.length > 0" class="notes-list errors">
+                  <div *ngFor="let err of row.errores"><i class="fa-solid fa-circle-xmark"></i> {{ err }}</div>
+                </div>
+                <div *ngIf="row.advertencias?.length > 0" class="notes-list warnings">
+                  <div *ngFor="let adv of row.advertencias"><i class="fa-solid fa-triangle-exclamation"></i> {{ adv }}</div>
+                </div>
+                <span *ngIf="row.esValida && (!row.advertencias || row.advertencias.length === 0)" class="notes-clean">
+                  <i class="fa-solid fa-circle-check"></i> Listo
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Barra de Acciones del Paso 2 -->
+      <div class="step-footer-actions">
+        <button class="btn-secondary" (click)="volverPaso1()" [disabled]="executing()">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Subir Otro Archivo</span>
+        </button>
+
+        <div class="footer-summary-hint">
+          <span *ngIf="previewData()?.filasValidasCount as valCount">
+            Se importarán <strong>{{ valCount }}</strong> registros válidos.
+          </span>
+        </div>
+
+        <button 
+          class="btn-primary luxury-confirm-btn" 
+          (click)="ejecutarImportacion()" 
+          [disabled]="executing() || !previewData() || previewData()!.filasValidasCount === 0">
+          <i class="fa-solid" [class.fa-bolt]="!executing()" [class.fa-circle-notch]="executing()" [class.fa-spin]="executing()"></i>
+          <span>{{ executing() ? 'Ejecutando Ingesta Atómica...' : 'Confirmar e Iniciar Importación' }}</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- PASO 3: ÉXITO & DISTRIBUCIÓN DE CREDENCIALES -->
+    <!-- ======================================================== -->
+    <div *ngIf="currentStep() === 3" class="step-content step-success">
+      
+      <!-- Tarjeta de Éxito -->
+      <div class="success-banner-card">
+        <div class="success-icon-wrap">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="success-content">
+          <h3>¡Importación Masiva Completada Exitosamente!</h3>
+          <p>
+            Los atletas, sus fichas deportivas, las categorías y las cuentas de usuario de familiares y jugadores han sido creadas de forma segura en la base de datos.
+          </p>
+        </div>
+      </div>
+
+      <!-- Resumen Numérico -->
+      <div *ngIf="importResult()?.resumen as res" class="result-stats-grid">
+        <div class="res-stat-card">
+          <span class="res-num">{{ res.jugadoresCreados }}</span>
+          <span class="res-label">Atletas Creados</span>
+        </div>
+        <div class="res-stat-card">
+          <span class="res-num">{{ res.jugadoresActualizados }}</span>
+          <span class="res-label">Atletas Actualizados</span>
+        </div>
+        <div class="res-stat-card purple">
+          <span class="res-num">{{ res.categoriasCreadas }}</span>
+          <span class="res-label">Categorías Creadas</span>
+        </div>
+        <div class="res-stat-card emerald">
+          <span class="res-num">{{ res.acudientesCreados }}</span>
+          <span class="res-label">Acudientes Vinculados</span>
+        </div>
+        <div class="res-stat-card blue">
+          <span class="res-num">{{ res.cuentasCreadasTotal }}</span>
+          <span class="res-label">Cuentas de Acceso Activas</span>
+        </div>
+      </div>
+
+      <!-- Sección de Credenciales Generadas -->
+      <div *ngIf="credenciales().length > 0" class="credentials-section">
+        <div class="credentials-header">
+          <div class="cred-title">
+            <i class="fa-solid fa-key"></i>
+            <div>
+              <h4>Credenciales de Acceso para Familias & Atletas</h4>
+              <p>Comparte estas credenciales temporales con los padres y jugadores para que ingresen al portal.</p>
+            </div>
+          </div>
+          <div class="cred-actions">
+            <button class="btn-copy-all" (click)="copiarTodasCredenciales()">
+              <i class="fa-solid" [class.fa-copy]="!copiedAll()" [class.fa-check]="copiedAll()"></i>
+              <span>{{ copiedAll() ? '¡Copiadas al Portapapeles!' : 'Copiar Todas las Cuentas' }}</span>
+            </button>
+            <button class="btn-export-excel" (click)="exportarCredencialesExcel()">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>Descargar Lista en Excel (.xlsx)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="credentials-table-wrapper">
+          <table class="credentials-table">
+            <thead>
+              <tr>
+                <th>Rol / Tipo</th>
+                <th>Nombre Completo</th>
+                <th>Documento</th>
+                <th>Usuario / Correo</th>
+                <th>Contraseña Temporal</th>
+                <th class="col-actions">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cred of credenciales(); let i = index">
+                <td>
+                  <span class="badge-role" [class.role-father]="cred.tipo === Role.PADRE_ACUDIENTE" [class.role-player]="cred.tipo === Role.JUGADOR">
+                    <i class="fa-solid" [class.fa-people-roof]="cred.tipo === Role.PADRE_ACUDIENTE" [class.fa-user]="cred.tipo === Role.JUGADOR"></i>
+                    {{ cred.tipo === Role.PADRE_ACUDIENTE ? 'Padre / Acudiente' : 'Jugador (≥14)' }}
+                  </span>
+                </td>
+                <td class="font-bold">{{ cred.nombreCompleto }}</td>
+                <td>{{ cred.documento }}</td>
+                <td class="code-font">{{ cred.email }}</td>
+                <td>
+                  <span class="pwd-badge">{{ cred.passwordPlano }}</span>
+                </td>
+                <td class="col-actions">
+                  <button class="btn-copy-item" (click)="copiarCredencial(cred, i)" title="Copiar credencial">
+                    <i class="fa-solid" [class.fa-copy]="copiedIndex() !== i" [class.fa-check]="copiedIndex() === i"></i>
+                    <span>{{ copiedIndex() === i ? 'Copiado' : 'Copiar' }}</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botón Finalizar -->
+      <div class="step-footer-actions right">
+        <button class="btn-primary luxury-confirm-btn" (click)="onClose()">
+          <i class="fa-solid fa-users"></i>
+          <span>Finalizar y Ver Directorio de Jugadores</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

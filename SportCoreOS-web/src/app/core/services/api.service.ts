@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { EstadoCuenta, FiltroGeneral } from '../enums/domain.enums';
 
 export interface Club {
   id: string;
@@ -52,7 +53,7 @@ export interface JugadorExpediente360 {
     totalFacturado: number;
     totalPagado: number;
     saldoPendiente: number;
-    estadoCuenta: 'AL_DIA' | 'EN_MORA';
+    estadoCuenta: EstadoCuenta;
   };
 }
 
@@ -388,16 +389,16 @@ export class ApiService {
     if (typeof optionsOrCatId === 'object' && optionsOrCatId !== null) {
       if (optionsOrCatId.page !== undefined) params = params.set('page', optionsOrCatId.page);
       if (optionsOrCatId.limit !== undefined) params = params.set('limit', optionsOrCatId.limit);
-      if (optionsOrCatId.categoriaId && optionsOrCatId.categoriaId !== 'TODAS') params = params.set('categoriaId', optionsOrCatId.categoriaId);
+      if (optionsOrCatId.categoriaId && optionsOrCatId.categoriaId !== FiltroGeneral.TODAS) params = params.set('categoriaId', optionsOrCatId.categoriaId);
       if (optionsOrCatId.search && optionsOrCatId.search.trim()) params = params.set('search', optionsOrCatId.search.trim());
-      if (optionsOrCatId.estado && optionsOrCatId.estado !== 'TODOS') params = params.set('estado', optionsOrCatId.estado);
-      if (optionsOrCatId.posicion && optionsOrCatId.posicion !== 'TODAS') params = params.set('posicion', optionsOrCatId.posicion);
-      if (optionsOrCatId.genero && optionsOrCatId.genero !== 'TODOS') params = params.set('genero', optionsOrCatId.genero);
+      if (optionsOrCatId.estado && optionsOrCatId.estado !== FiltroGeneral.TODOS) params = params.set('estado', optionsOrCatId.estado);
+      if (optionsOrCatId.posicion && optionsOrCatId.posicion !== FiltroGeneral.TODAS) params = params.set('posicion', optionsOrCatId.posicion);
+      if (optionsOrCatId.genero && optionsOrCatId.genero !== FiltroGeneral.TODOS) params = params.set('genero', optionsOrCatId.genero);
       if (optionsOrCatId.sortBy) params = params.set('sortBy', optionsOrCatId.sortBy);
     } else {
-      if (optionsOrCatId && optionsOrCatId !== 'TODAS') params = params.set('categoriaId', optionsOrCatId);
+      if (optionsOrCatId && optionsOrCatId !== FiltroGeneral.TODAS) params = params.set('categoriaId', optionsOrCatId);
       if (search && search.trim()) params = params.set('search', search.trim());
-      if (estado && estado !== 'TODOS') params = params.set('estado', estado);
+      if (estado && estado !== FiltroGeneral.TODOS) params = params.set('estado', estado);
     }
 
     return this.http.get<any>(`${this.apiUrl}/jugadores`, { params }).pipe(
@@ -427,6 +428,24 @@ export class ApiService {
   deleteJugador(id: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/jugadores/${id}`).pipe(
       map(res => res.data || res)
+    );
+  }
+
+  descargarPlantillaExcelJugadores(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/jugadores/plantilla-excel`, {
+      responseType: 'blob'
+    });
+  }
+
+  previewImportacionMasivaJugadores(filas: any[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/jugadores/importar-masivo/preview`, { filas }).pipe(
+      map(res => res.data !== undefined ? res.data : res)
+    );
+  }
+
+  ejecutarImportacionMasivaJugadores(filas: any[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/jugadores/importar-masivo/ejecutar`, { filas }).pipe(
+      map(res => res.data !== undefined ? res.data : res)
     );
   }
 

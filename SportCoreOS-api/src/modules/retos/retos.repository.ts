@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { EstadoRetoProgreso } from '../../common/enums/domain.enums';
 
 export interface RetoCatalogoItem {
   id: string;
@@ -30,7 +31,7 @@ export interface RetoProgresoItem {
   meta_cantidad: number;
   unidad_medida: string;
   xp_recompensa: number;
-  estado: 'DISPONIBLE' | 'COMPROBABLE' | 'APROBADO' | 'RECHAZADO';
+  estado: EstadoRetoProgreso;
   fecha_solicitud: string;
   fecha_evaluacion?: string | null;
   evaluador_dt_id?: string | null;
@@ -180,8 +181,8 @@ export class RetosRepository {
     if (!data.aprobado) {
       const rejQuery = `
         UPDATE rendimiento.retos_jugador_progreso
-        SET estado = 'RECHAZADO',
-            fecha_evaluacion = NOW(),
+        SET estado = '${EstadoRetoProgreso.RECHAZADO}',
+        fecha_evaluacion = NOW(),
             evaluador_dt_id = $1,
             evaluador_dt_nombre = $2,
             observaciones_dt = $3,
@@ -254,7 +255,7 @@ export class RetosRepository {
       const numLvl = Number(lvlDef.nivel);
       if (numLvl <= nivelObjetivo) {
         const existing = prevMap.get(numLvl);
-        const yaAprobado = existing && existing.estado === 'APROBADO';
+        const yaAprobado = existing && existing.estado === EstadoRetoProgreso.APROBADO;
 
         if (!yaAprobado) {
           const xpNivel = Number(lvlDef.xp) || 30;
@@ -269,7 +270,7 @@ export class RetosRepository {
             // Actualizar fila existente
             await this.db.query(
               `UPDATE rendimiento.retos_jugador_progreso
-               SET estado = 'APROBADO',
+               SET estado = '${EstadoRetoProgreso.APROBADO}',
                    xp_recompensa = $1,
                    fecha_evaluacion = NOW(),
                    evaluador_dt_id = $2,
@@ -292,7 +293,7 @@ export class RetosRepository {
                 club_id, jugador_id, reto_id, nivel_solicitado, meta_cantidad, unidad_medida,
                 xp_recompensa, estado, fecha_solicitud, fecha_evaluacion, evaluador_dt_id,
                 evaluador_dt_nombre, observaciones_dt
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'APROBADO', NOW(), NOW(), $8, $9, $10)`,
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, '${EstadoRetoProgreso.APROBADO}', NOW(), NOW(), $8, $9, $10)`,
               [
                 clubId,
                 jugadorId,
@@ -385,8 +386,8 @@ export class RetosRepository {
 
       // 2. Progreso del jugador
       const progreso = await this.findProgresoByJugador(jugadorId, clubId);
-      const aprobados = progreso.filter(p => p.estado === 'APROBADO');
-      const pendientes = progreso.filter(p => p.estado === 'COMPROBABLE');
+      const aprobados = progreso.filter(p => p.estado === EstadoRetoProgreso.APROBADO);
+      const pendientes = progreso.filter(p => p.estado === EstadoRetoProgreso.COMPROBABLE);
 
       let xpRetosObtenido = 0;
       aprobados.forEach(p => {

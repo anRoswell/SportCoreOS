@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
+import { EstadoPago, EstadoDespachoPedido, MetodoPago } from '../common/enums/domain.enums';
 
 interface InMemoryStore {
   clubes: any[];
@@ -903,7 +904,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           monto_descuento_beca: 0,
           monto_pagado: 220000,
           saldo_pendiente: 0,
-          estado_pago: 'PAGADO',
+          estado_pago: EstadoPago.PAGADO,
           fecha_limite_pago: '2026-03-10',
         },
         {
@@ -917,7 +918,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           monto_descuento_beca: 50000,
           monto_pagado: 0,
           saldo_pendiente: 170000,
-          estado_pago: 'PENDIENTE',
+          estado_pago: EstadoPago.PENDIENTE,
           fecha_limite_pago: '2026-03-15',
         },
       ],
@@ -1067,9 +1068,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           estampado_dorsal: 7,
           comprador_nombre: 'Mauricio Gómez',
           comprador_telefono: '+57 312 333 4455',
-          estado_pago: 'PAGADO',
-          estado_despacho: 'PENDIENTE_ENTREGA',
-          metodo_pago: 'WOMPI_PSE',
+          estado_pago: EstadoPago.PAGADO,
+          estado_despacho: EstadoDespachoPedido.PENDIENTE_ENTREGA,
+          metodo_pago: MetodoPago.WOMPI_PSE,
           codigo_qr: 'SPORT-TIENDA-MATEO-07',
           created_at: new Date(),
         },

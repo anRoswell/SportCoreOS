@@ -1,10 +1,6 @@
-export enum ScoutingEstadoPipeline {
-  TODOS = 'TODOS',
-  EN_OBSERVACION = 'en_observacion',
-  INTERES_FICHAJE = 'interes_fichaje',
-  FICHADO = 'fichado',
-  DESCARTADO = 'descartado',
-}
+import { ScoutingEstadoPipeline } from '../../../core/enums/domain.enums';
+export { ScoutingEstadoPipeline };
+
 
 export enum ScoutingPosicionFiltro {
   TODAS = 'TODAS',

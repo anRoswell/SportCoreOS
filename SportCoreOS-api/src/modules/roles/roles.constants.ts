@@ -1,16 +1,8 @@
-export const SPORTCORE_ROLES = [
-  'SUPER_ADMIN',
-  'DIRECTOR_DEPORTIVO',
-  'ENTRENADOR_DT',
-  'PREPARADOR_FISICO',
-  'MEDICO_FISIO',
-  'ADMIN_FINANCIERO',
-  'RECEPCION_LOGISTICA',
-  'PADRE_ACUDIENTE',
-  'JUGADOR',
-] as const;
+import { Role } from '../../common/enums/domain.enums';
 
-export type SportCoreRole = typeof SPORTCORE_ROLES[number];
+export { Role };
+export const SPORTCORE_ROLES = Object.values(Role);
+export type SportCoreRole = Role;
 
 export type PermissionAccessLevel = boolean | 'RO' | 'OWN' | 'NONE';
 

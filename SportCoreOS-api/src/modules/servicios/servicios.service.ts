@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ServiciosRepository } from './servicios.repository';
 import { CreateServicioDto, InscribirServicioDto } from './servicios.dto';
+import { EstadoInscripcionServicio } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class ServiciosService {
@@ -41,7 +42,7 @@ export class ServiciosService {
     clubId: string,
     inscripcionId: string,
     user: any,
-    dto: { estado: 'APROBADO' | 'RECHAZADO'; notas_tesoreria?: string; motivo_rechazo?: string },
+    dto: { estado: EstadoInscripcionServicio; notas_tesoreria?: string; motivo_rechazo?: string },
   ) {
     return this.serviciosRepo.aprobarInscripcion(clubId, inscripcionId, user, dto);
   }

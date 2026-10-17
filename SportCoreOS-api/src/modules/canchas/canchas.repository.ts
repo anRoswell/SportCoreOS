@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { FiltroGeneral, EstadoTurnoCancha, EstadoPagoReserva } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class CanchasRepository {
@@ -22,7 +23,7 @@ export class CanchasRepository {
     const whereParts = ['c.club_id = $1', 'c.activa = true'];
     const params: any[] = [clubId];
 
-    if (options?.tipoSuperficie && options.tipoSuperficie !== 'TODAS') {
+    if (options?.tipoSuperficie && options.tipoSuperficie !== FiltroGeneral.TODAS) {
       params.push(options.tipoSuperficie);
       whereParts.push(`c.tipo_superficie = $${params.length}`);
     }
@@ -138,7 +139,7 @@ export class CanchasRepository {
       `SELECT r.*, c.nombre as cancha_nombre, c.tipo_superficie
        FROM deportivo.reservas_cancha r
        JOIN deportivo.canchas c ON c.id = r.cancha_id
-       WHERE c.club_id = $1 AND r.fecha_reserva = $2 AND r.estado_turno != 'cancelado'
+       WHERE c.club_id = $1 AND r.fecha_reserva = $2 AND r.estado_turno != '${EstadoTurnoCancha.CANCELADO}'
        ORDER BY r.hora_inicio ASC`,
       [clubId, fecha],
     );
@@ -150,7 +151,7 @@ export class CanchasRepository {
       SELECT * FROM deportivo.reservas_cancha
       WHERE cancha_id = $1 
         AND fecha_reserva = $2 
-        AND estado_turno != 'cancelado'
+        AND estado_turno != '${EstadoTurnoCancha.CANCELADO}'
         AND (
           (hora_inicio < $4 AND hora_fin > $3)
         )
@@ -184,8 +185,8 @@ export class CanchasRepository {
         data.cliente_telefono || null,
         data.monto_total || 0,
         data.monto_anticipo || 0,
-        data.estado_pago || 'pendiente',
-        data.estado_turno || 'confirmado',
+        data.estado_pago || EstadoPagoReserva.PENDIENTE,
+        data.estado_turno || EstadoTurnoCancha.CONFIRMADO,
       ],
     );
     return res.rows[0];
@@ -195,7 +196,7 @@ export class CanchasRepository {
     const res = await this.db.query(
       `UPDATE deportivo.reservas_cancha
        SET monto_anticipo = monto_anticipo + $1,
-           estado_pago = CASE WHEN (monto_anticipo + $1) >= monto_total THEN 'completado' ELSE 'parcial' END,
+           estado_pago = CASE WHEN (monto_anticipo + $1) >= monto_total THEN '${EstadoPagoReserva.COMPLETADO}' ELSE '${EstadoPagoReserva.PARCIAL}' END,
            updated_at = NOW()
        WHERE id = $2
        RETURNING *`,
@@ -207,7 +208,7 @@ export class CanchasRepository {
   async cancelarReserva(reservaId: string) {
     const res = await this.db.query(
       `UPDATE deportivo.reservas_cancha
-       SET estado_turno = 'cancelado', updated_at = NOW()
+       SET estado_turno = '${EstadoTurnoCancha.CANCELADO}', updated_at = NOW()
        WHERE id = $1
        RETURNING *`,
       [reservaId],

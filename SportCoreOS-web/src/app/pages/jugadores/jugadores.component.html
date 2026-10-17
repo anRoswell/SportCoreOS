@@ -12,6 +12,10 @@
       </p>
     </div>
     <div class="header-actions">
+      <button class="btn-secondary luxury-import-btn" (click)="openImportModal()">
+        <i class="fa-solid fa-file-excel"></i>
+        <span>Importación Masiva Excel</span>
+      </button>
       <button class="btn-primary" (click)="openCreateModal()">
         <i class="fa-solid fa-user-plus"></i>
         <span>Inscribir Nuevo Alumno</span>
@@ -473,7 +477,7 @@
 
   <app-jugador-form-modal
     [visible]="showCreateModal()"
-    [mode]="'CREATE'"
+    [mode]="FormModalMode.CREATE"
     [categorias]="categorias()"
     [tiposDocumento]="tiposDocumento()"
     [epsList]="epsList()"
@@ -485,7 +489,7 @@
 
   <app-jugador-form-modal
     [visible]="showEditModal()"
-    [mode]="'EDIT'"
+    [mode]="FormModalMode.EDIT"
     [categorias]="categorias()"
     [tiposDocumento]="tiposDocumento()"
     [epsList]="epsList()"
@@ -509,6 +513,12 @@
     (close)="closeDeleteConfirmModal()"
     (playerRetired)="onPlayerRetired()"
   ></app-jugador-delete-dialog>
+
+  <app-jugador-import-modal
+    [visible]="showImportModal()"
+    (close)="closeImportModal()"
+    (importCompleted)="onImportCompleted()"
+  ></app-jugador-import-modal>
 
   <!-- Toast Feedback -->
   <div *ngIf="toastMsg()" class="toast-floating" [class.error]="isToastError()">

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IaRepository } from './ia.repository';
 import { GenerarBoletinAlumnoDto, ChatTacticoDtDto } from './ia.dto';
+import { RolConvocatoria } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class IaService {
@@ -171,8 +172,8 @@ ${contextoPlantel ? contextoPlantel : 'Asegurar extremos veloces y recambios fre
     }
 
     const { partido, convocados, club } = data;
-    const titulares = convocados.filter(c => c.rol_convocatoria === 'TITULAR');
-    const suplentes = convocados.filter(c => c.rol_convocatoria !== 'TITULAR');
+    const titulares = convocados.filter(c => c.rol_convocatoria === RolConvocatoria.TITULAR);
+    const suplentes = convocados.filter(c => c.rol_convocatoria !== RolConvocatoria.TITULAR);
 
     // Determinación de paleta inteligente y conceptos visuales por Gemini Engine
     const estilo = dto.estilo_diseno || 'ELITE_NEON';

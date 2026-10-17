@@ -14,33 +14,16 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export enum TipoDocumento {
-  TI = 'TI',
-  CC = 'CC',
-  RC = 'RC',
-  CE = 'CE',
-  PASAPORTE = 'PASAPORTE',
-  PPT = 'PPT',
-  NUIP = 'NUIP',
-}
+import {
+  TipoDocumentoIdentidad as TipoDocumento,
+  PiernaHabil,
+  Genero,
+  EstadoMatricula,
+  Parentesco,
+  PosicionJugador,
+} from '../../common/enums/domain.enums';
 
-export enum PiernaHabil {
-  DIESTRO = 'DIESTRO',
-  ZURDO = 'ZURDO',
-  AMBIDIESTRO = 'AMBIDIESTRO',
-}
-
-export enum Genero {
-  MASCULINO = 'MASCULINO',
-  FEMENINO = 'FEMENINO',
-}
-
-export enum EstadoMatricula {
-  ACTIVO = 'ACTIVO',
-  SUSPENDIDO = 'SUSPENDIDO',
-  LESIONADO = 'LESIONADO',
-  RETIRADO = 'RETIRADO',
-}
+export { TipoDocumento, PiernaHabil, Genero, EstadoMatricula, Parentesco, PosicionJugador };
 
 export class CreateJugadorDto {
   @ApiProperty({ example: '30000000-0000-0000-0000-000000000001', description: 'ID de la categoría a la que pertenece' })

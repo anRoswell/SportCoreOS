@@ -1,18 +1,8 @@
 import { IsString, IsNotEmpty, IsOptional, IsArray, IsEnum, IsNumber, IsEmail } from 'class-validator';
 
-export enum TipoContenidoLanding {
-  LANDING_PAGE = 'LANDING_PAGE',
-  PROMO_HERO = 'PROMO_HERO',
-  STORIES_REEL = 'STORIES_REEL',
-  BANNER_TOP = 'BANNER_TOP',
-  POPUP_MODAL = 'POPUP_MODAL',
-}
+import { TipoContenidoLanding, EstadoLanding } from '../../common/enums/domain.enums';
+export { TipoContenidoLanding, EstadoLanding };
 
-export enum EstadoLanding {
-  PUBLICADO = 'PUBLICADO',
-  BORRADOR = 'BORRADOR',
-  ARCHIVADO = 'ARCHIVADO',
-}
 
 export interface BloqueSeccionLanding {
   id: string;

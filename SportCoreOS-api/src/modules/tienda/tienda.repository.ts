@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { FiltroGeneral, EstadoPago, EstadoDespachoPedido, MetodoPago } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class TiendaRepository {
@@ -22,7 +23,7 @@ export class TiendaRepository {
     const whereParts = ['p.club_id = $1', 'p.activo = true'];
     const params: any[] = [clubId];
 
-    if (options?.categoria && options.categoria !== 'TODAS') {
+    if (options?.categoria && options.categoria !== FiltroGeneral.TODAS) {
       params.push(options.categoria);
       whereParts.push(`p.categoria = $${params.length}`);
     }
@@ -223,9 +224,9 @@ export class TiendaRepository {
         data.estampado_dorsal || null,
         data.comprador_nombre || null,
         data.comprador_telefono || null,
-        data.estado_pago || 'PAGADO',
-        data.estado_despacho || 'PENDIENTE_ENTREGA',
-        data.metodo_pago || 'WOMPI_PSE',
+        data.estado_pago || EstadoPago.PAGADO,
+        data.estado_despacho || EstadoDespachoPedido.PENDIENTE_ENTREGA,
+        data.metodo_pago || MetodoPago.WOMPI_PSE,
         data.codigo_qr,
       ],
     );

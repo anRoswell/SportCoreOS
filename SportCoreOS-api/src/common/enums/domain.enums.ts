@@ -1,16 +1,24 @@
 // ==========================================
-// ROLES Y AUTENTICACIÓN
+// SPORTCOREOS - DOMAIN ENUMS (SINGLE SOURCE OF TRUTH)
+// ==========================================
+
+// ==========================================
+// 1. ROLES Y AUTENTICACIÓN
 // ==========================================
 export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
   DIRECTOR_DEPORTIVO = 'DIRECTOR_DEPORTIVO',
   ENTRENADOR_DT = 'ENTRENADOR_DT',
-  PADRE_ACUDIENTE = 'PADRE_ACUDIENTE',
+  PREPARADOR_FISICO = 'PREPARADOR_FISICO',
+  MEDICO_FISIO = 'MEDICO_FISIO',
   ADMIN_FINANCIERO = 'ADMIN_FINANCIERO',
+  RECEPCION_LOGISTICA = 'RECEPCION_LOGISTICA',
+  PADRE_ACUDIENTE = 'PADRE_ACUDIENTE',
+  JUGADOR = 'JUGADOR',
 }
 
 // ==========================================
-// PASARELAS & MÉTODOS DE PAGO
+// 2. PASARELAS & MÉTODOS DE PAGO
 // ==========================================
 export enum MetodoPago {
   WOMPI_PSE = 'WOMPI_PSE',
@@ -38,7 +46,7 @@ export enum TipoMoneda {
 }
 
 // ==========================================
-// JUGADORES & FICHA DEPORTIVA
+// 3. JUGADORES, FAMILIAS & FICHA DEPORTIVA
 // ==========================================
 export enum TipoDocumentoIdentidad {
   TI = 'TI',
@@ -47,7 +55,11 @@ export enum TipoDocumentoIdentidad {
   PASAPORTE = 'PASAPORTE',
   CE = 'CE',
   PEP = 'PEP',
+  PPT = 'PPT',
+  NUIP = 'NUIP',
 }
+
+export { TipoDocumentoIdentidad as TipoDocumento };
 
 export enum Genero {
   MASCULINO = 'MASCULINO',
@@ -69,8 +81,63 @@ export enum EstadoMatricula {
   EN_PRUEBA = 'EN_PRUEBA',
 }
 
+export enum Parentesco {
+  PADRE = 'PADRE',
+  MADRE = 'MADRE',
+  TUTOR_LEGAL = 'TUTOR_LEGAL',
+  ABUELO = 'ABUELO',
+  TIO = 'TIO',
+  HERMANO = 'HERMANO',
+  OTRO = 'OTRO',
+}
+
+export enum PosicionJugador {
+  PORTERO = 'PORTERO',
+  DEFENSA = 'DEFENSA',
+  DEFENSA_CENTRAL = 'DEFENSA_CENTRAL',
+  LATERAL_DERECHO = 'LATERAL_DERECHO',
+  LATERAL_IZQUIERDO = 'LATERAL_IZQUIERDO',
+  MEDIOCAMPISTA = 'MEDIOCAMPISTA',
+  VOLANTE_DEFENSIVO = 'VOLANTE_DEFENSIVO',
+  VOLANTE_OFENSIVO = 'VOLANTE_OFENSIVO',
+  EXTREMO_DERECHO = 'EXTREMO_DERECHO',
+  EXTREMO_IZQUIERDO = 'EXTREMO_IZQUIERDO',
+  DELANTERO = 'DELANTERO',
+  SIN_DEFINIR = 'Sin definir',
+}
+
 // ==========================================
-// COMPETICIÓN, PARTIDOS & FIXTURE
+// 4. CATEGORÍAS & ESTRUCTURA DEPORTIVA
+// ==========================================
+export enum NivelCompetencia {
+  FORMATIVO = 'FORMATIVO',
+  COMPETITIVO = 'COMPETITIVO',
+  ELITE = 'ELITE',
+  RECREATIVO = 'RECREATIVO',
+}
+
+export enum RamaCategoria {
+  MASCULINO = 'MASCULINO',
+  FEMENINO = 'FEMENINO',
+  MIXTO = 'MIXTO',
+}
+
+// ==========================================
+// 5. FINANZAS & ESTADO DE CUENTA
+// ==========================================
+export enum EstadoCuenta {
+  AL_DIA = 'AL_DIA',
+  EN_MORA = 'EN_MORA',
+}
+
+export enum PlanClub {
+  PLAN_CLUB_ELITE_PRO = 'PLAN_CLUB_ELITE_PRO',
+  PLAN_SEMILLERO_ORO = 'PLAN_SEMILLERO_ORO',
+  PLAN_ACADEMIA_BASICO = 'PLAN_ACADEMIA_BASICO',
+}
+
+// ==========================================
+// 6. COMPETICIÓN, PARTIDOS & FIXTURE
 // ==========================================
 export enum CondicionJuego {
   LOCAL = 'LOCAL',
@@ -112,7 +179,7 @@ export enum EstadoConfirmacionConvocatoria {
 }
 
 // ==========================================
-// ESCENARIOS & CANCHAS
+// 7. ESCENARIOS & CANCHAS
 // ==========================================
 export enum TipoSuperficieCancha {
   SINTETICA_F5 = 'sintetica_f5',
@@ -138,7 +205,7 @@ export enum EstadoTurnoCancha {
 }
 
 // ==========================================
-// TIENDA OFICIAL & INVENTARIO
+// 8. TIENDA OFICIAL & INVENTARIO
 // ==========================================
 export enum CategoriaProductoTienda {
   UNIFORME_OFICIAL = 'uniforme_oficial',
@@ -157,7 +224,7 @@ export enum EstadoDespachoPedido {
 }
 
 // ==========================================
-// SCOUTING & CAPTACIÓN
+// 9. SCOUTING & CAPTACIÓN
 // ==========================================
 export enum EstadoScouting {
   EN_OBSERVACION = 'en_observacion',
@@ -174,7 +241,7 @@ export enum RecomendacionScouting {
 }
 
 // ==========================================
-// TELEMETRÍA & RENDIMIENTO GPS
+// 10. TELEMETRÍA & RENDIMIENTO GPS
 // ==========================================
 export enum TipoSesionTelemetria {
   PARTIDO_OFICIAL = 'PARTIDO_OFICIAL',
@@ -192,7 +259,7 @@ export enum DispositivoSensorMarca {
 }
 
 // ==========================================
-// ALMACENAMIENTO DOCUMENTAL MULTI-TENANT
+// 11. ALMACENAMIENTO DOCUMENTAL MULTI-TENANT
 // ==========================================
 export enum EntidadAlmacenamientoTipo {
   CLUB = 'CLUB',
@@ -219,3 +286,87 @@ export enum TipoDocumentoAdjunto {
   TRACKING_GPS_RAW = 'TRACKING_GPS_RAW',
   INFORME_SCOUTING_PDF = 'INFORME_SCOUTING_PDF',
 }
+
+// ==========================================
+// 12. SERVICIOS, RETOS & NOTIFICACIONES
+// ==========================================
+export enum EstadoInscripcionServicio {
+  PENDIENTE = 'PENDIENTE',
+  PENDIENTE_APROBACION = 'PENDIENTE_APROBACION',
+  APROBADO = 'APROBADO',
+  APROBADA = 'APROBADO',
+  RECHAZADO = 'RECHAZADO',
+  RECHAZADA = 'RECHAZADO',
+  COMPLETADA = 'COMPLETADA',
+}
+
+export enum EstadoRetoProgreso {
+  DISPONIBLE = 'DISPONIBLE',
+  COMPROBABLE = 'COMPROBABLE',
+  PENDIENTE = 'PENDIENTE',
+  EN_PROGRESO = 'EN_PROGRESO',
+  APROBADO = 'APROBADO',
+  RECHAZADO = 'RECHAZADO',
+}
+
+
+export enum TipoNotificacion {
+  SUCCESS = 'SUCCESS',
+  INFO = 'INFO',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR',
+}
+
+export enum ImportFilterMode {
+  TODAS = 'TODAS',
+  VALIDAS = 'VALIDAS',
+  ADVERTENCIAS = 'ADVERTENCIAS',
+  ERRORES = 'ERRORES',
+}
+
+export enum FiltroGeneral {
+  TODAS = 'TODAS',
+  TODOS = 'TODOS',
+}
+
+export enum DiagnosticoBiometricoFiltro {
+  TODOS = 'TODOS',
+  OPTIMO = 'OPTIMO',
+  SOBREPESO = 'SOBREPESO',
+  OBESIDAD = 'OBESIDAD',
+  BAJOPESO = 'BAJOPESO',
+}
+
+export enum EstadoPagoReserva {
+  PENDIENTE = 'pendiente',
+  PARCIAL = 'parcial',
+  COMPLETADO = 'completado',
+  REEMBOLSADO = 'reembolsado',
+}
+
+export enum TipoValorParametro {
+  STRING = 'STRING',
+  NUMBER = 'NUMBER',
+  BOOLEAN = 'BOOLEAN',
+  JSON = 'JSON',
+}
+
+export enum TipoContenidoLanding {
+  LANDING_PAGE = 'LANDING_PAGE',
+  PROMO_HERO = 'PROMO_HERO',
+  STORIES_REEL = 'STORIES_REEL',
+  BANNER_TOP = 'BANNER_TOP',
+  POPUP_MODAL = 'POPUP_MODAL',
+}
+
+export enum EstadoLanding {
+  PUBLICADO = 'PUBLICADO',
+  BORRADOR = 'BORRADOR',
+  ARCHIVADO = 'ARCHIVADO',
+}
+
+export enum FormModalMode {
+  CREATE = 'CREATE',
+  EDIT = 'EDIT',
+}
+

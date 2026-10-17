@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CreateServicioDto, InscribirServicioDto } from './servicios.dto';
+import { EstadoInscripcionServicio, MetodoPago } from '../../common/enums/domain.enums';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -124,8 +125,8 @@ export class ServiciosRepository {
       throw new BadRequestException('Lo sentimos, los cupos para esta clínica especializada se han agotado.');
     }
 
-    const isDirectInstant = dto.metodo_pago === 'WOMPI_PSE';
-    const estadoPago = isDirectInstant && !dto.comprobante_url ? 'APROBADO' : 'PENDIENTE_APROBACION';
+    const isDirectInstant = dto.metodo_pago === MetodoPago.WOMPI_PSE;
+    const estadoPago = isDirectInstant && !dto.comprobante_url ? EstadoInscripcionServicio.APROBADO : EstadoInscripcionServicio.PENDIENTE_APROBACION;
 
     const prefix = dto.metodo_pago.includes('NEQUI')
       ? 'NEQUI-SPORT'
@@ -170,7 +171,7 @@ export class ServiciosRepository {
       [servicioId],
     );
 
-    const mensaje = estadoPago === 'APROBADO'
+    const mensaje = estadoPago === EstadoInscripcionServicio.APROBADO
       ? `¡Inscripción exitosa a la clínica "${servicio.titulo}"! Pase digital activo.`
       : `Comprobante de pago Nequi/Transferencia recibido. Tu Pase QR quedará activo tan pronto Tesorería valide el soporte.`;
 
@@ -185,7 +186,7 @@ export class ServiciosRepository {
     clubId: string,
     inscripcionId: string,
     user: any,
-    dto: { estado: 'APROBADO' | 'RECHAZADO'; notas_tesoreria?: string; motivo_rechazo?: string },
+    dto: { estado: EstadoInscripcionServicio; notas_tesoreria?: string; motivo_rechazo?: string },
   ) {
     const inscripcionRes = await this.db.query(
       `SELECT * FROM public.inscripciones_servicios WHERE id = $1 AND club_id = $2`,
@@ -200,10 +201,10 @@ export class ServiciosRepository {
     const userName = user?.nombre ? `${user.nombre} (Tesorería)` : 'Tesorería / Admin Financiero';
     const userId = user?.sub || user?.id || null;
 
-    if (dto.estado === 'APROBADO') {
+    if (dto.estado === EstadoInscripcionServicio.APROBADO) {
       const res = await this.db.query(
         `UPDATE public.inscripciones_servicios
-         SET estado_pago = 'APROBADO',
+         SET estado_pago = '${EstadoInscripcionServicio.APROBADO}',
              fecha_aprobacion = NOW(),
              aprobado_por_user_id = $1,
              aprobado_por_nombre = $2,
@@ -219,7 +220,7 @@ export class ServiciosRepository {
       };
     } else {
       // Si se rechaza y estaba previamente ocupando cupo, liberar el cupo
-      if (inscripcion.estado_pago !== 'RECHAZADO') {
+      if (inscripcion.estado_pago !== EstadoInscripcionServicio.RECHAZADO) {
         await this.db.query(
           `UPDATE public.servicios_especializados
            SET cupos_ocupados = GREATEST(cupos_ocupados - 1, 0), updated_at = NOW()
@@ -230,7 +231,7 @@ export class ServiciosRepository {
 
       const res = await this.db.query(
         `UPDATE public.inscripciones_servicios
-         SET estado_pago = 'RECHAZADO',
+         SET estado_pago = '${EstadoInscripcionServicio.RECHAZADO}',
              fecha_aprobacion = NOW(),
              aprobado_por_user_id = $1,
              aprobado_por_nombre = $2,

@@ -14,6 +14,15 @@ import {
   CreateAcudienteDto,
   CreateBiometriaDto,
 } from './jugadores.dto';
+import {
+  Role,
+  TipoDocumentoIdentidad,
+  Genero,
+  PiernaHabil,
+  EstadoMatricula,
+  Parentesco,
+  PosicionJugador,
+} from '../../common/enums/domain.enums';
 
 @Injectable()
 export class JugadoresService {
@@ -89,14 +98,14 @@ export class JugadoresService {
       tipoDocumento: dto.tipoDocumento || 'TI',
       numeroDocumento: dto.numeroDocumento,
       fechaNacimiento: dto.fechaNacimiento,
-      genero: dto.genero || 'MASCULINO',
+      genero: dto.genero || Genero.MASCULINO,
       fotoUrl: dto.fotoUrl,
       posicionPrincipal: dto.posicionPrincipal,
       posicionSecundaria: dto.posicionSecundaria,
-      piernaHabil: dto.piernaHabil || 'DIESTRO',
+      piernaHabil: dto.piernaHabil || PiernaHabil.DIESTRO,
       numeroDorsal: dto.numeroDorsal,
       eps: dto.eps,
-      estadoMatricula: dto.estadoMatricula || 'ACTIVO',
+      estadoMatricula: dto.estadoMatricula || EstadoMatricula.ACTIVO,
     });
 
     // 4. Si se incluyeron datos del Acudiente, registrarlo y vincularlo
@@ -107,11 +116,11 @@ export class JugadoresService {
         acudienteCreado = await this.jugadoresRepository.createAcudiente({
           nombres: dto.acudienteNombres,
           apellidos: dto.acudienteApellidos || '',
-          tipoDocumento: dto.acudienteTipoDoc || 'CC',
+          tipoDocumento: dto.acudienteTipoDoc || TipoDocumentoIdentidad.CC,
           numeroDocumento: numDocAcudiente,
           telefonoMovil: dto.acudienteTelefono,
           email: dto.acudienteEmail,
-          parentesco: dto.acudienteParentesco || 'PADRE',
+          parentesco: dto.acudienteParentesco || Parentesco.PADRE,
         });
 
         await this.jugadoresRepository.linkJugadorAcudiente(
@@ -399,7 +408,7 @@ export class JugadoresService {
         if (dorsal && categoriaId) {
           const dorsalOcupado = await this.jugadoresRepository.findByDorsal(clubId, categoriaId, dorsal);
           if (dorsalOcupado && dorsalOcupado.numero_documento !== numDoc) {
-            advertencias.push(`El dorsal #${dorsal} ya está asignado a ${dorsalOcupado.nombres} ${dorsalOcupado.apellidos} en esta categoría`);
+            advertencias.push(`El dorsal #${dorsal} ya está asignado a ${dorsalOcupado.nombres} ${dorsalOcupado.apellidos} en esta categoría (se importará sin dorsal)`);
           }
         }
 
@@ -428,8 +437,8 @@ export class JugadoresService {
           edad,
           categoriaNombre,
           esNuevaCategoria,
-          posicionPrincipal: f.posicion_principal || 'Sin definir',
-          piernaHabil: (f.pierna_habil || f.pierna || 'DIESTRO').toString().toUpperCase().includes('IZQ') ? 'ZURDO' : ((f.pierna_habil || f.pierna || '').toString().toUpperCase().includes('AMB') ? 'AMBIDIESTRO' : 'DIESTRO'),
+          posicionPrincipal: f.posicion_principal || PosicionJugador.SIN_DEFINIR,
+          piernaHabil: (f.pierna_habil || f.pierna || PiernaHabil.DIESTRO).toString().toUpperCase().includes('IZQ') ? PiernaHabil.ZURDO : ((f.pierna_habil || f.pierna || '').toString().toUpperCase().includes('AMB') ? PiernaHabil.AMBIDIESTRO : PiernaHabil.DIESTRO),
           numeroDorsal: dorsal,
           crearUsuarioJugador,
           tieneAcudiente,
@@ -503,11 +512,11 @@ export class JugadoresService {
           acudienteExistente = await this.jugadoresRepository.createAcudiente({
             nombres: fila.acudienteNombre?.split(' ')[0] || 'Acudiente',
             apellidos: fila.acudienteNombre?.split(' ').slice(1).join(' ') || 'Familiar',
-            tipoDocumento: 'CC',
+            tipoDocumento: TipoDocumentoIdentidad.CC,
             numeroDocumento: fila.acudienteDocumento,
             telefonoMovil: '+57 300 000 0000',
             email: fila.acudienteEmail || null,
-            parentesco: 'PADRE',
+            parentesco: Parentesco.PADRE,
           });
           acudientesCreados++;
 
@@ -523,7 +532,7 @@ export class JugadoresService {
                 apellido: fila.acudienteNombre?.split(' ').slice(1).join(' ') || 'Familiar',
                 email: emailAcudiente,
                 passwordHash,
-                rol: 'PADRE_ACUDIENTE',
+                rol: Role.PADRE_ACUDIENTE,
                 telefono: '+57 300 000 0000',
               },
               clubId
@@ -532,7 +541,7 @@ export class JugadoresService {
             await this.jugadoresRepository.updateAcudienteUsuarioId(acudienteExistente.id, userCreado.id);
 
             credencialesGeneradas.push({
-              tipo: 'PADRE_ACUDIENTE',
+              tipo: Role.PADRE_ACUDIENTE,
               nombreCompleto: fila.acudienteNombre || 'Acudiente Familiar',
               documento: fila.acudienteDocumento,
               email: emailAcudiente,
@@ -544,6 +553,14 @@ export class JugadoresService {
       }
 
       // 3. Crear o Actualizar Jugador
+      let dorsalFinal = fila.numeroDorsal;
+      if (dorsalFinal && catId) {
+        const dorsalOcupado = await this.jugadoresRepository.findByDorsal(clubId, catId, dorsalFinal);
+        if (dorsalOcupado && dorsalOcupado.numero_documento !== fila.numeroDocumento) {
+          dorsalFinal = null;
+        }
+      }
+
       const jugadorExistente = await this.jugadoresRepository.findByDocumento(clubId, fila.numeroDocumento);
       let jugadorId: string;
 
@@ -553,7 +570,7 @@ export class JugadoresService {
           nombres: fila.nombres,
           apellidos: fila.apellidos,
           posicionPrincipal: fila.posicionPrincipal,
-          numeroDorsal: fila.numeroDorsal,
+          numeroDorsal: dorsalFinal,
         });
         jugadorId = jugadorExistente.id;
         jugadoresActualizados++;
@@ -566,12 +583,12 @@ export class JugadoresService {
           tipoDocumento: fila.tipoDoc,
           numeroDocumento: fila.numeroDocumento,
           fechaNacimiento: fila.fechaNacimiento,
-          genero: 'MASCULINO',
+          genero: Genero.MASCULINO,
           posicionPrincipal: fila.posicionPrincipal,
-          piernaHabil: fila.piernaHabil || 'DIESTRO',
-          numeroDorsal: fila.numeroDorsal,
+          piernaHabil: fila.piernaHabil || PiernaHabil.DIESTRO,
+          numeroDorsal: dorsalFinal,
           eps: 'EPS Sanitas',
-          estadoMatricula: 'ACTIVO',
+          estadoMatricula: EstadoMatricula.ACTIVO,
         });
         jugadorId = nuevo.id;
         jugadoresCreados++;
@@ -596,13 +613,13 @@ export class JugadoresService {
               apellido: fila.apellidos,
               email: emailJugador,
               passwordHash: passHash,
-              rol: 'JUGADOR',
+              rol: Role.JUGADOR,
             },
             clubId
           );
 
           credencialesGeneradas.push({
-            tipo: 'JUGADOR',
+            tipo: Role.JUGADOR,
             nombreCompleto: `${fila.nombres} ${fila.apellidos}`,
             documento: fila.numeroDocumento,
             email: emailJugador,

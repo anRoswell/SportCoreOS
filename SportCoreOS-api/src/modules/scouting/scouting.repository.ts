@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CreateProspectoDto, UpdateProspectoDto, CreateEvaluacionDto } from './scouting.dto';
+import { FiltroGeneral, EstadoScouting } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class ScoutingRepository {
@@ -48,12 +49,12 @@ export class ScoutingRepository {
       whereParts.push(`(p.nombres_apellidos ILIKE $${pIdx} OR p.club_origen ILIKE $${pIdx} OR p.ciudad ILIKE $${pIdx})`);
     }
 
-    if (estado && estado !== 'TODOS') {
+    if (estado && estado !== FiltroGeneral.TODOS) {
       params.push(estado);
       whereParts.push(`p.estado_scouting = $${params.length}`);
     }
 
-    if (posicion && posicion !== 'TODAS') {
+    if (posicion && posicion !== FiltroGeneral.TODAS) {
       params.push(posicion);
       whereParts.push(`(p.posicion_principal = $${params.length} OR p.posicion_secundaria = $${params.length})`);
     }
@@ -134,7 +135,7 @@ export class ScoutingRepository {
         dto.altura_cm || null,
         dto.peso_kg || null,
         dto.video_highlight_url || null,
-        dto.estado_scouting || 'en_observacion',
+        dto.estado_scouting || EstadoScouting.EN_OBSERVACION,
         dto.notas_scout || null,
       ]
     );

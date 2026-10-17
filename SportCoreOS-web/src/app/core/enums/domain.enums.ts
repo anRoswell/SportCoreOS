@@ -5,16 +5,20 @@ export enum EstadoUsuario {
   PENDIENTE = 'PENDIENTE',
 }
 
-export enum RolUsuario {
+export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN_CLUB = 'ADMIN_CLUB',
-  DIRECTOR_TECNICO = 'DIRECTOR_TECNICO',
-  PROFESOR = 'PROFESOR',
-  SCOUT = 'SCOUT',
-  MEDICO = 'MEDICO',
-  PADRE_TUTOR = 'PADRE_TUTOR',
+  DIRECTOR_DEPORTIVO = 'DIRECTOR_DEPORTIVO',
+  ENTRENADOR_DT = 'ENTRENADOR_DT',
+  PREPARADOR_FISICO = 'PREPARADOR_FISICO',
+  MEDICO_FISIO = 'MEDICO_FISIO',
+  ADMIN_FINANCIERO = 'ADMIN_FINANCIERO',
+  RECEPCION_LOGISTICA = 'RECEPCION_LOGISTICA',
+  PADRE_ACUDIENTE = 'PADRE_ACUDIENTE',
   JUGADOR = 'JUGADOR',
 }
+
+export { Role as RolUsuario };
+
 
 export enum EstadoPago {
   TODOS = 'TODOS',
@@ -79,22 +83,31 @@ export enum RamaDeporte {
 
 export enum PosicionJugador {
   PORTERO = 'PORTERO',
+  DEFENSA = 'DEFENSA',
   DEFENSA_CENTRAL = 'DEFENSA_CENTRAL',
   LATERAL_DERECHO = 'LATERAL_DERECHO',
   LATERAL_IZQUIERDO = 'LATERAL_IZQUIERDO',
+  MEDIOCAMPISTA = 'MEDIOCAMPISTA',
   MEDIOCENTRO_DEFENSIVO = 'MEDIOCENTRO_DEFENSIVO',
   MEDIOCENTRO_OFENSIVO = 'MEDIOCENTRO_OFENSIVO',
+  VOLANTE_DEFENSIVO = 'VOLANTE_DEFENSIVO',
+  VOLANTE_OFENSIVO = 'VOLANTE_OFENSIVO',
   EXTREMO_DERECHO = 'EXTREMO_DERECHO',
   EXTREMO_IZQUIERDO = 'EXTREMO_IZQUIERDO',
+  DELANTERO = 'DELANTERO',
   DELANTERO_CENTRO = 'DELANTERO_CENTRO',
   SEGUNDO_DELANTERO = 'SEGUNDO_DELANTERO',
+  SIN_DEFINIR = 'Sin definir',
 }
 
-export enum DominanciaPie {
+export enum PiernaHabil {
   DIESTRO = 'DIESTRO',
   ZURDO = 'ZURDO',
   AMBIDIESTRO = 'AMBIDIESTRO',
 }
+
+export { PiernaHabil as DominanciaPie };
+
 
 export enum TipoServicio {
   MENSUALIDAD = 'MENSUALIDAD',
@@ -224,14 +237,16 @@ export enum ScoutingViewMode {
   LISTA = 'lista',
 }
 
-export enum ScoutingEstadoProspecto {
+export enum ScoutingEstadoPipeline {
   TODOS = 'TODOS',
-  OBSERVACION = 'OBSERVACION',
-  PRUEBA_TECNICA = 'PRUEBA_TECNICA',
-  ENTREVISTA = 'ENTREVISTA',
-  FIRMADO = 'FIRMADO',
-  DESCARTADO = 'DESCARTADO',
+  EN_OBSERVACION = 'en_observacion',
+  INTERES_FICHAJE = 'interes_fichaje',
+  FICHADO = 'fichado',
+  DESCARTADO = 'descartado',
 }
+
+export { ScoutingEstadoPipeline as ScoutingEstadoProspecto };
+
 
 // ==========================================
 // SLIDERS & CONTENIDO PROMOCIONAL
@@ -317,23 +332,30 @@ export enum TabExpedienteJugador {
 }
 
 export enum TipoDocumentoIdentidad {
-  CC = 'CC',
   TI = 'TI',
+  CC = 'CC',
   RC = 'RC',
   PASAPORTE = 'PASAPORTE',
   CE = 'CE',
   PEP = 'PEP',
+  PPT = 'PPT',
+  NUIP = 'NUIP',
 }
 
-export enum ParentescoAcudiente {
+export { TipoDocumentoIdentidad as TipoDocumento };
+
+export enum Parentesco {
   PADRE = 'PADRE',
   MADRE = 'MADRE',
   TUTOR_LEGAL = 'TUTOR_LEGAL',
-  ABUELO_A = 'ABUELO_A',
-  TIO_A = 'TIO_A',
-  HERMANO_A = 'HERMANO_A',
+  ABUELO = 'ABUELO',
+  TIO = 'TIO',
+  HERMANO = 'HERMANO',
   OTRO = 'OTRO',
 }
+
+export { Parentesco as ParentescoAcudiente };
+
 
 export enum RangoImcClasificacion {
   BAJO_PESO = 'Bajo Peso',
@@ -411,6 +433,50 @@ export enum MetodoPagoTienda {
   EFECTIVO_CAJA = 'EFECTIVO_CAJA',
   TRANSFERENCIA = 'TRANSFERENCIA',
 }
+
+export enum EstadoMatricula {
+  ACTIVO = 'ACTIVO',
+  SUSPENDIDO = 'SUSPENDIDO',
+  LESIONADO = 'LESIONADO',
+  RETIRADO = 'RETIRADO',
+  EN_PRUEBA = 'EN_PRUEBA',
+}
+
+export enum Genero {
+  MASCULINO = 'MASCULINO',
+  FEMENINO = 'FEMENINO',
+  MIXTO = 'MIXTO',
+}
+
+export enum CondicionJuego {
+  LOCAL = 'LOCAL',
+  VISITANTE = 'VISITANTE',
+  NEUTRAL = 'NEUTRAL',
+}
+
+export enum EstadoCuenta {
+  AL_DIA = 'AL_DIA',
+  EN_MORA = 'EN_MORA',
+}
+
+
+export enum ImportFilterMode {
+  TODAS = 'TODAS',
+  VALIDAS = 'VALIDAS',
+  ADVERTENCIAS = 'ADVERTENCIAS',
+  ERRORES = 'ERRORES',
+}
+
+export enum FormModalMode {
+  CREATE = 'CREATE',
+  EDIT = 'EDIT',
+}
+
+export enum FiltroGeneral {
+  TODAS = 'TODAS',
+  TODOS = 'TODOS',
+}
+
 
 
 

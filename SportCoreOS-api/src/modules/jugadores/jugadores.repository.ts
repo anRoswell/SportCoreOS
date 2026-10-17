@@ -1,5 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import {
+  TipoDocumentoIdentidad,
+  Genero,
+  PiernaHabil,
+  EstadoMatricula,
+  Parentesco,
+  RamaCategoria,
+  NivelCompetencia,
+} from '../../common/enums/domain.enums';
 
 @Injectable()
 export class JugadoresRepository {
@@ -214,17 +223,17 @@ export class JugadoresRepository {
       data.categoriaId,
       data.nombres.trim(),
       data.apellidos.trim(),
-      data.tipoDocumento || 'TI',
+      data.tipoDocumento || TipoDocumentoIdentidad.TI,
       data.numeroDocumento.trim(),
       data.fechaNacimiento,
-      data.genero || 'MASCULINO',
+      data.genero || Genero.MASCULINO,
       data.fotoUrl || null,
       data.posicionPrincipal.trim(),
       data.posicionSecundaria?.trim() || null,
-      data.piernaHabil || 'DIESTRO',
+      data.piernaHabil || PiernaHabil.DIESTRO,
       data.numeroDorsal || null,
       data.eps?.trim() || 'EPS Sanitas',
-      data.estadoMatricula || 'ACTIVO',
+      data.estadoMatricula || EstadoMatricula.ACTIVO,
     ]);
     return res.rows[0];
   }
@@ -395,11 +404,11 @@ export class JugadoresRepository {
     const res = await this.db.query(query, [
       data.nombres.trim(),
       data.apellidos.trim(),
-      data.tipoDocumento || 'CC',
+      data.tipoDocumento || TipoDocumentoIdentidad.CC,
       data.numeroDocumento.trim(),
       data.telefonoMovil.trim(),
       data.email?.toLowerCase().trim() || null,
-      data.parentesco || 'PADRE',
+      data.parentesco || Parentesco.PADRE,
       data.direccionResidencia || null,
     ]);
     return res.rows[0];
@@ -508,20 +517,23 @@ export class JugadoresRepository {
       return existing.rows[0];
     }
 
-    const baseCode = cleanNombre
+    const prefix = cleanNombre
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '')
-      .substring(0, 10) || 'CAT-GEN';
+      .substring(0, 6) || 'CAT';
+    const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const baseCode = `${prefix}-${randSuffix}`;
     
     const colors = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#E11D48', '#84CC16'];
     const color = colors[Math.floor(Math.random() * colors.length)];
 
     const res = await this.db.query(
       `INSERT INTO deportivo.categorias (
-        club_id, nombre, codigo_categoria, color_distintivo, activa, cupo_maximo
-      ) VALUES ($1, $2, $3, $4, true, 30)
+        club_id, nombre, codigo_categoria, anio_nacimiento_min, anio_nacimiento_max,
+        rama, nivel_competencia, color_distintivo, cupo_maximo, activa
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
       RETURNING *`,
-      [clubId, cleanNombre, baseCode, color]
+      [clubId, cleanNombre, baseCode, 2005, 2020, RamaCategoria.MIXTO, NivelCompetencia.FORMATIVO, color, 30]
     );
     return res.rows[0];
   }

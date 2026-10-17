@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsArray, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EstadoInscripcionServicio } from '../../common/enums/domain.enums';
 
 export class CreateServicioDto {
   @ApiProperty({ example: 'Explosividad & Sprint Pura para Niños' })
@@ -168,10 +169,10 @@ export class InscribirServicioDto {
 }
 
 export class AprobarInscripcionDto {
-  @ApiProperty({ example: 'APROBADO', enum: ['APROBADO', 'RECHAZADO'] })
-  @IsString()
+  @ApiProperty({ example: EstadoInscripcionServicio.APROBADO, enum: EstadoInscripcionServicio })
+  @IsEnum(EstadoInscripcionServicio)
   @IsNotEmpty()
-  estado: 'APROBADO' | 'RECHAZADO';
+  estado: EstadoInscripcionServicio;
 
   @ApiPropertyOptional({ example: 'Transferencia validada en extracto Nequi / Bancolombia' })
   @IsString()

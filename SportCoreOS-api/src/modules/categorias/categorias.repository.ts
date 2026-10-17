@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { BaseRepository } from '../../common/repositories/base.repository';
+import { RamaCategoria, NivelCompetencia } from '../../common/enums/domain.enums';
 
 @Injectable()
 export class CategoriasRepository extends BaseRepository {
@@ -108,8 +109,8 @@ export class CategoriasRepository extends BaseRepository {
         data.codigo_categoria || data.nombre.substring(0, 6).toUpperCase(),
         data.anio_nacimiento_min || 2010,
         data.anio_nacimiento_max || 2010,
-        data.rama || 'MASCULINO',
-        data.nivel_competencia || 'FORMATIVO',
+        data.rama || RamaCategoria.MASCULINO,
+        data.nivel_competencia || NivelCompetencia.FORMATIVO,
         data.color_distintivo || '#10B981',
         data.cupo_maximo || 25,
         data.director_tecnico_id || null,

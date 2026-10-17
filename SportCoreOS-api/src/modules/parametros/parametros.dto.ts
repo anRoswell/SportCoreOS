@@ -2,12 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export enum TipoValorParametro {
-  STRING = 'STRING',
-  NUMBER = 'NUMBER',
-  BOOLEAN = 'BOOLEAN',
-  JSON = 'JSON',
-}
+import { TipoValorParametro } from '../../common/enums/domain.enums';
+export { TipoValorParametro };
+
 
 export class CreateParametroDto {
   @ApiProperty({ description: 'Módulo funcional al que pertenece el parámetro', example: 'FINANZAS' })

@@ -6,10 +6,10 @@ import { JugadorExpediente360 } from '../../../../core/services/api.service';
 import { 
   TabExpedienteJugador, 
   TipoDocumentoIdentidad, 
-  ParentescoAcudiente, 
+  Parentesco, 
   RangoImcClasificacion, 
   RangoImcCssClass,
-  RamaDeporte 
+  Genero 
 } from '../../../../core/enums/domain.enums';
 
 @Component({
@@ -41,14 +41,14 @@ export class JugadorExpedienteModalComponent {
     numeroDocumento: '',
     telefonoMovil: '',
     email: '',
-    parentesco: ParentescoAcudiente.PADRE,
+    parentesco: Parentesco.PADRE,
     esContactoPrincipal: false,
     autorizadoRecoger: true,
   };
 
   resolvePhotoUrl(fotoUrl?: string, genero?: string): string {
     if (fotoUrl && fotoUrl.trim()) return fotoUrl;
-    return genero === RamaDeporte.FEMENINO
+    return genero === Genero.FEMENINO
       ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face'
       : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face';
   }
@@ -100,7 +100,7 @@ export class JugadorExpedienteModalComponent {
       numeroDocumento: '',
       telefonoMovil: '',
       email: '',
-      parentesco: ParentescoAcudiente.PADRE,
+      parentesco: Parentesco.PADRE,
       esContactoPrincipal: false,
       autorizadoRecoger: true,
     };

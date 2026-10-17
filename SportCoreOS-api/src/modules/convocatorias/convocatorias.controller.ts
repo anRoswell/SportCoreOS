@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { ConvocatoriasService } from './convocatorias.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RolConvocatoria } from '../../common/enums/domain.enums';
 
 @ApiTags('Convocatorias a Partidos')
 @ApiBearerAuth()
@@ -50,7 +51,7 @@ export class ConvocatoriasController {
     return this.convocatoriasService.addJugadorConvocatoria(
       partidoId,
       body.jugadorId,
-      body.rol || 'TITULAR',
+      body.rol || RolConvocatoria.TITULAR,
       body.posicion,
     );
   }

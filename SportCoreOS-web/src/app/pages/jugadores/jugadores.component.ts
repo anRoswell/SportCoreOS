@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, JugadorExpediente360 } from '../../core/services/api.service';
 import { CatalogosService } from '../../core/services/catalogos.service';
+import { EstadoMatricula, FiltroGeneral, FormModalMode } from '../../core/enums/domain.enums';
 
 // Subcomponentes modulares de Jugadores
 import { JugadorCardComponent } from './components/jugador-card/jugador-card.component';
@@ -10,6 +11,7 @@ import { JugadorExpedienteModalComponent } from './components/jugador-expediente
 import { JugadorFormModalComponent } from './components/jugador-form-modal/jugador-form-modal.component';
 import { JugadorBiometriaModalComponent } from './components/jugador-biometria-modal/jugador-biometria-modal.component';
 import { JugadorDeleteDialogComponent } from './components/jugador-delete-dialog/jugador-delete-dialog.component';
+import { JugadorImportModalComponent } from './components/jugador-import-modal/jugador-import-modal.component';
 
 @Component({
   selector: 'app-jugadores',
@@ -21,7 +23,8 @@ import { JugadorDeleteDialogComponent } from './components/jugador-delete-dialog
     JugadorExpedienteModalComponent,
     JugadorFormModalComponent,
     JugadorBiometriaModalComponent,
-    JugadorDeleteDialogComponent
+    JugadorDeleteDialogComponent,
+    JugadorImportModalComponent
   ],
   encapsulation: ViewEncapsulation.None,
   templateUrl: './jugadores.component.html',
@@ -62,12 +65,16 @@ export class JugadoresComponent implements OnInit {
   toastMsg = signal<string>('');
   isToastError = signal<boolean>(false);
 
+  readonly FormModalMode = FormModalMode;
+  readonly FiltroGeneral = FiltroGeneral;
+  readonly EstadoMatricula = EstadoMatricula;
+
   // Filtros Avanzados
-  selectedCategoriaId = signal<string>('TODAS');
+  selectedCategoriaId = signal<string>(FiltroGeneral.TODAS);
   searchQuery = signal<string>('');
-  selectedEstado = signal<string>('TODOS');
-  selectedPosicion = signal<string>('TODAS');
-  selectedGenero = signal<string>('TODOS');
+  selectedEstado = signal<string>(FiltroGeneral.TODOS);
+  selectedPosicion = signal<string>(FiltroGeneral.TODAS);
+  selectedGenero = signal<string>(FiltroGeneral.TODOS);
   selectedSortBy = signal<string>('APELLIDO_ASC');
 
   // Modo de visualización (Tabla o Fichas 360°)
@@ -84,6 +91,7 @@ export class JugadoresComponent implements OnInit {
   selectedExpediente = signal<JugadorExpediente360 | null>(null);
 
   showCreateModal = signal<boolean>(false);
+  showImportModal = signal<boolean>(false);
   showEditModal = signal<boolean>(false);
   selectedPlayerToEdit = signal<any | null>(null);
 
@@ -100,12 +108,12 @@ export class JugadoresComponent implements OnInit {
   activosCount = computed(() => {
     const list = this.jugadores();
     if (!list || !Array.isArray(list)) return 0;
-    return list.filter(j => j.estado_matricula === 'ACTIVO').length;
+    return list.filter(j => j.estado_matricula === EstadoMatricula.ACTIVO).length;
   });
   lesionadosCount = computed(() => {
     const list = this.jugadores();
     if (!list || !Array.isArray(list)) return 0;
-    return list.filter(j => j.estado_matricula === 'LESIONADO').length;
+    return list.filter(j => j.estado_matricula === EstadoMatricula.LESIONADO).length;
   });
   evaluadosCount = computed(() => {
     const list = this.jugadores();
@@ -115,15 +123,15 @@ export class JugadoresComponent implements OnInit {
 
   hasActiveFilters = computed(() => {
     return this.searchQuery().trim() !== '' ||
-      this.selectedCategoriaId() !== 'TODAS' ||
-      this.selectedEstado() !== 'TODOS' ||
-      this.selectedPosicion() !== 'TODAS' ||
-      this.selectedGenero() !== 'TODOS';
+      this.selectedCategoriaId() !== FiltroGeneral.TODAS ||
+      this.selectedEstado() !== FiltroGeneral.TODOS ||
+      this.selectedPosicion() !== FiltroGeneral.TODAS ||
+      this.selectedGenero() !== FiltroGeneral.TODOS;
   });
 
   getSelectedCategoryName = computed(() => {
     const catId = this.selectedCategoriaId();
-    if (catId === 'TODAS') return 'Todas';
+    if (catId === FiltroGeneral.TODAS) return 'Todas';
     const found = this.categorias().find(c => c.id === catId);
     return found ? found.nombre : 'Categoría';
   });
@@ -416,6 +424,21 @@ export class JugadoresComponent implements OnInit {
   onPlayerCreated() {
     this.loadJugadores();
     this.showToast('¡Jugador inscrito exitosamente en la academia!', false);
+  }
+
+  // --- IMPORTACIÓN MASIVA EXCEL ---
+  openImportModal() {
+    this.showImportModal.set(true);
+  }
+
+  closeImportModal() {
+    this.showImportModal.set(false);
+  }
+
+  onImportCompleted() {
+    this.loadCategorias();
+    this.loadJugadores();
+    this.showToast('¡Plantel, categorías y cuentas familiares importadas exitosamente!', false);
   }
 
   // --- EDITAR JUGADOR ---

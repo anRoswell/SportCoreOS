@@ -3,6 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlatpickrDirective } from '../../../../shared/directives/flatpickr.directive';
 import { ApiService } from '../../../../core/services/api.service';
+import {
+  FormModalMode,
+  TipoDocumentoIdentidad,
+  Genero,
+  PiernaHabil,
+  EstadoMatricula,
+  Parentesco,
+} from '../../../../core/enums/domain.enums';
 
 @Component({
   selector: 'app-jugador-form-modal',
@@ -14,7 +22,7 @@ export class JugadorFormModalComponent {
   private api = inject(ApiService);
 
   @Input() visible = false;
-  @Input() mode: 'CREATE' | 'EDIT' = 'CREATE';
+  @Input() mode: FormModalMode = FormModalMode.CREATE;
   @Input() categorias: any[] = [];
   @Input() tiposDocumento: any[] = [];
   @Input() epsList: any[] = [];
@@ -49,8 +57,8 @@ export class JugadorFormModalComponent {
     acudienteApellidos: '',
     acudienteTelefono: '',
     acudienteEmail: '',
-    acudienteParentesco: 'PADRE',
-    acudienteTipoDoc: 'CC',
+    acudienteParentesco: Parentesco.PADRE,
+    acudienteTipoDoc: TipoDocumentoIdentidad.CC,
     acudienteNumeroDoc: '',
     fotoUrl: '',
   };
@@ -59,46 +67,46 @@ export class JugadorFormModalComponent {
     if (this.visible) {
       this.createStep.set(1);
       this.localPhotoPreview.set(null);
-      if (this.mode === 'EDIT' && this.initialData) {
+      if (this.mode === FormModalMode.EDIT && this.initialData) {
         this.formData = {
           categoriaId: this.initialData.categoria_id || this.initialData.categoriaId || '',
           nombres: this.initialData.nombres || '',
           apellidos: this.initialData.apellidos || '',
-          tipoDocumento: this.initialData.tipo_documento || this.initialData.tipoDocumento || 'TI',
+          tipoDocumento: this.initialData.tipo_documento || this.initialData.tipoDocumento || TipoDocumentoIdentidad.TI,
           numeroDocumento: this.initialData.numero_documento || this.initialData.numeroDocumento || '',
           fechaNacimiento: this.initialData.fecha_nacimiento ? this.initialData.fecha_nacimiento.split('T')[0] : '2011-05-15',
-          genero: this.initialData.genero || 'MASCULINO',
+          genero: this.initialData.genero || Genero.MASCULINO,
           posicionPrincipal: this.initialData.posicion_principal || this.initialData.posicionPrincipal || 'Delantero Centro',
           posicionSecundaria: this.initialData.posicion_secundaria || this.initialData.posicionSecundaria || '',
-          piernaHabil: this.initialData.pierna_habil || this.initialData.piernaHabil || 'DIESTRO',
+          piernaHabil: this.initialData.pierna_habil || this.initialData.piernaHabil || PiernaHabil.DIESTRO,
           numeroDorsal: this.initialData.numero_dorsal !== undefined ? this.initialData.numero_dorsal : 10,
           eps: this.initialData.eps || 'SURA EPS',
-          estadoMatricula: this.initialData.estado_matricula || this.initialData.estadoMatricula || 'ACTIVO',
+          estadoMatricula: this.initialData.estado_matricula || this.initialData.estadoMatricula || EstadoMatricula.ACTIVO,
           porcentajeBeca: this.initialData.porcentaje_beca !== undefined ? this.initialData.porcentaje_beca : 0,
           fotoUrl: this.initialData.foto_url || this.initialData.fotoUrl || '',
         };
-      } else if (this.mode === 'CREATE') {
+      } else if (this.mode === FormModalMode.CREATE) {
         this.formData = {
           categoriaId: this.categorias.length > 0 ? this.categorias[0].id : '',
           nombres: '',
           apellidos: '',
-          tipoDocumento: 'TI',
+          tipoDocumento: TipoDocumentoIdentidad.TI,
           numeroDocumento: '',
           fechaNacimiento: '2011-05-15',
-          genero: 'MASCULINO',
+          genero: Genero.MASCULINO,
           posicionPrincipal: 'Delantero Centro',
           posicionSecundaria: '',
-          piernaHabil: 'DIESTRO',
+          piernaHabil: PiernaHabil.DIESTRO,
           numeroDorsal: 9,
           eps: 'SURA EPS',
-          estadoMatricula: 'ACTIVO',
+          estadoMatricula: EstadoMatricula.ACTIVO,
           porcentajeBeca: 0,
           acudienteNombres: '',
           acudienteApellidos: '',
           acudienteTelefono: '',
           acudienteEmail: '',
-          acudienteParentesco: 'PADRE',
-          acudienteTipoDoc: 'CC',
+          acudienteParentesco: Parentesco.PADRE,
+          acudienteTipoDoc: TipoDocumentoIdentidad.CC,
           acudienteNumeroDoc: '',
           fotoUrl: '',
         };
