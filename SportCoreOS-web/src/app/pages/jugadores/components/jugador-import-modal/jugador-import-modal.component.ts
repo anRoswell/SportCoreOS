@@ -187,7 +187,7 @@ export class JugadorImportModalComponent {
             cleanRow[cleanKey] = val;
           });
 
-          let fecha = cleanRow.fecha_nacimiento_jugador || cleanRow.fecha_de_nacimiento_aaaa_mm_dd || cleanRow.fecha_de_nacimiento || cleanRow.fecha_nacimiento || cleanRow.nacimiento || '';
+          let fecha = cleanRow.fechanacimiento || cleanRow.fechanacimientojugador || cleanRow.fecha_nacimiento_jugador || cleanRow.fecha_de_nacimiento_aaaa_mm_dd || cleanRow.fecha_de_nacimiento || cleanRow.fecha_nacimiento || cleanRow.nacimiento || '';
           if (typeof fecha === 'number') {
             const parsedDate = new Date(Math.round((fecha - 25569) * 86400 * 1000));
             if (!isNaN(parsedDate.getTime())) {
@@ -196,19 +196,22 @@ export class JugadorImportModalComponent {
           }
 
           return {
-            nombres: cleanRow.nombres_del_jugador || cleanRow.nombres_jugador || cleanRow.nombres || cleanRow.nombre || '',
-            apellidos: cleanRow.apellidos_del_jugador || cleanRow.apellidos_jugador || cleanRow.apellidos || cleanRow.apellido || '',
-            tipo_documento: cleanRow.tipo_documento_jugador || cleanRow.tipo_documento_ti_cc_ce_pas || cleanRow.tipo_documento || cleanRow.tipo_doc || TipoDocumentoIdentidad.TI,
-            numero_documento: cleanRow.numero_documento_jugador || cleanRow.numero_de_documento_sin_puntos || cleanRow.numero_de_documento || cleanRow.numero_documento || cleanRow.documento || '',
+            nombres: cleanRow.nombresjugador || cleanRow.nombres_jugador || cleanRow.nombres_del_jugador || cleanRow.nombres || cleanRow.nombre || '',
+            apellidos: cleanRow.apellidosjugador || cleanRow.apellidos_jugador || cleanRow.apellidos_del_jugador || cleanRow.apellidos || cleanRow.apellido || '',
+            tipo_documento: cleanRow.tipodocumento || cleanRow.tipodocumentojugador || cleanRow.tipo_documento_jugador || cleanRow.tipo_documento_ti_cc_ce_pas || cleanRow.tipo_documento || cleanRow.tipo_doc || TipoDocumentoIdentidad.TI,
+            numero_documento: cleanRow.numerodocumento || cleanRow.numerodocumentojugador || cleanRow.numero_documento_jugador || cleanRow.numero_de_documento_sin_puntos || cleanRow.numero_de_documento || cleanRow.numero_documento || cleanRow.documento || '',
             fecha_nacimiento: fecha,
-            categoria: cleanRow.categoria_ej_sub_13_2026 || cleanRow.categoria || 'Sin Asignar',
-            posicion_principal: cleanRow.posicion_principal || cleanRow.posicion || PosicionJugador.DELANTERO,
-            pierna_habil: cleanRow.pierna_habil_diestro_zurdo_ambidiestro || cleanRow.pierna_habil || cleanRow.pierna || PiernaHabil.DIESTRO,
-            numero_dorsal: cleanRow.numero_dorsal_opcional || cleanRow.numero_dorsal || cleanRow.dorsal || null,
-            nombres_acudiente: cleanRow.nombres_del_padre_acudiente || cleanRow.nombres_acudiente || cleanRow.nombre_acudiente || '',
-            apellidos_acudiente: cleanRow.apellidos_del_padre_acudiente || cleanRow.apellidos_acudiente || cleanRow.apellido_acudiente || '',
-            documento_acudiente: cleanRow.numero_documento_acudiente || cleanRow.documento_acudiente || '',
-            email_acudiente: cleanRow.email_del_acudiente_para_crear_usuario || cleanRow.email_acudiente || cleanRow.correo_acudiente || '',
+            codigo_categoria: cleanRow.codigocategoria || cleanRow.codigo_categoria || cleanRow.codcat || cleanRow.cod_cat || null,
+            categoria: cleanRow.nombrecategoria || cleanRow.nombre_categoria || cleanRow.categoria || cleanRow.categoria_ej_sub_13_2026 || cleanRow.codigocategoria || cleanRow.codigo_categoria || 'Sin Asignar',
+            posicion_principal: cleanRow.posicionprincipal || cleanRow.posicion_principal || cleanRow.posicion || PosicionJugador.DELANTERO,
+            pierna_habil: cleanRow.piernahabil || cleanRow.pierna_habil || cleanRow.pierna_habil_diestro_zurdo_ambidiestro || cleanRow.pierna || PiernaHabil.DIESTRO,
+            numero_dorsal: cleanRow.numerodorsal !== undefined && cleanRow.numerodorsal !== null && cleanRow.numerodorsal !== '' 
+              ? Number(cleanRow.numerodorsal) 
+              : (cleanRow.numero_dorsal_opcional || cleanRow.numero_dorsal || cleanRow.dorsal || null),
+            nombres_acudiente: cleanRow.nombresacudiente || cleanRow.nombres_acudiente || cleanRow.nombres_del_padre_acudiente || cleanRow.nombre_acudiente || '',
+            apellidos_acudiente: cleanRow.apellidosacudiente || cleanRow.apellidos_acudiente || cleanRow.apellidos_del_padre_acudiente || cleanRow.apellido_acudiente || '',
+            documento_acudiente: cleanRow.numerodocumentoacudiente || cleanRow.numero_documento_acudiente || cleanRow.documento_acudiente || '',
+            email_acudiente: cleanRow.emailacudiente || cleanRow.email_acudiente || cleanRow.email_del_acudiente_para_crear_usuario || cleanRow.correo_acudiente || '',
           };
         });
 

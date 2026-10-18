@@ -505,25 +505,44 @@ export class JugadoresRepository {
     return res.rows[0] || null;
   }
 
-  async findOrCreateCategoria(clubId: string, nombreCategoria: string): Promise<any> {
-    const cleanNombre = (nombreCategoria || 'General').trim();
-    const existing = await this.db.query(
-      `SELECT * FROM deportivo.categorias 
-       WHERE club_id = $1 AND LOWER(nombre) = LOWER($2)
-       LIMIT 1`,
-      [clubId, cleanNombre]
-    );
+  async findOrCreateCategoria(clubId: string, nombreCategoria: string, codigoCategoria?: string): Promise<any> {
+    const cleanNombre = (nombreCategoria || codigoCategoria || 'General').trim();
+    const cleanCode = (codigoCategoria || '').trim();
+
+    // 1. Buscar si ya existe por código o por nombre
+    let query = `SELECT * FROM deportivo.categorias WHERE club_id = $1`;
+    const params: any[] = [clubId];
+
+    if (cleanCode && cleanNombre) {
+      query += ` AND (LOWER(codigo_categoria) = LOWER($2) OR LOWER(nombre) = LOWER($3)) LIMIT 1`;
+      params.push(cleanCode, cleanNombre);
+    } else if (cleanCode) {
+      query += ` AND LOWER(codigo_categoria) = LOWER($2) LIMIT 1`;
+      params.push(cleanCode);
+    } else {
+      query += ` AND LOWER(nombre) = LOWER($2) LIMIT 1`;
+      params.push(cleanNombre);
+    }
+
+    const existing = await this.db.query(query, params);
     if (existing.rows[0]) {
       return existing.rows[0];
     }
 
-    const prefix = cleanNombre
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, '')
-      .substring(0, 6) || 'CAT';
-    const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const baseCode = `${prefix}-${randSuffix}`;
-    
+    // 2. Si no existe, crear con el código provisto (ej. 'CatSub15') o generar uno
+    const finalCode = cleanCode || `${cleanNombre.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    // Deducir año de nacimiento aproximado si el código o nombre tiene Sub (ej: CatSub15 -> edad ~15 años)
+    let anioMin = 2005;
+    let anioMax = 2020;
+    const subMatch = (cleanCode || cleanNombre).match(/sub[-_ ]?(\d+)/i);
+    if (subMatch) {
+      const edadSub = parseInt(subMatch[1], 10);
+      const anioActual = new Date().getFullYear();
+      anioMin = anioActual - edadSub - 1;
+      anioMax = anioActual - edadSub + 1;
+    }
+
     const colors = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#E11D48', '#84CC16'];
     const color = colors[Math.floor(Math.random() * colors.length)];
 
@@ -533,7 +552,7 @@ export class JugadoresRepository {
         rama, nivel_competencia, color_distintivo, cupo_maximo, activa
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
       RETURNING *`,
-      [clubId, cleanNombre, baseCode, 2005, 2020, RamaCategoria.MIXTO, NivelCompetencia.FORMATIVO, color, 30]
+      [clubId, cleanNombre, finalCode, anioMin, anioMax, RamaCategoria.MIXTO, NivelCompetencia.FORMATIVO, color, 30]
     );
     return res.rows[0];
   }

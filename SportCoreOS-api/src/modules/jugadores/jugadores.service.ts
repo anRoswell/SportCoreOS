@@ -267,80 +267,141 @@ export class JugadoresService {
 
   async generarPlantillaExcel(): Promise<Buffer> {
     const wb = XLSX.utils.book_new();
+
+    // Hoja 1: Plantilla Jugadores (Cabeceras en camelCase y datos de ejemplo claros)
     const headers = [
       {
-        nombres_jugador: 'Mateo',
-        apellidos_jugador: 'Gómez Ríos',
-        tipo_documento_jugador: 'TI',
-        numero_documento_jugador: '1023456789',
-        fecha_nacimiento_jugador: '2010-05-14',
-        genero_jugador: 'MASCULINO',
-        categoria: 'Sub-15 Élite A',
-        posicion_principal: 'Delantero Centro',
-        posicion_secundaria: 'Extremo Derecho',
-        pierna_habil: 'DIESTRO',
-        numero_dorsal: 9,
+        nombresJugador: 'Mateo',
+        apellidosJugador: 'Gómez Ríos',
+        tipoDocumento: 'TI',
+        numeroDocumento: '1023456789',
+        fechaNacimiento: '2010-05-14',
+        genero: 'MASCULINO',
+        codigoCategoria: 'CatSub15',
+        nombreCategoria: 'Sub-15 Élite A',
+        posicionPrincipal: 'Delantero Centro',
+        posicionSecundaria: 'Extremo Derecho',
+        piernaHabil: 'DIESTRO',
+        numeroDorsal: 9,
         eps: 'SURA EPS',
-        email_jugador: 'mateo.gomez@gmail.com',
-        telefono_jugador: '+57 310 123 4567',
-        nombres_acudiente: 'Carlos Alberto',
-        apellidos_acudiente: 'Gómez Silva',
+        emailJugador: 'mateo.gomez@gmail.com',
+        telefonoJugador: '+57 310 123 4567',
+        nombresAcudiente: 'Carlos Alberto',
+        apellidosAcudiente: 'Gómez Silva',
         parentesco: 'PADRE',
-        tipo_documento_acudiente: 'CC',
-        numero_documento_acudiente: '79876543',
-        email_acudiente: 'carlos.gomez@gmail.com',
-        telefono_acudiente: '+57 311 987 6543',
+        tipoDocumentoAcudiente: 'CC',
+        numeroDocumentoAcudiente: '79876543',
+        emailAcudiente: 'carlos.gomez@gmail.com',
+        telefonoAcudiente: '+57 311 987 6543',
       },
       {
-        nombres_jugador: 'Samuel',
-        apellidos_jugador: 'Pardo Mendoza',
-        tipo_documento_jugador: 'RC',
-        numero_documento_jugador: '1034567890',
-        fecha_nacimiento_jugador: '2015-08-22',
-        genero_jugador: 'MASCULINO',
-        categoria: 'Sub-11 Cantera',
-        posicion_principal: 'Volante Mixto',
-        posicion_secundaria: 'Volante 10',
-        pierna_habil: 'DIESTRO',
-        numero_dorsal: 10,
+        nombresJugador: 'Samuel',
+        apellidosJugador: 'Pardo Mendoza',
+        tipoDocumento: 'RC',
+        numeroDocumento: '1034567890',
+        fechaNacimiento: '2015-08-22',
+        genero: 'MASCULINO',
+        codigoCategoria: 'CatSub11',
+        nombreCategoria: 'Sub-11 Cantera',
+        posicionPrincipal: 'Mediocampista Ofensivo',
+        posicionSecundaria: 'Mediocampista Defensivo',
+        piernaHabil: 'DIESTRO',
+        numeroDorsal: 10,
         eps: 'Sanitas EPS',
-        email_jugador: '',
-        telefono_jugador: '',
-        nombres_acudiente: 'María Claudia',
-        apellidos_acudiente: 'Mendoza Pérez',
+        emailJugador: '',
+        telefonoJugador: '',
+        nombresAcudiente: 'María Claudia',
+        apellidosAcudiente: 'Mendoza Pérez',
         parentesco: 'MADRE',
-        tipo_documento_acudiente: 'CC',
-        numero_documento_acudiente: '52345678',
-        email_acudiente: 'maria.mendoza@gmail.com',
-        telefono_acudiente: '+57 315 876 5432',
+        tipoDocumentoAcudiente: 'CC',
+        numeroDocumentoAcudiente: '52345678',
+        emailAcudiente: 'maria.mendoza@gmail.com',
+        telefonoAcudiente: '+57 315 876 5432',
       },
       {
-        nombres_jugador: 'Valeria',
-        apellidos_jugador: 'Ospina Quintero',
-        tipo_documento_jugador: 'TI',
-        numero_documento_jugador: '1045678901',
-        fecha_nacimiento_jugador: '2008-11-03',
-        genero_jugador: 'FEMENINO',
-        categoria: 'Femenino Juvenil Pro',
-        posicion_principal: 'Defensa Central',
-        posicion_secundaria: 'Lateral Derecho',
-        pierna_habil: 'DIESTRO',
-        numero_dorsal: 4,
+        nombresJugador: 'Valeria',
+        apellidosJugador: 'Ospina Quintero',
+        tipoDocumento: 'TI',
+        numeroDocumento: '1045678901',
+        fechaNacimiento: '2008-11-03',
+        genero: 'FEMENINO',
+        codigoCategoria: 'CatFemSub16',
+        nombreCategoria: 'Femenino Juvenil Pro',
+        posicionPrincipal: 'Defensa Central',
+        posicionSecundaria: 'Lateral Derecho',
+        piernaHabil: 'DIESTRO',
+        numeroDorsal: 4,
         eps: 'Compensar EPS',
-        email_jugador: 'valeria.ospina@gmail.com',
-        telefono_jugador: '+57 300 456 7890',
-        nombres_acudiente: 'Jorge Mario',
-        apellidos_acudiente: 'Ospina Torres',
+        emailJugador: 'valeria.ospina@gmail.com',
+        telefonoJugador: '+57 300 456 7890',
+        nombresAcudiente: 'Jorge Mario',
+        apellidosAcudiente: 'Ospina Torres',
         parentesco: 'PADRE',
-        tipo_documento_acudiente: 'CC',
-        numero_documento_acudiente: '71234567',
-        email_acudiente: 'jorge.ospina@gmail.com',
-        telefono_acudiente: '+57 312 345 6789',
+        tipoDocumentoAcudiente: 'CC',
+        numeroDocumentoAcudiente: '71234567',
+        emailAcudiente: 'jorge.ospina@gmail.com',
+        telefonoAcudiente: '+57 312 345 6789',
       },
     ];
 
     const ws = XLSX.utils.json_to_sheet(headers);
     XLSX.utils.book_append_sheet(wb, ws, 'Plantilla Jugadores');
+
+    // Hoja 2: Diccionario de Códigos y Enums Oficiales
+    const guia = [
+      {
+        campo: 'codigoCategoria',
+        tipoDato: 'Código Alfanumérico',
+        ejemplosValidos: 'CatSub9, CatSub11, CatSub13, CatSub14, CatSub15, CatSub16, CatSub17, CatSub20, CatFemSub16',
+        descripcion: 'Código único para comparar de forma exacta en BD y evitar errores de tildes o espacios.',
+      },
+      {
+        campo: 'nombreCategoria',
+        tipoDato: 'Texto Descriptivo',
+        ejemplosValidos: 'Sub-15 Élite A, Iniciación Sub-9, Femenino Sub-16 Élite, Sub-20 Proyección Primera',
+        descripcion: 'Nombre visible de la categoría en el sistema. Si se omite, se utiliza el código.',
+      },
+      {
+        campo: 'tipoDocumento',
+        tipoDato: 'Enum',
+        ejemplosValidos: 'TI, CC, CE, PASAPORTE, PEP, RC',
+        descripcion: 'Tipo de documento del deportista (TI por defecto si es menor de edad).',
+      },
+      {
+        campo: 'genero',
+        tipoDato: 'Enum',
+        ejemplosValidos: 'MASCULINO, FEMENINO',
+        descripcion: 'Género del deportista.',
+      },
+      {
+        campo: 'posicionPrincipal',
+        tipoDato: 'Enum / Texto',
+        ejemplosValidos: 'Portero, Defensa Central, Lateral Derecho, Lateral Izquierdo, Mediocampista Defensivo, Mediocampista Ofensivo, Extremo Derecho, Extremo Izquierdo, Delantero Centro',
+        descripcion: 'Posición táctica principal en cancha.',
+      },
+      {
+        campo: 'piernaHabil',
+        tipoDato: 'Enum',
+        ejemplosValidos: 'DIESTRO, ZURDO, AMBIDIESTRO',
+        descripcion: 'Perfil dominante del jugador.',
+      },
+      {
+        campo: 'parentesco',
+        tipoDato: 'Enum',
+        ejemplosValidos: 'PADRE, MADRE, TUTOR_LEGAL, OTRO',
+        descripcion: 'Vínculo familiar del acudiente con el deportista.',
+      },
+      {
+        campo: 'fechaNacimiento',
+        tipoDato: 'Fecha (YYYY-MM-DD)',
+        ejemplosValidos: '2010-05-14, 2015-08-22, 2008-11-03',
+        descripcion: 'Formato estándar de fecha ISO. Determina si el deportista recibe cuenta propia (>= 14 años).',
+      },
+    ];
+
+    const wsGuia = XLSX.utils.json_to_sheet(guia);
+    XLSX.utils.book_append_sheet(wb, wsGuia, 'Guia Codigos & Enums');
+
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
   }
 
@@ -350,8 +411,16 @@ export class JugadoresService {
     }
 
     const categoriasExistentes = await this.jugadoresRepository.findCategoriasClub(clubId);
-    const catMap = new Map<string, any>();
-    categoriasExistentes.forEach((c) => catMap.set(c.nombre.toLowerCase().trim(), c));
+    const catCodeMap = new Map<string, any>();
+    const catNameMap = new Map<string, any>();
+    categoriasExistentes.forEach((c) => {
+      if (c.codigo_categoria) {
+        catCodeMap.set(c.codigo_categoria.toLowerCase().trim(), c);
+      }
+      if (c.nombre) {
+        catNameMap.set(c.nombre.toLowerCase().trim(), c);
+      }
+    });
 
     const nuevasCategorias = new Set<string>();
     let jugadoresParaCuenta = 0;
@@ -366,16 +435,22 @@ export class JugadoresService {
 
         const f: any = {};
         Object.keys(raw).forEach((k) => {
-          f[k.toLowerCase().trim().replace(/\s+/g, '_')] = raw[k];
+          f[k.toLowerCase().trim().replace(/[^a-z0-9_]/g, '')] = raw[k];
         });
 
-        const nombres = (f.nombres_jugador || f.nombres || f.nombre || '').toString().trim();
-        const apellidos = (f.apellidos_jugador || f.apellidos || f.apellido || '').toString().trim();
-        const tipoDoc = (f.tipo_documento_jugador || f.tipo_documento || 'TI').toString().trim().toUpperCase();
-        const numDoc = (f.numero_documento_jugador || f.numero_documento || f.documento || '').toString().trim();
-        const fechaNac = (f.fecha_nacimiento_jugador || f.fecha_nacimiento || '').toString().trim();
-        const categoriaNombre = (f.categoria || f.categoria_nombre || 'General').toString().trim();
-        const dorsal = f.numero_dorsal !== undefined && f.numero_dorsal !== null && f.numero_dorsal !== '' ? Number(f.numero_dorsal) : null;
+        const nombres = (f.nombresjugador || f.nombres_jugador || f.nombres || f.nombre || '').toString().trim();
+        const apellidos = (f.apellidosjugador || f.apellidos_jugador || f.apellidos || f.apellido || '').toString().trim();
+        const tipoDoc = (f.tipodocumentojugador || f.tipo_documento_jugador || f.tipodocumento || f.tipo_documento || 'TI').toString().trim().toUpperCase();
+        const numDoc = (f.numerodocumentojugador || f.numero_documento_jugador || f.numerodocumento || f.numero_documento || f.documento || '').toString().trim();
+        const fechaNac = (f.fechanacimientojugador || f.fecha_nacimiento_jugador || f.fechanacimiento || f.fecha_nacimiento || '').toString().trim();
+
+        // Extracción de código y nombre de categoría (minimiza errores con códigos normalizados como CatSub15)
+        const codigoCat = (f.codigocategoria || f.codigo_categoria || f.codcat || f.cod_cat || '').toString().trim();
+        const categoriaNombre = (f.nombrecategoria || f.nombre_categoria || f.categoria || f.categoria_nombre || codigoCat || 'General').toString().trim();
+
+        const dorsal = f.numerodorsal !== undefined && f.numerodorsal !== null && f.numerodorsal !== '' 
+          ? Number(f.numerodorsal) 
+          : (f.numero_dorsal !== undefined && f.numero_dorsal !== null && f.numero_dorsal !== '' ? Number(f.numero_dorsal) : null);
 
         if (!nombres) errores.push('Falta el nombre del jugador');
         if (!apellidos) errores.push('Falta el apellido del jugador');
@@ -397,11 +472,23 @@ export class JugadoresService {
           }
         }
 
-        const catKey = categoriaNombre.toLowerCase();
-        let categoriaId = catMap.get(catKey)?.id || null;
+        // Búsqueda inteligente de categoría:
+        // 1. Por código exacto (e.g., 'CatSub15')
+        // 2. Por nombre exacto (e.g., 'Sub-15 Élite A')
+        let categoriaEncontrada: any = null;
+        if (codigoCat) {
+          categoriaEncontrada = catCodeMap.get(codigoCat.toLowerCase().trim());
+        }
+        if (!categoriaEncontrada && categoriaNombre) {
+          categoriaEncontrada = catNameMap.get(categoriaNombre.toLowerCase().trim());
+        }
+
+        let categoriaId = categoriaEncontrada?.id || null;
         let esNuevaCategoria = false;
+        const nombreFinalCategoria = categoriaEncontrada?.nombre || categoriaNombre || codigoCat || 'General';
+
         if (!categoriaId) {
-          nuevasCategorias.add(categoriaNombre);
+          nuevasCategorias.add(nombreFinalCategoria);
           esNuevaCategoria = true;
         }
 
@@ -417,10 +504,10 @@ export class JugadoresService {
           jugadoresParaCuenta++;
         }
 
-        const nomAcudiente = (f.nombres_acudiente || f.nombre_acudiente || '').toString().trim();
-        const apeAcudiente = (f.apellidos_acudiente || f.apellido_acudiente || '').toString().trim();
-        const docAcudiente = (f.numero_documento_acudiente || f.documento_acudiente || '').toString().trim();
-        const emailAcudiente = (f.email_acudiente || '').toString().trim();
+        const nomAcudiente = (f.nombresacudiente || f.nombres_acudiente || f.nombreacudiente || f.nombre_acudiente || '').toString().trim();
+        const apeAcudiente = (f.apellidosacudiente || f.apellidos_acudiente || f.apellidoacudiente || f.apellido_acudiente || '').toString().trim();
+        const docAcudiente = (f.numerodocumentoacudiente || f.numero_documento_acudiente || f.documentoacudiente || f.documento_acudiente || '').toString().trim();
+        const emailAcudiente = (f.emailacudiente || f.email_acudiente || f.correoacudiente || f.correo_acudiente || '').toString().trim();
 
         const tieneAcudiente = !!(nomAcudiente || docAcudiente || emailAcudiente);
         if (tieneAcudiente) {
@@ -435,10 +522,11 @@ export class JugadoresService {
           numeroDocumento: numDoc,
           fechaNacimiento: fechaNac,
           edad,
-          categoriaNombre,
+          codigoCategoria: codigoCat || null,
+          categoriaNombre: nombreFinalCategoria,
           esNuevaCategoria,
-          posicionPrincipal: f.posicion_principal || PosicionJugador.SIN_DEFINIR,
-          piernaHabil: (f.pierna_habil || f.pierna || PiernaHabil.DIESTRO).toString().toUpperCase().includes('IZQ') ? PiernaHabil.ZURDO : ((f.pierna_habil || f.pierna || '').toString().toUpperCase().includes('AMB') ? PiernaHabil.AMBIDIESTRO : PiernaHabil.DIESTRO),
+          posicionPrincipal: f.posicionprincipal || f.posicion_principal || PosicionJugador.SIN_DEFINIR,
+          piernaHabil: (f.piernahabil || f.pierna_habil || f.pierna || PiernaHabil.DIESTRO).toString().toUpperCase().includes('IZQ') ? PiernaHabil.ZURDO : ((f.piernahabil || f.pierna_habil || f.pierna || '').toString().toUpperCase().includes('AMB') ? PiernaHabil.AMBIDIESTRO : PiernaHabil.DIESTRO),
           numeroDorsal: dorsal,
           crearUsuarioJugador,
           tieneAcudiente,
@@ -491,11 +579,15 @@ export class JugadoresService {
     const catCache = new Map<string, string>();
 
     for (const fila of validas) {
-      // 1. Resolver Categoría
-      const catKey = fila.categoriaNombre.toLowerCase();
+      // 1. Resolver Categoría (por código exacto o nombre)
+      const catKey = (fila.codigoCategoria || fila.categoriaNombre).toLowerCase();
       let catId = catCache.get(catKey);
       if (!catId) {
-        const cat = await this.jugadoresRepository.findOrCreateCategoria(clubId, fila.categoriaNombre);
+        const cat = await this.jugadoresRepository.findOrCreateCategoria(
+          clubId,
+          fila.categoriaNombre,
+          fila.codigoCategoria
+        );
         catId = cat.id;
         catCache.set(catKey, catId);
         if (fila.esNuevaCategoria) {
