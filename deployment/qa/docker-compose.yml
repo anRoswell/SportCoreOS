@@ -9,7 +9,7 @@ services:
   #   restart: always
   #   environment:
   #     POSTGRES_USER: ${DB_USER:-sportcore_user_qa}
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-SportCoreQA2026*}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
   #     POSTGRES_DB: ${DB_NAME:-sportcoreos_db_qa}
   #   ports:
   #     - "${HOST_DB_PORT:-55132}:5432"
