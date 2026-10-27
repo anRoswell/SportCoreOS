@@ -342,6 +342,53 @@ export class RolesPermisosComponent implements OnInit {
     this.showEditConfirmPassword.update((v) => !v);
   }
 
+  formatPhone(val?: string): string {
+    if (!val) return '';
+    const trimmed = val.trim();
+    if (!trimmed) return '';
+
+    let digits = trimmed.replace(/\D/g, '');
+    if (!digits) return '';
+
+    // Si el usuario ingresó 57 al inicio y tiene más de 2 dígitos
+    if (digits.startsWith('57') && digits.length > 2) {
+      digits = digits.slice(2);
+    }
+
+    // Limitar a 10 dígitos (estándar nacional móvil)
+    digits = digits.slice(0, 10);
+    if (digits.length === 0) return '';
+
+    if (digits.length <= 3) {
+      return `+57 ${digits}`;
+    }
+    if (digits.length <= 6) {
+      return `+57 ${digits.slice(0, 3)} ${digits.slice(3)}`;
+    }
+    return `+57 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  }
+
+  onPhoneInput(event: Event, target: 'new' | 'edit'): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value;
+    const digits = raw.replace(/\D/g, '');
+
+    if (!digits || (digits === '57' && !raw.includes('57 '))) {
+      if (target === 'new') this.newUser.telefono = '';
+      else this.editUser.telefono = '';
+      input.value = '';
+      return;
+    }
+
+    const formatted = this.formatPhone(raw);
+    if (target === 'new') {
+      this.newUser.telefono = formatted;
+    } else {
+      this.editUser.telefono = formatted;
+    }
+    input.value = formatted;
+  }
+
   openCreateUserModal(): void {
     this.newUser = {
       nombre: '',
@@ -420,7 +467,7 @@ export class RolesPermisosComponent implements OnInit {
       nombre: u.nombre || '',
       apellido: u.apellido || '',
       email: u.email || '',
-      telefono: u.telefono || '',
+      telefono: this.formatPhone(u.telefono || ''),
       rol: u.rol_club || 'ENTRENADOR_DT',
       changePassword: false,
       password: '',

@@ -251,7 +251,7 @@
                       <span class="font-mono text-muted">{{ u.email }}</span>
                     </td>
                     <td>
-                      <span>{{ u.telefono || 'Sin registrar' }}</span>
+                      <span class="font-mono">{{ formatPhone(u.telefono) || 'Sin registrar' }}</span>
                     </td>
                     <td>
                       <select
@@ -401,10 +401,20 @@
                     <input type="email" [(ngModel)]="newUser.email" name="email" class="sport-input" placeholder="usuario@correo.com" required />
                   </div>
                   <div class="form-group">
-                    <label><i class="fa-solid fa-phone"></i> Teléfono</label>
-                    <input type="tel" [(ngModel)]="newUser.telefono" name="telefono" class="sport-input" placeholder="+57 300 123 4567" />
+                    <label><i class="fa-solid fa-phone"></i> Teléfono Móvil</label>
+                    <input
+                      type="tel"
+                      [ngModel]="newUser.telefono"
+                      (input)="onPhoneInput($event, 'new')"
+                      name="telefono"
+                      class="sport-input font-mono"
+                      placeholder="+57 300 123 4567"
+                      maxlength="17"
+                    />
+                    <small class="helper-text">Formateo automático: +57 300 123 4567</small>
                   </div>
                 </div>
+
 
                 <div class="form-group">
                   <label><i class="fa-solid fa-shield-halved"></i> Perfil / Rol Asignado *</label>
@@ -571,10 +581,20 @@
                     <input type="email" [(ngModel)]="editUser.email" name="editEmail" class="sport-input" required />
                   </div>
                   <div class="form-group">
-                    <label><i class="fa-solid fa-phone"></i> Teléfono</label>
-                    <input type="tel" [(ngModel)]="editUser.telefono" name="editTelefono" class="sport-input" placeholder="+57 300 123 4567" />
+                    <label><i class="fa-solid fa-phone"></i> Teléfono Móvil</label>
+                    <input
+                      type="tel"
+                      [ngModel]="editUser.telefono"
+                      (input)="onPhoneInput($event, 'edit')"
+                      name="editTelefono"
+                      class="sport-input font-mono"
+                      placeholder="+57 300 123 4567"
+                      maxlength="17"
+                    />
+                    <small class="helper-text">Formateo automático: +57 300 123 4567</small>
                   </div>
                 </div>
+
 
                 <div class="form-group">
                   <label><i class="fa-solid fa-shield-halved"></i> Perfil / Rol Asignado *</label>
