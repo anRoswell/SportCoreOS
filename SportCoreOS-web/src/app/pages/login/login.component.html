@@ -267,7 +267,7 @@
                   <div class="form-actions-bar">
                     <div class="form-options-wrap">
                       <label class="checkbox-label">
-                        <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+                        <input type="checkbox" [(ngModel)]="rememberMe" (change)="onRememberMeChange()" name="rememberMe" />
                         <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
                         <span class="label-text">Recordar sesión</span>
                       </label>

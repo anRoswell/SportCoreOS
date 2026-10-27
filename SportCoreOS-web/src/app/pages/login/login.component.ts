@@ -66,6 +66,23 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.refreshCaptcha();
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const savedEmail = localStorage.getItem('sportcore_remember_email');
+      if (savedEmail) {
+        this.email = savedEmail;
+        this.rememberMe = true;
+      }
+    }
+  }
+
+  onRememberMeChange(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (!this.rememberMe) {
+        localStorage.removeItem('sportcore_remember_email');
+      } else if (this.email) {
+        localStorage.setItem('sportcore_remember_email', this.email.trim());
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -244,6 +261,15 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.api.setClubFromUser(user);
         this.loading.set(false);
         this.failedAttempts.set(0);
+
+        if (typeof window !== 'undefined' && window.localStorage) {
+          if (this.rememberMe && this.email) {
+            localStorage.setItem('sportcore_remember_email', this.email.trim());
+          } else {
+            localStorage.removeItem('sportcore_remember_email');
+          }
+        }
+
         this.showToast(`¡Bienvenido ${user.nombres}! Acceso institucional autorizado.`, false);
         const targetRoute = user.rol === 'PADRE_ACUDIENTE' ? ['/portal/padres'] : ['/dashboard'];
         this.router.navigate(targetRoute);
