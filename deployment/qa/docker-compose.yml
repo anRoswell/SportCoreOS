@@ -1,20 +1,22 @@
 version: "3.8"
 
 services:
-  postgres-qa:
-    image: postgres:16-alpine
-    container_name: sportcoreos_qa_db
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER:-sportcore_user_qa}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-SportCoreQA2026*}
-      POSTGRES_DB: ${DB_NAME:-sportcoreos_db_qa}
-    ports:
-      - "${HOST_DB_PORT:-55132}:5432"
-    volumes:
-      - sportcoreos_qa_postgres_data:/var/lib/postgresql/data
-    networks:
-      - sportcoreos_qa_net
+  # NOTA: La base de datos QA ahora está centralizada en la VPS (puerto 52132, sportcoreos_db_qa).
+  # El servicio postgres-qa local se deja comentado para evitar duplicidad de datos y ahorrar recursos.
+  # postgres-qa:
+  #   image: postgres:16-alpine
+  #   container_name: sportcoreos_qa_db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: ${DB_USER:-sportcore_user_qa}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-SportCoreQA2026*}
+  #     POSTGRES_DB: ${DB_NAME:-sportcoreos_db_qa}
+  #   ports:
+  #     - "${HOST_DB_PORT:-55132}:5432"
+  #   volumes:
+  #     - sportcoreos_qa_postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - sportcoreos_qa_net
 
   backend:
     image: ${API_IMAGE:-ghcr.io/anroswell/sportcoreos-api:qa-latest}
@@ -29,8 +31,8 @@ services:
       - "3001:3001"
     volumes:
       - sportcoreos_qa_uploads:/usr/src/app/uploads
-    depends_on:
-      - postgres-qa
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - sportcoreos_qa_net
 
@@ -39,6 +41,8 @@ services:
     build:
       context: ../../SportCoreOS-web
       dockerfile: Dockerfile
+      args:
+        CONFIGURATION: qa
     container_name: sportcoreos_web_qa
     restart: always
     ports:
@@ -49,9 +53,9 @@ services:
       - sportcoreos_qa_net
 
 volumes:
-  sportcoreos_qa_postgres_data:
   sportcoreos_qa_uploads:
 
 networks:
   sportcoreos_qa_net:
     driver: bridge
+

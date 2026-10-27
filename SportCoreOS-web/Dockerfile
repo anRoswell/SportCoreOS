@@ -11,7 +11,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+ARG CONFIGURATION=production
+RUN npm run build -- --configuration=${CONFIGURATION}
 
 # STAGE 2: Servidor Web Nginx Ligero
 FROM nginx:1.27-alpine AS runner
