@@ -393,7 +393,7 @@ export class I18nService {
     if (saved && (saved === 'es' || saved === 'en' || saved === 'pt')) {
       return saved;
     }
-    return 'en';
+    return 'es';
   }
 
   setLanguage(lang: LanguageCode): void {

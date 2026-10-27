@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsEnum, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../../common/enums/role.enum';
 
@@ -7,10 +7,20 @@ export class LoginDto {
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
   email: string;
 
-  @ApiProperty({ example: 'sportcore2026', description: 'Contraseña de acceso' })
+  @ApiProperty({ example: 'SportCore@2026', description: 'Contraseña de acceso' })
   @IsNotEmpty({ message: 'La contraseña es obligatoria' })
   @MinLength(6, { message: 'La contraseña debe tener mínimo 6 caracteres' })
   password: string;
+
+  @ApiPropertyOptional({ example: 'cap_abc123', description: 'Token de reto captcha' })
+  @IsOptional()
+  @IsString()
+  captchaToken?: string;
+
+  @ApiPropertyOptional({ example: '7X9KM', description: 'Respuesta ingresada por el usuario para el captcha' })
+  @IsOptional()
+  @IsString()
+  captchaAnswer?: string;
 }
 
 export class RegisterDto {
@@ -27,9 +37,12 @@ export class RegisterDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: 'sportcore2026' })
+  @ApiProperty({ example: 'SportCore@2026', description: 'Mínimo 8 caracteres, al menos 1 mayúscula y 1 carácter especial' })
   @IsString()
-  @MinLength(6)
+  @MinLength(8, { message: 'La contraseña debe tener mínimo 8 caracteres' })
+  @Matches(/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, {
+    message: 'La contraseña debe contener al menos 8 caracteres, una letra mayúscula y un carácter especial',
+  })
   password: string;
 
   @ApiPropertyOptional({ enum: Role, default: Role.ENTRENADOR_DT })
@@ -76,8 +89,11 @@ export class ChangePasswordDto {
   @IsNotEmpty()
   passwordActual: string;
 
-  @ApiProperty({ example: 'nuevoPassword2026' })
+  @ApiProperty({ example: 'SportCore@2026', description: 'Mínimo 8 caracteres, al menos 1 mayúscula y 1 carácter especial' })
   @IsString()
-  @MinLength(6)
+  @MinLength(8, { message: 'La contraseña nueva debe tener mínimo 8 caracteres' })
+  @Matches(/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, {
+    message: 'La contraseña nueva debe contener al menos 8 caracteres, una letra mayúscula y un carácter especial',
+  })
   passwordNuevo: string;
 }

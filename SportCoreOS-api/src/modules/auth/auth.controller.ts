@@ -22,13 +22,21 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Get('captcha')
+  @ApiOperation({ summary: 'Generar un reto de Captcha visual anti-bot y anti-brute force' })
+  @ApiResponse({ status: 200, description: 'Reto captcha generado exitosamente con SVG y token' })
+  async getCaptcha() {
+    return this.authService.generateCaptcha();
+  }
+
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión con email y contraseña' })
   @ApiResponse({ status: 200, description: 'Sesión iniciada con éxito y retorno de JWT' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+    return this.authService.login(dto.email, dto.password, dto.captchaToken, dto.captchaAnswer);
   }
 
   @Public()

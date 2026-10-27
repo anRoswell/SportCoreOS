@@ -4,13 +4,13 @@
         <button 
           class="theme-toggle-floating" 
           (click)="themeService.toggleTheme()" 
-          [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
           @if (themeService.isDark()) {
             <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
-            <span>Light Mode</span>
+            <span>Modo Claro</span>
           } @else {
             <i class="fa-solid fa-moon" style="color: #38bdf8;"></i>
-            <span>Dark Mode</span>
+            <span>Modo Oscuro</span>
           }
         </button>
       </div>
@@ -22,30 +22,30 @@
             <!-- Brand Badge -->
             <div class="brand-badge-pill">
               <span class="pulse-dot"></span>
-              <span>SPORTS SAAS PLATFORM</span>
+              <span>PLATAFORMA SAAS DEPORTIVA</span>
             </div>
 
             <h1 class="hero-title">
-              The Comprehensive Suite for <span class="highlight">Football Academies</span> of High Performance.
+              La Suite Integral para <span class="highlight">Academias y Clubes</span> de Alto Rendimiento.
             </h1>
 
             <p class="hero-subtitle">
-              Automate tuition collections via online gateways, coordinate WhatsApp call-ups in 1 tap, manage 360° player records, and track biometrics and telemetry for your future stars.
+              Automatice cobros de matrículas y pensiones por PSE, coordine convocatorias por WhatsApp en 1 toque, gestione expedientes 360° y monitoree biometría y telemetría de sus futuras estrellas.
             </p>
 
             <!-- Trust Metrics Grid -->
             <div class="hero-stats-grid">
               <div class="stat-card">
                 <div class="stat-number">+140</div>
-                <div class="stat-label">Clubs & Academies</div>
+                <div class="stat-label">Clubes & Academias</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number">$1.2M</div>
-                <div class="stat-label">Monthly Collections</div>
+                <div class="stat-label">Recaudo Mensual</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number">98.6%</div>
-                <div class="stat-label">Confirmed Attendance</div>
+                <div class="stat-label">Asistencia Confirmada</div>
               </div>
             </div>
 
@@ -53,21 +53,21 @@
             <div class="features-list">
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Age group management from U-7 to U-20 with unique squad numbering</span>
+                <span>Gestión de categorías desde Sub-7 hasta Sub-20 con numeración oficial</span>
               </div>
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Parent Mobile Portal with one-click express tuition payments</span>
+                <span>Portal Móvil para Padres con pagos exprés de pensiones y matrículas</span>
               </div>
               <div class="feature-item">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>Turn-by-turn GPS routing to athletic pitches via Google Maps & Waze</span>
+                <span>Rutas GPS directas a sedes y canchas vía Google Maps y Waze</span>
               </div>
             </div>
 
             <!-- Trust Footer -->
             <div class="hero-trust-footer">
-              <span>Certified Technology:</span>
+              <span>Tecnología Certificada:</span>
               <div class="trust-badges">
                 <span class="trust-badge"><i class="fa-solid fa-shield-halved"></i> SSL 256-bit</span>
                 <span class="trust-badge"><i class="fa-solid fa-bolt"></i> Wompi / PSE</span>
@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: ACCESS FORM & DEMO PERSONAS -->
+        <!-- RIGHT COLUMN: TABBED ACCESS PANEL -->
         <div class="login-form-panel">
           <!-- Ambient Glow Shapes & Grid Texture -->
           <div class="ambient-glow glow-top-right"></div>
@@ -98,147 +98,274 @@
                       <h2>SportCore<span class="badge-text">OS</span></h2>
                       <span class="version-tag">v1.0</span>
                     </div>
-                    <span class="tagline">Athletic Performance Cloud</span>
+                    <span class="tagline">Nube de Rendimiento Deportivo</span>
                   </div>
                 </div>
 
                 <div class="saas-secure-badge">
                   <span class="live-dot"></span>
-                  <span>Secure Operating System</span>
+                  <span>Sistema Operativo Seguro</span>
                 </div>
-              </div>
-
-              <div class="welcome-row">
-                <h3 class="welcome-heading">Institutional Access Portal</h3>
-                <p class="welcome-desc">Enter your authorized credentials or select a demo persona below to explore the platform.</p>
               </div>
             </div>
 
-            <!-- Main Form in 2 Columns -->
-            <form (ngSubmit)="onSubmit()" class="login-form">
-              <div class="form-row-2col">
-                <!-- Email Field -->
-                <div class="input-group">
-                  <label for="email">
-                    <span class="label-icon-badge"><i class="fa-solid fa-envelope"></i></span>
-                    <span>Institutional Email</span>
-                  </label>
-                  <div class="input-wrapper">
-                    <input 
-                      type="email" 
-                      id="email" 
-                      [(ngModel)]="email" 
-                      name="email" 
-                      placeholder="carlos.valderrama@sportcore.com" 
-                      required 
-                      class="sport-input" />
-                  </div>
+            <!-- ========== TAB NAVIGATION ========== -->
+            <div class="login-tabs-bar">
+              <button
+                type="button"
+                class="login-tab"
+                [class.active]="activeTab() === 'login'"
+                (click)="activeTab.set('login')">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                <span>Acceso Institucional</span>
+              </button>
+              <button
+                type="button"
+                class="login-tab"
+                [class.active]="activeTab() === 'demo'"
+                (click)="activeTab.set('demo')">
+                <i class="fa-solid fa-id-card-clip"></i>
+                <span>Modo Demo</span>
+              </button>
+              <div class="tab-indicator" [class.tab-demo]="activeTab() === 'demo'"></div>
+            </div>
+
+            @if (activeTab() === 'login') {
+              <div class="tab-content tab-login-content">
+                <div class="tab-content-header">
+                  <h3 class="welcome-heading">Portal de Acceso Institucional</h3>
+                  <p class="welcome-desc">Ingrese sus credenciales autorizadas para acceder de forma segura a la plataforma.</p>
                 </div>
 
-                <!-- Password Field -->
-                <div class="input-group">
-                  <div class="label-row">
-                    <label for="password">
-                      <span class="label-icon-badge"><i class="fa-solid fa-lock"></i></span>
-                      <span>Access Password</span>
-                    </label>
-                    <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">Forgot password?</a>
+                <!-- Main Form in 2 Columns -->
+                <form (ngSubmit)="onSubmit()" class="login-form">
+                  <div class="form-row-2col">
+                    <!-- Email Field -->
+                    <div class="input-group">
+                      <label for="email">
+                        <span class="label-icon-badge"><i class="fa-solid fa-envelope"></i></span>
+                        <span>Correo Institucional</span>
+                      </label>
+                      <div class="input-wrapper">
+                        <input 
+                          type="email" 
+                          id="email" 
+                          [(ngModel)]="email" 
+                          name="email" 
+                          placeholder="correo@clubdeportivo.com" 
+                          required 
+                          class="sport-input" />
+                      </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="input-group">
+                      <label for="password">
+                        <span class="label-icon-badge"><i class="fa-solid fa-lock"></i></span>
+                        <span>Contraseña de Acceso</span>
+                      </label>
+                      <div class="input-wrapper">
+                        <input 
+                          [type]="showPassword() ? 'text' : 'password'" 
+                          id="password" 
+                          [(ngModel)]="password" 
+                          (input)="onPasswordInputChange($event)"
+                          name="password" 
+                          placeholder="••••••••••••" 
+                          required 
+                          class="sport-input" />
+                        <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Mostrar u ocultar contraseña">
+                          <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="input-wrapper">
-                    <input 
-                      [type]="showPassword() ? 'text' : 'password'" 
-                      id="password" 
-                      [(ngModel)]="password" 
-                      name="password" 
-                      placeholder="••••••••••••" 
-                      required 
-                      class="sport-input" />
-                    <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" aria-label="Show/Hide password">
-                      <i class="fa-regular" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+
+                  <!-- Anti-Bot Captcha Security Row -->
+                  <div class="captcha-security-panel">
+                    <div class="captcha-header">
+                      <div class="captcha-title">
+                        <span class="captcha-shield-badge"><i class="fa-solid fa-shield-halved"></i></span>
+                        <span class="captcha-title-text">Verificación Anti-Bot / Anti-Fuerza Bruta</span>
+                      </div>
+                      <span class="captcha-shield-tag">
+                        <i class="fa-solid fa-lock"></i> Protegido
+                      </span>
+                    </div>
+
+                    <div class="captcha-body-grid">
+                      <!-- Visual SVG Display with Refresh & Audio -->
+                      <div class="captcha-visual-container">
+                        <div class="captcha-svg-wrapper" [innerHTML]="captchaSvg()" title="Reto gráfico de seguridad"></div>
+                        <div class="captcha-actions">
+                          <button 
+                            type="button" 
+                            class="captcha-btn" 
+                            (click)="refreshCaptcha()" 
+                            title="Recargar nuevo código Captcha"
+                            [disabled]="loading() || cooldownSeconds() > 0">
+                            <i class="fa-solid fa-arrows-rotate" [class.spin-active]="isCaptchaSpinning()"></i>
+                          </button>
+                          <button 
+                            type="button" 
+                            class="captcha-btn" 
+                            (click)="playAudioCaptcha()" 
+                            title="Escuchar código en audio"
+                            [disabled]="loading() || isAudioPlaying()">
+                            <i class="fa-solid" [class.fa-volume-high]="!isAudioPlaying()" [class.fa-volume-slash]="isAudioPlaying()"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Input & Verification Feedback -->
+                      <div class="captcha-input-container">
+                        <div class="captcha-input-wrapper">
+                          <input 
+                            type="text" 
+                            id="captcha" 
+                            [value]="captchaInput()" 
+                            (input)="onCaptchaInputChange($event)"
+                            name="captchaInput" 
+                            placeholder="Ingrese código de la imagen" 
+                            maxlength="6"
+                            autocomplete="off"
+                            class="sport-input captcha-sport-input"
+                            [class.input-success]="isCaptchaMatched()"
+                            [class.input-error]="captchaInput().length >= 4 && !isCaptchaMatched()"
+                            [disabled]="cooldownSeconds() > 0" />
+
+                          <div class="captcha-status-indicator">
+                            @if (isCaptchaMatched()) {
+                              <span class="status-badge success" title="Captcha verificado exitosamente">
+                                <i class="fa-solid fa-circle-check"></i>
+                              </span>
+                            } @else if (captchaInput().length >= 4) {
+                              <span class="status-badge error" title="El código no coincide">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                              </span>
+                            }
+                          </div>
+                        </div>
+                        <div class="captcha-hint-row">
+                          <span class="captcha-helper-text">Escriba los 5 caracteres distorsionados para autorizar el acceso.</span>
+                          @if (isCaptchaMatched()) {
+                            <span class="captcha-verified-tag"><i class="fa-solid fa-check"></i> Verificado</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (cooldownSeconds() > 0) {
+                      <div class="captcha-cooldown-banner">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Bloqueo temporal por intentos fallidos. Reintente en <strong>{{ cooldownSeconds() }} segundos</strong>.</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Submit Row and Options -->
+                  <div class="form-actions-bar">
+                    <div class="form-options-wrap">
+                      <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+                        <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                        <span class="label-text">Recordar sesión</span>
+                      </label>
+                      <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-link">
+                        <i class="fa-solid fa-key"></i>
+                        <span>¿Olvidó su contraseña?</span>
+                      </a>
+                    </div>
+
+                    <button type="submit" class="btn-login" [disabled]="loading() || cooldownSeconds() > 0">
+                      @if (loading()) {
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Autenticando...</span>
+                      } @else {
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        <span>Iniciar Sesión en la Plataforma</span>
+                      }
                     </button>
                   </div>
-                </div>
-              </div>
+                </form>
 
-              <!-- Submit Row and Remember Me -->
-              <div class="form-actions-bar">
-                <label class="checkbox-label">
-                  <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
-                  <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
-                  <span class="label-text">Keep me signed in on this device</span>
-                </label>
-
-                <button type="submit" class="btn-login" [disabled]="loading()">
-                  @if (loading()) {
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span>Authenticating...</span>
-                  } @else {
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    <span>Sign In to Platform</span>
-                  }
-                </button>
-              </div>
-            </form>
-
-            <!-- Styled Divider -->
-            <div class="divider">
-              <span class="divider-text"><i class="fa-solid fa-id-card-clip"></i> OR SELECT A DEMO CREDENTIAL</span>
-            </div>
-
-            <!-- Active Club Indicator (if active in database) -->
-            @if (api.activeClub().id && api.activeClub().nombre) {
-              <div class="demo-school-badge">
-                <div class="school-shield-icon">
-                  <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <div class="school-text-wrap">
-                  <span class="badge-label">Active Club / Academy:</span>
-                  <strong class="school-title">{{ api.activeClub().nombre }}</strong>
-                  @if (api.activeClub().ciudad) {
-                    <span class="badge-city">• {{ api.activeClub().ciudad }}</span>
-                  }
+                <!-- SaaS Security Information Callout -->
+                <div class="saas-info-callout">
+                  <div class="callout-icon">
+                    <i class="fa-solid fa-shield-check"></i>
+                  </div>
+                  <div class="callout-content">
+                    <strong class="callout-title">Acceso Institucional Centralizado</strong>
+                    <span class="callout-desc">El registro de nuevas academias y la activación de módulos se gestiona directamente por la central de SportCoreOS.</span>
+                  </div>
+                  <div class="callout-cert">
+                    <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>
+                  </div>
                 </div>
               </div>
             }
 
-            <!-- Demo Personas Grid -->
-            <div class="demo-personas-grid" [class.has-four-personas]="authService.demoPersonas.length === 4">
-              @for (persona of authService.demoPersonas; track persona.id) {
-                <button 
-                  type="button" 
-                  class="persona-btn" 
-                  [class]="'persona-' + persona.badgeColor"
-                  (click)="loginWithPersona(persona.id)"
-                  [title]="persona.descripcion">
-                  <div class="persona-avatar">
-                    <img [src]="persona.avatar" [alt]="persona.nombres" />
-                    <span class="role-indicator"></span>
-                  </div>
-                  <div class="persona-info">
-                    <span class="persona-label">{{ persona.label }}</span>
-                    <span class="persona-name">{{ persona.nombres }} {{ persona.apellidos }}</span>
-                    <span class="persona-desc">{{ persona.rolLabel }}</span>
-                  </div>
-                  <i class="fa-solid fa-chevron-right persona-arrow"></i>
-                </button>
-              }
-            </div>
+            <!-- ========== TAB CONTENT: DEMO ========== -->
+            @if (activeTab() === 'demo') {
+              <div class="tab-content tab-demo-content">
+                <div class="tab-content-header">
+                  <h3 class="welcome-heading">Modo de Exploración Demo</h3>
+                  <p class="welcome-desc">Seleccione un perfil preconfigurado para explorar todos los módulos del sistema sin registro previo.</p>
+                </div>
 
-            <!-- SaaS Security Information Callout -->
-            <div class="saas-info-callout">
-              <div class="callout-icon">
-                <i class="fa-solid fa-shield-check"></i>
-              </div>
-              <div class="callout-content">
-                <strong class="callout-title">Centralized Institutional Access</strong>
-                <span class="callout-desc">New academy registrations and module activation are managed directly by SportCoreOS headquarters.</span>
-              </div>
-              <div class="callout-cert">
-                <span class="cert-pill"><i class="fa-solid fa-lock"></i> 256-bit</span>
-              </div>
-            </div>
+                <!-- Active Club Indicator (if active in database) -->
+                @if (api.activeClub().id && api.activeClub().nombre) {
+                  <div class="demo-school-badge">
+                    <div class="school-shield-icon">
+                      <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="school-text-wrap">
+                      <span class="badge-label">Club / Academia Activa:</span>
+                      <strong class="school-title">{{ api.activeClub().nombre }}</strong>
+                      @if (api.activeClub().ciudad) {
+                        <span class="badge-city">• {{ api.activeClub().ciudad }}</span>
+                      }
+                    </div>
+                  </div>
+                }
 
-            <!-- Toast / Feedback Message -->
+                <!-- Demo Personas Grid -->
+                <div class="demo-personas-grid" [class.has-four-personas]="authService.demoPersonas.length === 4">
+                  @for (persona of authService.demoPersonas; track persona.id) {
+                    <button 
+                      type="button" 
+                      class="persona-btn" 
+                      [class]="'persona-' + persona.badgeColor"
+                      (click)="loginWithPersona(persona.id)"
+                      [title]="persona.descripcion">
+                      <div class="persona-avatar">
+                        <img [src]="persona.avatar" [alt]="persona.nombres" />
+                        <span class="role-indicator"></span>
+                      </div>
+                      <div class="persona-info">
+                        <span class="persona-label">{{ persona.label }}</span>
+                        <span class="persona-name">{{ persona.nombres }} {{ persona.apellidos }}</span>
+                        <span class="persona-desc">{{ persona.rolLabel }}</span>
+                      </div>
+                      <i class="fa-solid fa-chevron-right persona-arrow"></i>
+                    </button>
+                  }
+                </div>
+
+                <!-- Demo Quick-Access Note -->
+                <div class="demo-info-note">
+                  <div class="demo-note-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                  </div>
+                  <div class="demo-note-content">
+                    <strong>Acceso Rápido</strong>
+                    <span>Los perfiles demo omiten la verificación de captcha para una experiencia ágil y sin fricciones. Todos los datos están aislados en sandbox.</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Toast / Feedback Message (always visible regardless of tab) -->
             @if (toastMessage()) {
               <div class="toast-alert" [class.error]="isToastError()">
                 <i class="fa-solid" [class.fa-circle-exclamation]="isToastError()" [class.fa-circle-check]="!isToastError()"></i>
@@ -248,9 +375,10 @@
 
             <!-- Company Footer -->
             <div class="form-footer">
-              <p>© 2026 SportCoreOS by SECTIC S.A.S. • Athletic Cloud Infrastructure • All rights reserved</p>
+              <p>© 2026 SportCoreOS por SECTIC S.A.S. • Infraestructura Cloud Deportiva • Todos los derechos reservados</p>
             </div>
           </div>
         </div>
       </div>
     </div>
+

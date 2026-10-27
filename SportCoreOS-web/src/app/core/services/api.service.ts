@@ -1225,6 +1225,43 @@ export class ApiService {
     );
   }
 
+  registerUser(payload: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
+    rol: string;
+    telefono?: string;
+    clubId?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/auth/register`, payload).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  updateUser(
+    usuarioId: string,
+    payload: {
+      nombre?: string;
+      apellido?: string;
+      email?: string;
+      telefono?: string;
+      rol?: string;
+      password?: string;
+    },
+  ): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/roles/usuarios/${usuarioId}`, payload).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+  deleteUser(usuarioId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/roles/usuarios/${usuarioId}`).pipe(
+      map(res => res.data || res)
+    );
+  }
+
+
   // ==========================================
   // MÓDULO 16: SERVICIOS ESPECIALIZADOS & MASTERCLASSES
   // ==========================================

@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
-import { BulkUpdateRolePermissionsDto, UpdateSinglePermissionDto, AssignUserRoleDto } from './roles.dto';
+import { BulkUpdateRolePermissionsDto, UpdateSinglePermissionDto, AssignUserRoleDto, UpdateUserDto } from './roles.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -77,4 +77,24 @@ export class RolesController {
   ) {
     return this.rolesService.assignUserRole(user.clubId, dto);
   }
+
+  @Put('usuarios/:id')
+  @ApiOperation({ summary: 'Actualizar datos y rol de un usuario del club' })
+  updateUser(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.rolesService.updateUser(user.clubId, id, dto);
+  }
+
+  @Delete('usuarios/:id')
+  @ApiOperation({ summary: 'Desvincular o eliminar usuario del club' })
+  deleteUser(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+  ) {
+    return this.rolesService.deleteUser(user.clubId, id);
+  }
 }
+

@@ -48,6 +48,38 @@ export class RolesPermisosComponent implements OnInit {
   toastMessage = signal<string>('');
   isToastError = signal<boolean>(false);
   showResetModal = signal<boolean>(false);
+  showCreateUserModal = signal<boolean>(false);
+  showEditUserModal = signal<boolean>(false);
+  showDeleteUserModal = signal<boolean>(false);
+  userToDelete = signal<UserRoleItem | null>(null);
+
+  showNewPassword = signal<boolean>(false);
+  showConfirmPassword = signal<boolean>(false);
+  showEditPassword = signal<boolean>(false);
+  showEditConfirmPassword = signal<boolean>(false);
+
+  newUser = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    telefono: '',
+    rol: 'ENTRENADOR_DT',
+  };
+
+  editUser = {
+    id: '',
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: '',
+    rol: 'ENTRENADOR_DT',
+    changePassword: false,
+    password: '',
+    confirmPassword: '',
+  };
+
 
   modulos = computed(() => {
     const set = new Set<string>();
@@ -243,6 +275,246 @@ export class RolesPermisosComponent implements OnInit {
     });
   }
 
+  checkPassword(pwd: string) {
+    const val = pwd || '';
+    const hasMinLength = val.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(val);
+    const hasNumber = /[0-9]/.test(val);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val);
+
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUpperCase) score++;
+    if (hasNumber) score++;
+    if (hasSpecialChar) score++;
+
+    let label = 'Muy Débil';
+    let colorClass = 'strength-very-weak';
+    let percent = 20;
+
+    if (score === 2) {
+      label = 'Regular';
+      colorClass = 'strength-weak';
+      percent = 50;
+    } else if (score === 3) {
+      label = 'Aceptable';
+      colorClass = 'strength-medium';
+      percent = 75;
+    } else if (score === 4) {
+      label = 'Segura / Fuerte';
+      colorClass = 'strength-strong';
+      percent = 100;
+    } else if (score === 0) {
+      label = 'Sin ingresar';
+      percent = 0;
+    }
+
+    return {
+      hasMinLength,
+      hasUpperCase,
+      hasNumber,
+      hasSpecialChar,
+      score,
+      label,
+      colorClass,
+      percent,
+      isValid: score === 4,
+    };
+  }
+
+  isPasswordMatch(p1: string, p2: string): boolean {
+    return !!p1 && !!p2 && p1 === p2;
+  }
+
+  toggleNewPassword(): void {
+    this.showNewPassword.update((v) => !v);
+  }
+
+  toggleConfirmPassword(): void {
+    this.showConfirmPassword.update((v) => !v);
+  }
+
+  toggleEditPassword(): void {
+    this.showEditPassword.update((v) => !v);
+  }
+
+  toggleEditConfirmPassword(): void {
+    this.showEditConfirmPassword.update((v) => !v);
+  }
+
+  openCreateUserModal(): void {
+    this.newUser = {
+      nombre: '',
+      apellido: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      telefono: '',
+      rol: 'ENTRENADOR_DT',
+    };
+    this.showNewPassword.set(false);
+    this.showConfirmPassword.set(false);
+    this.showCreateUserModal.set(true);
+  }
+
+  closeCreateUserModal(): void {
+    this.showCreateUserModal.set(false);
+  }
+
+  getRoleDesc(roleCode: string): string {
+    const role = this.rolesCatalog().find((r) => r.code === roleCode);
+    return role ? role.description : '';
+  }
+
+  submitCreateUser(): void {
+    if (!this.newUser.nombre.trim() || !this.newUser.apellido.trim()) {
+      this.showToast('Por favor ingrese nombres y apellidos del usuario.', true);
+      return;
+    }
+    if (!this.newUser.email.trim() || !this.newUser.email.includes('@')) {
+      this.showToast('Por favor ingrese un correo electrónico válido.', true);
+      return;
+    }
+
+    const strength = this.checkPassword(this.newUser.password);
+    if (!strength.isValid) {
+      this.showToast('La contraseña debe cumplir con todos los requisitos de seguridad (mín. 8 caracteres, 1 mayúscula, 1 número y 1 símbolo).', true);
+      return;
+    }
+
+    if (this.newUser.password !== this.newUser.confirmPassword) {
+      this.showToast('Las contraseñas ingresadas no coinciden. Por favor verifíquelas.', true);
+      return;
+    }
+
+    this.saving.set(true);
+    const activeClub = this.api.activeClub();
+    const payload = {
+      nombre: this.newUser.nombre.trim(),
+      apellido: this.newUser.apellido.trim(),
+      email: this.newUser.email.trim().toLowerCase(),
+      password: this.newUser.password,
+      telefono: this.newUser.telefono.trim() || undefined,
+      rol: this.newUser.rol,
+      clubId: activeClub && activeClub.id ? activeClub.id : undefined,
+    };
+
+    this.api.registerUser(payload).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.closeCreateUserModal();
+        this.showToast(`Usuario '${payload.nombre} ${payload.apellido}' creado exitosamente con perfil ${payload.rol}.`);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        console.error(err);
+        this.showToast(err.error?.message || 'Error al registrar el usuario.', true);
+      },
+    });
+  }
+
+  openEditUserModal(u: UserRoleItem): void {
+    this.editUser = {
+      id: u.id,
+      nombre: u.nombre || '',
+      apellido: u.apellido || '',
+      email: u.email || '',
+      telefono: u.telefono || '',
+      rol: u.rol_club || 'ENTRENADOR_DT',
+      changePassword: false,
+      password: '',
+      confirmPassword: '',
+    };
+    this.showEditPassword.set(false);
+    this.showEditConfirmPassword.set(false);
+    this.showEditUserModal.set(true);
+  }
+
+  closeEditUserModal(): void {
+    this.showEditUserModal.set(false);
+  }
+
+  submitEditUser(): void {
+    if (!this.editUser.nombre.trim() || !this.editUser.apellido.trim()) {
+      this.showToast('Por favor ingrese nombres y apellidos.', true);
+      return;
+    }
+    if (!this.editUser.email.trim() || !this.editUser.email.includes('@')) {
+      this.showToast('Por favor ingrese un correo electrónico válido.', true);
+      return;
+    }
+
+    if (this.editUser.changePassword) {
+      const strength = this.checkPassword(this.editUser.password);
+      if (!strength.isValid) {
+        this.showToast('La nueva contraseña debe cumplir con todos los requisitos de seguridad.', true);
+        return;
+      }
+      if (this.editUser.password !== this.editUser.confirmPassword) {
+        this.showToast('Las contraseñas no coinciden.', true);
+        return;
+      }
+    }
+
+    this.saving.set(true);
+    const payload: any = {
+      nombre: this.editUser.nombre.trim(),
+      apellido: this.editUser.apellido.trim(),
+      email: this.editUser.email.trim().toLowerCase(),
+      telefono: this.editUser.telefono.trim() || undefined,
+      rol: this.editUser.rol,
+    };
+
+    if (this.editUser.changePassword && this.editUser.password.trim()) {
+      payload.password = this.editUser.password;
+    }
+
+    this.api.updateUser(this.editUser.id, payload).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.closeEditUserModal();
+        this.showToast(`Usuario '${payload.nombre} ${payload.apellido}' actualizado exitosamente.`);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        console.error(err);
+        this.showToast(err.error?.message || 'Error al actualizar el usuario.', true);
+      },
+    });
+  }
+
+  confirmDeleteUser(u: UserRoleItem): void {
+    this.userToDelete.set(u);
+    this.showDeleteUserModal.set(true);
+  }
+
+  closeDeleteUserModal(): void {
+    this.showDeleteUserModal.set(false);
+    this.userToDelete.set(null);
+  }
+
+  executeDeleteUser(): void {
+    const user = this.userToDelete();
+    if (!user) return;
+
+    this.saving.set(true);
+    this.api.deleteUser(user.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.closeDeleteUserModal();
+        this.showToast(`Usuario '${user.nombre} ${user.apellido}' desvinculado del club exitosamente.`);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        console.error(err);
+        this.showToast(err.error?.message || 'Error al desvincular al usuario.', true);
+      },
+    });
+  }
+
   private showToast(msg: string, isError = false): void {
     this.toastMessage.set(msg);
     this.isToastError.set(isError);
@@ -251,3 +523,4 @@ export class RolesPermisosComponent implements OnInit {
     }, 4000);
   }
 }
+

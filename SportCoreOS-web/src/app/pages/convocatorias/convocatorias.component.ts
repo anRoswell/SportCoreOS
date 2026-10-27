@@ -139,12 +139,12 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.addJugadorConvocatoria(partidoId, event.jugadorId, event.rol, event.posicion).subscribe({
       next: () => {
-        this.showToast('Player successfully added to match call-up');
+        this.showToast('Jugador añadido exitosamente a la convocatoria');
         this.closeAddPlayerModal();
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error adding player to call-up');
+        this.showToast('Error al convocar al jugador');
       },
     });
   }
@@ -155,11 +155,11 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.removeJugadorConvocatoria(partidoId, player.jugador_id || player.id || '').subscribe({
       next: () => {
-        this.showToast(`${player.nombres} ${player.apellidos} removed from call-up`);
+        this.showToast(`${player.nombres} ${player.apellidos} retirado de la convocatoria`);
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error removing player from call-up');
+        this.showToast('Error al retirar jugador de la convocatoria');
       },
     });
   }
@@ -170,11 +170,11 @@ export class ConvocatoriasComponent implements OnInit {
 
     this.api.cambiarRolConvocatoria(partidoId, event.player.jugador_id || event.player.id || '', event.newRole).subscribe({
       next: () => {
-        this.showToast(`Player moved to ${event.newRole === RolConvocatoria.TITULAR ? 'Starting XI' : 'Substitutes Bench'}`);
+        this.showToast(`Jugador movido a ${event.newRole === RolConvocatoria.TITULAR ? 'Once Titular' : 'Banca de Suplentes'}`);
         this.loadConvocatoria(partidoId);
       },
       error: () => {
-        this.showToast('Error updating call-up role');
+        this.showToast('Error al actualizar rol de convocatoria');
       },
     });
   }
@@ -186,10 +186,10 @@ export class ConvocatoriasComponent implements OnInit {
     this.api.sugerirConvocatoria(partidoId, 11, 7).subscribe({
       next: (res) => {
         this.convocados.set(res.jugadores || []);
-        this.showToast('Suggested lineup generated from active category roster!');
+        this.showToast('¡Alineación sugerida generada a partir del plantel activo!');
       },
       error: () => {
-        this.showToast('Error generating suggested lineup');
+        this.showToast('Error al generar alineación sugerida');
       },
     });
   }
@@ -206,10 +206,10 @@ export class ConvocatoriasComponent implements OnInit {
     this.api.responderConvocatoria(player.id || '', nextEstado, undefined, player.jugador_id).subscribe({
       next: () => {
         player.estado_confirmacion = nextEstado;
-        this.showToast(`${player.nombres} ${player.apellidos} marked as ${nextEstado}`);
+        this.showToast(`${player.nombres} ${player.apellidos} marcado como ${nextEstado}`);
       },
       error: () => {
-        this.showToast('Error updating call-up status');
+        this.showToast('Error al actualizar estado de convocatoria');
       },
     });
   }
@@ -219,11 +219,11 @@ export class ConvocatoriasComponent implements OnInit {
     if (!match || !match.sede_cancha) return;
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.sede_cancha)}`;
     window.open(url, '_blank');
-    this.showToast(`Opening map navigation for ${match.sede_cancha}`);
+    this.showToast(`Abriendo navegación GPS para ${match.sede_cancha}`);
   }
 
   onSendWhatsAppCitacion(): void {
-    this.showToast('Match call-ups broadcasted via WhatsApp to all parents/guardians!');
+    this.showToast('¡Convocatoria de partido enviada por WhatsApp a todas las familias!');
   }
 
   openPosterModal(): void {

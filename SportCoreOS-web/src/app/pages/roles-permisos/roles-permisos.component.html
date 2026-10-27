@@ -214,6 +214,9 @@
             </div>
             <div class="user-stats">
               <span class="stat-pill"><i class="fa-solid fa-users"></i> {{ usersList().length }} Usuarios</span>
+              <button class="btn-primary btn-sm btn-new-user" (click)="openCreateUserModal()">
+                <i class="fa-solid fa-user-plus"></i> + Nuevo Usuario
+              </button>
             </div>
           </div>
 
@@ -226,7 +229,7 @@
                   <th>Teléfono</th>
                   <th>Rol Asignado</th>
                   <th>Miembro Desde</th>
-                  <th style="text-align: right;">Acción</th>
+                  <th style="text-align: right; width: 140px;">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -265,16 +268,26 @@
                       <small class="text-muted">{{ u.miembro_desde ? (u.miembro_desde | date:'mediumDate') : 'Activo' }}</small>
                     </td>
                     <td style="text-align: right;">
-                      <button
-                        class="btn-icon-action"
-                        (click)="saveUserRole(u)"
-                        title="Guardar asignación de rol"
-                      >
-                        <i class="fa-solid fa-floppy-disk"></i>
-                      </button>
+                      <div class="action-buttons-group">
+                        <button
+                          class="btn-icon-action edit"
+                          (click)="openEditUserModal(u)"
+                          title="Editar datos del usuario"
+                        >
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button
+                          class="btn-icon-action delete"
+                          (click)="confirmDeleteUser(u)"
+                          title="Desvincular o eliminar usuario"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 }
+
               </tbody>
             </table>
           </div>
@@ -349,6 +362,403 @@
           </div>
         </div>
       }
+
+      <!-- MODAL CREAR NUEVO USUARIO -->
+      @if (showCreateUserModal()) {
+        <div class="modal-backdrop" (click)="closeCreateUserModal()">
+          <div class="modal-card modal-user-dialog" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge bg-emerald-glow text-emerald">
+                  <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Registrar Nuevo Usuario</h2>
+                  <p class="modal-subtitle">Asigna credenciales y perfil para {{ api.activeClub().nombre }}</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeCreateUserModal()" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="submitCreateUser()" class="modal-form-user">
+              <div class="modal-form-body">
+                <div class="form-row-duo">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Nombres *</label>
+                    <input type="text" [(ngModel)]="newUser.nombre" name="nombre" class="sport-input" placeholder="Ej: Carlos" required />
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-signature"></i> Apellidos *</label>
+                    <input type="text" [(ngModel)]="newUser.apellido" name="apellido" class="sport-input" placeholder="Ej: Valderrama" required />
+                  </div>
+                </div>
+
+                <div class="form-row-duo">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
+                    <input type="email" [(ngModel)]="newUser.email" name="email" class="sport-input" placeholder="usuario@correo.com" required />
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-phone"></i> Teléfono</label>
+                    <input type="tel" [(ngModel)]="newUser.telefono" name="telefono" class="sport-input" placeholder="+57 300 123 4567" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fa-solid fa-shield-halved"></i> Perfil / Rol Asignado *</label>
+                  <select [(ngModel)]="newUser.rol" name="rol" class="sport-select full-width" required>
+                    @for (r of rolesCatalog(); track r.code) {
+                      <option [value]="r.code">{{ r.label }} ({{ r.code }})</option>
+                    }
+                  </select>
+                  @if (getRoleDesc(newUser.rol)) {
+                    <small class="helper-text text-role-desc">{{ getRoleDesc(newUser.rol) }}</small>
+                  }
+                </div>
+
+                <!-- 2 CAMPOS DE CONTRASEÑA CON OJO -->
+                <div class="form-row-duo">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-lock"></i> Contraseña *</label>
+                    <div class="input-password-wrapper">
+                      <input
+                        [type]="showNewPassword() ? 'text' : 'password'"
+                        [(ngModel)]="newUser.password"
+                        name="password"
+                        class="sport-input"
+                        placeholder="Mín. 8 caracteres"
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="btn-eye"
+                        (click)="toggleNewPassword()"
+                        title="Ver / ocultar contraseña"
+                        tabindex="-1"
+                      >
+                        <i class="fa-solid" [class.fa-eye]="!showNewPassword()" [class.fa-eye-slash]="showNewPassword()"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-lock-open"></i> Confirmar Contraseña *</label>
+                    <div class="input-password-wrapper">
+                      <input
+                        [type]="showConfirmPassword() ? 'text' : 'password'"
+                        [(ngModel)]="newUser.confirmPassword"
+                        name="confirmPassword"
+                        class="sport-input"
+                        placeholder="Repite la contraseña"
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="btn-eye"
+                        (click)="toggleConfirmPassword()"
+                        title="Ver / ocultar contraseña"
+                        tabindex="-1"
+                      >
+                        <i class="fa-solid" [class.fa-eye]="!showConfirmPassword()" [class.fa-eye-slash]="showConfirmPassword()"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- VALIDACIÓN DE COINCIDENCIA DE CONTRASEÑA -->
+                @if (newUser.confirmPassword) {
+                  <div class="match-feedback" [class.matched]="isPasswordMatch(newUser.password, newUser.confirmPassword)" [class.mismatched]="!isPasswordMatch(newUser.password, newUser.confirmPassword)">
+                    <i class="fa-solid" [class.fa-circle-check]="isPasswordMatch(newUser.password, newUser.confirmPassword)" [class.fa-circle-xmark]="!isPasswordMatch(newUser.password, newUser.confirmPassword)"></i>
+                    <span>{{ isPasswordMatch(newUser.password, newUser.confirmPassword) ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden' }}</span>
+                  </div>
+                }
+
+                <!-- NIVEL DE SEGURIDAD (MEDIDOR Y CHECKLIST DE CRITERIOS) -->
+                @if (newUser.password) {
+                  <div class="password-strength-box">
+                    <div class="strength-meta">
+                      <span class="strength-title"><i class="fa-solid fa-shield-halved"></i> Nivel de Seguridad:</span>
+                      <span class="strength-badge" [ngClass]="checkPassword(newUser.password).colorClass">
+                        {{ checkPassword(newUser.password).label }}
+                      </span>
+                    </div>
+                    <div class="strength-meter-bar">
+                      <div class="meter-fill" [ngClass]="checkPassword(newUser.password).colorClass" [style.width.%]="checkPassword(newUser.password).percent"></div>
+                    </div>
+                    <div class="requirements-checklist">
+                      <div class="requirement-item" [class.passed]="checkPassword(newUser.password).hasMinLength">
+                        <i class="fa-solid" [class.fa-circle-check]="checkPassword(newUser.password).hasMinLength" [class.fa-circle-dot]="!checkPassword(newUser.password).hasMinLength"></i>
+                        <span>Mín. 8 caracteres</span>
+                      </div>
+                      <div class="requirement-item" [class.passed]="checkPassword(newUser.password).hasUpperCase">
+                        <i class="fa-solid" [class.fa-circle-check]="checkPassword(newUser.password).hasUpperCase" [class.fa-circle-dot]="!checkPassword(newUser.password).hasUpperCase"></i>
+                        <span>1 Mayúscula (A-Z)</span>
+                      </div>
+                      <div class="requirement-item" [class.passed]="checkPassword(newUser.password).hasNumber">
+                        <i class="fa-solid" [class.fa-circle-check]="checkPassword(newUser.password).hasNumber" [class.fa-circle-dot]="!checkPassword(newUser.password).hasNumber"></i>
+                        <span>1 Número (0-9)</span>
+                      </div>
+                      <div class="requirement-item" [class.passed]="checkPassword(newUser.password).hasSpecialChar">
+                        <i class="fa-solid" [class.fa-circle-check]="checkPassword(newUser.password).hasSpecialChar" [class.fa-circle-dot]="!checkPassword(newUser.password).hasSpecialChar"></i>
+                        <span>1 Carácter especial (!&#64;#$...)</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+                @if (isToastError() && toastMessage()) {
+                  <div class="modal-inline-alert error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ toastMessage() }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeCreateUserModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Registrando...
+                  } @else {
+                    <i class="fa-solid fa-check"></i> Registrar Usuario
+                  }
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      }
+
+      <!-- MODAL EDITAR USUARIO -->
+      @if (showEditUserModal()) {
+        <div class="modal-backdrop" (click)="closeEditUserModal()">
+          <div class="modal-card modal-user-dialog" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge bg-blue-glow text-blue">
+                  <i class="fa-solid fa-user-pen"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Editar Usuario</h2>
+                  <p class="modal-subtitle">Actualizar credenciales y rol en {{ api.activeClub().nombre }}</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeEditUserModal()" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form (ngSubmit)="submitEditUser()" class="modal-form-user">
+              <div class="modal-form-body">
+                <div class="form-row-duo">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Nombres *</label>
+                    <input type="text" [(ngModel)]="editUser.nombre" name="editNombre" class="sport-input" required />
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-signature"></i> Apellidos *</label>
+                    <input type="text" [(ngModel)]="editUser.apellido" name="editApellido" class="sport-input" required />
+                  </div>
+                </div>
+
+                <div class="form-row-duo">
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
+                    <input type="email" [(ngModel)]="editUser.email" name="editEmail" class="sport-input" required />
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fa-solid fa-phone"></i> Teléfono</label>
+                    <input type="tel" [(ngModel)]="editUser.telefono" name="editTelefono" class="sport-input" placeholder="+57 300 123 4567" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fa-solid fa-shield-halved"></i> Perfil / Rol Asignado *</label>
+                  <select [(ngModel)]="editUser.rol" name="editRol" class="sport-select full-width" required>
+                    @for (r of rolesCatalog(); track r.code) {
+                      <option [value]="r.code">{{ r.label }} ({{ r.code }})</option>
+                    }
+                  </select>
+                  @if (getRoleDesc(editUser.rol)) {
+                    <small class="helper-text text-role-desc">{{ getRoleDesc(editUser.rol) }}</small>
+                  }
+                </div>
+
+                <!-- CHECKBOX CAMBIAR CONTRASEÑA -->
+                <div class="change-password-toggle">
+                  <label class="checkbox-container">
+                    <input type="checkbox" [(ngModel)]="editUser.changePassword" name="changePassword" />
+                    <span class="checkbox-label-text">
+                      <i class="fa-solid fa-key text-amber"></i> ¿Deseas modificar o restablecer la contraseña de este usuario?
+                    </span>
+                  </label>
+                </div>
+
+                @if (editUser.changePassword) {
+                  <div class="form-row-duo">
+                    <div class="form-group">
+                      <label><i class="fa-solid fa-lock"></i> Nueva Contraseña *</label>
+                      <div class="input-password-wrapper">
+                        <input
+                          [type]="showEditPassword() ? 'text' : 'password'"
+                          [(ngModel)]="editUser.password"
+                          name="editUserPassword"
+                          class="sport-input"
+                          placeholder="Mín. 8 caracteres"
+                          required
+                        />
+                        <button
+                          type="button"
+                          class="btn-eye"
+                          (click)="toggleEditPassword()"
+                          title="Ver / ocultar contraseña"
+                          tabindex="-1"
+                        >
+                          <i class="fa-solid" [class.fa-eye]="!showEditPassword()" [class.fa-eye-slash]="showEditPassword()"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label><i class="fa-solid fa-lock-open"></i> Confirmar Nueva Contraseña *</label>
+                      <div class="input-password-wrapper">
+                        <input
+                          [type]="showEditConfirmPassword() ? 'text' : 'password'"
+                          [(ngModel)]="editUser.confirmPassword"
+                          name="editUserConfirmPassword"
+                          class="sport-input"
+                          placeholder="Repite la contraseña"
+                          required
+                        />
+                        <button
+                          type="button"
+                          class="btn-eye"
+                          (click)="toggleEditConfirmPassword()"
+                          title="Ver / ocultar contraseña"
+                          tabindex="-1"
+                        >
+                          <i class="fa-solid" [class.fa-eye]="!showEditConfirmPassword()" [class.fa-eye-slash]="showEditConfirmPassword()"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  @if (editUser.confirmPassword) {
+                    <div class="match-feedback" [class.matched]="isPasswordMatch(editUser.password, editUser.confirmPassword)" [class.mismatched]="!isPasswordMatch(editUser.password, editUser.confirmPassword)">
+                      <i class="fa-solid" [class.fa-circle-check]="isPasswordMatch(editUser.password, editUser.confirmPassword)" [class.fa-circle-xmark]="!isPasswordMatch(editUser.password, editUser.confirmPassword)"></i>
+                      <span>{{ isPasswordMatch(editUser.password, editUser.confirmPassword) ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden' }}</span>
+                    </div>
+                  }
+
+                  @if (editUser.password) {
+                    <div class="password-strength-box">
+                      <div class="strength-meta">
+                        <span class="strength-title"><i class="fa-solid fa-shield-halved"></i> Nivel de Seguridad:</span>
+                        <span class="strength-badge" [ngClass]="checkPassword(editUser.password).colorClass">
+                          {{ checkPassword(editUser.password).label }}
+                        </span>
+                      </div>
+                      <div class="strength-meter-bar">
+                        <div class="meter-fill" [ngClass]="checkPassword(editUser.password).colorClass" [style.width.%]="checkPassword(editUser.password).percent"></div>
+                      </div>
+                      <div class="requirements-checklist">
+                        <div class="requirement-item" [class.passed]="checkPassword(editUser.password).hasMinLength">
+                          <i class="fa-solid" [class.fa-circle-check]="checkPassword(editUser.password).hasMinLength" [class.fa-circle-dot]="!checkPassword(editUser.password).hasMinLength"></i>
+                          <span>Mín. 8 caracteres</span>
+                        </div>
+                        <div class="requirement-item" [class.passed]="checkPassword(editUser.password).hasUpperCase">
+                          <i class="fa-solid" [class.fa-circle-check]="checkPassword(editUser.password).hasUpperCase" [class.fa-circle-dot]="!checkPassword(editUser.password).hasUpperCase"></i>
+                          <span>1 Mayúscula (A-Z)</span>
+                        </div>
+                        <div class="requirement-item" [class.passed]="checkPassword(editUser.password).hasNumber">
+                          <i class="fa-solid" [class.fa-circle-check]="checkPassword(editUser.password).hasNumber" [class.fa-circle-dot]="!checkPassword(editUser.password).hasNumber"></i>
+                          <span>1 Número (0-9)</span>
+                        </div>
+                        <div class="requirement-item" [class.passed]="checkPassword(editUser.password).hasSpecialChar">
+                          <i class="fa-solid" [class.fa-circle-check]="checkPassword(editUser.password).hasSpecialChar" [class.fa-circle-dot]="!checkPassword(editUser.password).hasSpecialChar"></i>
+                          <span>1 Carácter especial</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+                @if (isToastError() && toastMessage()) {
+                  <div class="modal-inline-alert error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ toastMessage() }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeEditUserModal()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="saving()">
+                  @if (saving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+                  } @else {
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                  }
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      }
+
+      <!-- MODAL ELIMINAR / DESVINCULAR USUARIO -->
+      @if (showDeleteUserModal() && userToDelete()) {
+        <div class="modal-backdrop" (click)="closeDeleteUserModal()">
+          <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="modal-icon-badge bg-red-glow text-red">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                  <h2 class="modal-title">Desvincular Usuario</h2>
+                  <p class="modal-subtitle">{{ userToDelete()?.email }}</p>
+                </div>
+              </div>
+              <button class="modal-close-btn btn-close" (click)="closeDeleteUserModal()" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="modal-body-delete">
+              <p>
+                ¿Estás seguro de que deseas desvincular a
+                <strong>{{ userToDelete()?.nombre }} {{ userToDelete()?.apellido }}</strong>
+                del club <strong>{{ api.activeClub().nombre }}</strong>?
+              </p>
+              <div class="delete-warning-box">
+                <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                <span>El usuario perderá sus credenciales y accesos a este club deportivo.</span>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary btn-cancel" (click)="closeDeleteUserModal()">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+              </button>
+              <button type="button" class="btn-danger btn-submit" (click)="executeDeleteUser()" [disabled]="saving()">
+                @if (saving()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Desvinculando...
+                } @else {
+                  <i class="fa-solid fa-trash-can"></i> Confirmar Desvinculación
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
 
       <!-- TOAST FEEDBACK -->
       @if (toastMessage()) {

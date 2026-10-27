@@ -280,34 +280,34 @@ export class PartidosComponent implements OnInit {
 
   submitSchedule(): void {
     if (!this.newMatch.categoria_id) {
-      this.showToast('Please select a category (*)');
+      this.showToast('Por favor selecciona una categoría (*)');
       return;
     }
     if (!this.newMatch.rival_nombre?.trim()) {
-      this.showToast('Opponent team name is required (*)');
+      this.showToast('El nombre del equipo rival es obligatorio (*)');
       return;
     }
     if (!this.newMatch.fecha_partido) {
-      this.showToast('Please specify the match date (*)');
+      this.showToast('Por favor indica la fecha del partido (*)');
       return;
     }
     if (!this.newMatch.hora_partido) {
-      this.showToast('Please specify the kick-off time (*)');
+      this.showToast('Por favor indica la hora del partido (*)');
       return;
     }
     if (!this.newMatch.sede_cancha?.trim()) {
-      this.showToast('Venue or pitch is required (*)');
+      this.showToast('La sede o cancha es obligatoria (*)');
       return;
     }
 
     this.api.createPartido(this.newMatch).subscribe({
       next: () => {
-        this.showToast('Match scheduled and call-up created successfully!');
+        this.showToast('¡Partido programado y convocatoria generada exitosamente!');
         this.closeScheduleModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error scheduling match.');
+        this.showToast('Error al programar el partido.');
       },
     });
   }
@@ -317,34 +317,34 @@ export class PartidosComponent implements OnInit {
     if (!partido || !partido.id) return;
 
     if (!this.editMatch.categoria_id) {
-      this.showToast('Please select a category (*)');
+      this.showToast('Por favor selecciona una categoría (*)');
       return;
     }
     if (!this.editMatch.rival_nombre?.trim()) {
-      this.showToast('Opponent team name is required (*)');
+      this.showToast('El nombre del equipo rival es obligatorio (*)');
       return;
     }
     if (!this.editMatch.fecha_partido) {
-      this.showToast('Please specify the match date (*)');
+      this.showToast('Por favor indica la fecha del partido (*)');
       return;
     }
     if (!this.editMatch.hora_partido) {
-      this.showToast('Please specify the kick-off time (*)');
+      this.showToast('Por favor indica la hora del partido (*)');
       return;
     }
     if (!this.editMatch.sede_cancha?.trim()) {
-      this.showToast('Venue or pitch is required (*)');
+      this.showToast('La sede o cancha es obligatoria (*)');
       return;
     }
 
     this.api.updatePartido(partido.id, this.editMatch).subscribe({
       next: () => {
-        this.showToast('Match updated successfully!');
+        this.showToast('¡Partido actualizado exitosamente!');
         this.closeEditModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error updating match.');
+        this.showToast('Error al actualizar el partido.');
       },
     });
   }
@@ -373,12 +373,12 @@ export class PartidosComponent implements OnInit {
 
     this.api.addEventoPartido(partido.id, this.newEvent).subscribe({
       next: (created) => {
-        this.showToast('Event recorded in digital match report!');
+        this.showToast('¡Evento registrado en el acta digital!');
         this.actaEvents.update((evs) => [...evs, created]);
         this.newEvent.descripcion = '';
       },
       error: () => {
-        this.showToast('Error recording event');
+        this.showToast('Error al registrar el evento');
       },
     });
   }
@@ -386,7 +386,7 @@ export class PartidosComponent implements OnInit {
   openGps(partido: any): void {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partido.sede_cancha)}`;
     window.open(url, '_blank');
-    this.showToast(`Opening location for ${partido.sede_cancha}`);
+    this.showToast(`Abriendo ubicación para ${partido.sede_cancha}`);
   }
 
   openDeleteModal(partido: any): void {
@@ -405,12 +405,12 @@ export class PartidosComponent implements OnInit {
 
     this.api.deletePartido(match.id).subscribe({
       next: () => {
-        this.showToast(`Match vs ${match.rival_nombre} removed from calendar.`);
+        this.showToast(`Partido vs ${match.rival_nombre} eliminado del calendario.`);
         this.closeDeleteModal();
         this.loadData();
       },
       error: () => {
-        this.showToast('Error deleting match.');
+        this.showToast('Error al eliminar el partido.');
       }
     });
   }

@@ -12,7 +12,7 @@ export const environment = {
     id: 'demo-superadmin',
     label: 'Super Admin SaaS',
     email: 'superadmin@sportcore.com',
-    password: 'sportcore2026',
+    password: 'SportCore@2026',
     rol: 'SUPER_ADMIN' as const,
     rolLabel: 'Super Administrador Global SaaS (Solo Local)',
     nombres: 'Super Administrador',

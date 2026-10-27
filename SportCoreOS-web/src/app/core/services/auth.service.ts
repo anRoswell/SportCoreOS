@@ -56,7 +56,7 @@ const STANDARD_DEMO_PERSONAS: DemoPersona[] = [
     id: 'demo-dir',
     label: 'Sports Director',
     email: 'carlos.valderrama@sportcore.com',
-    password: 'sportcore2026',
+    password: 'SportCore@2026',
     rol: 'DIRECTOR_DEPORTIVO',
     rolLabel: 'Methodological & Sports Director',
     nombres: 'Carlos',
@@ -69,7 +69,7 @@ const STANDARD_DEMO_PERSONAS: DemoPersona[] = [
     id: 'demo-dt',
     label: 'Head Coach / DT',
     email: 'mario.yepes@sportcore.com',
-    password: 'sportcore2026',
+    password: 'SportCore@2026',
     rol: 'ENTRENADOR_DT',
     rolLabel: 'Head Coach U-15 & U-17',
     nombres: 'Mario',
@@ -82,7 +82,7 @@ const STANDARD_DEMO_PERSONAS: DemoPersona[] = [
     id: 'demo-padre',
     label: 'Parent / Guardian',
     email: 'padre.diaz@sportcore.com',
-    password: 'sportcore2026',
+    password: 'SportCore@2026',
     rol: 'PADRE_ACUDIENTE',
     rolLabel: 'Guardian (Player: Samuel Díaz #10)',
     nombres: 'Luis',
@@ -95,7 +95,7 @@ const STANDARD_DEMO_PERSONAS: DemoPersona[] = [
     id: 'demo-finanzas',
     label: 'Finance Admin',
     email: 'finanzas@sportcore.com',
-    password: 'sportcore2026',
+    password: 'SportCore@2026',
     rol: 'ADMIN_FINANCIERO',
     rolLabel: 'Receivables & Billing Coordinator',
     nombres: 'Diana',
@@ -162,11 +162,28 @@ export class AuthService {
   }
 
   /**
+   * Obtiene un reto Captcha visual del backend
+   */
+  getCaptcha(): Observable<{ captchaId: string; svg: string; expiresInSeconds: number; code?: string }> {
+    return this.http.get<any>(`${this.apiUrl}/auth/captcha`).pipe(
+      map((res) => (res.data ? res.data : res))
+    );
+  }
+
+  /**
    * Autenticación Real contra el backend NestJS (POST /api/v1/auth/login)
    * La escuela / club se determina automáticamente según la membresía del usuario
    */
-  login(email: string, pass: string): Observable<UserProfile> {
-    const body = { email: email.trim().toLowerCase(), password: pass };
+  login(email: string, pass: string, captchaToken?: string, captchaAnswer?: string): Observable<UserProfile> {
+    const body: any = { 
+      email: email.trim().toLowerCase(), 
+      password: pass 
+    };
+
+    if (captchaToken && captchaAnswer) {
+      body.captchaToken = captchaToken;
+      body.captchaAnswer = captchaAnswer;
+    }
 
     return this.http.post<any>(`${this.apiUrl}/auth/login`, body).pipe(
       map((res) => {

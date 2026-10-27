@@ -609,7 +609,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         {
           id: '00000000-0000-0000-0000-000000000001',
           email: 'superadmin@sportcore.com',
-          password_hash: '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', // sportcore2026
+          password_hash: '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', // SportCore@2026 (legacy sportcore2026 supported)
           nombre: 'Super Administrador',
           apellido: 'Global',
           rol: 'SUPER_ADMIN',
@@ -622,7 +622,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         {
           id: '00000000-0000-0000-0000-000000000002',
           email: 'carlos.valderrama@sportcore.com',
-          password_hash: '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', // sportcore2026
+          password_hash: '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', // SportCore@2026 (legacy sportcore2026 supported)
           nombre: 'Carlos',
           apellido: 'Valderrama',
           rol: 'DIRECTOR_DEPORTIVO',
@@ -635,7 +635,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         {
           id: '00000000-0000-0000-0000-000000000003',
           email: 'mario.yepes@sportcore.com',
-          password_hash: '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', // sportcore2026
+          password_hash: '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', // SportCore@2026 (legacy sportcore2026 supported)
           nombre: 'Mario',
           apellido: 'Yepes',
           rol: 'ENTRENADOR_DT',
@@ -648,7 +648,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         {
           id: '00000000-0000-0000-0000-000000000004',
           email: 'padre.diaz@sportcore.com',
-          password_hash: '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', // sportcore2026
+          password_hash: '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', // SportCore@2026 (legacy sportcore2026 supported)
           nombre: 'Luis',
           apellido: 'Díaz Padre',
           rol: 'PADRE_ACUDIENTE',
@@ -661,7 +661,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         {
           id: '00000000-0000-0000-0000-000000000005',
           email: 'finanzas@sportcore.com',
-          password_hash: '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', // sportcore2026
+          password_hash: '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', // SportCore@2026 (legacy sportcore2026 supported)
           nombre: 'Diana',
           apellido: 'Morales',
           rol: 'ADMIN_FINANCIERO',

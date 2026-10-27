@@ -10,14 +10,14 @@ VALUES
   ('10000000-0000-0000-0000-000000000003', 'Millonarios Cantera Norte', 'millonarios-cantera-norte', 'MCN', 'Cali', 'Colombia', 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=120&auto=format&fit=crop&q=80', 'Plan Élite Pro', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 2. SCHEMA CORE: USUARIOS (Password 'sportcore2026' bcrypt: $2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2)
+-- 2. SCHEMA CORE: USUARIOS (Password 'SportCore@2026' bcrypt: $2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.)
 INSERT INTO core.usuarios (id, email, password_hash, nombre, apellido, rol, telefono, avatar_url, activo)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'superadmin@sportcore.com', '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', 'Super Administrador', 'Global', 'SUPER_ADMIN', '+57 300 000 0001', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', true),
-  ('00000000-0000-0000-0000-000000000002', 'carlos.valderrama@sportcore.com', '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', 'Carlos', 'Valderrama', 'DIRECTOR_DEPORTIVO', '+57 310 444 5555', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', true),
-  ('00000000-0000-0000-0000-000000000003', 'mario.yepes@sportcore.com', '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', 'Mario', 'Yepes', 'ENTRENADOR_DT', '+57 312 888 9999', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80', true),
-  ('00000000-0000-0000-0000-000000000004', 'padre.diaz@sportcore.com', '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', 'Luis', 'Díaz Padre', 'PADRE_ACUDIENTE', '+57 315 777 6666', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80', true),
-  ('00000000-0000-0000-0000-000000000005', 'finanzas@sportcore.com', '$2b$10$Uhw2fuUfzHISncX.eq5rUOBObABSihJoXVqLtHy33roEOb8fHEjQ2', 'Diana', 'Morales', 'ADMIN_FINANCIERO', '+57 320 111 2233', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80', true)
+  ('00000000-0000-0000-0000-000000000001', 'superadmin@sportcore.com', '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', 'Super Administrador', 'Global', 'SUPER_ADMIN', '+57 300 000 0001', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', true),
+  ('00000000-0000-0000-0000-000000000002', 'carlos.valderrama@sportcore.com', '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', 'Carlos', 'Valderrama', 'DIRECTOR_DEPORTIVO', '+57 310 444 5555', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', true),
+  ('00000000-0000-0000-0000-000000000003', 'mario.yepes@sportcore.com', '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', 'Mario', 'Yepes', 'ENTRENADOR_DT', '+57 312 888 9999', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80', true),
+  ('00000000-0000-0000-0000-000000000004', 'padre.diaz@sportcore.com', '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', 'Luis', 'Díaz Padre', 'PADRE_ACUDIENTE', '+57 315 777 6666', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80', true),
+  ('00000000-0000-0000-0000-000000000005', 'finanzas@sportcore.com', '$2b$10$KbmGUBQ8u6EXvYczFm/liehMnYCGUlkzcaCKYZnCF26ZR5hvBAPj.', 'Diana', 'Morales', 'ADMIN_FINANCIERO', '+57 320 111 2233', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. SCHEMA CORE: MEMBRESIAS CLUB

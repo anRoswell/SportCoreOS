@@ -17,8 +17,8 @@ export class LoginComponent {
   alert = inject(AlertService);
   router = inject(Router);
 
-  email = 'carlos.valderrama@sportcore.com';
-  password = 'sportcore2026';
+  email = '';
+  password = '';
   selectedPersonaId = signal<string>('demo-dir');
   activePersonaLabel = signal<string>('Director Deportivo');
   isSubmitting = signal<boolean>(false);

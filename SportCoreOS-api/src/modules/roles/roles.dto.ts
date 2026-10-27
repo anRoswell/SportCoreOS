@@ -47,3 +47,36 @@ export class AssignUserRoleDto {
   @IsNotEmpty()
   rol: string;
 }
+
+export class UpdateUserDto {
+  @ApiPropertyOptional({ example: 'Carlos' })
+  @IsOptional()
+  @IsString()
+  nombre?: string;
+
+  @ApiPropertyOptional({ example: 'Valderrama' })
+  @IsOptional()
+  @IsString()
+  apellido?: string;
+
+  @ApiPropertyOptional({ example: 'carlos.valderrama@sportcore.com' })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiPropertyOptional({ example: '+57 310 123 4567' })
+  @IsOptional()
+  @IsString()
+  telefono?: string;
+
+  @ApiPropertyOptional({ example: 'ENTRENADOR_DT' })
+  @IsOptional()
+  @IsString()
+  rol?: string;
+
+  @ApiPropertyOptional({ example: 'SportCore@2026' })
+  @IsOptional()
+  @IsString()
+  password?: string;
+}
+

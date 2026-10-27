@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { RolesRepository } from './roles.repository';
 import { SPORTCORE_ROLES, SPORTCORE_PERMISSION_TEMPLATE, SportCoreRole } from './roles.constants';
-import { BulkUpdateRolePermissionsDto, UpdateSinglePermissionDto, AssignUserRoleDto } from './roles.dto';
+import { BulkUpdateRolePermissionsDto, UpdateSinglePermissionDto, AssignUserRoleDto, UpdateUserDto } from './roles.dto';
 
 @Injectable()
 export class RolesService {
@@ -143,6 +144,52 @@ export class RolesService {
       success: true,
       usuarioId: dto.usuarioId,
       nuevoRol: rol,
+    };
+  }
+
+  async updateUser(clubId: string, usuarioId: string, dto: UpdateUserDto) {
+    if (dto.rol) {
+      const rol = dto.rol.toUpperCase();
+      if (!SPORTCORE_ROLES.includes(rol as SportCoreRole)) {
+        throw new BadRequestException(`El rol '${rol}' no es válido.`);
+      }
+    }
+
+    let passwordHash: string | undefined;
+    if (dto.password && dto.password.trim().length > 0) {
+      if (dto.password.length < 8) {
+        throw new BadRequestException('La contraseña debe tener al menos 8 caracteres.');
+      }
+      passwordHash = await bcrypt.hash(dto.password, 10);
+    }
+
+    const updatedUsers = await this.repo.updateUserDetails(clubId, usuarioId, {
+      nombre: dto.nombre,
+      apellido: dto.apellido,
+      email: dto.email,
+      telefono: dto.telefono,
+      rol: dto.rol,
+      passwordHash,
+    });
+
+    return {
+      success: true,
+      message: 'Usuario actualizado exitosamente.',
+      users: updatedUsers,
+    };
+  }
+
+  async deleteUser(clubId: string, usuarioId: string) {
+    const deleted = await this.repo.deleteUserMembership(clubId, usuarioId);
+    if (!deleted) {
+      throw new NotFoundException('Membresía del usuario no encontrada o ya eliminada.');
+    }
+
+    const remainingUsers = await this.repo.findUsersWithRoles(clubId);
+    return {
+      success: true,
+      message: 'Usuario desvinculado del club exitosamente.',
+      users: remainingUsers,
     };
   }
 

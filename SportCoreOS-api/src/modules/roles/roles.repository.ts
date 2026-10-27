@@ -118,6 +118,91 @@ export class RolesRepository {
     return res.rows[0] || null;
   }
 
+  async updateUserDetails(
+    clubId: string,
+    usuarioId: string,
+    data: {
+      nombre?: string;
+      apellido?: string;
+      email?: string;
+      telefono?: string;
+      rol?: string;
+      passwordHash?: string;
+    },
+  ) {
+    // 1. Actualizar usuario en core.usuarios
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (data.nombre) {
+      values.push(data.nombre.trim());
+      fields.push(`nombre = $${values.length}`);
+    }
+    if (data.apellido) {
+      values.push(data.apellido.trim());
+      fields.push(`apellido = $${values.length}`);
+    }
+    if (data.email) {
+      values.push(data.email.trim().toLowerCase());
+      fields.push(`email = $${values.length}`);
+    }
+    if (data.telefono !== undefined) {
+      values.push(data.telefono.trim() || null);
+      fields.push(`telefono = $${values.length}`);
+    }
+    if (data.rol) {
+      values.push(data.rol.trim().toUpperCase());
+      fields.push(`rol = $${values.length}`);
+    }
+    if (data.passwordHash) {
+      values.push(data.passwordHash);
+      fields.push(`password_hash = $${values.length}`);
+    }
+
+    if (fields.length > 0) {
+      values.push(usuarioId);
+      const query = `
+        UPDATE core.usuarios
+        SET ${fields.join(', ')}
+        WHERE id = $${values.length}
+        RETURNING id, email, nombre, apellido, rol, telefono, activo
+      `;
+      await this.db.query(query, values);
+    }
+
+    // 2. Si se especificó rol, actualizar membresía del club
+    if (data.rol) {
+      await this.updateUserClubRole(clubId, usuarioId, data.rol.trim().toUpperCase());
+    }
+
+    return this.findUsersWithRoles(clubId);
+  }
+
+  async deleteUserMembership(clubId: string, usuarioId: string) {
+    // 1. Eliminar membresía del club
+    const res = await this.db.query(
+      `DELETE FROM core.membresias_club
+       WHERE club_id = $1 AND usuario_id = $2
+       RETURNING *`,
+      [clubId, usuarioId],
+    );
+
+    // 2. Verificar si el usuario todavía pertenece a otros clubes
+    const remaining = await this.db.query(
+      `SELECT COUNT(*)::int as count FROM core.membresias_club WHERE usuario_id = $1`,
+      [usuarioId],
+    );
+
+    if (Number(remaining.rows[0]?.count || 0) === 0) {
+      await this.db.query(
+        `UPDATE core.usuarios SET activo = false WHERE id = $1`,
+        [usuarioId],
+      );
+    }
+
+    return res.rows[0] || null;
+  }
+
   async resetRolePermissionsToTemplate(clubId: string, rol?: string) {
     let query = `DELETE FROM core.roles_permisos WHERE club_id = $1`;
     const params: any[] = [clubId];
